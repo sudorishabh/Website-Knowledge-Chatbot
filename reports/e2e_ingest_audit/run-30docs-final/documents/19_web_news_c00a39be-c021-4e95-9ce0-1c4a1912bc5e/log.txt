@@ -1,0 +1,15 @@
+2026-09-10 16:00:38,525 INFO app.ingestion.pipeline: Ingesting website c00a39be-c021-4e95-9ce0-1c4a1912bc5e (https://teriin.org/news/sarbananda-sonowal-charts-course-zero-emission-shipping-corridors-pushes-ports-fast-track)
+2026-09-10 16:00:38,534 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,019 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,033 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,033 INFO app.ingestion.indexer: Indexed 1 points (1 children: 1 embedded, 0 reused; 0 parents) into 'e2e_audit_documents'
+2026-09-10 16:00:39,049 INFO httpx: HTTP Request: GET http://localhost:6333/collections/e2e_audit_documents/exists "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,057 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,064 INFO app.ingestion.pipeline: new c00a39be-c021-4e95-9ce0-1c4a1912bc5e -> v1
+2026-09-10 16:00:39,068 INFO app.knowledge.document_pipeline: prelude        entities=2451 chunks=1
+2026-09-10 16:00:39,072 INFO app.knowledge.document_pipeline: mentions       cached=0 mentions=1
+2026-09-10 16:00:39,078 INFO app.knowledge.document_pipeline: resolution     auto=0 provisional=0 ambiguous=1 unresolved=0 cache_recorded=1
+2026-09-10 16:00:39,078 INFO app.knowledge.document_pipeline: claims         llm_calls=0 llm_failures=0 run_calls_used=43 run_calls_remaining=149957 llm=0 unknown_predicates=0 built=0
+2026-09-10 16:00:39,078 INFO app.knowledge.document_pipeline: validate       -
+2026-09-10 16:00:39,078 INFO app.knowledge.document_pipeline: persist        accepted=0 pending_predicates=0
+2026-09-10 16:00:39,085 INFO app.knowledge.document_pipeline: knowledge_document id=c00a39be-c021-4e95-9ce0-1c4a1912bc5e v=1 status=ok claims=0 pending=0 proj=skipped 0.01s

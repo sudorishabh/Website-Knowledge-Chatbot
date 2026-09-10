@@ -1,0 +1,261 @@
+# Chunk tree (parents and their children)
+
+4 parent(s), 12 child(ren)
+
+## PARENT 18345de0-758d-54dc-84da-0a627cd425a8
+- heading: None · type: None · tokens: 1002 · pages: None · has_table: False
+
+```text
+This article hopes to recognize the pedagogical richness of indigenous education, to remind us that classrooms are not too different from canopies, that the Yamuna flows in the same way as the Mahanadi and the Moyar, and that education can also flow through story and lore. As an equal form of knowledge, if not more.
+
+Thengumarahada. A misty village nestled on the edge of the Moyar River in Sathyamangalam Tiger Reserve and currently embroiled in a court case (https://www.thehindu.com/news/cities/Coimbatore/thengumarahada-residents-in-a-limbo-as-relocation-process-drags-on/article69067627.ece#google_vignette) concerning the village’s relocation (Premkumar, 2025). Reaching the village requires significant grit considering the road – often more of a memory than a path – tests both one’s spine and one’s spirit. There lie an additional few villages along the road, such as the extremely remote Hallimoyar. The region has historically been home to communities that have lived in both conflict and coexistence with wildlife such as elephants, wild boars, and tigers.
+
+Despite high agricultural and livestock losses caused by negative human-wildlife encounters such as crop raids by elephants who find cultivated rice in the region quite palatable, along with escalating government pressure (Janetius, 2017), only 34% of households in this village expressed an interest in settling outside the reserve (Ranganathan & Karanth, 2018). It is 2025 and the court order remains to be implemented, leaving the residents in limbo.
+
+Angul. One of Odisha’s more forested regions, and home to many indigenous communities such as the Juang and the Paudi Bhuyan, most of whom are today listed as ‘Particularly Vulnerable Tribal Groups (PVTG)’. The Juang Tribe has long relied on wild roots, leaves, and tubers for treating various ailments such as jaundice, hypertension, asthma, and rheumatism (Sahoo, Nayak, & Khurana, 2023). The presence of Paudi Bhuyans has been recorded to be a significant factor in elevating levels of traditional ethnoecological knowledge (TEK) in various Northern Odisha villages namely Namagaon and Sibida (Kahlon & Singh, 2021).
+
+Abujmarh. A forested belt in South-Western Chhattisgarh, and part of the vast 92,000 km2 Dandakaranya forests, a region commonly regarded to be the place where the Hindu God Rama was sent to exile (‘dand’ in Hindi means punishment). While research in the region is largely nil owing to Abujmarh being one of the last remaining strongholds of the Naxalite movement, broader research on the Madia Gond communities hints that children acquire ecological knowledge (Vishwakarma, Mollick, & Debnath, 2024) through oral transition and daily immersion.
+
+The term ‘Human-Elephant Dandi’ (Keil, 2016) is used to describe the ‘shared pathways’ that both humans and elephants use around forest villages in Assam’s Garbhanga Wildlife Sanctuary region (approximately 10 kms from Guwahati in Northeast India). Keil points out that humans (the Rabha and other tribal communities of the region) and elephants do not collide with each other – instead, they co-create space, meaning, and history together, thus highlighting a multi-species co-habitation of space, where both species shape each other’s worlds.
+
+Figure: A shared pathway, a ‘dandi’ – used by both humans and elephants (Nalapara Forest, Garbhanga Wildlife Sanctuary, Assam)
+
+These are not remnants of a nostalgic and/or disappearing past. In fact, they are contemporary accounts of how alternate knowledge systems continue to operate outside formal education structures, of how children residing within and/or the periphery of forest areas, despite a lack of access to conventional schooling, learn through direct and daily interactions with the environment. In effect, Adivasi children are educated through immersion into their environments and their landscapes. Further, this acquired knowledge tends to be quite complex ecological knowledge; it is no easy feat to predict seasonal weather, track wild elephant herds, or engage orally with intergenerational history.
+
+Such a context raises a fundamental question: What might it mean to recognize such alternative systems not as peripheral, but as pedagogically rich? What if, instead of trying to bring conventional classrooms to these children, we begin by asking what their worlds could teach us? Rather than viewing Adivasi children as lacking education or labelling them ‘illiterate’ in national censuses, what if we understood their environments as classrooms in their own right?
+```
+    ### CHILD #0 dead31b4-c191-5cff-83b1-8d71363c9019
+    - heading: None · type: None · tokens: 341 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge'
+
+    ```text
+    This article hopes to recognize the pedagogical richness of indigenous education, to remind us that classrooms are not too different from canopies, that the Yamuna flows in the same way as the Mahanadi and the Moyar, and that education can also flow through story and lore. As an equal form of knowledge, if not more.
+    
+    Thengumarahada. A misty village nestled on the edge of the Moyar River in Sathyamangalam Tiger Reserve and currently embroiled in a court case (https://www.thehindu.com/news/cities/Coimbatore/thengumarahada-residents-in-a-limbo-as-relocation-process-drags-on/article69067627.ece#google_vignette) concerning the village’s relocation (Premkumar, 2025). Reaching the village requires significant grit considering the road – often more of a memory than a path – tests both one’s spine and one’s spirit. There lie an additional few villages along the road, such as the extremely remote Hallimoyar. The region has historically been home to communities that have lived in both conflict and coexistence with wildlife such as elephants, wild boars, and tigers.
+    
+    Despite high agricultural and livestock losses caused by negative human-wildlife encounters such as crop raids by elephants who find cultivated rice in the region quite palatable, along with escalating government pressure (Janetius, 2017), only 34% of households in this village expressed an interest in settling outside the reserve (Ranganathan & Karanth, 2018). It is 2025 and the court order remains to be implemented, leaving the residents in limbo.
+    ```
+    ### CHILD #1 e39698c2-9d40-5f2a-b0b8-a899a634e8cc
+    - heading: None · type: None · tokens: 315 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge'
+
+    ```text
+    It is 2025 and the court order remains to be implemented, leaving the residents in limbo. Angul. One of Odisha’s more forested regions, and home to many indigenous communities such as the Juang and the Paudi Bhuyan, most of whom are today listed as ‘Particularly Vulnerable Tribal Groups (PVTG)’. The Juang Tribe has long relied on wild roots, leaves, and tubers for treating various ailments such as jaundice, hypertension, asthma, and rheumatism (Sahoo, Nayak, & Khurana, 2023). The presence of Paudi Bhuyans has been recorded to be a significant factor in elevating levels of traditional ethnoecological knowledge (TEK) in various Northern Odisha villages namely Namagaon and Sibida (Kahlon & Singh, 2021).
+    
+    Abujmarh. A forested belt in South-Western Chhattisgarh, and part of the vast 92,000 km2 Dandakaranya forests, a region commonly regarded to be the place where the Hindu God Rama was sent to exile (‘dand’ in Hindi means punishment). While research in the region is largely nil owing to Abujmarh being one of the last remaining strongholds of the Naxalite movement, broader research on the Madia Gond communities hints that children acquire ecological knowledge (Vishwakarma, Mollick, & Debnath, 2024) through oral transition and daily immersion.
+    ```
+    ### CHILD #2 a5d6e145-2d1b-5601-b679-51b749a9db3e
+    - heading: None · type: None · tokens: 407 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge'
+
+    ```text
+    research on the Madia Gond communities hints that children acquire ecological knowledge (Vishwakarma, Mollick, & Debnath, 2024) through oral transition and daily immersion. The term ‘Human-Elephant Dandi’ (Keil, 2016) is used to describe the ‘shared pathways’ that both humans and elephants use around forest villages in Assam’s Garbhanga Wildlife Sanctuary region (approximately 10 kms from Guwahati in Northeast India). Keil points out that humans (the Rabha and other tribal communities of the region) and elephants do not collide with each other – instead, they co-create space, meaning, and history together, thus highlighting a multi-species co-habitation of space, where both species shape each other’s worlds.
+    
+    Figure: A shared pathway, a ‘dandi’ – used by both humans and elephants (Nalapara Forest, Garbhanga Wildlife Sanctuary, Assam)
+    
+    These are not remnants of a nostalgic and/or disappearing past. In fact, they are contemporary accounts of how alternate knowledge systems continue to operate outside formal education structures, of how children residing within and/or the periphery of forest areas, despite a lack of access to conventional schooling, learn through direct and daily interactions with the environment. In effect, Adivasi children are educated through immersion into their environments and their landscapes. Further, this acquired knowledge tends to be quite complex ecological knowledge; it is no easy feat to predict seasonal weather, track wild elephant herds, or engage orally with intergenerational history.
+    
+    Such a context raises a fundamental question: What might it mean to recognize such alternative systems not as peripheral, but as pedagogically rich? What if, instead of trying to bring conventional classrooms to these children, we begin by asking what their worlds could teach us? Rather than viewing Adivasi children as lacking education or labelling them ‘illiterate’ in national censuses, what if we understood their environments as classrooms in their own right?
+    ```
+
+## PARENT 2ff5ea63-87c5-588d-a2ff-2f2d354be254
+- heading: 'Why the Disconnect' · type: None · tokens: 619 · pages: None · has_table: False
+
+```text
+Why the Disconnect
+
+The disconnect has been shaped by decades and in fact, centuries of pedagogical systems that follow standardized and/or compartmentalized models of education, and prioritize exam-readiness and measurable outcomes. This prioritization is often done at the expense of sensory engagement, local context, or relatability; without relatability, it is often difficult to feel connected.
+
+While modern education systems might produce students who are increasingly aware of complex climate-related issues, the students are ultimately left with a limited capacity to respond to the same with true ecological intuition or place-based sensitivity. This is already noticeable in multiple platforms – today, ‘climate change’, ‘sustainability’, and ‘circular economy’, etc., are as much buzzwords as issues/solutions; a look at Linkedin profiles will confirm the same. There is a certain pride in putting out as many ‘diagnostic’ reports as possible, or being able to say, ‘I work in the climate change sector’; chasing such narratives or personal goals take away from the larger goal of battling a very real issue. Climate change when looked at through the lens of justice has been proven to affect marginalized groups disproportionately (Odeku, 2022).
+
+Let us consider efforts in schools and colleges undertaken to combat climate change – such as science fairs, eco-club activities, air pollution awareness drives, etc. These undoubtedly play formative roles in spreading awareness and initiating action (Mehta, Kahlon, & Barua, 2023). However, these initiatives can be further strengthened when they go beyond compliance (towards government programmes such as Mission LiFE, NGO projects’ objectives, etc.) and encourage curiosity. Take for instance – a typical World Environmental Day celebration at a school; students are asked to repeat “Reduce, Reuse, Recycle” slogans for an activity. While these signal participation and are valuable, they can also serve as entry points for deeper inquiry – inviting students to ask why, notice patterns, to build a relationship with the natural world around them. However, this still remains lacking in many initiatives; the environment is a topic that must be covered among deadlines, instructions, and checklists. Further, big schools (with resources) in India’s main cities are subject to this inefficiency; the plight in rural schools (with lesser ‘visibility’ of climate change) is likely to be further inefficient.
+
+By contrast, Adivasi children do not “learn” about the environment; they learn within it. Rather than being the subject, the forest assumes the role of the entire school itself. Knowledge is passed through smells, through trails, through bird calls, and not so much through chalks or classrooms. Children learn to identify edible plants, children can predict if it is going to be a rainy year or not, and they can recall oral histories tied to the land, the river, and the people. One might be tempted to make the mistake of considering this a casual system – however, this is a comprehensive and sophisticated system of (ecological) education that we do not yet properly see or value.
+```
+    ### CHILD #4 0e4b080b-fdb4-5934-949e-0746e5f2ab6f
+    - heading: 'Why the Disconnect' · type: None · tokens: 238 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › Why the Disconnect'
+
+    ```text
+    The disconnect has been shaped by decades and in fact, centuries of pedagogical systems that follow standardized and/or compartmentalized models of education, and prioritize exam-readiness and measurable outcomes. This prioritization is often done at the expense of sensory engagement, local context, or relatability; without relatability, it is often difficult to feel connected.
+    
+    While modern education systems might produce students who are increasingly aware of complex climate-related issues, the students are ultimately left with a limited capacity to respond to the same with true ecological intuition or place-based sensitivity. This is already noticeable in multiple platforms – today, ‘climate change’, ‘sustainability’, and ‘circular economy’, etc., are as much buzzwords as issues/solutions; a look at Linkedin profiles will confirm the same. There is a certain pride in putting out as many ‘diagnostic’ reports as possible, or being able to say, ‘I work in the climate change sector’; chasing such narratives or personal goals take away from the larger goal of battling a very real issue. Climate change when looked at through the lens of justice has been proven to affect marginalized groups disproportionately (Odeku, 2022).
+    ```
+    ### CHILD #5 668c06ed-f697-5b28-acc8-7ddadd79a720
+    - heading: 'Why the Disconnect' · type: None · tokens: 404 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › Why the Disconnect'
+
+    ```text
+    Climate change when looked at through the lens of justice has been proven to affect marginalized groups disproportionately (Odeku, 2022). Let us consider efforts in schools and colleges undertaken to combat climate change – such as science fairs, eco-club activities, air pollution awareness drives, etc. These undoubtedly play formative roles in spreading awareness and initiating action (Mehta, Kahlon, & Barua, 2023). However, these initiatives can be further strengthened when they go beyond compliance (towards government programmes such as Mission LiFE, NGO projects’ objectives, etc.) and encourage curiosity. Take for instance – a typical World Environmental Day celebration at a school; students are asked to repeat “Reduce, Reuse, Recycle” slogans for an activity. While these signal participation and are valuable, they can also serve as entry points for deeper inquiry – inviting students to ask why, notice patterns, to build a relationship with the natural world around them. However, this still remains lacking in many initiatives; the environment is a topic that must be covered among deadlines, instructions, and checklists. Further, big schools (with resources) in India’s main cities are subject to this inefficiency; the plight in rural schools (with lesser ‘visibility’ of climate change) is likely to be further inefficient.
+    
+    By contrast, Adivasi children do not “learn” about the environment; they learn within it. Rather than being the subject, the forest assumes the role of the entire school itself. Knowledge is passed through smells, through trails, through bird calls, and not so much through chalks or classrooms. Children learn to identify edible plants, children can predict if it is going to be a rainy year or not, and they can recall oral histories tied to the land, the river, and the people. One might be tempted to make the mistake of considering this a casual system – however, this is a comprehensive and sophisticated system of (ecological) education that we do not yet properly see or value.
+    ```
+
+## PARENT 28989653-b997-52da-b3f9-a8325fef6201
+- heading: 'The Numbers Anomaly' · type: None · tokens: 841 · pages: None · has_table: False
+
+```text
+The Numbers Anomaly
+
+Scheduled Tribes (STs) face unprecedented levels of opposition concerning their reservation status as granted by the Constitution of India, particularly Article 15(4). This opposition manifests through several narratives that question the legitimacy and relevance of such action. For the purposes of simplicity, these arguments can broadly be divided into the following three streams:
+
+1. First, the claim remains that today’s generation should not be held accountable for historical injustices against marginalized groups, especially STs – that compensatory measures such as reservations unfairly penalize individuals who were not personally responsible. Proponents, often a majority in most debates, argue that merit, rather than corrective justice, should determine access to education and employment.
+
+2.Second, proponents also argue that reservation should be strictly limited to an income-based parameter, i.e., there should be an income threshold beyond which no person, regardless of social group, should avail reservation. However, this argument often conveniently overlooks the fact that a vast majority of STs would still qualify for reservation, underscoring the continued socio-economic marginalization of ST communities.
+
+3.Third, it is argued that today’s government has invested heavily in socio-economic parameters, particularly education, thus rendering unequal access for all social groups as negligible and thus reservation a redundant practice; access and equity are deemed synonymous.
+
+While this article does not intend to devolve into a conventional reservation debate, a few points warrant mention.
+
+Tribal communities in India are often located in forest-proximal and/or interior forest areas, inclusive of deserts and high-altitude regions. This spatial reality often means that children must walk long distances to reach the nearest school, despite government efforts to increase the total number of schools. The former has often been cited as a major cause of school dropouts (Anubuselvi & Leeson, 2015). Yet, UDISE+[1] 2023-2024 data records a 98.3 % Gross Enrolment Ratio (GER) for ST students in India, which remarkably is higher than the national average of 93.0% across all social groups. While reflective of government efforts to improve education access, the statistic also serves as a red herring; both the highest illiteracy and dropout rates (particularly at the high and higher secondary levels) is observed in none other than ST communities across India, thus rendering them the most educationally marginalized group in India. Multiple reasons such as long distances, cultural disconnect in mainstream educational pedagogy (Jayakumar, Gangadharan, & Sankaran, 2023), non-usage of tribal languages in education which (Skutnabb-Kangas & Dunbar, 2009) term as ‘Linguistic Genocide’ and call it a violation of the constitutional right to education, discrimination against Adivasi children (Sundar, 2012) have been explored. The challenge then becomes what (Fricker, 2007) and (Santos, 2014) call ‘Epistemic Injustice’ and ‘Epistemicide’, respectively.
+
+In this context, it is imperative to think about whether a seemingly positive mainstream educational status, as reflected in national data, can be considered progress. More importantly, why is it still unthinkable to recognize tribal communities as educated in their own right – in the epistemologies, languages, worlds, and knowledge that they have historically sustained?
+
+If one were to look at how this translates into related avenues on ground, the following example could be useful. Much of on-ground contemporary conservation research and conservation governance happens through mechanisms such as camera-trap placement, tracking wildlife corridors, predicting fire risk, etc. Many of these depend on the ecological literacy that forest-peripheral communities, particularly Adivasis, have harboured for generations. Their knowledge of terrain, animal behaviour, seasonal patterns etc. cannot easily be replicated by satellite imagery or formal scientific training alone. However, this rarely translates into recognition, let alone rights. Very often, the same communities whose knowledge underwrites conservation outcomes are often the ones displaced in the same invocation, with a clear example being of Thengumarahada.
+```
+    ### CHILD #6 86ae0db9-0054-5198-999d-75826c593154
+    - heading: 'The Numbers Anomaly' · type: None · tokens: 281 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › The Numbers Anomaly'
+
+    ```text
+    Scheduled Tribes (STs) face unprecedented levels of opposition concerning their reservation status as granted by the Constitution of India, particularly Article 15(4). This opposition manifests through several narratives that question the legitimacy and relevance of such action. For the purposes of simplicity, these arguments can broadly be divided into the following three streams:
+    
+    1. First, the claim remains that today’s generation should not be held accountable for historical injustices against marginalized groups, especially STs – that compensatory measures such as reservations unfairly penalize individuals who were not personally responsible. Proponents, often a majority in most debates, argue that merit, rather than corrective justice, should determine access to education and employment.
+    
+    2.Second, proponents also argue that reservation should be strictly limited to an income-based parameter, i.e., there should be an income threshold beyond which no person, regardless of social group, should avail reservation. However, this argument often conveniently overlooks the fact that a vast majority of STs would still qualify for reservation, underscoring the continued socio-economic marginalization of ST communities.
+    
+    3.Third, it is argued that today’s government has invested heavily in socio-economic parameters, particularly education, thus rendering unequal access for all social groups as negligible and thus reservation a redundant practice; access and equity are deemed synonymous.
+    
+    While this article does not intend to devolve into a conventional reservation debate, a few points warrant mention.
+    ```
+    ### CHILD #7 cd7ada6e-2fb8-5152-93af-fe8b93164726
+    - heading: 'The Numbers Anomaly' · type: None · tokens: 360 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › The Numbers Anomaly'
+
+    ```text
+    While this article does not intend to devolve into a conventional reservation debate, a few points warrant mention. Tribal communities in India are often located in forest-proximal and/or interior forest areas, inclusive of deserts and high-altitude regions. This spatial reality often means that children must walk long distances to reach the nearest school, despite government efforts to increase the total number of schools. The former has often been cited as a major cause of school dropouts (Anubuselvi & Leeson, 2015). Yet, UDISE+[1] 2023-2024 data records a 98.3 % Gross Enrolment Ratio (GER) for ST students in India, which remarkably is higher than the national average of 93.0% across all social groups. While reflective of government efforts to improve education access, the statistic also serves as a red herring; both the highest illiteracy and dropout rates (particularly at the high and higher secondary levels) is observed in none other than ST communities across India, thus rendering them the most educationally marginalized group in India. Multiple reasons such as long distances, cultural disconnect in mainstream educational pedagogy (Jayakumar, Gangadharan, & Sankaran, 2023), non-usage of tribal languages in education which (Skutnabb-Kangas & Dunbar, 2009) term as ‘Linguistic Genocide’ and call it a violation of the constitutional right to education, discrimination against Adivasi children (Sundar, 2012) have been explored. The challenge then becomes what (Fricker, 2007) and (Santos, 2014) call ‘Epistemic Injustice’ and ‘Epistemicide’, respectively.
+    ```
+    ### CHILD #8 11e0ea4f-ec2f-52be-932e-83d821114131
+    - heading: 'The Numbers Anomaly' · type: None · tokens: 254 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › The Numbers Anomaly'
+
+    ```text
+    The challenge then becomes what (Fricker, 2007) and (Santos, 2014) call ‘Epistemic Injustice’ and ‘Epistemicide’, respectively. In this context, it is imperative to think about whether a seemingly positive mainstream educational status, as reflected in national data, can be considered progress. More importantly, why is it still unthinkable to recognize tribal communities as educated in their own right – in the epistemologies, languages, worlds, and knowledge that they have historically sustained?
+    
+    If one were to look at how this translates into related avenues on ground, the following example could be useful. Much of on-ground contemporary conservation research and conservation governance happens through mechanisms such as camera-trap placement, tracking wildlife corridors, predicting fire risk, etc. Many of these depend on the ecological literacy that forest-peripheral communities, particularly Adivasis, have harboured for generations. Their knowledge of terrain, animal behaviour, seasonal patterns etc. cannot easily be replicated by satellite imagery or formal scientific training alone. However, this rarely translates into recognition, let alone rights. Very often, the same communities whose knowledge underwrites conservation outcomes are often the ones displaced in the same invocation, with a clear example being of Thengumarahada.
+    ```
+
+## PARENT 419a3b06-b010-5621-869d-59f5d7ce48f2
+- heading: 'References' · type: references · tokens: 807 · pages: None · has_table: False
+
+```text
+References
+
+Anubuselvi, G., & Leeson, J. P. (2015). Education of Tribal Children in India: A Case Study. International Journal of Advanced and Innovative Research.
+
+Article 15, the Constitution of India, 1950.
+
+Fricker, M. (2007). Epistemic Injustice: Power and the Ethics of Knowing. London: Oxford University Press.
+
+Janetius, S. T. (2017). Sathyamangalam Dilemma: Tribal Relocation Plan for Tiger Reserve. International Research Journal of Social Sciences, 1-9.
+
+Jayakumar, C., Gangadharan, P., & Sankaran, S. (2023). LOOKING INWARD, LOOKING FORWARD: Articulating Alternatives to the Education System for Adivasis, by Adivasis. Bengaluru: Indian Institute of Human Settlements.
+
+Kahlon, K. L., & Singh, R. (2021). Understanding Linkages Between Sustainability and Traditional Ethnoecological Knowledge (TEK): A Case Study of Paudi Bhuyans in Northern Odisha, India. In Climate Resilience and Environmental Sustainability Approaches (pp. 365-378).
+
+Keil, G. P. (2016). Elephant–Human Dandi: How Humans and Elephants Move through the Fringes of Forest and Village. In P. Locke, & J. Buckingham, Conflict, Negotiation, and Coexistence: Rethinking Human–Elephant Relations in South Asia (pp. 242-271). Oxford.
+
+Mehta, T., Kahlon, K. L., & Barua, M. (2023). Building competencies amongst youth to mainstream knowledge and soft skills to enable a transformative impact on the society. International Journal of Applied Sciences and Development, 147-152.
+
+Odeku, A. K. (2022). CLIMATE INJUSTICES DUE TO THE UNEQUAL AND DISPROPORTIONATE IMPACTS OF CLIMATE CHANGE. Perspectives of Law and Public Administration, 103-110.
+
+Premkumar, R. (2025, January 7). Thengumarahada residents in a limbo as relocation process drags on. The Hindu.
+
+Ranganathan, P., & Karanth, K. K. (2018). Assessing Human–Wildlife Interactions in a Forest Settlement in Sathyamangalam and Mudumalai Tiger Reserves. Tropical Conservation Science.
+
+Sahoo, K., Nayak, R. S., & Khurana, P. (2023). The Pattern of Health-Seeking Behavior among Juang Tribe- A Particularly Vulnerable Tribal Group of Odisha, India. Indian Journal of Community Medicine, 696-701.
+
+Santos, S. D. (2014). Epistemologies of the South: Justice Against Epistemicide. Paradigm Publishers.
+
+Skutnabb-Kangas, T., & Dunbar, R. (2009). Multilingual Education for Indigenous Communities. Indian Folklife.
+
+Sundar, N. (2012). Educating for Inequality: The Experiences of India's "Indigenous" Citizens. Asian Anthropology.
+
+Vishwakarma, L. L., Mollick, F., & Debnath, D. (2024). Application of Indigenous Knowledge in Forest Conservation and Conservation and Management: An Anthropological Study in Madia Gonds of Dhanora Tehsil of Maharashtra. South Asian Anthropologist, 81-90.
+
+[1] Unified District Information System for Education – a database maintained by the Ministry of Education. The UDISE+ system collects information from all recognized schools in the country, providing disaggregated data on enrollment by social category, gender, and educational level. Link: https://udiseplus.gov.in/#/en/home (https://udiseplus.gov.in/#/en/home)
+```
+    ### CHILD #10 482fe3a5-bd3c-572f-8775-bc04f4787f71
+    - heading: 'References' · type: references · tokens: 377 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › References'
+
+    ```text
+    Anubuselvi, G., & Leeson, J. P. (2015). Education of Tribal Children in India: A Case Study. International Journal of Advanced and Innovative Research.
+    
+    Article 15, the Constitution of India, 1950.
+    
+    Fricker, M. (2007). Epistemic Injustice: Power and the Ethics of Knowing. London: Oxford University Press.
+    
+    Janetius, S. T. (2017). Sathyamangalam Dilemma: Tribal Relocation Plan for Tiger Reserve. International Research Journal of Social Sciences, 1-9.
+    
+    Jayakumar, C., Gangadharan, P., & Sankaran, S. (2023). LOOKING INWARD, LOOKING FORWARD: Articulating Alternatives to the Education System for Adivasis, by Adivasis. Bengaluru: Indian Institute of Human Settlements.
+    
+    Kahlon, K. L., & Singh, R. (2021). Understanding Linkages Between Sustainability and Traditional Ethnoecological Knowledge (TEK): A Case Study of Paudi Bhuyans in Northern Odisha, India. In Climate Resilience and Environmental Sustainability Approaches (pp. 365-378).
+    
+    Keil, G. P. (2016). Elephant–Human Dandi: How Humans and Elephants Move through the Fringes of Forest and Village. In P. Locke, & J. Buckingham, Conflict, Negotiation, and Coexistence: Rethinking Human–Elephant Relations in South Asia (pp. 242-271). Oxford.
+    
+    Mehta, T., Kahlon, K. L., & Barua, M. (2023). Building competencies amongst youth to mainstream knowledge and soft skills to enable a transformative impact on the society. International Journal of Applied Sciences and Development, 147-152.
+    ```
+    ### CHILD #11 177173a0-ca5c-5a46-bfb1-82d646b5b355
+    - heading: 'References' · type: references · tokens: 465 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › References'
+
+    ```text
+    (2023). Building competencies amongst youth to mainstream knowledge and soft skills to enable a transformative impact on the society. International Journal of Applied Sciences and Development, 147-152. Odeku, A. K. (2022). CLIMATE INJUSTICES DUE TO THE UNEQUAL AND DISPROPORTIONATE IMPACTS OF CLIMATE CHANGE. Perspectives of Law and Public Administration, 103-110.
+    
+    Premkumar, R. (2025, January 7). Thengumarahada residents in a limbo as relocation process drags on. The Hindu.
+    
+    Ranganathan, P., & Karanth, K. K. (2018). Assessing Human–Wildlife Interactions in a Forest Settlement in Sathyamangalam and Mudumalai Tiger Reserves. Tropical Conservation Science.
+    
+    Sahoo, K., Nayak, R. S., & Khurana, P. (2023). The Pattern of Health-Seeking Behavior among Juang Tribe- A Particularly Vulnerable Tribal Group of Odisha, India. Indian Journal of Community Medicine, 696-701.
+    
+    Santos, S. D. (2014). Epistemologies of the South: Justice Against Epistemicide. Paradigm Publishers.
+    
+    Skutnabb-Kangas, T., & Dunbar, R. (2009). Multilingual Education for Indigenous Communities. Indian Folklife.
+    
+    Sundar, N. (2012). Educating for Inequality: The Experiences of India's "Indigenous" Citizens. Asian Anthropology.
+    
+    Vishwakarma, L. L., Mollick, F., & Debnath, D. (2024). Application of Indigenous Knowledge in Forest Conservation and Conservation and Management: An Anthropological Study in Madia Gonds of Dhanora Tehsil of Maharashtra. South Asian Anthropologist, 81-90.
+    
+    [1] Unified District Information System for Education – a database maintained by the Ministry of Education. The UDISE+ system collects information from all recognized schools in the country, providing disaggregated data on enrollment by social category, gender, and educational level. Link: https://udiseplus.gov.in/#/en/home (https://udiseplus.gov.in/#/en/home)
+    ```
+
+## CHILDREN WITHOUT A PARENT RECORD (single-child windows)
+### CHILD #3 b8dd002f-ee03-5ec3-8386-b6675e7b23db
+- heading: 'Environment Education in Urban Schools' · type: None · tokens: 198 · page: None · pages: None · overlap_pages: None · has_table: False
+- embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › Environment Education in Urban Schools'
+
+```text
+In contrast to the ecological immersion that indigenous children, as Berkes (2012) notes, grow up with throughout their lives, environment education in India’s urban settings is limited to structured curricula and textbooks.
+
+For many urban students, the environmental is often encountered through diagrams, weather charts, maps and relevant data sets. Despite the detail in such information, it ends up making climate change more abstract than immediate by reducing the phenomena to numbers or data, thus rendering it divorced from lived experience. Now, it could be argued that Delhi’s persistently high levels of air pollution do provide a lived experience of climate stress. However, the absence of alternative ecological baselines – in terms of clearer skies or cleaner rivers – means that this experience is harder to frame as a sense of loss. Children in other ecologically dynamic and/or tribal settings, by contrast, may be able to compare more visibly between “what was” and “what is” and situate environmental change within personal and collective memory.
+```
+### CHILD #9 a84275dc-9009-5ed2-8a37-e5df23951814
+- heading: 'Trees of Hope' · type: None · tokens: 397 · page: None · pages: None · overlap_pages: None · has_table: False
+- embed_text prefix: 'Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge › Trees of Hope'
+
+```text
+However, in recent years, two developments have come up, which harbour hope:
+
+1. There have been attempts made to provide an on-ground education through experiential elements in environmental issues, most notably by NGOs such as TERI. However, these commendable efforts remain supplementary and not foundational.
+
+2. Traditional Ecological Knowledge (TEK) has been formally acknowledged in India’s groundbreaking ‘National Education Policy 2020’, which mentions the need to integrate local and indigenous knowledge systems into school curricula. However, while this marks a long-necessitated shift in education policy imagination, it is yet to be seen if the policy would translate into on-ground change. The shift will have to happen in pedagogy by making it more context-responsive; otherwise, the initiative runs the risk of remaining a textbook add-on, a tokenistic appreciation to India’s indigenous communities.
+
+Figure: EEA Team, TERI, interacts with village residents in Central India
+
+Conclusion: When Classrooms Meet Canopies
+
+There remains a lot that could be learnt from indigenous systems of knowledge. To truly treat the environment and forests as classrooms and to recognize communities as reservoirs of education and learning, we must move from extractive to reciprocal forms of learnings and come to accept that education or more aptly, learning, can take multiple and/or context-specific forms, that it can breathe outside classroom walls, and that children without formal access to education can still be inherently educated.
+
+Although the narrative might be viewed as veering dangerously close to the shores of romanticization of a certain way of life, it is hoped that the narrative does not take part in such an endeavour. It just hopes to recognize the pedagogical richness of such education, to remind us that classrooms are not too different from canopies, that the Yamuna flows in the same way as the Mahanadi and the Moyar, and that education can flow through story and lore. As an equal form of knowledge, if not more.
+```

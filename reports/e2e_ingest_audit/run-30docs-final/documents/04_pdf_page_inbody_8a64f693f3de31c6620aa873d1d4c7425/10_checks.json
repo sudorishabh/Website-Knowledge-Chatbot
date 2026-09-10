@@ -1,0 +1,1159 @@
+[
+  {
+    "category": "outcome",
+    "name": "handler_outcome_is_indexed",
+    "status": "pass",
+    "detail": "Every fresh document is expected to end 'indexed'.",
+    "expected": "indexed",
+    "actual": "indexed"
+  },
+  {
+    "category": "outcome",
+    "name": "no_exception",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "source",
+    "name": "pdf_downloaded_non_empty",
+    "status": "pass",
+    "detail": "",
+    "expected": ">0 bytes",
+    "actual": 26806398
+  },
+  {
+    "category": "source",
+    "name": "pdf_pages",
+    "status": "info",
+    "detail": "16 pages extracted, 16 with text",
+    "expected": null,
+    "actual": {
+      "pages": 16,
+      "with_text": 16,
+      "routes": {
+        "text": 16
+      },
+      "tables": 0
+    }
+  },
+  {
+    "category": "canonical",
+    "name": "sections_equal_non_empty_pages",
+    "status": "pass",
+    "detail": "from_pdf makes one section per page with text.",
+    "expected": 16,
+    "actual": 16
+  },
+  {
+    "category": "canonical",
+    "name": "section_text_equals_page_text",
+    "status": "pass",
+    "detail": "Section text is the page text verbatim.",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "canonical",
+    "name": "title_precedence_description_node_filename",
+    "status": "pass",
+    "detail": "title = file.description or node.title or filename",
+    "expected": "TERI Alumni Association",
+    "actual": "TERI Alumni Association"
+  },
+  {
+    "category": "canonical",
+    "name": "linked_article_uuid_is_parent_node",
+    "status": "pass",
+    "detail": "",
+    "expected": "04107bb4-fefe-4ffa-be5d-f88ac9310dd6",
+    "actual": "04107bb4-fefe-4ffa-be5d-f88ac9310dd6"
+  },
+  {
+    "category": "canonical",
+    "name": "source_url_is_parent_page",
+    "status": "pass",
+    "detail": "",
+    "expected": "https://teriin.org/alumni",
+    "actual": "https://teriin.org/alumni"
+  },
+  {
+    "category": "canonical",
+    "name": "file_url_is_fetched_url",
+    "status": "pass",
+    "detail": "",
+    "expected": "https://teriin.org/sites/default/files/files/TERI-Alumni-Quarterly-Inaugural-Issue.pdf",
+    "actual": "https://teriin.org/sites/default/files/files/TERI-Alumni-Quarterly-Inaugural-Issue.pdf"
+  },
+  {
+    "category": "canonical",
+    "name": "bundle_inherited_from_parent",
+    "status": "pass",
+    "detail": "",
+    "expected": "page",
+    "actual": "page"
+  },
+  {
+    "category": "parent_child",
+    "name": "facets_inherited_from_parent",
+    "status": "pass",
+    "detail": "categories/tags/authors equal the parent page's",
+    "expected": {
+      "categories": [],
+      "tags": [],
+      "authors": []
+    },
+    "actual": {
+      "categories": [],
+      "tags": [],
+      "authors": []
+    }
+  },
+  {
+    "category": "parent_child",
+    "name": "entity_refs_inherited_from_parent",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "parent_child",
+    "name": "parent_lists_this_file",
+    "status": "pass",
+    "detail": "",
+    "expected": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+    "actual": [
+      "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+      "inbody:019c7e59163edfbb3535b05744ff6949b04cef47",
+      "inbody:0a7c343146247d17ae9ebdffa512fb4a3b39a5b2"
+    ]
+  },
+  {
+    "category": "canonical",
+    "name": "content_hash_is_sha256_of_body_text",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": "91a5fb091b332ca311030cb92149ee0edd4b8d72f558da87303bf0c3a270409c"
+  },
+  {
+    "category": "canonical",
+    "name": "body_text_non_empty",
+    "status": "pass",
+    "detail": "",
+    "expected": ">0 chars",
+    "actual": 37263
+  },
+  {
+    "category": "dates",
+    "name": "effective_start_date_present",
+    "status": "pass",
+    "detail": "Undated documents are excluded from date filters (pipeline warns).",
+    "expected": "a date",
+    "actual": "2025-09-30T04:28:20+00:00"
+  },
+  {
+    "category": "dates",
+    "name": "resolver_ran",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "dates",
+    "name": "pdf_date_path",
+    "status": "info",
+    "detail": "inherited from parent page",
+    "expected": null,
+    "actual": {
+      "parent_rule": "bundle_created",
+      "parent_source": "created",
+      "decision_action": "keep_page_date",
+      "decision_rule": "multi_pdf_no_evidence",
+      "edition_label": null,
+      "used": [
+        "drupal",
+        "pdf_meta",
+        "pdf_text"
+      ]
+    }
+  },
+  {
+    "category": "dates",
+    "name": "pdf_start_date_equals_parent_resolved",
+    "status": "pass",
+    "detail": "",
+    "expected": "2025-09-30T04:28:20+00:00",
+    "actual": "2025-09-30T04:28:20+00:00"
+  },
+  {
+    "category": "dates",
+    "name": "pdf_precision_equals_parent",
+    "status": "pass",
+    "detail": "",
+    "expected": "day",
+    "actual": "day"
+  },
+  {
+    "category": "dates",
+    "name": "pdf_end_date_equals_parent",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "dates",
+    "name": "date_source_is_parent_page",
+    "status": "pass",
+    "detail": "",
+    "expected": "parent_page",
+    "actual": "parent_page"
+  },
+  {
+    "category": "dates",
+    "name": "parent_page_canonical_date_matches_parent_resolution",
+    "status": "pass",
+    "detail": "The page's own document and the value handed to its files agree.",
+    "expected": "2025-09-30T04:28:20+00:00",
+    "actual": "2025-09-30T04:28:20+00:00"
+  },
+  {
+    "category": "dates",
+    "name": "date_decision_row_presence",
+    "status": "pass",
+    "detail": "A row is written when the resolver produced a decision.",
+    "expected": true,
+    "actual": 1
+  },
+  {
+    "category": "dates",
+    "name": "date_decision_row_names_parent_node",
+    "status": "pass",
+    "detail": "",
+    "expected": "04107bb4-fefe-4ffa-be5d-f88ac9310dd6",
+    "actual": "04107bb4-fefe-4ffa-be5d-f88ac9310dd6"
+  },
+  {
+    "category": "dates",
+    "name": "date_decision_current_date_is_parent_resolved",
+    "status": "pass",
+    "detail": "",
+    "expected": "2025-09-30T04:28:20+00:00",
+    "actual": "2025-09-30T04:28:20"
+  },
+  {
+    "category": "chunks",
+    "name": "chunks_produced",
+    "status": "pass",
+    "detail": "",
+    "expected": ">0 children",
+    "actual": {
+      "parents": 5,
+      "children": 23
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "chunk_ids_unique",
+    "status": "pass",
+    "detail": "",
+    "expected": 28,
+    "actual": 28
+  },
+  {
+    "category": "chunks",
+    "name": "every_parent_reference_resolves",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "chunks",
+    "name": "parents_have_at_least_two_children",
+    "status": "pass",
+    "detail": "A parent is emitted only when it groups more than one child.",
+    "expected": [
+      "17c31e80-3498-556f-8f98-07ee9175668a",
+      "1adf97c1-9d59-57ca-bca1-ad7507fba05b",
+      "87c1ce3a-fc42-5757-988a-62da74aecb52",
+      "bbb5de42-74b7-5238-a79a-61467f6b5424",
+      "c796ee51-7d19-568a-a9d1-5dee9c75c921"
+    ],
+    "actual": {
+      "bbb5de42-74b7-5238-a79a-61467f6b5424": 5,
+      "c796ee51-7d19-568a-a9d1-5dee9c75c921": 5,
+      "87c1ce3a-fc42-5757-988a-62da74aecb52": 5,
+      "17c31e80-3498-556f-8f98-07ee9175668a": 2,
+      "1adf97c1-9d59-57ca-bca1-ad7507fba05b": 6
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "children_carry_document_id",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "chunks",
+    "name": "children_carry_doc_version",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      1
+    ]
+  },
+  {
+    "category": "chunks",
+    "name": "children_within_token_limit",
+    "status": "pass",
+    "detail": "child_max_tokens=560",
+    "expected": 560,
+    "actual": {
+      "max_child_tokens": 503,
+      "over": []
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "parents_within_token_limit",
+    "status": "pass",
+    "detail": "parent_max_tokens=2600",
+    "expected": 2600,
+    "actual": {
+      "max_parent_tokens": 2088,
+      "over": []
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "content_hash_is_sha256_of_text",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "chunks",
+    "name": "child_index_is_contiguous",
+    "status": "pass",
+    "detail": "",
+    "expected": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
+    ],
+    "actual": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
+    ]
+  },
+  {
+    "category": "chunks",
+    "name": "children_carry_page_numbers",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "chunks",
+    "name": "source_lines_covered_by_chunks",
+    "status": "pass",
+    "detail": "100.000% of 823 source lines appear verbatim in some chunk",
+    "expected": ">=98%",
+    "actual": {
+      "coverage": 1.0,
+      "missing_sample": []
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "children_have_embed_text_with_breadcrumb",
+    "status": "pass",
+    "detail": "embed_text = 'title › heading' + text",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "point_count_equals_chunks",
+    "status": "pass",
+    "detail": "",
+    "expected": {
+      "chunks": 28,
+      "indexer_reported": 28
+    },
+    "actual": 28
+  },
+  {
+    "category": "qdrant",
+    "name": "every_chunk_id_is_a_point",
+    "status": "pass",
+    "detail": "",
+    "expected": 28,
+    "actual": {
+      "missing": [],
+      "extra": []
+    }
+  },
+  {
+    "category": "qdrant",
+    "name": "payload_equals_chunk_payload_plus_stamps",
+    "status": "pass",
+    "detail": "Stored payload == Chunk.to_payload() plus created_at/updated_at/embed_model.",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "qdrant",
+    "name": "children_have_real_vectors",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "parents_have_zero_vectors",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "vector_dimension_matches_setting",
+    "status": "pass",
+    "detail": "",
+    "expected": 3072,
+    "actual": [
+      3072
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "children_stamped_with_embed_model",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": [
+      "text-embedding-3-large:3072"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_carry_document_id",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "points_carry_effective_start_date",
+    "status": "pass",
+    "detail": "",
+    "expected": "2025-09-30T04:28:20+00:00",
+    "actual": [
+      "2025-09-30T04:28:20+00:00"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_carry_year_precision_only_when_year",
+    "status": "pass",
+    "detail": "",
+    "expected": "day",
+    "actual": [
+      "None"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_are_current_and_versioned",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      "1"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_stamped_with_pipeline_version",
+    "status": "pass",
+    "detail": "",
+    "expected": "c1.i1.p2.e1",
+    "actual": [
+      "c1.i1.p2.e1"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "swap_deleted_with_keep_ids",
+    "status": "pass",
+    "detail": "delete_document(id, keep_ids=<new chunk ids>) ran after the upsert.",
+    "expected": 28,
+    "actual": [
+      {
+        "document_id": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+        "keep_ids": 28
+      }
+    ]
+  },
+  {
+    "category": "mysql",
+    "name": "state_row_exists",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "row_source_type",
+    "status": "pass",
+    "detail": "",
+    "expected": "pdf_attachment",
+    "actual": "pdf_attachment"
+  },
+  {
+    "category": "mysql",
+    "name": "row_source_key",
+    "status": "pass",
+    "detail": "",
+    "expected": "https://teriin.org/sites/default/files/files/TERI-Alumni-Quarterly-Inaugural-Issue.pdf",
+    "actual": "https://teriin.org/sites/default/files/files/TERI-Alumni-Quarterly-Inaugural-Issue.pdf"
+  },
+  {
+    "category": "mysql",
+    "name": "row_fingerprint",
+    "status": "pass",
+    "detail": "",
+    "expected": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+    "actual": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb"
+  },
+  {
+    "category": "mysql",
+    "name": "row_content_hash",
+    "status": "pass",
+    "detail": "",
+    "expected": "91a5fb091b332ca311030cb92149ee0edd4b8d72f558da87303bf0c3a270409c",
+    "actual": "91a5fb091b332ca311030cb92149ee0edd4b8d72f558da87303bf0c3a270409c"
+  },
+  {
+    "category": "mysql",
+    "name": "row_doc_version",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": 1
+  },
+  {
+    "category": "mysql",
+    "name": "row_pipeline_version",
+    "status": "pass",
+    "detail": "",
+    "expected": "c1.i1.p2.e1",
+    "actual": "c1.i1.p2.e1"
+  },
+  {
+    "category": "mysql",
+    "name": "row_bundle",
+    "status": "pass",
+    "detail": "",
+    "expected": "page",
+    "actual": "page"
+  },
+  {
+    "category": "mysql",
+    "name": "row_entity_type",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "row_changed_mark",
+    "status": "pass",
+    "detail": "",
+    "expected": 1788323098,
+    "actual": 1788323098
+  },
+  {
+    "category": "mysql",
+    "name": "row_title",
+    "status": "pass",
+    "detail": "",
+    "expected": "TERI Alumni Association",
+    "actual": "TERI Alumni Association"
+  },
+  {
+    "category": "mysql",
+    "name": "row_url",
+    "status": "pass",
+    "detail": "",
+    "expected": "https://teriin.org/alumni",
+    "actual": "https://teriin.org/alumni"
+  },
+  {
+    "category": "mysql",
+    "name": "row_effective_start_date",
+    "status": "pass",
+    "detail": "",
+    "expected": "2025-09-30T04:28:20+00:00",
+    "actual": "2025-09-30T04:28:20"
+  },
+  {
+    "category": "mysql",
+    "name": "row_date_source",
+    "status": "pass",
+    "detail": "",
+    "expected": "parent_page",
+    "actual": "parent_page"
+  },
+  {
+    "category": "mysql",
+    "name": "row_start_precision",
+    "status": "pass",
+    "detail": "",
+    "expected": "day",
+    "actual": "day"
+  },
+  {
+    "category": "mysql",
+    "name": "row_effective_end_date",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "row_end_precision",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "row_indexed_at_set",
+    "status": "pass",
+    "detail": "",
+    "expected": "not null",
+    "actual": "2026-09-10T10:26:01"
+  },
+  {
+    "category": "mysql",
+    "name": "row_raw_meta_equals_canonical",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "author_facet_rows",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "mysql",
+    "name": "tag_facet_rows",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "mysql",
+    "name": "theme_rows_match_classification",
+    "status": "pass",
+    "detail": "documents_theme = theme_taxonomy.classify(categories)",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "mysql",
+    "name": "attachment_link_rows",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "mysql",
+    "name": "ingest_log_indexed_row",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      "indexed"
+    ]
+  },
+  {
+    "category": "mysql",
+    "name": "ingest_log_chunk_count",
+    "status": "pass",
+    "detail": "",
+    "expected": 28,
+    "actual": 28
+  },
+  {
+    "category": "mysql",
+    "name": "ingest_log_hash_and_version",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "no_retry_marker",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "parent_child",
+    "name": "linked_from_parent_in_attachment_table",
+    "status": "pass",
+    "detail": "",
+    "expected": "04107bb4-fefe-4ffa-be5d-f88ac9310dd6",
+    "actual": [
+      "04107bb4-fefe-4ffa-be5d-f88ac9310dd6"
+    ]
+  },
+  {
+    "category": "parent_child",
+    "name": "parents_claiming_this_file",
+    "status": "info",
+    "detail": "1 page(s) link this file",
+    "expected": null,
+    "actual": [
+      "04107bb4-fefe-4ffa-be5d-f88ac9310dd6"
+    ]
+  },
+  {
+    "category": "knowledge",
+    "name": "stage_report",
+    "status": "info",
+    "detail": "status=ok {'chunks_seen': 23, 'chunks_cached': 0, 'mentions': 56, 'entities_auto': 0, 'entities_provisional': 0, 'entities_ambiguous': 9, 'entities_unresolved': 47, 'claims_built': 0, 'claims_staged': 0, 'claims_rejected': 0, 'claims_retracted': 0, 'pending_predicates': 0, 'conflicts_disputed': 0, 'conflicts_superseded': 0} projection={'status': 'skipped', 'version': None, 'edges': 0}",
+    "expected": null,
+    "actual": {
+      "document_id": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+      "doc_version": 1,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "status": "ok",
+      "seconds": 0.16,
+      "knowledge_version": "kv1:9f993bff646d51c0",
+      "counts": {
+        "chunks_seen": 23,
+        "chunks_cached": 0,
+        "mentions": 56,
+        "entities_auto": 0,
+        "entities_provisional": 0,
+        "entities_ambiguous": 9,
+        "entities_unresolved": 47,
+        "claims_built": 0,
+        "claims_staged": 0,
+        "claims_rejected": 0,
+        "claims_retracted": 0,
+        "pending_predicates": 0,
+        "conflicts_disputed": 0,
+        "conflicts_superseded": 0
+      },
+      "rejection_counts": {},
+      "projection": {
+        "status": "skipped",
+        "version": null,
+        "edges": 0
+      },
+      "stages": [
+        {
+          "stage": "prelude",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {
+            "entities": 2451,
+            "chunks": 23
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "supersede",
+          "skipped": true,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "mentions",
+          "skipped": false,
+          "seconds": 0.05,
+          "counts": {
+            "cached": 0,
+            "mentions": 56
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "resolution",
+          "skipped": false,
+          "seconds": 0.11,
+          "counts": {
+            "auto": 0,
+            "provisional": 0,
+            "ambiguous": 9,
+            "unresolved": 47,
+            "cache_recorded": 23
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "claims",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {
+            "llm_calls": 0,
+            "llm_failures": 0,
+            "run_calls_used": 2,
+            "run_calls_remaining": 149998,
+            "llm": 0,
+            "unknown_predicates": 0,
+            "built": 0
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "validate",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "persist",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {
+            "accepted": 0,
+            "pending_predicates": 0
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "conflicts",
+          "skipped": true,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "project",
+          "skipped": true,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        }
+      ],
+      "errors": []
+    }
+  },
+  {
+    "category": "knowledge",
+    "name": "run_row_written",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      [
+        1,
+        "ok"
+      ]
+    ]
+  },
+  {
+    "category": "knowledge",
+    "name": "run_row_matches_report",
+    "status": "pass",
+    "detail": "",
+    "expected": {
+      "status": "ok",
+      "mentions": 56,
+      "claims_staged": 0
+    },
+    "actual": {
+      "status": "ok",
+      "mentions": 56,
+      "claims_staged": 0
+    }
+  },
+  {
+    "category": "knowledge",
+    "name": "mention_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 56,
+    "actual": 56
+  },
+  {
+    "category": "knowledge",
+    "name": "decision_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 56,
+    "actual": 56
+  },
+  {
+    "category": "knowledge",
+    "name": "mentions_point_at_own_chunks",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "staged_claim_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "claims_cite_own_chunks_or_document",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "knowledge",
+    "name": "rejection_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "claims_by_predicate",
+    "status": "info",
+    "detail": "{}",
+    "expected": null,
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "claims_by_method",
+    "status": "info",
+    "detail": "{}",
+    "expected": null,
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "cms_author_values",
+    "status": "info",
+    "detail": "0 author value(s) in metadata",
+    "expected": null,
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "cms_partner_values",
+    "status": "info",
+    "detail": "0 partner value(s) in metadata",
+    "expected": null,
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_is_cms_only",
+    "status": "n/a",
+    "detail": "AUTHORED must never come from the LLM.",
+    "expected": "cms_field",
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_is_cms_only",
+    "status": "n/a",
+    "detail": "PARTNER_OF must never come from the LLM.",
+    "expected": "cms_field",
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_records_its_source_field",
+    "status": "n/a",
+    "detail": "",
+    "expected": [
+      "field_authors",
+      "field_rpaper_author",
+      "field_article_authors",
+      "field_policybrief_authors",
+      "field_external_authors",
+      "field_author"
+    ],
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_records_its_source_field",
+    "status": "n/a",
+    "detail": "",
+    "expected": [
+      "field_completed_partners",
+      "field_ongoing_partners"
+    ],
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_points_at_this_document",
+    "status": "n/a",
+    "detail": "The object identifies the document; the entity link is the claim's own provenance.",
+    "expected": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_points_at_an_organization",
+    "status": "n/a",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_never_exceeds_its_source",
+    "status": "pass",
+    "detail": "An author claim per stated author at most; unresolved names are skipped, never invented.",
+    "expected": "<= 0",
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_never_exceeds_its_source",
+    "status": "pass",
+    "detail": "",
+    "expected": "<= 0",
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_has_no_duplicate_edge",
+    "status": "n/a",
+    "detail": "One edge per relationship, however many fields state it.",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_has_no_duplicate_edge",
+    "status": "n/a",
+    "detail": "One edge per relationship, however many fields state it.",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "no_duplicate_claim_identity",
+    "status": "n/a",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "claim_ids_are_unique",
+    "status": "n/a",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "extraction_cache_recorded",
+    "status": "pass",
+    "detail": "One cache row per child chunk content hash.",
+    "expected": 23,
+    "actual": 23
+  },
+  {
+    "category": "graph",
+    "name": "nothing_projected_when_skipped",
+    "status": "pass",
+    "detail": "projection skipped: no touched claims",
+    "expected": null,
+    "actual": {
+      "claims_in_graph": 0
+    }
+  }
+]

@@ -1,0 +1,658 @@
+{
+  "raw": {
+    "fetched_at": "2026-09-10T15:55:12+05:30",
+    "jsonapi_resource": {
+      "type": "node--press_release",
+      "id": "6d2d5ef3-25ab-4ff7-8583-5b9647588d7a",
+      "links": {
+        "self": {
+          "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a?resourceVersion=id%3A17850"
+        }
+      },
+      "attributes": {
+        "drupal_internal__nid": 13387,
+        "drupal_internal__vid": 17850,
+        "langcode": "en",
+        "revision_timestamp": "2026-09-10T05:03:49+00:00",
+        "revision_log": null,
+        "status": true,
+        "title": "TERI Brings WSDS 2027 Curtain Raiser to Guwahati, Focus on Northeast Climate Resilience",
+        "created": "2026-09-10T04:52:01+00:00",
+        "changed": "2026-09-10T05:21:34+00:00",
+        "promote": false,
+        "sticky": false,
+        "default_langcode": true,
+        "revision_translation_affected": true,
+        "metatag": null,
+        "path": {
+          "alias": "/press-release/teri-brings-wsds-2027-curtain-raiser-guwahati-focus-northeast-climate-resilience",
+          "pid": 12697,
+          "langcode": "en"
+        },
+        "body": {
+          "value": "<p><em>TERI convenes high-level discussions on climate resilience alongside sharing of grassroots solutions for biodiversity, land restoration and sustainable development</em></p><p><strong>Guwahati, 9 September 2026:</strong> The Energy and Resources Institute (TERI), in partnership with the UNDP Small Grants Programme (SGP-India), convened a Result Sharing Workshop at Gauhati University on <strong>“Indigenous Traditional Knowledge, Clean Energy &amp; Grassroots Innovation to Policy Solutions for Biodiversity, Climate Resilience and Land Restoration in Assam &amp; Meghalaya.”</strong></p><p>In addition to the spotlight being on <strong>climate resilience priorities for the Northeast and Assam,</strong> a key highlight of the programme was the <strong>Curtain Raiser for the World Sustainable Development Summit (WSDS) 2027</strong>, which brought together senior representatives from government, academia, and TERI.</p><p>The session provided a platform to discuss the region’s climate resilience challenges and priorities, while setting the context for the broader sustainability conversations that will be taken forward through WSDS 2027. In the Welcome Address, <strong>Dr Dipankar Saharia, Senior Director, TERI</strong> highlighted, “When the World Sustainable Development Summit began in 2001, the primary focus was building global awareness. Today, 25 years later, the science is clear, solutions exist, and global commitments are in place. The core challenge is implementation, converting those pledges into collaborative action at the speed and scale a resilient planet demands. Under the theme <em><strong>‘Converging Commitments, Collaborative Actions for a Resilient Planet,’</strong></em> WSDS 2027 focuses on bridging global goals with local realities, mobilizing finance and technology, and ensuring climate solutions deliver real impact on the ground.”</p><p>On Assam’s state partnership and climate action, Dr Saharia added, “The North Eastern region of India presents a unique balance of ecological vulnerability and vast opportunity. Assam’s extraordinary natural wealth carries a vital responsibility to pursue growth that is inclusive, climate-resilient, and environmentally sustainable. Through our partnership with the Government of <strong>Assam as a key State Partner for WSDS 2027</strong>, we are bringing regional priorities to the forefront, demonstrating how state-level leadership can drive meaningful climate solutions on both national and international stages.”</p><p>In the Special Remarks, <strong>Dr Nani Gopal Mahanta, Vice Chancellor, Gauhati University</strong> shared, “Extreme weather conditions and global temperature rises are no longer just academic concerns or theoretical issues in the classroom; this has really become a great ontological issue and an existential threat for the entire humanity. Nature knows no territoriality; what happens in upstream regions like Nepal or China directly impacts lower riparian states like Assam, Bhutan, and Bangladesh.</p><p>We need GDP, growth, and development, but we must ask: at what cost? Communities must not be seen merely as passive beneficiaries of development; they should be recognized as active stakeholders who contribute directly to the protection and nourishment of the developmental process. Gauhati University is joining hands with organizations like TERI, the Balipara Foundation, and ICIMOD to take fructifying measures. Through initiatives like our Centre for Himalayan Studies, we are committed to playing an architectural role in advancing indigenous knowledge protection, biodiversity conservation, clean energy, and grassroots innovation.”</p><p><strong>Dr Vibha Dhawan, Director General</strong>, TERI, added, “India is a vast subcontinent, and environmental solutions cannot be one-size-fits-all. The ecological challenges in the Northeast are vastly different from those in rest of the country. Through our long-standing presence in Guwahati and the establishment of the <strong>Center for Himalayan Studies</strong>, TERI is deeply committed to regional climate solutions.</p><p>As we step into the next chapter of the World Sustainable Development Summit after celebrating our 25th Silver Jubilee, we are expanding our focus directly to the state level. We extend a warm invitation to <strong>Assam to serve as a core Partner State for the upcoming WSDS</strong>, showcasing its regional solutions and bringing local priorities to the global stage.”</p><p>The Curtain Raiser also featured a <strong>Special Address by Mr Jayanta Malla Baruah, Hon’ble Minister of Finance, Environment &amp; Forest, and Mines &amp; Minerals, Government of Assam</strong>, followed by a panel discussion on <strong>“Climate Resilience for Northeast and state of Assam”</strong>, moderated by <strong>Ms Leena Nandan, IAS, Former Secretary, MoEF&amp;CC, Government of India and Distinguished Fellow, TERI</strong>.</p><p><strong>Mr Jayanta Malla Baruah, Hon’ble Minister of Finance, Environment &amp; Forest, and Mines &amp; Minerals, Government of Assam,</strong> shared, “As someone holding portfolios across Finance, Forest, and Mines, my responsibility is to balance all three: ensuring infrastructure development moves forward, preserving our rich natural environment, and managing mineral extraction responsibly. Assam is blessed with rich natural resources, but we also face severe soil erosion and annual floods. We cannot abandon modern infrastructure, nor can we ignore our ecology. We must find a viable, sustainable path that fits our local realities. We need our <strong>top research institutions, including TERI, IIT Guwahati, and Gauhati University</strong>, to collaborate on technological solutions. For instance, if we can develop technology to give Brahmaputra silt binding properties for road construction, we can dredge the river to mitigate floods while simultaneously saving our hills and farmlands from excavation.”</p><p>The WSDS 2027 Curtain Raiser was part of a larger programme focused on sharing results and lessons from the <strong>UNDP Small Grants Programme (SGP-OP7)</strong>. Selected NGO partners presented project results and best practices, highlighting grassroots approaches related to biodiversity, climate resilience and land restoration.</p><p>The workshop also featured discussions on <strong>“Institutional &amp; Financial Alignment for Small Grants Program”</strong>, bringing together representatives from TERI, the Government of Assam, Meghalaya Basin Management Agency (MBDA), NEDFi and NABARD.</p><p>The programme also included an outlook for <strong>WSDS 2027</strong> by <strong>Ms Leena Nandan, IAS, Former Secretary, MoEF&amp;CC, Government of India and Distinguished Fellow, TERI</strong>, and the screening of a short thematic video on WSDS 2027 and the legacy of <strong>25 years of the World Sustainable Development Summit</strong>.</p><p><strong>Ms Nandan</strong> foregrounded how, “The upcoming World Sustainable Development Summit centers on three vital elements: commitment, collaboration, and most importantly, action for a resilient planet. From clean energy and energy security to circular economy and sustainable agriculture, WSDS provides a platform for every state and partner to benefit. WSDS is not only about talk-it is about showcasing best practices, learning, experiencing, and building meaningful networks and collaborations. We see the strong priority Assam has assigned to the environment-from implementing a green cess to ensure industrial growth remains clean, to allocating over ₹70,000 crore for energy projects, clean energy focus, and biodiversity restoration. All of these initiatives will form the cornerstone of WSDS next year. There is a huge opportunity to align Assam’s priorities and best practices with global frameworks, translating the vision for a climate-resilient future into synchronized action on the ground.”</p><p>On the Rare Earth Elements (REE) discovery in Karbi Anglong, <strong>Shri Ajay Tewari, IAS, Additional Chief Secretary (ACS) Home &amp; Political Department, Govt of Assam,</strong> pointed out, “We have discovered Rare Earth Elements in the Karbi Anglong district, which is poised to transform India’s strategic REE landscape for energy security, semiconductors, and modern industry. As we move toward auctions, we will ensure extraction utilizes the latest technology to generate investment and jobs while maintaining strict environmental sustainability.”</p><p>On policy frameworks and regional collaboration, <strong>Shri Sazzad Alam, ACS, Joint Secretary, Industries, Commerce and Public Enterprise Department, Government of Assam, shared,</strong> “Assam was among the earliest sub-national entities in India to formally adopt the Sustainable Development Goals back in 2016, prioritizing SDG 13 for Climate Action. Through multi-departmental initiatives like the Assam State Action Plan for Climate Change and projects like APART, we are building climate-resilient agriculture and industry. Mitigating climate impact requires inter-departmental cooperation, cross-border collaboration, and active civil society participation. We are committed to working alongside research institutions like TERI to build a sustainable, resilient future for the region.”</p><p>The discussions reinforced the importance of connecting <strong>indigenous traditional knowledge, grassroots innovation, scientific expertise, institutional support and policy action</strong> to strengthen climate resilience and sustainable development in the Northeast.</p><div class=\"row\"><div class=\"col-md-6\"><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/TERI-Brings-WSDS-2027-Curtain-3.jpeg\" data-entity-uuid=\"f46abce1-0c51-45f9-ac11-869132a8f8c6\" data-entity-type=\"file\"></div><div class=\"col-md-6\"><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/TERI-Brings-WSDS-2027-Curtain-2.JPG\" data-entity-uuid=\"e00f1c87-9789-4f2e-82ef-1f7ddb1921c5\" data-entity-type=\"file\"></div></div><div class=\"row\" style=\"margin-top:20px;\"><div class=\"col-md-6\"><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/TERI-Brings-WSDS-2027-Curtain.JPG\" data-entity-uuid=\"1c2acb4f-b076-48f1-bc3e-fa6d934fcd3a\" data-entity-type=\"file\"></div></div>",
+          "format": "full_html",
+          "processed": "<p><em>TERI convenes high-level discussions on climate resilience alongside sharing of grassroots solutions for biodiversity, land restoration and sustainable development</em></p><p><strong>Guwahati, 9 September 2026:</strong> The Energy and Resources Institute (TERI), in partnership with the UNDP Small Grants Programme (SGP-India), convened a Result Sharing Workshop at Gauhati University on <strong>“Indigenous Traditional Knowledge, Clean Energy &amp; Grassroots Innovation to Policy Solutions for Biodiversity, Climate Resilience and Land Restoration in Assam &amp; Meghalaya.”</strong></p><p>In addition to the spotlight being on <strong>climate resilience priorities for the Northeast and Assam,</strong> a key highlight of the programme was the <strong>Curtain Raiser for the World Sustainable Development Summit (WSDS) 2027</strong>, which brought together senior representatives from government, academia, and TERI.</p><p>The session provided a platform to discuss the region’s climate resilience challenges and priorities, while setting the context for the broader sustainability conversations that will be taken forward through WSDS 2027. In the Welcome Address, <strong>Dr Dipankar Saharia, Senior Director, TERI</strong> highlighted, “When the World Sustainable Development Summit began in 2001, the primary focus was building global awareness. Today, 25 years later, the science is clear, solutions exist, and global commitments are in place. The core challenge is implementation, converting those pledges into collaborative action at the speed and scale a resilient planet demands. Under the theme <em><strong>‘Converging Commitments, Collaborative Actions for a Resilient Planet,’</strong></em> WSDS 2027 focuses on bridging global goals with local realities, mobilizing finance and technology, and ensuring climate solutions deliver real impact on the ground.”</p><p>On Assam’s state partnership and climate action, Dr Saharia added, “The North Eastern region of India presents a unique balance of ecological vulnerability and vast opportunity. Assam’s extraordinary natural wealth carries a vital responsibility to pursue growth that is inclusive, climate-resilient, and environmentally sustainable. Through our partnership with the Government of <strong>Assam as a key State Partner for WSDS 2027</strong>, we are bringing regional priorities to the forefront, demonstrating how state-level leadership can drive meaningful climate solutions on both national and international stages.”</p><p>In the Special Remarks, <strong>Dr Nani Gopal Mahanta, Vice Chancellor, Gauhati University</strong> shared, “Extreme weather conditions and global temperature rises are no longer just academic concerns or theoretical issues in the classroom; this has really become a great ontological issue and an existential threat for the entire humanity. Nature knows no territoriality; what happens in upstream regions like Nepal or China directly impacts lower riparian states like Assam, Bhutan, and Bangladesh.</p><p>We need GDP, growth, and development, but we must ask: at what cost? Communities must not be seen merely as passive beneficiaries of development; they should be recognized as active stakeholders who contribute directly to the protection and nourishment of the developmental process. Gauhati University is joining hands with organizations like TERI, the Balipara Foundation, and ICIMOD to take fructifying measures. Through initiatives like our Centre for Himalayan Studies, we are committed to playing an architectural role in advancing indigenous knowledge protection, biodiversity conservation, clean energy, and grassroots innovation.”</p><p><strong>Dr Vibha Dhawan, Director General</strong>, TERI, added, “India is a vast subcontinent, and environmental solutions cannot be one-size-fits-all. The ecological challenges in the Northeast are vastly different from those in rest of the country. Through our long-standing presence in Guwahati and the establishment of the <strong>Center for Himalayan Studies</strong>, TERI is deeply committed to regional climate solutions.</p><p>As we step into the next chapter of the World Sustainable Development Summit after celebrating our 25th Silver Jubilee, we are expanding our focus directly to the state level. We extend a warm invitation to <strong>Assam to serve as a core Partner State for the upcoming WSDS</strong>, showcasing its regional solutions and bringing local priorities to the global stage.”</p><p>The Curtain Raiser also featured a <strong>Special Address by Mr Jayanta Malla Baruah, Hon’ble Minister of Finance, Environment &amp; Forest, and Mines &amp; Minerals, Government of Assam</strong>, followed by a panel discussion on <strong>“Climate Resilience for Northeast and state of Assam”</strong>, moderated by <strong>Ms Leena Nandan, IAS, Former Secretary, MoEF&amp;CC, Government of India and Distinguished Fellow, TERI</strong>.</p><p><strong>Mr Jayanta Malla Baruah, Hon’ble Minister of Finance, Environment &amp; Forest, and Mines &amp; Minerals, Government of Assam,</strong> shared, “As someone holding portfolios across Finance, Forest, and Mines, my responsibility is to balance all three: ensuring infrastructure development moves forward, preserving our rich natural environment, and managing mineral extraction responsibly. Assam is blessed with rich natural resources, but we also face severe soil erosion and annual floods. We cannot abandon modern infrastructure, nor can we ignore our ecology. We must find a viable, sustainable path that fits our local realities. We need our <strong>top research institutions, including TERI, IIT Guwahati, and Gauhati University</strong>, to collaborate on technological solutions. For instance, if we can develop technology to give Brahmaputra silt binding properties for road construction, we can dredge the river to mitigate floods while simultaneously saving our hills and farmlands from excavation.”</p><p>The WSDS 2027 Curtain Raiser was part of a larger programme focused on sharing results and lessons from the <strong>UNDP Small Grants Programme (SGP-OP7)</strong>. Selected NGO partners presented project results and best practices, highlighting grassroots approaches related to biodiversity, climate resilience and land restoration.</p><p>The workshop also featured discussions on <strong>“Institutional &amp; Financial Alignment for Small Grants Program”</strong>, bringing together representatives from TERI, the Government of Assam, Meghalaya Basin Management Agency (MBDA), NEDFi and NABARD.</p><p>The programme also included an outlook for <strong>WSDS 2027</strong> by <strong>Ms Leena Nandan, IAS, Former Secretary, MoEF&amp;CC, Government of India and Distinguished Fellow, TERI</strong>, and the screening of a short thematic video on WSDS 2027 and the legacy of <strong>25 years of the World Sustainable Development Summit</strong>.</p><p><strong>Ms Nandan</strong> foregrounded how, “The upcoming World Sustainable Development Summit centers on three vital elements: commitment, collaboration, and most importantly, action for a resilient planet. From clean energy and energy security to circular economy and sustainable agriculture, WSDS provides a platform for every state and partner to benefit. WSDS is not only about talk-it is about showcasing best practices, learning, experiencing, and building meaningful networks and collaborations. We see the strong priority Assam has assigned to the environment-from implementing a green cess to ensure industrial growth remains clean, to allocating over ₹70,000 crore for energy projects, clean energy focus, and biodiversity restoration. All of these initiatives will form the cornerstone of WSDS next year. There is a huge opportunity to align Assam’s priorities and best practices with global frameworks, translating the vision for a climate-resilient future into synchronized action on the ground.”</p><p>On the Rare Earth Elements (REE) discovery in Karbi Anglong, <strong>Shri Ajay Tewari, IAS, Additional Chief Secretary (ACS) Home &amp; Political Department, Govt of Assam,</strong> pointed out, “We have discovered Rare Earth Elements in the Karbi Anglong district, which is poised to transform India’s strategic REE landscape for energy security, semiconductors, and modern industry. As we move toward auctions, we will ensure extraction utilizes the latest technology to generate investment and jobs while maintaining strict environmental sustainability.”</p><p>On policy frameworks and regional collaboration, <strong>Shri Sazzad Alam, ACS, Joint Secretary, Industries, Commerce and Public Enterprise Department, Government of Assam, shared,</strong> “Assam was among the earliest sub-national entities in India to formally adopt the Sustainable Development Goals back in 2016, prioritizing SDG 13 for Climate Action. Through multi-departmental initiatives like the Assam State Action Plan for Climate Change and projects like APART, we are building climate-resilient agriculture and industry. Mitigating climate impact requires inter-departmental cooperation, cross-border collaboration, and active civil society participation. We are committed to working alongside research institutions like TERI to build a sustainable, resilient future for the region.”</p><p>The discussions reinforced the importance of connecting <strong>indigenous traditional knowledge, grassroots innovation, scientific expertise, institutional support and policy action</strong> to strengthen climate resilience and sustainable development in the Northeast.</p><div class=\"row\"><div class=\"col-md-6\"><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/TERI-Brings-WSDS-2027-Curtain-3.jpeg\" data-entity-uuid=\"f46abce1-0c51-45f9-ac11-869132a8f8c6\" data-entity-type=\"file\" width=\"1200\" height=\"800\" loading=\"lazy\" /></div><div class=\"col-md-6\"><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/TERI-Brings-WSDS-2027-Curtain-2.JPG\" data-entity-uuid=\"e00f1c87-9789-4f2e-82ef-1f7ddb1921c5\" data-entity-type=\"file\" width=\"1200\" height=\"800\" loading=\"lazy\" /></div></div><div class=\"row\" style=\"margin-top:20px;\"><div class=\"col-md-6\"><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/TERI-Brings-WSDS-2027-Curtain.JPG\" data-entity-uuid=\"1c2acb4f-b076-48f1-bc3e-fa6d934fcd3a\" data-entity-type=\"file\" width=\"1200\" height=\"800\" loading=\"lazy\" /></div></div>",
+          "summary": ""
+        },
+        "field_pressrelease_date": "2026-09-09T04:30:00+00:00"
+      },
+      "relationships": {
+        "node_type": {
+          "data": {
+            "type": "node_type--node_type",
+            "id": "41a5227e-642d-4166-bcde-4a11b605243f",
+            "meta": {
+              "drupal_internal__target_id": "press_release"
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/node_type?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/node_type?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "revision_uid": {
+          "data": {
+            "type": "user--user",
+            "id": "768b9750-4d7d-4f1e-9e29-46f6cb08d645",
+            "meta": {
+              "drupal_internal__target_id": 4942
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/revision_uid?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/revision_uid?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "768b9750-4d7d-4f1e-9e29-46f6cb08d645",
+            "meta": {
+              "drupal_internal__target_id": 4942
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/uid?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/uid?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "field_language": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/field_language?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/field_language?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "field_prelease_tags": {
+          "data": [
+            {
+              "type": "taxonomy_term--tags",
+              "id": "822be094-8d7e-4487-8824-88a173590ec3",
+              "meta": {
+                "drupal_internal__target_id": 4501
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "93e4cce1-fe0a-4391-ba3d-315cad765a68",
+              "meta": {
+                "drupal_internal__target_id": 2326
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "ed98cba0-08b9-4b6c-8d00-4911a064bc2c",
+              "meta": {
+                "drupal_internal__target_id": 294
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/field_prelease_tags?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/field_prelease_tags?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "field_prelease_themes": {
+          "data": [
+            {
+              "type": "taxonomy_term--themes",
+              "id": "a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3",
+              "meta": {
+                "drupal_internal__target_id": 4701
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/field_prelease_themes?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/field_prelease_themes?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "field_pressrelease_file": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/field_pressrelease_file?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/field_pressrelease_file?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "field_pressrelease_image": {
+          "data": {
+            "type": "file--file",
+            "id": "81c81d3f-a42b-4412-b6e2-4806bc500765",
+            "meta": {
+              "alt": "TERI-Brings-WSDS-2027-Curtain-main",
+              "title": "",
+              "width": 1200,
+              "height": 800,
+              "drupal_internal__target_id": 12190
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/field_pressrelease_image?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/field_pressrelease_image?resourceVersion=id%3A17850"
+            }
+          }
+        },
+        "field_related_terms": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/field_related_terms?resourceVersion=id%3A17850"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/press_release/6d2d5ef3-25ab-4ff7-8583-5b9647588d7a/relationships/field_related_terms?resourceVersion=id%3A17850"
+            }
+          }
+        }
+      }
+    },
+    "included": [
+      {
+        "type": "taxonomy_term--tags",
+        "id": "822be094-8d7e-4487-8824-88a173590ec3",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/822be094-8d7e-4487-8824-88a173590ec3?resourceVersion=id%3A4501"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4501,
+          "drupal_internal__revision_id": 4501,
+          "langcode": "en",
+          "revision_created": "2025-05-13T10:44:18+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Corporate Sustainability",
+          "description": null,
+          "weight": 0,
+          "changed": "2025-05-13T10:44:18+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/822be094-8d7e-4487-8824-88a173590ec3/vid?resourceVersion=id%3A4501"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/822be094-8d7e-4487-8824-88a173590ec3/relationships/vid?resourceVersion=id%3A4501"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/822be094-8d7e-4487-8824-88a173590ec3/revision_user?resourceVersion=id%3A4501"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/822be094-8d7e-4487-8824-88a173590ec3/relationships/revision_user?resourceVersion=id%3A4501"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/822be094-8d7e-4487-8824-88a173590ec3/parent?resourceVersion=id%3A4501"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/822be094-8d7e-4487-8824-88a173590ec3/relationships/parent?resourceVersion=id%3A4501"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "93e4cce1-fe0a-4391-ba3d-315cad765a68",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/93e4cce1-fe0a-4391-ba3d-315cad765a68?resourceVersion=id%3A2326"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 2326,
+          "drupal_internal__revision_id": 2326,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Biodiversity conservation",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-01-30T07:22:30+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/93e4cce1-fe0a-4391-ba3d-315cad765a68/vid?resourceVersion=id%3A2326"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/93e4cce1-fe0a-4391-ba3d-315cad765a68/relationships/vid?resourceVersion=id%3A2326"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/93e4cce1-fe0a-4391-ba3d-315cad765a68/revision_user?resourceVersion=id%3A2326"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/93e4cce1-fe0a-4391-ba3d-315cad765a68/relationships/revision_user?resourceVersion=id%3A2326"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/93e4cce1-fe0a-4391-ba3d-315cad765a68/parent?resourceVersion=id%3A2326"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/93e4cce1-fe0a-4391-ba3d-315cad765a68/relationships/parent?resourceVersion=id%3A2326"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "ed98cba0-08b9-4b6c-8d00-4911a064bc2c",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/ed98cba0-08b9-4b6c-8d00-4911a064bc2c?resourceVersion=id%3A294"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 294,
+          "drupal_internal__revision_id": 294,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Environmental awareness",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-04-20T06:19:13+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/ed98cba0-08b9-4b6c-8d00-4911a064bc2c/vid?resourceVersion=id%3A294"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/ed98cba0-08b9-4b6c-8d00-4911a064bc2c/relationships/vid?resourceVersion=id%3A294"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/ed98cba0-08b9-4b6c-8d00-4911a064bc2c/revision_user?resourceVersion=id%3A294"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/ed98cba0-08b9-4b6c-8d00-4911a064bc2c/relationships/revision_user?resourceVersion=id%3A294"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/ed98cba0-08b9-4b6c-8d00-4911a064bc2c/parent?resourceVersion=id%3A294"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/ed98cba0-08b9-4b6c-8d00-4911a064bc2c/relationships/parent?resourceVersion=id%3A294"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--themes",
+        "id": "a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3?resourceVersion=id%3A4701"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4701,
+          "drupal_internal__revision_id": 4701,
+          "langcode": "en",
+          "revision_created": "2026-04-02T10:16:14+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Corporate Social Responsibility",
+          "description": {
+            "value": "<p>TERI Corporate Social Responsibility (TERI CSR) works towards developing capacity for CSR and Sustainability programmes while exploring possibilities of collaboration with myriad stakeholders including companies, governments, foundations, civil society and academia. TERI CSR work ranges from working on areas of environment, education, water, sanitation, developing model villages, integrated development, rural development, clean energy, and environment sustainability.</p>",
+            "format": "full_html",
+            "processed": "<p>TERI Corporate Social Responsibility (TERI CSR) works towards developing capacity for CSR and Sustainability programmes while exploring possibilities of collaboration with myriad stakeholders including companies, governments, foundations, civil society and academia. TERI CSR work ranges from working on areas of environment, education, water, sanitation, developing model villages, integrated development, rural development, clean energy, and environment sustainability.</p>"
+          },
+          "weight": 6,
+          "changed": "2026-08-31T08:32:15+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": "/teri-corporate-social-responsibility",
+            "pid": 12137,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "d1a67c2b-18e2-4952-9a41-d042ccc56014",
+              "meta": {
+                "drupal_internal__target_id": "themes"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/vid?resourceVersion=id%3A4701"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/relationships/vid?resourceVersion=id%3A4701"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/revision_user?resourceVersion=id%3A4701"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/relationships/revision_user?resourceVersion=id%3A4701"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--themes",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/parent?resourceVersion=id%3A4701"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/relationships/parent?resourceVersion=id%3A4701"
+              }
+            }
+          },
+          "field_theme_image": {
+            "data": {
+              "type": "file--file",
+              "id": "483ad3f3-7d95-4302-9a41-016e48aea9b7",
+              "meta": {
+                "alt": "CSR-new",
+                "title": "",
+                "width": 1600,
+                "height": 430,
+                "drupal_internal__target_id": 11333
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/field_theme_image?resourceVersion=id%3A4701"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3/relationships/field_theme_image?resourceVersion=id%3A4701"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "file--file",
+        "id": "81c81d3f-a42b-4412-b6e2-4806bc500765",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/file/file/81c81d3f-a42b-4412-b6e2-4806bc500765"
+          }
+        },
+        "attributes": {
+          "drupal_internal__fid": 12190,
+          "langcode": "en",
+          "filename": "TERI-Brings-WSDS-2027-Curtain-main.JPG",
+          "uri": {
+            "value": "public://2026-09/TERI-Brings-WSDS-2027-Curtain-main.JPG",
+            "url": "/sites/default/files/2026-09/TERI-Brings-WSDS-2027-Curtain-main.JPG"
+          },
+          "filemime": "image/jpeg",
+          "filesize": 458442,
+          "status": true,
+          "created": "2026-09-10T05:03:49+00:00",
+          "changed": "2026-09-10T05:04:10+00:00"
+        },
+        "relationships": {
+          "uid": {
+            "data": {
+              "type": "user--user",
+              "id": "10101fba-dbdf-4c89-aece-7c8273f9ba14",
+              "meta": {
+                "drupal_internal__target_id": 5900
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/file/file/81c81d3f-a42b-4412-b6e2-4806bc500765/uid"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/file/file/81c81d3f-a42b-4412-b6e2-4806bc500765/relationships/uid"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "parsed_drupal_record": {
+    "uuid": "6d2d5ef3-25ab-4ff7-8583-5b9647588d7a",
+    "bundle": "press_release",
+    "nid": 13387,
+    "title": "TERI Brings WSDS 2027 Curtain Raiser to Guwahati, Focus on Northeast Climate Resilience",
+    "url": "https://teriin.org/press-release/teri-brings-wsds-2027-curtain-raiser-guwahati-focus-northeast-climate-resilience",
+    "body": "TERI convenes high-level discussions on climate resilience alongside sharing of grassroots solutions for biodiversity, land restoration and sustainable development\n\nGuwahati, 9 September 2026: The Energy and Resources Institute (TERI), in partnership with the UNDP Small Grants Programme (SGP-India), convened a Result Sharing Workshop at Gauhati University on “Indigenous Traditional Knowledge, Clean Energy & Grassroots Innovation to Policy Solutions for Biodiversity, Climate Resilience and Land Restoration in Assam & Meghalaya.”\n\nIn addition to the spotlight being on climate resilience priorities for the Northeast and Assam, a key highlight of the programme was the Curtain Raiser for the World Sustainable Development Summit (WSDS) 2027, which brought together senior representatives from government, academia, and TERI.\n\nThe session provided a platform to discuss the region’s climate resilience challenges and priorities, while setting the context for the broader sustainability conversations that will be taken forward through WSDS 2027. In the Welcome Address, Dr Dipankar Saharia, Senior Director, TERI highlighted, “When the World Sustainable Development Summit began in 2001, the primary focus was building global awareness. Today, 25 years later, the science is clear, solutions exist, and global commitments are in place. The core challenge is implementation, converting those pledges into collaborative action at the speed and scale a resilient planet demands. Under the theme ‘Converging Commitments, Collaborative Actions for a Resilient Planet,’ WSDS 2027 focuses on bridging global goals with local realities, mobilizing finance and technology, and ensuring climate solutions deliver real impact on the ground.”\n\nOn Assam’s state partnership and climate action, Dr Saharia added, “The North Eastern region of India presents a unique balance of ecological vulnerability and vast opportunity. Assam’s extraordinary natural wealth carries a vital responsibility to pursue growth that is inclusive, climate-resilient, and environmentally sustainable. Through our partnership with the Government of Assam as a key State Partner for WSDS 2027, we are bringing regional priorities to the forefront, demonstrating how state-level leadership can drive meaningful climate solutions on both national and international stages.”\n\nIn the Special Remarks, Dr Nani Gopal Mahanta, Vice Chancellor, Gauhati University shared, “Extreme weather conditions and global temperature rises are no longer just academic concerns or theoretical issues in the classroom; this has really become a great ontological issue and an existential threat for the entire humanity. Nature knows no territoriality; what happens in upstream regions like Nepal or China directly impacts lower riparian states like Assam, Bhutan, and Bangladesh.\n\nWe need GDP, growth, and development, but we must ask: at what cost? Communities must not be seen merely as passive beneficiaries of development; they should be recognized as active stakeholders who contribute directly to the protection and nourishment of the developmental process. Gauhati University is joining hands with organizations like TERI, the Balipara Foundation, and ICIMOD to take fructifying measures. Through initiatives like our Centre for Himalayan Studies, we are committed to playing an architectural role in advancing indigenous knowledge protection, biodiversity conservation, clean energy, and grassroots innovation.”\n\nDr Vibha Dhawan, Director General, TERI, added, “India is a vast subcontinent, and environmental solutions cannot be one-size-fits-all. The ecological challenges in the Northeast are vastly different from those in rest of the country. Through our long-standing presence in Guwahati and the establishment of the Center for Himalayan Studies, TERI is deeply committed to regional climate solutions.\n\nAs we step into the next chapter of the World Sustainable Development Summit after celebrating our 25th Silver Jubilee, we are expanding our focus directly to the state level. We extend a warm invitation to Assam to serve as a core Partner State for the upcoming WSDS, showcasing its regional solutions and bringing local priorities to the global stage.”\n\nThe Curtain Raiser also featured a Special Address by Mr Jayanta Malla Baruah, Hon’ble Minister of Finance, Environment & Forest, and Mines & Minerals, Government of Assam, followed by a panel discussion on “Climate Resilience for Northeast and state of Assam”, moderated by Ms Leena Nandan, IAS, Former Secretary, MoEF&CC, Government of India and Distinguished Fellow, TERI.\n\nMr Jayanta Malla Baruah, Hon’ble Minister of Finance, Environment & Forest, and Mines & Minerals, Government of Assam, shared, “As someone holding portfolios across Finance, Forest, and Mines, my responsibility is to balance all three: ensuring infrastructure development moves forward, preserving our rich natural environment, and managing mineral extraction responsibly. Assam is blessed with rich natural resources, but we also face severe soil erosion and annual floods. We cannot abandon modern infrastructure, nor can we ignore our ecology. We must find a viable, sustainable path that fits our local realities. We need our top research institutions, including TERI, IIT Guwahati, and Gauhati University, to collaborate on technological solutions. For instance, if we can develop technology to give Brahmaputra silt binding properties for road construction, we can dredge the river to mitigate floods while simultaneously saving our hills and farmlands from excavation.”\n\nThe WSDS 2027 Curtain Raiser was part of a larger programme focused on sharing results and lessons from the UNDP Small Grants Programme (SGP-OP7). Selected NGO partners presented project results and best practices, highlighting grassroots approaches related to biodiversity, climate resilience and land restoration.\n\nThe workshop also featured discussions on “Institutional & Financial Alignment for Small Grants Program”, bringing together representatives from TERI, the Government of Assam, Meghalaya Basin Management Agency (MBDA), NEDFi and NABARD.\n\nThe programme also included an outlook for WSDS 2027 by Ms Leena Nandan, IAS, Former Secretary, MoEF&CC, Government of India and Distinguished Fellow, TERI, and the screening of a short thematic video on WSDS 2027 and the legacy of 25 years of the World Sustainable Development Summit.\n\nMs Nandan foregrounded how, “The upcoming World Sustainable Development Summit centers on three vital elements: commitment, collaboration, and most importantly, action for a resilient planet. From clean energy and energy security to circular economy and sustainable agriculture, WSDS provides a platform for every state and partner to benefit. WSDS is not only about talk-it is about showcasing best practices, learning, experiencing, and building meaningful networks and collaborations. We see the strong priority Assam has assigned to the environment-from implementing a green cess to ensure industrial growth remains clean, to allocating over ₹70,000 crore for energy projects, clean energy focus, and biodiversity restoration. All of these initiatives will form the cornerstone of WSDS next year. There is a huge opportunity to align Assam’s priorities and best practices with global frameworks, translating the vision for a climate-resilient future into synchronized action on the ground.”\n\nOn the Rare Earth Elements (REE) discovery in Karbi Anglong, Shri Ajay Tewari, IAS, Additional Chief Secretary (ACS) Home & Political Department, Govt of Assam, pointed out, “We have discovered Rare Earth Elements in the Karbi Anglong district, which is poised to transform India’s strategic REE landscape for energy security, semiconductors, and modern industry. As we move toward auctions, we will ensure extraction utilizes the latest technology to generate investment and jobs while maintaining strict environmental sustainability.”\n\nOn policy frameworks and regional collaboration, Shri Sazzad Alam, ACS, Joint Secretary, Industries, Commerce and Public Enterprise Department, Government of Assam, shared, “Assam was among the earliest sub-national entities in India to formally adopt the Sustainable Development Goals back in 2016, prioritizing SDG 13 for Climate Action. Through multi-departmental initiatives like the Assam State Action Plan for Climate Change and projects like APART, we are building climate-resilient agriculture and industry. Mitigating climate impact requires inter-departmental cooperation, cross-border collaboration, and active civil society participation. We are committed to working alongside research institutions like TERI to build a sustainable, resilient future for the region.”\n\nThe discussions reinforced the importance of connecting indigenous traditional knowledge, grassroots innovation, scientific expertise, institutional support and policy action to strengthen climate resilience and sustainable development in the Northeast.",
+    "created": "2026-09-10T04:52:01+00:00",
+    "changed": "2026-09-10T05:21:34+00:00",
+    "metadata": {
+      "field_prelease_tags": [
+        "Corporate Sustainability",
+        "Biodiversity conservation",
+        "Environmental awareness"
+      ],
+      "field_prelease_themes": [
+        "Corporate Social Responsibility"
+      ],
+      "field_pressrelease_date": "2026-09-09T04:30:00+00:00"
+    },
+    "files": [],
+    "refs": [
+      {
+        "field_name": "field_prelease_tags",
+        "uuid": "822be094-8d7e-4487-8824-88a173590ec3",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Corporate Sustainability"
+      },
+      {
+        "field_name": "field_prelease_tags",
+        "uuid": "93e4cce1-fe0a-4391-ba3d-315cad765a68",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Biodiversity conservation"
+      },
+      {
+        "field_name": "field_prelease_tags",
+        "uuid": "ed98cba0-08b9-4b6c-8d00-4911a064bc2c",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Environmental awareness"
+      },
+      {
+        "field_name": "field_prelease_themes",
+        "uuid": "a98a2e04-4fa8-4662-8f02-f7f5e7bcf5d3",
+        "entity_type": "taxonomy_term--themes",
+        "label": "Corporate Social Responsibility"
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "rich_text_fields": [
+    {
+      "field": "body",
+      "kind": "formatted_text",
+      "html_chars": 232,
+      "html": "<p>At the 6th edition of ET Energy Leadership Summit 2026 leaders from NTPC Green Energy, MSEDCL, ReNew and TERI said the next phase of renewable growth will be defined by dispatchability rather than headline capacity additions.</p>",
+      "text": "At the 6th edition of ET Energy Leadership Summit 2026 leaders from NTPC Green Energy, MSEDCL, ReNew and TERI said the next phase of renewable growth will be defined by dispatchability rather than headline capacity additions."
+    }
+  ],
+  "record_body": "At the 6th edition of ET Energy Leadership Summit 2026 leaders from NTPC Green Energy, MSEDCL, ReNew and TERI said the next phase of renewable growth will be defined by dispatchability rather than headline capacity additions.",
+  "record_body_chars": 225,
+  "files_discovered": [],
+  "entity_refs": [
+    {
+      "field_name": "field_news_tags",
+      "uuid": "527b75ee-f68a-43f2-ba24-75aafefdf0ab",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Solar"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Clean energy"
+    },
+    {
+      "field_name": "field_news_themes",
+      "uuid": "449b5d32-d2f2-4444-a708-0b6b85425c28",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Electricity and Renewables"
+    }
+  ],
+  "scalar_metadata": {
+    "field_news_tags": [
+      "Solar",
+      "Clean energy"
+    ],
+    "field_news_themes": [
+      "Electricity and Renewables"
+    ],
+    "field_news_date": "2026-09-09T11:30:03+00:00",
+    "field_news_source": "ET Energy World",
+    "field_news_type": [
+      "electronic_media"
+    ]
+  }
+}

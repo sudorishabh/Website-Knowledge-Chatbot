@@ -1,0 +1,2335 @@
+{
+  "raw": {
+    "fetched_at": "2026-09-10T15:54:55+05:30",
+    "jsonapi_resource": {
+      "type": "node--ongoing_projects",
+      "id": "a240619a-8365-429e-adde-9bf707c46882",
+      "links": {
+        "self": {
+          "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882?resourceVersion=id%3A17841"
+        }
+      },
+      "attributes": {
+        "drupal_internal__nid": 13381,
+        "drupal_internal__vid": 17841,
+        "langcode": "en",
+        "revision_timestamp": "2026-09-08T10:25:34+00:00",
+        "revision_log": null,
+        "status": true,
+        "title": "Adoption of green fuels in Indian Maritime sector.",
+        "created": "2026-09-08T10:21:39+00:00",
+        "changed": "2026-09-08T10:28:15+00:00",
+        "promote": false,
+        "sticky": false,
+        "default_langcode": true,
+        "revision_translation_affected": true,
+        "metatag": null,
+        "path": {
+          "alias": "/project/adoption-green-fuels-indian-maritime-sector",
+          "pid": 12691,
+          "langcode": "en"
+        },
+        "body": {
+          "value": "<p>India’s maritime sector is at a critical juncture, where decarbonisation imperatives must be pursued in a manner that is technically robust, operationally safe and economically viable. In this context, the present study provides a comprehensive and evidence-based assessment of a spectrum of low-carbon and alternative fuel pathways relevant to Indian maritime operations, examined through lifecycle and Greenhouse Gas Fuel Intensity (GFI)-based analytical parameters.</p><p>The report adopts a systematic and data-driven framework and goes beyond conceptual discussions by analysing demand - supply dynamics, fuel mix scenarios, retrofitting and engine replacement pathways, as well as blend-fuel options that can be implemented without major engine modifications. The immediate priority going forward is the development of Phase II, encompassing a comprehensive implementation plan with defined short-, medium- and long-term action points for coastal vessels and foreign-going vessels. This phase will require close coordination among the Directorate General of Shipping, the NCoEGPS Green Fuel team and relevant technical and classification institutions, with due consideration of vessel typologies, size categories, fuel standards, certification frameworks and data-driven compliance mechanisms.</p><h4>Executive summary</h4><p>This report presents the estimates of the alternative and ZNZ fuel demand supply gap for India till 2035. Subsequently, the green Hydrogen and Renewable Energy (RE) based power to produce the alternative fuel is quantified. To align with GFI based trajectory large investment is needed both for ZNZ fuel production scale up and ZNZ fuel capable vessel manufacturing including alternative-fuel engines. To attract investment. sustained demand of these fuels and sound economical parameters is crucial. While the universal definition of ZNZ fuels and the clarity on reward distribution is still awaited from IMO, to comply with the IMO’s GFI based emission target generating Surplus Units (SU) and ensuing qualification for receiving financial rewards the short-, medium- and long-term strategies are developed. The role of alternative fuel engines, scope for Onboard Carbon Capture (OCC) and Fuel Cell integration too is critically analysed and assessed for adoption by Indian ships towards long term decarbonization. Finally, policy gaps are identified towards effective green fuel transition in Indian maritime sector.</p><p><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/1779168355Picture1.png\" data-entity-uuid=\"2d4e6d02-6cbc-492a-a7aa-a0d72e47b09e\" data-entity-type=\"file\"> Figure Caption : Alternative Fuel Vessels Global (In-Service): Fuel Types v/s Total Number of Vessel(as on August 2024) Number with Percentage (as on August 2024) (a): Relative Share of All Alternative Fuels b): Relative Share of only Hydrogen Derived Fuels</p><p>Towards meeting short to medium term GFI based emission targets at least up to 2035, blend fuel (dual -fuel and multifuel) strategy offers the most practical and economically viable pathway to India. It is found that, under the IMO proposed GFI regime, use of B30 (30% Biodiesel blend in Diesel) can meet direct compliance target only till 2031 where as B40 is needed to remain compliant until 2033. B50 covers direct compliance target till 2035. Although B40 and B50 are sufficient enough to meet Direct compliance emission targets till 2033 and 2035 respectively, multi-fuel blends such as Bio/E Alcohol (Methanol/2GEthanol 10 v/v %)-Biodiesel- Diesel blends can fetch much higher degree of Surplus Unit and Rewards thus making the transition economically attractive. The advantage of blend fuel is continued use of existing engines without investing to alternate fuel engines. Additionally, although Coastal Vessels &lt;5000GT are not presently subjected to IMO compliance, however, emission guidelines for vessels between 400-5000 GT range is under consideration by IMO. Hence, in the present study the fuel-blend Scenarios are also built for Indian Coastal vessels.</p><p>As a long term decarbonization strategy, adoption of dual-fuel engines for fuels only E/Bio (in the order Methanol&gt; LBG/LNG&gt; Ammonia) appears most preferred based on 8 sustainability parameters. However, considering two critical aspects i.e. supply readiness and cost of alternative engines, dual fuel engines are highly recommended for adoption only by new builds or vessels &lt;5-7 years of age.</p><p>Fuel Cell should be considered as promising option for Inland water and shortsea/coastal shipping. Direct Methanol Fuel Cell (DMFC) could be worth investing for India in very small vessel &lt;100eKW (Inland water) category. India should also develop small to mid-sized (100-500ekW) LTMFC Fuel Cell ships (PSV, Ferries, RO-RO &amp; Cargo) till storage and safety challenges of compressed or liquified hydrogen (LH2) as fuel persist. In long term once LH2 overcome the become viable technological and safety challenges, larger inland water ships can be integrated too. SOFC technology should leverage its high fuel flexibility especially Ammonia &amp; Methanol. For cruise, and long-haul vessels, pilot projects need to be initiated with SOFC –Battery hybrid (immediate) and SOFC/ICE hybrid with alternative fuel options like Methanol and Ammonia (medium to long term) especially for auxiliary power units (AMUs).</p><p>There is a heightened need to increasingly implement CO2 capture on-board and switching over to bio/ synthetic e-fuels from HFO with the advancement of alternate fuel engines. Immediate implementation strategy needs to be developed to pilot dual-fuel and multifuel blend in existing engines with OCC in few pilots for generating data to assess energy and economic viability. Domestic green corridor can be set up for with pilot demonstration. There is an urgent need of larger number of pilot demonstration of CCUS projects through valorisation of adsorbed CO2 especially for India with lack of geological CO2 storage sites along with innovation in sustainable CO2 adsorption material production.</p><p>In order to facilitate early transition to ZNZ fuels, India urgently needs to develop standards for Hydrogen derived fuels Bio &amp; E (Methanol, Ammonia, Methane) along with blend fuels, such as, dual-fuel (Alcohol-Diesel, Diesel-Biodiesel B30, B40 &amp; B50) and mixed-fuels for Alcohol (Methanol/Ethanol), Diesel and Biodiesel for maritime application through BIS.</p><p>Finally, this study highlights that along with ramping up domestic production of E&amp; Bio Methanol, Ammonia and E LNG, India need to calibrate and undertake dynamic assessment of international shipping demand and target to create refueling/bunkering facilities in part of major ports along the coastal lines</p>",
+          "format": "full_html",
+          "processed": "<p>India’s maritime sector is at a critical juncture, where decarbonisation imperatives must be pursued in a manner that is technically robust, operationally safe and economically viable. In this context, the present study provides a comprehensive and evidence-based assessment of a spectrum of low-carbon and alternative fuel pathways relevant to Indian maritime operations, examined through lifecycle and Greenhouse Gas Fuel Intensity (GFI)-based analytical parameters.</p><p>The report adopts a systematic and data-driven framework and goes beyond conceptual discussions by analysing demand - supply dynamics, fuel mix scenarios, retrofitting and engine replacement pathways, as well as blend-fuel options that can be implemented without major engine modifications. The immediate priority going forward is the development of Phase II, encompassing a comprehensive implementation plan with defined short-, medium- and long-term action points for coastal vessels and foreign-going vessels. This phase will require close coordination among the Directorate General of Shipping, the NCoEGPS Green Fuel team and relevant technical and classification institutions, with due consideration of vessel typologies, size categories, fuel standards, certification frameworks and data-driven compliance mechanisms.</p><h4>Executive summary</h4><p>This report presents the estimates of the alternative and ZNZ fuel demand supply gap for India till 2035. Subsequently, the green Hydrogen and Renewable Energy (RE) based power to produce the alternative fuel is quantified. To align with GFI based trajectory large investment is needed both for ZNZ fuel production scale up and ZNZ fuel capable vessel manufacturing including alternative-fuel engines. To attract investment. sustained demand of these fuels and sound economical parameters is crucial. While the universal definition of ZNZ fuels and the clarity on reward distribution is still awaited from IMO, to comply with the IMO’s GFI based emission target generating Surplus Units (SU) and ensuing qualification for receiving financial rewards the short-, medium- and long-term strategies are developed. The role of alternative fuel engines, scope for Onboard Carbon Capture (OCC) and Fuel Cell integration too is critically analysed and assessed for adoption by Indian ships towards long term decarbonization. Finally, policy gaps are identified towards effective green fuel transition in Indian maritime sector.</p><p><img class=\"img-responsive\" src=\"/sites/default/files/inline-images/1779168355Picture1.png\" data-entity-uuid=\"2d4e6d02-6cbc-492a-a7aa-a0d72e47b09e\" data-entity-type=\"file\" width=\"925\" height=\"477\" loading=\"lazy\" /> Figure Caption : Alternative Fuel Vessels Global (In-Service): Fuel Types v/s Total Number of Vessel(as on August 2024) Number with Percentage (as on August 2024) (a): Relative Share of All Alternative Fuels b): Relative Share of only Hydrogen Derived Fuels</p><p>Towards meeting short to medium term GFI based emission targets at least up to 2035, blend fuel (dual -fuel and multifuel) strategy offers the most practical and economically viable pathway to India. It is found that, under the IMO proposed GFI regime, use of B30 (30% Biodiesel blend in Diesel) can meet direct compliance target only till 2031 where as B40 is needed to remain compliant until 2033. B50 covers direct compliance target till 2035. Although B40 and B50 are sufficient enough to meet Direct compliance emission targets till 2033 and 2035 respectively, multi-fuel blends such as Bio/E Alcohol (Methanol/2GEthanol 10 v/v %)-Biodiesel- Diesel blends can fetch much higher degree of Surplus Unit and Rewards thus making the transition economically attractive. The advantage of blend fuel is continued use of existing engines without investing to alternate fuel engines. Additionally, although Coastal Vessels &lt;5000GT are not presently subjected to IMO compliance, however, emission guidelines for vessels between 400-5000 GT range is under consideration by IMO. Hence, in the present study the fuel-blend Scenarios are also built for Indian Coastal vessels.</p><p>As a long term decarbonization strategy, adoption of dual-fuel engines for fuels only E/Bio (in the order Methanol&gt; LBG/LNG&gt; Ammonia) appears most preferred based on 8 sustainability parameters. However, considering two critical aspects i.e. supply readiness and cost of alternative engines, dual fuel engines are highly recommended for adoption only by new builds or vessels &lt;5-7 years of age.</p><p>Fuel Cell should be considered as promising option for Inland water and shortsea/coastal shipping. Direct Methanol Fuel Cell (DMFC) could be worth investing for India in very small vessel &lt;100eKW (Inland water) category. India should also develop small to mid-sized (100-500ekW) LTMFC Fuel Cell ships (PSV, Ferries, RO-RO &amp; Cargo) till storage and safety challenges of compressed or liquified hydrogen (LH2) as fuel persist. In long term once LH2 overcome the become viable technological and safety challenges, larger inland water ships can be integrated too. SOFC technology should leverage its high fuel flexibility especially Ammonia &amp; Methanol. For cruise, and long-haul vessels, pilot projects need to be initiated with SOFC –Battery hybrid (immediate) and SOFC/ICE hybrid with alternative fuel options like Methanol and Ammonia (medium to long term) especially for auxiliary power units (AMUs).</p><p>There is a heightened need to increasingly implement CO2 capture on-board and switching over to bio/ synthetic e-fuels from HFO with the advancement of alternate fuel engines. Immediate implementation strategy needs to be developed to pilot dual-fuel and multifuel blend in existing engines with OCC in few pilots for generating data to assess energy and economic viability. Domestic green corridor can be set up for with pilot demonstration. There is an urgent need of larger number of pilot demonstration of CCUS projects through valorisation of adsorbed CO2 especially for India with lack of geological CO2 storage sites along with innovation in sustainable CO2 adsorption material production.</p><p>In order to facilitate early transition to ZNZ fuels, India urgently needs to develop standards for Hydrogen derived fuels Bio &amp; E (Methanol, Ammonia, Methane) along with blend fuels, such as, dual-fuel (Alcohol-Diesel, Diesel-Biodiesel B30, B40 &amp; B50) and mixed-fuels for Alcohol (Methanol/Ethanol), Diesel and Biodiesel for maritime application through BIS.</p><p>Finally, this study highlights that along with ramping up domestic production of E&amp; Bio Methanol, Ammonia and E LNG, India need to calibrate and undertake dynamic assessment of international shipping demand and target to create refueling/bunkering facilities in part of major ports along the coastal lines</p>",
+          "summary": ""
+        },
+        "field_ongoing_country_tmp": null,
+        "field_ongoing_featured_text": null,
+        "field_ongoing_project_code": null,
+        "field_ongoing_sector_tmp": null,
+        "field_ongoing_shortsummary": null,
+        "field_ongoing_sponsors": null,
+        "field_ongoing_start_date": "2026-01-14T04:30:00+00:00",
+        "field_ongoing_state_tmp": null,
+        "field_show_on_theme_page": false
+      },
+      "relationships": {
+        "node_type": {
+          "data": {
+            "type": "node_type--node_type",
+            "id": "0e39e119-7494-4c3a-9015-4906b8f9cb99",
+            "meta": {
+              "drupal_internal__target_id": "ongoing_projects"
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/node_type?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/node_type?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "revision_uid": {
+          "data": {
+            "type": "user--user",
+            "id": "768b9750-4d7d-4f1e-9e29-46f6cb08d645",
+            "meta": {
+              "drupal_internal__target_id": 4942
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/revision_uid?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/revision_uid?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "768b9750-4d7d-4f1e-9e29-46f6cb08d645",
+            "meta": {
+              "drupal_internal__target_id": 4942
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/uid?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/uid?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_completed_project_report": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_completed_project_report?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_completed_project_report?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_division": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_division?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_division?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_division_area": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_division_area?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_division_area?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_partners": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_partners?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_partners?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_pi_name": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_pi_name?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_pi_name?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_programme": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_programme?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_programme?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_projectimage": {
+          "data": {
+            "type": "file--file",
+            "id": "5ee20d31-14f6-4412-af44-14fe9f290890",
+            "meta": {
+              "alt": "green fuels",
+              "title": "",
+              "width": 1600,
+              "height": 1066,
+              "drupal_internal__target_id": 12181
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_projectimage?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_projectimage?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_proj_file": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_proj_file?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_proj_file?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_region": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_region?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_region?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_stakeholders": {
+          "data": [
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+              "meta": {
+                "drupal_internal__target_id": 3618
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+              "meta": {
+                "drupal_internal__target_id": 15
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+              "meta": {
+                "drupal_internal__target_id": 13
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+              "meta": {
+                "drupal_internal__target_id": 10
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "b005a095-c75e-4e10-a554-23eef3b33a25",
+              "meta": {
+                "drupal_internal__target_id": 12
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "bfde8e8f-5c16-4aec-ab31-9821bc74dbf1",
+              "meta": {
+                "drupal_internal__target_id": 14
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_stakeholders?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_stakeholders?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_tag": {
+          "data": [
+            {
+              "type": "taxonomy_term--tags",
+              "id": "0676f0bf-dea1-4844-b8c2-c001e49410fa",
+              "meta": {
+                "drupal_internal__target_id": 103
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "0d9c8b50-0e60-4468-b3a9-d41e1e096dfb",
+              "meta": {
+                "drupal_internal__target_id": 4843
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "5d1430ce-a374-4d83-b55d-4dcd3b25a28c",
+              "meta": {
+                "drupal_internal__target_id": 1323
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "4f5f6512-bd75-4d2b-a0a3-22853e687584",
+              "meta": {
+                "drupal_internal__target_id": 4790
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707",
+              "meta": {
+                "drupal_internal__target_id": 4791
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "5c12c076-7064-4d3b-aad8-797d27cbc285",
+              "meta": {
+                "drupal_internal__target_id": 4792
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+              "meta": {
+                "drupal_internal__target_id": 4462
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "33d6877b-43e4-46ff-a0fa-4d6ee0432bb5",
+              "meta": {
+                "drupal_internal__target_id": 1502
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "deefd6c0-f333-42d5-a80b-6be8353819d1",
+              "meta": {
+                "drupal_internal__target_id": 1317
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418",
+              "meta": {
+                "drupal_internal__target_id": 85
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "98269035-fe7b-4567-bd4c-15af8c59e1b6",
+              "meta": {
+                "drupal_internal__target_id": 1527
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "e32d3938-98ec-4b36-8577-9b9d2795ac21",
+              "meta": {
+                "drupal_internal__target_id": 1204
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "dfcc465f-43fe-45a2-8c45-3207e344a81c",
+              "meta": {
+                "drupal_internal__target_id": 4793
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_tag?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_tag?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_ongoing_theme": {
+          "data": [
+            {
+              "type": "taxonomy_term--themes",
+              "id": "779e546f-1b61-43b1-b416-3e8510972407",
+              "meta": {
+                "drupal_internal__target_id": 4839
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_ongoing_theme?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_ongoing_theme?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_related_terms": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_related_terms?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_related_terms?resourceVersion=id%3A17841"
+            }
+          }
+        },
+        "field_show_on_regional_page": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/field_show_on_regional_page?resourceVersion=id%3A17841"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/ongoing_projects/a240619a-8365-429e-adde-9bf707c46882/relationships/field_show_on_regional_page?resourceVersion=id%3A17841"
+            }
+          }
+        }
+      }
+    },
+    "included": [
+      {
+        "type": "file--file",
+        "id": "5ee20d31-14f6-4412-af44-14fe9f290890",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/file/file/5ee20d31-14f6-4412-af44-14fe9f290890"
+          }
+        },
+        "attributes": {
+          "drupal_internal__fid": 12181,
+          "langcode": "en",
+          "filename": "1779168355WhatsApp Imag.jpeg",
+          "uri": {
+            "value": "public://2026-09/1779168355WhatsApp Imag.jpeg",
+            "url": "/sites/default/files/2026-09/1779168355WhatsApp%20Imag.jpeg"
+          },
+          "filemime": "image/jpeg",
+          "filesize": 324641,
+          "status": true,
+          "created": "2026-09-08T10:26:54+00:00",
+          "changed": "2026-09-08T10:28:15+00:00"
+        },
+        "relationships": {
+          "uid": {
+            "data": {
+              "type": "user--user",
+              "id": "10101fba-dbdf-4c89-aece-7c8273f9ba14",
+              "meta": {
+                "drupal_internal__target_id": 5900
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/file/file/5ee20d31-14f6-4412-af44-14fe9f290890/uid"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/file/file/5ee20d31-14f6-4412-af44-14fe9f290890/relationships/uid"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5?resourceVersion=id%3A3618"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 3618,
+          "drupal_internal__revision_id": 3618,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Businesses",
+          "description": null,
+          "weight": 0,
+          "changed": "2019-11-13T11:59:58+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/vid?resourceVersion=id%3A3618"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/relationships/vid?resourceVersion=id%3A3618"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/revision_user?resourceVersion=id%3A3618"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/relationships/revision_user?resourceVersion=id%3A3618"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/parent?resourceVersion=id%3A3618"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/relationships/parent?resourceVersion=id%3A3618"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9?resourceVersion=id%3A15"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 15,
+          "drupal_internal__revision_id": 15,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Civil society/Grassroots",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:45+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/vid?resourceVersion=id%3A15"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/relationships/vid?resourceVersion=id%3A15"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/revision_user?resourceVersion=id%3A15"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/relationships/revision_user?resourceVersion=id%3A15"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/parent?resourceVersion=id%3A15"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/relationships/parent?resourceVersion=id%3A15"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088?resourceVersion=id%3A13"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 13,
+          "drupal_internal__revision_id": 13,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Consultants",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:33+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/vid?resourceVersion=id%3A13"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/relationships/vid?resourceVersion=id%3A13"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/revision_user?resourceVersion=id%3A13"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/relationships/revision_user?resourceVersion=id%3A13"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/parent?resourceVersion=id%3A13"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/relationships/parent?resourceVersion=id%3A13"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454?resourceVersion=id%3A10"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 10,
+          "drupal_internal__revision_id": 10,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Policy Makers",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:08+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/vid?resourceVersion=id%3A10"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/relationships/vid?resourceVersion=id%3A10"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/revision_user?resourceVersion=id%3A10"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/relationships/revision_user?resourceVersion=id%3A10"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/parent?resourceVersion=id%3A10"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/relationships/parent?resourceVersion=id%3A10"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "b005a095-c75e-4e10-a554-23eef3b33a25",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/b005a095-c75e-4e10-a554-23eef3b33a25?resourceVersion=id%3A12"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 12,
+          "drupal_internal__revision_id": 12,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Researchers/Post graduates",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:26+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/b005a095-c75e-4e10-a554-23eef3b33a25/vid?resourceVersion=id%3A12"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/b005a095-c75e-4e10-a554-23eef3b33a25/relationships/vid?resourceVersion=id%3A12"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/b005a095-c75e-4e10-a554-23eef3b33a25/revision_user?resourceVersion=id%3A12"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/b005a095-c75e-4e10-a554-23eef3b33a25/relationships/revision_user?resourceVersion=id%3A12"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/b005a095-c75e-4e10-a554-23eef3b33a25/parent?resourceVersion=id%3A12"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/b005a095-c75e-4e10-a554-23eef3b33a25/relationships/parent?resourceVersion=id%3A12"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "bfde8e8f-5c16-4aec-ab31-9821bc74dbf1",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/bfde8e8f-5c16-4aec-ab31-9821bc74dbf1?resourceVersion=id%3A14"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 14,
+          "drupal_internal__revision_id": 14,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Technocrats",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:39+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/bfde8e8f-5c16-4aec-ab31-9821bc74dbf1/vid?resourceVersion=id%3A14"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/bfde8e8f-5c16-4aec-ab31-9821bc74dbf1/relationships/vid?resourceVersion=id%3A14"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/bfde8e8f-5c16-4aec-ab31-9821bc74dbf1/revision_user?resourceVersion=id%3A14"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/bfde8e8f-5c16-4aec-ab31-9821bc74dbf1/relationships/revision_user?resourceVersion=id%3A14"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/bfde8e8f-5c16-4aec-ab31-9821bc74dbf1/parent?resourceVersion=id%3A14"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/bfde8e8f-5c16-4aec-ab31-9821bc74dbf1/relationships/parent?resourceVersion=id%3A14"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "0676f0bf-dea1-4844-b8c2-c001e49410fa",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0676f0bf-dea1-4844-b8c2-c001e49410fa?resourceVersion=id%3A103"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 103,
+          "drupal_internal__revision_id": 103,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Carbon intensity",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-01-05T08:32:51+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0676f0bf-dea1-4844-b8c2-c001e49410fa/vid?resourceVersion=id%3A103"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0676f0bf-dea1-4844-b8c2-c001e49410fa/relationships/vid?resourceVersion=id%3A103"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0676f0bf-dea1-4844-b8c2-c001e49410fa/revision_user?resourceVersion=id%3A103"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0676f0bf-dea1-4844-b8c2-c001e49410fa/relationships/revision_user?resourceVersion=id%3A103"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0676f0bf-dea1-4844-b8c2-c001e49410fa/parent?resourceVersion=id%3A103"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0676f0bf-dea1-4844-b8c2-c001e49410fa/relationships/parent?resourceVersion=id%3A103"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "0d9c8b50-0e60-4468-b3a9-d41e1e096dfb",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0d9c8b50-0e60-4468-b3a9-d41e1e096dfb?resourceVersion=id%3A4843"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4843,
+          "drupal_internal__revision_id": 4843,
+          "langcode": "en",
+          "revision_created": "2026-07-14T04:15:26+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "E-Fuels",
+          "description": null,
+          "weight": 0,
+          "changed": "2026-07-14T04:15:26+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0d9c8b50-0e60-4468-b3a9-d41e1e096dfb/vid?resourceVersion=id%3A4843"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0d9c8b50-0e60-4468-b3a9-d41e1e096dfb/relationships/vid?resourceVersion=id%3A4843"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0d9c8b50-0e60-4468-b3a9-d41e1e096dfb/revision_user?resourceVersion=id%3A4843"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0d9c8b50-0e60-4468-b3a9-d41e1e096dfb/relationships/revision_user?resourceVersion=id%3A4843"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0d9c8b50-0e60-4468-b3a9-d41e1e096dfb/parent?resourceVersion=id%3A4843"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/0d9c8b50-0e60-4468-b3a9-d41e1e096dfb/relationships/parent?resourceVersion=id%3A4843"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "5d1430ce-a374-4d83-b55d-4dcd3b25a28c",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5d1430ce-a374-4d83-b55d-4dcd3b25a28c?resourceVersion=id%3A1323"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 1323,
+          "drupal_internal__revision_id": 1323,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Fuel cell/hydrogen energy safety",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-01-05T07:20:23+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5d1430ce-a374-4d83-b55d-4dcd3b25a28c/vid?resourceVersion=id%3A1323"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5d1430ce-a374-4d83-b55d-4dcd3b25a28c/relationships/vid?resourceVersion=id%3A1323"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5d1430ce-a374-4d83-b55d-4dcd3b25a28c/revision_user?resourceVersion=id%3A1323"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5d1430ce-a374-4d83-b55d-4dcd3b25a28c/relationships/revision_user?resourceVersion=id%3A1323"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5d1430ce-a374-4d83-b55d-4dcd3b25a28c/parent?resourceVersion=id%3A1323"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5d1430ce-a374-4d83-b55d-4dcd3b25a28c/relationships/parent?resourceVersion=id%3A1323"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "4f5f6512-bd75-4d2b-a0a3-22853e687584",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/4f5f6512-bd75-4d2b-a0a3-22853e687584?resourceVersion=id%3A4790"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4790,
+          "drupal_internal__revision_id": 4790,
+          "langcode": "en",
+          "revision_created": "2026-05-21T04:19:27+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "GFI",
+          "description": null,
+          "weight": 0,
+          "changed": "2026-05-21T04:19:27+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/4f5f6512-bd75-4d2b-a0a3-22853e687584/vid?resourceVersion=id%3A4790"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/4f5f6512-bd75-4d2b-a0a3-22853e687584/relationships/vid?resourceVersion=id%3A4790"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/4f5f6512-bd75-4d2b-a0a3-22853e687584/revision_user?resourceVersion=id%3A4790"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/4f5f6512-bd75-4d2b-a0a3-22853e687584/relationships/revision_user?resourceVersion=id%3A4790"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/4f5f6512-bd75-4d2b-a0a3-22853e687584/parent?resourceVersion=id%3A4790"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/4f5f6512-bd75-4d2b-a0a3-22853e687584/relationships/parent?resourceVersion=id%3A4790"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707?resourceVersion=id%3A4791"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4791,
+          "drupal_internal__revision_id": 4791,
+          "langcode": "en",
+          "revision_created": "2026-05-21T04:19:27+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Green Ammonia",
+          "description": null,
+          "weight": 0,
+          "changed": "2026-05-21T04:19:27+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707/vid?resourceVersion=id%3A4791"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707/relationships/vid?resourceVersion=id%3A4791"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707/revision_user?resourceVersion=id%3A4791"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707/relationships/revision_user?resourceVersion=id%3A4791"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707/parent?resourceVersion=id%3A4791"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707/relationships/parent?resourceVersion=id%3A4791"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "5c12c076-7064-4d3b-aad8-797d27cbc285",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5c12c076-7064-4d3b-aad8-797d27cbc285?resourceVersion=id%3A4792"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4792,
+          "drupal_internal__revision_id": 4792,
+          "langcode": "en",
+          "revision_created": "2026-05-21T04:19:27+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Green Methanol",
+          "description": null,
+          "weight": 0,
+          "changed": "2026-05-21T04:19:27+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5c12c076-7064-4d3b-aad8-797d27cbc285/vid?resourceVersion=id%3A4792"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5c12c076-7064-4d3b-aad8-797d27cbc285/relationships/vid?resourceVersion=id%3A4792"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5c12c076-7064-4d3b-aad8-797d27cbc285/revision_user?resourceVersion=id%3A4792"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5c12c076-7064-4d3b-aad8-797d27cbc285/relationships/revision_user?resourceVersion=id%3A4792"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5c12c076-7064-4d3b-aad8-797d27cbc285/parent?resourceVersion=id%3A4792"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/5c12c076-7064-4d3b-aad8-797d27cbc285/relationships/parent?resourceVersion=id%3A4792"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5?resourceVersion=id%3A4462"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4462,
+          "drupal_internal__revision_id": 4462,
+          "langcode": "en",
+          "revision_created": "2025-01-27T06:22:48+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Green Shipping",
+          "description": null,
+          "weight": 0,
+          "changed": "2025-01-27T06:22:48+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/vid?resourceVersion=id%3A4462"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/relationships/vid?resourceVersion=id%3A4462"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/revision_user?resourceVersion=id%3A4462"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/relationships/revision_user?resourceVersion=id%3A4462"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/parent?resourceVersion=id%3A4462"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/relationships/parent?resourceVersion=id%3A4462"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "33d6877b-43e4-46ff-a0fa-4d6ee0432bb5",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/33d6877b-43e4-46ff-a0fa-4d6ee0432bb5?resourceVersion=id%3A1502"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 1502,
+          "drupal_internal__revision_id": 1502,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Greenhouse gases",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-04-20T06:28:59+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/33d6877b-43e4-46ff-a0fa-4d6ee0432bb5/vid?resourceVersion=id%3A1502"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/33d6877b-43e4-46ff-a0fa-4d6ee0432bb5/relationships/vid?resourceVersion=id%3A1502"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/33d6877b-43e4-46ff-a0fa-4d6ee0432bb5/revision_user?resourceVersion=id%3A1502"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/33d6877b-43e4-46ff-a0fa-4d6ee0432bb5/relationships/revision_user?resourceVersion=id%3A1502"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/33d6877b-43e4-46ff-a0fa-4d6ee0432bb5/parent?resourceVersion=id%3A1502"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/33d6877b-43e4-46ff-a0fa-4d6ee0432bb5/relationships/parent?resourceVersion=id%3A1502"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "deefd6c0-f333-42d5-a80b-6be8353819d1",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/deefd6c0-f333-42d5-a80b-6be8353819d1?resourceVersion=id%3A1317"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 1317,
+          "drupal_internal__revision_id": 1317,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Hydrogen energy storage",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-01-05T07:18:59+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/deefd6c0-f333-42d5-a80b-6be8353819d1/vid?resourceVersion=id%3A1317"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/deefd6c0-f333-42d5-a80b-6be8353819d1/relationships/vid?resourceVersion=id%3A1317"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/deefd6c0-f333-42d5-a80b-6be8353819d1/revision_user?resourceVersion=id%3A1317"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/deefd6c0-f333-42d5-a80b-6be8353819d1/relationships/revision_user?resourceVersion=id%3A1317"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/deefd6c0-f333-42d5-a80b-6be8353819d1/parent?resourceVersion=id%3A1317"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/deefd6c0-f333-42d5-a80b-6be8353819d1/relationships/parent?resourceVersion=id%3A1317"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418?resourceVersion=id%3A85"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 85,
+          "drupal_internal__revision_id": 85,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Renewable energy",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-06-01T10:56:10+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418/vid?resourceVersion=id%3A85"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418/relationships/vid?resourceVersion=id%3A85"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418/revision_user?resourceVersion=id%3A85"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418/relationships/revision_user?resourceVersion=id%3A85"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418/parent?resourceVersion=id%3A85"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418/relationships/parent?resourceVersion=id%3A85"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "98269035-fe7b-4567-bd4c-15af8c59e1b6",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/98269035-fe7b-4567-bd4c-15af8c59e1b6?resourceVersion=id%3A1527"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 1527,
+          "drupal_internal__revision_id": 1527,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Renewable natural resources",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-06-01T10:57:21+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/98269035-fe7b-4567-bd4c-15af8c59e1b6/vid?resourceVersion=id%3A1527"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/98269035-fe7b-4567-bd4c-15af8c59e1b6/relationships/vid?resourceVersion=id%3A1527"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/98269035-fe7b-4567-bd4c-15af8c59e1b6/revision_user?resourceVersion=id%3A1527"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/98269035-fe7b-4567-bd4c-15af8c59e1b6/relationships/revision_user?resourceVersion=id%3A1527"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/98269035-fe7b-4567-bd4c-15af8c59e1b6/parent?resourceVersion=id%3A1527"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/98269035-fe7b-4567-bd4c-15af8c59e1b6/relationships/parent?resourceVersion=id%3A1527"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "e32d3938-98ec-4b36-8577-9b9d2795ac21",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e32d3938-98ec-4b36-8577-9b9d2795ac21?resourceVersion=id%3A1204"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 1204,
+          "drupal_internal__revision_id": 1204,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Sustainable Development Goals",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-01-05T08:45:42+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e32d3938-98ec-4b36-8577-9b9d2795ac21/vid?resourceVersion=id%3A1204"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e32d3938-98ec-4b36-8577-9b9d2795ac21/relationships/vid?resourceVersion=id%3A1204"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e32d3938-98ec-4b36-8577-9b9d2795ac21/revision_user?resourceVersion=id%3A1204"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e32d3938-98ec-4b36-8577-9b9d2795ac21/relationships/revision_user?resourceVersion=id%3A1204"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e32d3938-98ec-4b36-8577-9b9d2795ac21/parent?resourceVersion=id%3A1204"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e32d3938-98ec-4b36-8577-9b9d2795ac21/relationships/parent?resourceVersion=id%3A1204"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "dfcc465f-43fe-45a2-8c45-3207e344a81c",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/dfcc465f-43fe-45a2-8c45-3207e344a81c?resourceVersion=id%3A4793"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4793,
+          "drupal_internal__revision_id": 4793,
+          "langcode": "en",
+          "revision_created": "2026-05-21T04:19:27+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "ZNZ Fuels",
+          "description": null,
+          "weight": 0,
+          "changed": "2026-05-21T04:19:27+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/dfcc465f-43fe-45a2-8c45-3207e344a81c/vid?resourceVersion=id%3A4793"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/dfcc465f-43fe-45a2-8c45-3207e344a81c/relationships/vid?resourceVersion=id%3A4793"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/dfcc465f-43fe-45a2-8c45-3207e344a81c/revision_user?resourceVersion=id%3A4793"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/dfcc465f-43fe-45a2-8c45-3207e344a81c/relationships/revision_user?resourceVersion=id%3A4793"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/dfcc465f-43fe-45a2-8c45-3207e344a81c/parent?resourceVersion=id%3A4793"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/dfcc465f-43fe-45a2-8c45-3207e344a81c/relationships/parent?resourceVersion=id%3A4793"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--themes",
+        "id": "779e546f-1b61-43b1-b416-3e8510972407",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407?resourceVersion=id%3A4839"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4839,
+          "drupal_internal__revision_id": 4839,
+          "langcode": "en",
+          "revision_created": "2026-07-09T04:21:13+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Pyrolytic Biofuels, Biochar & Green Chemicals",
+          "description": {
+            "value": "<p>The major focus of the PBBGC area is research and technology development, policy and consultancy in areas of sustainable low carbon biofuel, green fuel, bioenergy and bioplastics. Under this area the R&amp;D majorly centre around thermochemical and catalytic conversion of Agro- industrial biomass and waste residues, algae, tyre, waste/scrap plastics, Used Cooking oil (UCO) etc. to advanced biofuels/green fuels such as sustainable aviation fuels (SAF) and sustainable marine fuels (SMF), biodiesel, refinery grade pyrolytic bio crude and other by products like biochar, high porosity activated carbons &amp; silica.</p>",
+            "format": "full_html",
+            "processed": "<p>The major focus of the PBBGC area is research and technology development, policy and consultancy in areas of sustainable low carbon biofuel, green fuel, bioenergy and bioplastics. Under this area the R&amp;D majorly centre around thermochemical and catalytic conversion of Agro- industrial biomass and waste residues, algae, tyre, waste/scrap plastics, Used Cooking oil (UCO) etc. to advanced biofuels/green fuels such as sustainable aviation fuels (SAF) and sustainable marine fuels (SMF), biodiesel, refinery grade pyrolytic bio crude and other by products like biochar, high porosity activated carbons &amp; silica.</p>"
+          },
+          "weight": 0,
+          "changed": "2026-07-24T10:38:31+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": "/PBBGC",
+            "pid": 12554,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "d1a67c2b-18e2-4952-9a41-d042ccc56014",
+              "meta": {
+                "drupal_internal__target_id": "themes"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/vid?resourceVersion=id%3A4839"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/relationships/vid?resourceVersion=id%3A4839"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/revision_user?resourceVersion=id%3A4839"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/relationships/revision_user?resourceVersion=id%3A4839"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--themes",
+                "id": "47cdb234-e9d4-459c-881e-e44208a73cec",
+                "meta": {
+                  "drupal_internal__target_id": 4850
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/parent?resourceVersion=id%3A4839"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/relationships/parent?resourceVersion=id%3A4839"
+              }
+            }
+          },
+          "field_theme_image": {
+            "data": {
+              "type": "file--file",
+              "id": "5e105dbe-9355-439c-a839-01ceb0007b2b",
+              "meta": {
+                "alt": "Pyrolytic",
+                "title": "",
+                "width": 1600,
+                "height": 430,
+                "drupal_internal__target_id": 12049
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/field_theme_image?resourceVersion=id%3A4839"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/779e546f-1b61-43b1-b416-3e8510972407/relationships/field_theme_image?resourceVersion=id%3A4839"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "parsed_drupal_record": {
+    "uuid": "a240619a-8365-429e-adde-9bf707c46882",
+    "bundle": "ongoing_projects",
+    "nid": 13381,
+    "title": "Adoption of green fuels in Indian Maritime sector.",
+    "url": "https://teriin.org/project/adoption-green-fuels-indian-maritime-sector",
+    "body": "India’s maritime sector is at a critical juncture, where decarbonisation imperatives must be pursued in a manner that is technically robust, operationally safe and economically viable. In this context, the present study provides a comprehensive and evidence-based assessment of a spectrum of low-carbon and alternative fuel pathways relevant to Indian maritime operations, examined through lifecycle and Greenhouse Gas Fuel Intensity (GFI)-based analytical parameters.\n\nThe report adopts a systematic and data-driven framework and goes beyond conceptual discussions by analysing demand - supply dynamics, fuel mix scenarios, retrofitting and engine replacement pathways, as well as blend-fuel options that can be implemented without major engine modifications. The immediate priority going forward is the development of Phase II, encompassing a comprehensive implementation plan with defined short-, medium- and long-term action points for coastal vessels and foreign-going vessels. This phase will require close coordination among the Directorate General of Shipping, the NCoEGPS Green Fuel team and relevant technical and classification institutions, with due consideration of vessel typologies, size categories, fuel standards, certification frameworks and data-driven compliance mechanisms.\n\nExecutive summary\n\nThis report presents the estimates of the alternative and ZNZ fuel demand supply gap for India till 2035. Subsequently, the green Hydrogen and Renewable Energy (RE) based power to produce the alternative fuel is quantified. To align with GFI based trajectory large investment is needed both for ZNZ fuel production scale up and ZNZ fuel capable vessel manufacturing including alternative-fuel engines. To attract investment. sustained demand of these fuels and sound economical parameters is crucial. While the universal definition of ZNZ fuels and the clarity on reward distribution is still awaited from IMO, to comply with the IMO’s GFI based emission target generating Surplus Units (SU) and ensuing qualification for receiving financial rewards the short-, medium- and long-term strategies are developed. The role of alternative fuel engines, scope for Onboard Carbon Capture (OCC) and Fuel Cell integration too is critically analysed and assessed for adoption by Indian ships towards long term decarbonization. Finally, policy gaps are identified towards effective green fuel transition in Indian maritime sector.\n\nFigure Caption : Alternative Fuel Vessels Global (In-Service): Fuel Types v/s Total Number of Vessel(as on August 2024) Number with Percentage (as on August 2024) (a): Relative Share of All Alternative Fuels b): Relative Share of only Hydrogen Derived Fuels\n\nTowards meeting short to medium term GFI based emission targets at least up to 2035, blend fuel (dual -fuel and multifuel) strategy offers the most practical and economically viable pathway to India. It is found that, under the IMO proposed GFI regime, use of B30 (30% Biodiesel blend in Diesel) can meet direct compliance target only till 2031 where as B40 is needed to remain compliant until 2033. B50 covers direct compliance target till 2035. Although B40 and B50 are sufficient enough to meet Direct compliance emission targets till 2033 and 2035 respectively, multi-fuel blends such as Bio/E Alcohol (Methanol/2GEthanol 10 v/v %)-Biodiesel- Diesel blends can fetch much higher degree of Surplus Unit and Rewards thus making the transition economically attractive. The advantage of blend fuel is continued use of existing engines without investing to alternate fuel engines. Additionally, although Coastal Vessels <5000GT are not presently subjected to IMO compliance, however, emission guidelines for vessels between 400-5000 GT range is under consideration by IMO. Hence, in the present study the fuel-blend Scenarios are also built for Indian Coastal vessels.\n\nAs a long term decarbonization strategy, adoption of dual-fuel engines for fuels only E/Bio (in the order Methanol> LBG/LNG> Ammonia) appears most preferred based on 8 sustainability parameters. However, considering two critical aspects i.e. supply readiness and cost of alternative engines, dual fuel engines are highly recommended for adoption only by new builds or vessels <5-7 years of age.\n\nFuel Cell should be considered as promising option for Inland water and shortsea/coastal shipping. Direct Methanol Fuel Cell (DMFC) could be worth investing for India in very small vessel <100eKW (Inland water) category. India should also develop small to mid-sized (100-500ekW) LTMFC Fuel Cell ships (PSV, Ferries, RO-RO & Cargo) till storage and safety challenges of compressed or liquified hydrogen (LH2) as fuel persist. In long term once LH2 overcome the become viable technological and safety challenges, larger inland water ships can be integrated too. SOFC technology should leverage its high fuel flexibility especially Ammonia & Methanol. For cruise, and long-haul vessels, pilot projects need to be initiated with SOFC –Battery hybrid (immediate) and SOFC/ICE hybrid with alternative fuel options like Methanol and Ammonia (medium to long term) especially for auxiliary power units (AMUs).\n\nThere is a heightened need to increasingly implement CO2 capture on-board and switching over to bio/ synthetic e-fuels from HFO with the advancement of alternate fuel engines. Immediate implementation strategy needs to be developed to pilot dual-fuel and multifuel blend in existing engines with OCC in few pilots for generating data to assess energy and economic viability. Domestic green corridor can be set up for with pilot demonstration. There is an urgent need of larger number of pilot demonstration of CCUS projects through valorisation of adsorbed CO2 especially for India with lack of geological CO2 storage sites along with innovation in sustainable CO2 adsorption material production.\n\nIn order to facilitate early transition to ZNZ fuels, India urgently needs to develop standards for Hydrogen derived fuels Bio & E (Methanol, Ammonia, Methane) along with blend fuels, such as, dual-fuel (Alcohol-Diesel, Diesel-Biodiesel B30, B40 & B50) and mixed-fuels for Alcohol (Methanol/Ethanol), Diesel and Biodiesel for maritime application through BIS.\n\nFinally, this study highlights that along with ramping up domestic production of E& Bio Methanol, Ammonia and E LNG, India need to calibrate and undertake dynamic assessment of international shipping demand and target to create refueling/bunkering facilities in part of major ports along the coastal lines",
+    "created": "2026-09-08T10:21:39+00:00",
+    "changed": "2026-09-08T10:28:15+00:00",
+    "metadata": {
+      "field_ongoing_stakeholders": [
+        "Businesses",
+        "Civil society/Grassroots",
+        "Consultants",
+        "Policy Makers",
+        "Researchers/Post graduates",
+        "Technocrats"
+      ],
+      "field_ongoing_tag": [
+        "Carbon intensity",
+        "E-Fuels",
+        "Fuel cell/hydrogen energy safety",
+        "GFI",
+        "Green Ammonia",
+        "Green Methanol",
+        "Green Shipping",
+        "Greenhouse gases",
+        "Hydrogen energy storage",
+        "Renewable energy",
+        "Renewable natural resources",
+        "Sustainable Development Goals",
+        "ZNZ Fuels"
+      ],
+      "field_ongoing_theme": [
+        "Pyrolytic Biofuels, Biochar & Green Chemicals"
+      ],
+      "field_ongoing_start_date": "2026-01-14T04:30:00+00:00",
+      "field_show_on_theme_page": false
+    },
+    "files": [],
+    "refs": [
+      {
+        "field_name": "field_ongoing_stakeholders",
+        "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Businesses"
+      },
+      {
+        "field_name": "field_ongoing_stakeholders",
+        "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Civil society/Grassroots"
+      },
+      {
+        "field_name": "field_ongoing_stakeholders",
+        "uuid": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Consultants"
+      },
+      {
+        "field_name": "field_ongoing_stakeholders",
+        "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Policy Makers"
+      },
+      {
+        "field_name": "field_ongoing_stakeholders",
+        "uuid": "b005a095-c75e-4e10-a554-23eef3b33a25",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Researchers/Post graduates"
+      },
+      {
+        "field_name": "field_ongoing_stakeholders",
+        "uuid": "bfde8e8f-5c16-4aec-ab31-9821bc74dbf1",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Technocrats"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "0676f0bf-dea1-4844-b8c2-c001e49410fa",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Carbon intensity"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "0d9c8b50-0e60-4468-b3a9-d41e1e096dfb",
+        "entity_type": "taxonomy_term--tags",
+        "label": "E-Fuels"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "5d1430ce-a374-4d83-b55d-4dcd3b25a28c",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Fuel cell/hydrogen energy safety"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "4f5f6512-bd75-4d2b-a0a3-22853e687584",
+        "entity_type": "taxonomy_term--tags",
+        "label": "GFI"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Green Ammonia"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "5c12c076-7064-4d3b-aad8-797d27cbc285",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Green Methanol"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Green Shipping"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "33d6877b-43e4-46ff-a0fa-4d6ee0432bb5",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Greenhouse gases"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "deefd6c0-f333-42d5-a80b-6be8353819d1",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Hydrogen energy storage"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Renewable energy"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "98269035-fe7b-4567-bd4c-15af8c59e1b6",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Renewable natural resources"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "e32d3938-98ec-4b36-8577-9b9d2795ac21",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Sustainable Development Goals"
+      },
+      {
+        "field_name": "field_ongoing_tag",
+        "uuid": "dfcc465f-43fe-45a2-8c45-3207e344a81c",
+        "entity_type": "taxonomy_term--tags",
+        "label": "ZNZ Fuels"
+      },
+      {
+        "field_name": "field_ongoing_theme",
+        "uuid": "779e546f-1b61-43b1-b416-3e8510972407",
+        "entity_type": "taxonomy_term--themes",
+        "label": "Pyrolytic Biofuels, Biochar & Green Chemicals"
+      }
+    ]
+  }
+}

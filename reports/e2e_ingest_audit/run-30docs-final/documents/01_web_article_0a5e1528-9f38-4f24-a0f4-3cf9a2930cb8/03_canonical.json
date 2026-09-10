@@ -1,0 +1,103 @@
+{
+  "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+  "source_type": "website",
+  "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+  "sections": [
+    {
+      "text": "The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather.\n\nThe devastating floods in Nepal on 26 August are still unfolding. Hundreds of lives have been lost, many more people remain missing and entire stretches of the Rasuwa-Bhote Koshi-Trishuli corridor have been transformed. Roads, bridges and hydropower infrastructure have been destroyed, while some of the very monitoring stations intended to warn us of flooding were themselves swept away.\n\nWhat makes the disaster particularly unsettling, however, is not simply its scale. It is the nature of the event itself.\n\nThe current scientific assessment points to a glacial collapse at Langtang Lirung, which then developed into a debris flow and flood that travelled almost 100 kilometres downstream. It was not a conventional flood with a single, easily identifiable cause. A disturbance in one part of a mountain system interacted with ice, rock, water, sediment, slopes and rivers, producing consequences far beyond the location where it began.\n\nAnd this was not even the first time this corridor had experienced such a shock. Just fourteen months earlier, in July 2025, the same broad Lhende-Bhote Koshi system was hit by a devastating flood, although the initiating mechanism was different: the drainage of a supraglacial lake in Tibet. The trigger changed; the downstream vulnerability did not.\n\nWe tend to organise risk into categories: glacial lake outburst floods, landslides, floods, avalanches, earthquakes, extreme rainfall. We build monitoring systems around these categories and develop response protocols for each. But mountains do not experience risk in categories.\n\nAn ice collapse can become a debris flow; a debris flow can alter a river; a temporary blockage can create a new lake and another flood. By the time the disturbance reaches people and infrastructure downstream, it may bear little to no resemblance to the event that initiated it.\n\nPerhaps, we are looking at the problem through the wrong statistical lens.\n\nDesigning Around the Mean\n\nFor much of modern planning, we have designed around the mean. We calculate average rainfall, river discharge, temperature, and traffic. We then design infrastructure to perform reliably around those expected conditions, with some allowance for an extreme event.\n\nThere was a logic to this.\n\nThe assumption was that the underlying system was sufficiently stable for the mean to be a useful representation of what we could expect. Deviations were exceptions. But what happens when deviations stop behaving like exceptions?\n\nThis is where ecological overshoot becomes important. We have progressively increased our demands on ecological systems while reducing their capacity to absorb disturbance. In doing so, we are losing the buffers that once made variability manageable. Glaciers, forests, wetlands, watersheds and diverse ecosystems perform functions that absorb shocks and prevent disturbances from becoming catastrophes. When those buffers weaken, the same hazard can produce a very different outcome. Risk begins to look like danger.\n\nDanger of Aggressive Optimisation\n\nAs a planner, one of the first things we are taught is that urban planning is fundamentally about optimising resources and using them in the most efficient way possible. The problem begins when optimisation becomes the dominant objective.\n\nModern infrastructure and urban systems are designed to minimise waste and maximise performance under expected conditions. But aggressive optimisation often removes what appears unnecessary: spare capacity, redundant routes or undeveloped land. These are precisely the things that provide resilience when conditions move beyond normal.\n\nA system optimised for average conditions can become extremely fragile when conditions become more variable. What looks like inefficiency from the perspective of optimisation can, in fact, be resilience from the perspective of a system exposed to uncertainty. This is the paradox of efficiency.\n\nLet us return to Nepal. The question is not simply whether we could have predicted the exact glacial collapse at Langtang Lirung. It is: why was a disturbance in one part of the mountain system capable of producing such catastrophic consequences nearly 100 kilometres downstream?\n\nPart of the answer lies in the buffers between the initiating hazard and the people and infrastructure downstream.\n\nDesigning for Deviation\n\nThe Nepal experience also challenges another assumption: that once we have mapped a hazard, we have understood the risk. We haven't. The same corridor experienced two major events in fourteen months, triggered by different mechanisms. The unit of analysis therefore cannot simply be the hazard; it has to be the system.\n\nRisk cannot be treated as static. A changing glacier, expanding lake, destabilising slope or new development downstream can alter the risk landscape. And after a major event, the landscape itself may have changed. In Rasuwa, debris from the collapse has already created new barrier lakes, introducing another potential source of flooding.\n\nRisk assessment needs to become a living understanding of a changing system.\n\nThis also changes how we think about early warning.\n\nThe Nepal disaster showed that information can reach a forecasting system within minutes and still be of limited value to communities closest to the source. The automatic monitoring stations in the upper Bhote Koshi were themselves destroyed, while downstream warnings may nevertheless have helped people farther south reach safety.\n\nSo the measure of an early-warning system should not simply be whether it detected an event.\n\nIt should be whether it created actionable decision time.\n\nCould someone evacuate? Could a road be closed? Could critical infrastructure be protected? Could emergency teams be moved before access was lost?\n\nThe goal is enough understanding, early enough, to change the outcome.\n\nThe Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather. But observation alone cannot make a system resilient if the ecological and spatial buffers around it have already been eroded.\n\nThe deeper challenge, therefore, is not simply climate change. It is the erosion of the buffers that once made climatic and ecological variability manageable.\n\nThis is why I think we need to move from designing for the mean to designing for the deviation. Not by trying to predict every extreme event, but by asking whether our systems have enough room to absorb what we cannot predict.\n\nBecause perhaps the most dangerous system is not the one that cannot predict the future. It is the one that has been so perfectly optimised for the expected future that it has no room left for anything else.",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [
+    "Ms Shiren Pandita"
+  ],
+  "tags": [],
+  "categories": [
+    "Sustainable Habitat"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-08-31T09:18:16+00:00",
+  "start_precision": "day",
+  "date_source": "created",
+  "effective_end_date": null,
+  "end_precision": null,
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "121d1735f6fbf19f647385ff6377ea6d975099720087c378d94220e16731437b",
+  "extra": {
+    "bundle": "article",
+    "nid": 13363,
+    "changed": "2026-08-31T09:19:47+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_article_authors",
+      "uuid": "854ff440-4285-41c5-80e1-bbc90e7b8abf",
+      "entity_type": "user--user",
+      "label": "Ms Shiren Pandita"
+    },
+    {
+      "field_name": "field_article_stakeholder",
+      "uuid": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Academicians"
+    },
+    {
+      "field_name": "field_article_stakeholder",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_article_stakeholder",
+      "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Civil society/Grassroots"
+    },
+    {
+      "field_name": "field_article_stakeholder",
+      "uuid": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Consultants"
+    },
+    {
+      "field_name": "field_article_stakeholder",
+      "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Policy Makers"
+    },
+    {
+      "field_name": "field_theme",
+      "uuid": "06d2512c-f07c-468c-8489-4e20cf8aba83",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Sustainable Habitat"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_article_authors": [
+      "Ms Shiren Pandita"
+    ],
+    "field_article_stakeholder": [
+      "Academicians",
+      "Businesses",
+      "Civil society/Grassroots",
+      "Consultants",
+      "Policy Makers"
+    ],
+    "field_theme": [
+      "Sustainable Habitat"
+    ],
+    "field_article_type": "article"
+  }
+}

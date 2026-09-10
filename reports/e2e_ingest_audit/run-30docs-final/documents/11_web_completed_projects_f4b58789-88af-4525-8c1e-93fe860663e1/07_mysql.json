@@ -1,0 +1,233 @@
+{
+  "e2e_audit_documents": [
+    {
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "source_type": "website",
+      "source_key": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport",
+      "bundle": "completed_projects",
+      "entity_type": "node",
+      "fingerprint": "2026-09-10T08:44:36+00:00",
+      "content_hash": "d8bfef342205c800e07eeac102ab5f39fd67d586b2ca95d13fbaed4a60954d61",
+      "doc_version": 1,
+      "pipeline_version": "c1.i1.p2.e1",
+      "changed_mark": 1789029876,
+      "effective_start_date": "2024-09-01T00:00:00",
+      "title": "Delivering India’s NDC Targets: Role of Transport",
+      "url": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport",
+      "indexed_at": "2026-09-10T10:30:28",
+      "updated_at": "2026-09-10T10:30:28",
+      "date_source": "cms_field",
+      "start_precision": "day",
+      "effective_end_date": "2026-09-02T00:00:00",
+      "end_precision": "day",
+      "raw_meta": "{\"field_related_terms\": [\"Ambition of Transport\"], \"field_completed_tags\": [\"Transport\"], \"field_completed_theme\": [\"Transport\"], \"field_completed_end_date\": \"2026-09-02T11:30:00+00:00\", \"field_show_on_theme_page\": true, \"field_completed_start_date\": \"2024-09-01T04:30:00+00:00\", \"field_completed_stakeholders\": [\"Academicians\", \"Consultants\", \"Policy Makers\"]}"
+    }
+  ],
+  "e2e_audit_documents_author": [],
+  "e2e_audit_documents_tag": [
+    {
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "tag": "Transport"
+    }
+  ],
+  "e2e_audit_documents_theme": [
+    {
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "theme": "Transport",
+      "theme_type": "sub",
+      "parent": "Sustainable Habitat",
+      "theme_group": "main",
+      "theme_path": "Sustainable Habitat > Transport",
+      "depth": 2
+    }
+  ],
+  "e2e_audit_documents_retry": [],
+  "e2e_audit_documents_dead_link": [],
+  "e2e_audit_documents_date_decision": [
+    {
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "origin": "website",
+      "bundle": "completed_projects",
+      "node_uuid": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "page_pdf_count": 1,
+      "current_start_date": "2026-08-21T03:57:50",
+      "candidate_start_date": "2024-09-01T00:00:00",
+      "candidate_end_date": "2026-09-02T00:00:00",
+      "range_issue": null,
+      "date_type": "range_start",
+      "edition_label": null,
+      "date_source": "field_completed_start_date",
+      "confidence": "Decimal('1.000')",
+      "action": "propose_override",
+      "rule": "bundle_date_field",
+      "decided_by": "deterministic",
+      "evidence": "The completed_projects bundle states its date in field_completed_start_date ('2024-09-01T04:30:00+00:00'); the effective date is 2024-09-01. Its field_completed_end_date is '2026-09-02T11:30:00+00:00', so the period runs to 2026-09-02. That field opens the period the content covers, so the date is when the work or event began.",
+      "llm_raw": null,
+      "prompt_version": null,
+      "url": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport",
+      "filename": null,
+      "updated_at": "2026-09-10T10:30:27"
+    }
+  ],
+  "e2e_audit_documents_entity_mention": [
+    {
+      "id": 2744,
+      "chunk_id": "484a88f4-d5b5-5102-881f-a5ec23ceeeb0",
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "doc_version": 1,
+      "start_offset": 1337,
+      "end_offset": 1372,
+      "surface_text": "United Nations Framework Convention",
+      "normalized_text": "united nations framework convention",
+      "entity_type": "ORGANIZATION",
+      "extraction_method": "pattern",
+      "extractor_version": "entity-extract-v1.1",
+      "confidence": 0.6,
+      "created_at": "2026-09-10T10:30:28"
+    },
+    {
+      "id": 2745,
+      "chunk_id": "1e5ce55a-b5f5-5f77-8356-e5794aff3efe",
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "doc_version": 1,
+      "start_offset": 1053,
+      "end_offset": 1064,
+      "surface_text": "Dan Ioschpe",
+      "normalized_text": "dan ioschpe",
+      "entity_type": "PERSON",
+      "extraction_method": "pattern",
+      "extractor_version": "entity-extract-v1.1",
+      "confidence": 0.6,
+      "created_at": "2026-09-10T10:30:28"
+    }
+  ],
+  "e2e_audit_documents_assertion": [],
+  "e2e_audit_documents_assertion_rejection": [],
+  "e2e_audit_documents_predicate_candidate": [],
+  "e2e_audit_documents_knowledge_run": [
+    {
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "doc_version": 1,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "status": "ok",
+      "attempts": 0,
+      "seconds": 0.0216266,
+      "chunks_seen": 3,
+      "chunks_cached": 0,
+      "mentions": 2,
+      "entities_auto": 0,
+      "entities_provisional": 0,
+      "entities_ambiguous": 0,
+      "entities_unresolved": 2,
+      "claims_built": 0,
+      "claims_staged": 0,
+      "claims_rejected": 0,
+      "claims_retracted": 0,
+      "pending_predicates": 0,
+      "conflicts_disputed": 0,
+      "conflicts_superseded": 0,
+      "projection_status": "skipped",
+      "projection_version": null,
+      "projection_edges": 0,
+      "rejection_counts": "{}",
+      "errors": "[]",
+      "last_error": null,
+      "knowledge_version": "kv1:9f993bff646d51c0",
+      "created_at": "2026-09-10T10:30:28",
+      "updated_at": "2026-09-10T10:30:28"
+    }
+  ],
+  "e2e_audit_documents_attachment": [],
+  "e2e_audit_documents_attachment (as file)": [],
+  "e2e_audit_documents_entity_resolution_decision": [
+    {
+      "id": 2745,
+      "chunk_id": "1e5ce55a-b5f5-5f77-8356-e5794aff3efe",
+      "start_offset": 1053,
+      "end_offset": 1064,
+      "surface_text": "Dan Ioschpe",
+      "normalized_text": "dan ioschpe",
+      "entity_type": "PERSON",
+      "decision": "UNRESOLVED",
+      "entity_id": null,
+      "claim_eligible": 1,
+      "tier": "none",
+      "score": null,
+      "margin": null,
+      "reason": "no candidate entity",
+      "candidates": "[]",
+      "resolver_version": "entity-resolve-v1",
+      "created_at": "2026-09-10T10:30:28"
+    },
+    {
+      "id": 2744,
+      "chunk_id": "484a88f4-d5b5-5102-881f-a5ec23ceeeb0",
+      "start_offset": 1337,
+      "end_offset": 1372,
+      "surface_text": "United Nations Framework Convention",
+      "normalized_text": "united nations framework convention",
+      "entity_type": "ORGANIZATION",
+      "decision": "UNRESOLVED",
+      "entity_id": null,
+      "claim_eligible": 1,
+      "tier": "none",
+      "score": null,
+      "margin": null,
+      "reason": "no candidate entity",
+      "candidates": "[]",
+      "resolver_version": "entity-resolve-v1",
+      "created_at": "2026-09-10T10:30:28"
+    }
+  ],
+  "e2e_audit_documents_entity_extraction": [
+    {
+      "content_hash": "8997a1c61174221245ecbafdbacaf4b85ea3d5f6b7b01482f35f4c65018a7a93",
+      "extraction_key": "84427822023b4f3c0897f076b7069948fa60a15dd1d9ac91cf1a4e447822f38b",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 1,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:28"
+    },
+    {
+      "content_hash": "a16656587175acdb9eb2996de12c7f4ce76f04c22020e014d1ce9dededb895fa",
+      "extraction_key": "1c837306d102f9c8f3df7ee0f17db4937f7e763a6ec4d45f87905b77408c77ae",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 1,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:28"
+    },
+    {
+      "content_hash": "ff5e5f583ff5e0ec6e9829d30b1a0e7935ff759fcbdd363fc5fa1309f2a3279b",
+      "extraction_key": "dcd706bbe43cc09ef18ddc0a39ddaeee28548be686bb78c53585030ef1fb2814",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:28"
+    }
+  ],
+  "e2e_audit_documents_assertion_link": [],
+  "e2e_audit_ingest_log": [
+    {
+      "id": 11,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "source_type": "website",
+      "source_path": null,
+      "source_url": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport",
+      "bundle": "completed_projects",
+      "tags": "Transport",
+      "title": "Delivering India’s NDC Targets: Role of Transport",
+      "status": "indexed",
+      "doc_version": 1,
+      "chunks_indexed": 3,
+      "fingerprint": "2026-09-10T08:44:36+00:00",
+      "content_hash": "d8bfef342205c800e07eeac102ab5f39fd67d586b2ca95d13fbaed4a60954d61",
+      "error_message": null,
+      "event_time": "2026-09-10T10:30:28"
+    }
+  ],
+  "e2e_audit_documents_entity (referenced)": []
+}

@@ -1,0 +1,89 @@
+{
+  "parents": 0,
+  "children": 1,
+  "chunks": [
+    {
+      "chunk_id": "9adbc39e-3b89-5f18-b58a-ef810fffa316",
+      "text": "TERI is undertaking an independent technical peer review of the “Methodology for Carbon Crediting in Jute Cultivation Systems” (MC-JCS: TJF0001, Version 1.1) developed for The Jute Foundation. The assignment assesses whether the proposed methodology provides a scientifically robust, transparent and practically applicable framework for quantifying greenhouse gas emission reductions and carbon removals associated with jute cultivation systems.\n\nThe review covers the methodology’s scope and applicability, project boundaries, baseline and additionality provisions, treatment of annual jute biomass and soil organic carbon, cultivation- and retting-related emissions, permanence, uncertainty, monitoring, digital traceability and safeguards against double counting. It also examines the supporting calculation coefficients, equations, emission factors and assumptions used to estimate net carbon benefits.\n\nThe project aims to identify technical and methodological gaps and provide recommendations for strengthening the methodology before pilot application or consideration under a carbon-crediting programme. The review will support the development of a more credible and verifiable framework for linking improved jute cultivation practices, sustainable agriculture and farmer livelihoods with carbon-finance opportunities.",
+      "is_parent": false,
+      "meta": {
+        "document_id": "3807402a-fb95-4900-85ae-697403882e33",
+        "source_type": "website",
+        "title": "Peer Review of Carbon Credit Methodology for Jute-Based Net CO2 Emission Reduction",
+        "source_url": "https://teriin.org/project/peer-review-carbon-credit-methodology-jute-based-net-co2-emission-reduction",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "3807402a-fb95-4900-85ae-697403882e33",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [
+          "Carbon market",
+          "Carbon sequestration",
+          "Smart agriculture",
+          "Croplands"
+        ],
+        "categories": [
+          "Land"
+        ],
+        "authors": [],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-05-22T00:00:00+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "ongoing_projects",
+          "nid": 13383,
+          "changed": "2026-09-08T10:35:59+00:00"
+        }
+      },
+      "embed_text": "Peer Review of Carbon Credit Methodology for Jute-Based Net CO2 Emission Reduction\n\nTERI is undertaking an independent technical peer review of the “Methodology for Carbon Crediting in Jute Cultivation Systems” (MC-JCS: TJF0001, Version 1.1) developed for The Jute Foundation. The assignment assesses whether the proposed methodology provides a scientifically robust, transparent and practically applicable framework for quantifying greenhouse gas emission reductions and carbon removals associated with jute cultivation systems.\n\nThe review covers the methodology’s scope and applicability, project boundaries, baseline and additionality provisions, treatment of annual jute biomass and soil organic carbon, cultivation- and retting-related emissions, permanence, uncertainty, monitoring, digital traceability and safeguards against double counting. It also examines the supporting calculation coefficients, equations, emission factors and assumptions used to estimate net carbon benefits.\n\nThe project aims to identify technical and methodological gaps and provide recommendations for strengthening the methodology before pilot application or consideration under a carbon-crediting programme. The review will support the development of a more credible and verifiable framework for linking improved jute cultivation practices, sustainable agriculture and farmer livelihoods with carbon-finance opportunities.",
+      "section_heading": null,
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 0,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 225,
+      "content_hash": "2238c571ae7de05ab1c10c4a572068eba982b423cb6b5c77b2a3133f22249d0f",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "9adbc39e-3b89-5f18-b58a-ef810fffa316",
+        "document_id": "3807402a-fb95-4900-85ae-697403882e33",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "ongoing_projects",
+        "title": "Peer Review of Carbon Credit Methodology for Jute-Based Net CO2 Emission Reduction",
+        "chunk_text": "TERI is undertaking an independent technical peer review of the “Methodology for Carbon Crediting in Jute Cultivation Systems” (MC-JCS: TJF0001, Version 1.1) developed for The Jute Foundation. The assignment assesses whether the proposed methodology provides a scientifically robust, transparent and practically applicable framework for quantifying greenhouse gas emission reductions and carbon removals associated with jute cultivation systems.\n\nThe review covers the methodology’s scope and applicability, project boundaries, baseline and additionality provisions, treatment of annual jute biomass and soil organic carbon, cultivation- and retting-related emissions, permanence, uncertainty, monitoring, digital traceability and safeguards against double counting. It also examines the supporting calculation coefficients, equations, emission factors and assumptions used to estimate net carbon benefits.\n\nThe project aims to identify technical and methodological gaps and provide recommendations for strengthening the methodology before pilot application or consideration under a carbon-crediting programme. The review will support the development of a more credible and verifiable framework for linking improved jute cultivation practices, sustainable agriculture and farmer livelihoods with carbon-finance opportunities.",
+        "content_hash": "2238c571ae7de05ab1c10c4a572068eba982b423cb6b5c77b2a3133f22249d0f",
+        "token_count": 225,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Carbon market",
+          "Carbon sequestration",
+          "Smart agriculture",
+          "Croplands"
+        ],
+        "categories": [
+          "Land"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/project/peer-review-carbon-credit-methodology-jute-based-net-co2-emission-reduction",
+        "effective_start_date": "2026-05-22T00:00:00+00:00",
+        "article_uuid": "3807402a-fb95-4900-85ae-697403882e33",
+        "embed_hash": "82d6158a4eee72de9b02016bf59ba62731c285fe71997ee91398c38b734c0d87",
+        "chunk_index": 0,
+        "nid": 13383,
+        "changed": "2026-09-08T10:35:59+00:00"
+      },
+      "embed_hash": "82d6158a4eee72de9b02016bf59ba62731c285fe71997ee91398c38b734c0d87"
+    }
+  ]
+}

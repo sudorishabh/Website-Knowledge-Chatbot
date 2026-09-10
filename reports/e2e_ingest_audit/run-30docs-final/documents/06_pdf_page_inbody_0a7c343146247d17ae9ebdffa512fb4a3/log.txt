@@ -1,0 +1,54 @@
+2026-09-10 15:59:00,209 INFO app.ingestion.pipeline: Ingesting pdf_attachment inbody:0a7c343146247d17ae9ebdffa512fb4a3b39a5b2 (https://www.teriin.org/sites/default/files/files/Book_on_Dr_RK_Pachauri_II.pdf)
+2026-09-10 15:59:15,824 INFO azure.core.pipeline.policies.http_logging_policy: Request URL: 'https://chatbotvision.cognitiveservices.azure.com//documentintelligence/documentModels/prebuilt-read:analyze?api-version=2024-11-30&pages=REDACTED'
+Request method: 'POST'
+Request headers:
+    'content-type': 'application/json'
+    'Content-Length': '2013300'
+    'Accept': 'application/json'
+    'x-ms-client-request-id': '79163e6e-ad02-11f1-bb4e-ec8e7714d6e7'
+    'User-Agent': 'azsdk-python-ai-documentintelligence/1.0.2 Python/3.14.5 (Windows-11-10.0.26200-SP0)'
+    'Ocp-Apim-Subscription-Key': 'REDACTED'
+A body is sent with the request
+2026-09-10 15:59:16,824 INFO azure.core.pipeline.policies.http_logging_policy: Response status: 202
+Response headers:
+    'Content-Length': '0'
+    'Date': 'Thu, 10 Sep 2026 10:29:16 GMT'
+    'Server': 'istio-envoy'
+    'Operation-Location': 'REDACTED'
+    'x-envoy-upstream-service-time': 'REDACTED'
+    'apim-request-id': 'REDACTED'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Content-Type-Options': 'REDACTED'
+    'x-ms-region': 'REDACTED'
+2026-09-10 15:59:20,091 INFO app.ingestion.extractors.pdf_extractor: Extracted Book_on_Dr_RK_Pachauri_II.pdf: 242 page(s), 0 table(s); OCR on page(s) [1, 216]
+2026-09-10 15:59:21,667 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points "HTTP/1.1 200 OK"
+2026-09-10 15:59:23,868 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:27,557 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:28,792 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:29,170 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 15:59:29,501 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 15:59:29,758 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 15:59:29,760 INFO app.ingestion.indexer: Indexed 363 points (294 children: 294 embedded, 0 reused; 69 parents) into 'e2e_audit_documents'
+2026-09-10 15:59:29,799 INFO httpx: HTTP Request: GET http://localhost:6333/collections/e2e_audit_documents/exists "HTTP/1.1 200 OK"
+2026-09-10 15:59:29,817 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-09-10 15:59:29,825 INFO app.ingestion.pipeline: new inbody:0a7c343146247d17ae9ebdffa512fb4a3b39a5b2 -> v1
+2026-09-10 15:59:29,830 INFO app.knowledge.document_pipeline: prelude        entities=2451 chunks=294
+2026-09-10 15:59:30,995 INFO app.knowledge.document_pipeline: mentions       cached=0 mentions=882
+2026-09-10 15:59:32,635 INFO app.knowledge.document_pipeline: resolution     auto=11 provisional=0 ambiguous=89 unresolved=782 cache_recorded=294
+2026-09-10 15:59:37,053 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:40,226 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:46,949 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:50,104 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:52,149 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 15:59:55,043 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:00,540 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:02,114 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:08,137 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 429 Too Many Requests"
+2026-09-10 16:00:08,138 INFO openai._base_client: Retrying request to /responses in 0.397462 seconds
+2026-09-10 16:00:15,246 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:20,195 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:20,198 INFO app.knowledge.document_pipeline: claims         llm_calls=10 llm_failures=0 run_calls_used=38 run_calls_remaining=149962 llm=4 unknown_predicates=0 built=4
+2026-09-10 16:00:20,198 INFO app.knowledge.claims.validate: Rejected 4 assertions: {'missing_object_entity': 3, 'type_violation': 1}
+2026-09-10 16:00:20,198 INFO app.knowledge.document_pipeline: validate       accepted=0 rejected=4 rejected_missing_object_entity=3 rejected_type_violation=1
+2026-09-10 16:00:20,202 INFO app.knowledge.document_pipeline: persist        accepted=0 pending_predicates=0 rejections_recorded=4
+2026-09-10 16:00:20,205 INFO app.knowledge.document_pipeline: knowledge_document id=inbody:0a7c343146247d17ae9ebdffa512fb4a3b39a5b2 v=1 status=ok claims=0 pending=0 proj=skipped 50.37s

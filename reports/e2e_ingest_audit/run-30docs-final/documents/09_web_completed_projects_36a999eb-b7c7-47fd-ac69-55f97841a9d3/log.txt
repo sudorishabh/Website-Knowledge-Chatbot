@@ -1,0 +1,15 @@
+2026-09-10 16:00:25,918 INFO app.ingestion.pipeline: Ingesting website 36a999eb-b7c7-47fd-ac69-55f97841a9d3 (https://teriin.org/project/science-technology-and-innovation-hub-gaondongrem-goa)
+2026-09-10 16:00:25,930 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points "HTTP/1.1 200 OK"
+2026-09-10 16:00:26,649 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:26,703 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:26,704 INFO app.ingestion.indexer: Indexed 3 points (3 children: 3 embedded, 0 reused; 0 parents) into 'e2e_audit_documents'
+2026-09-10 16:00:26,730 INFO httpx: HTTP Request: GET http://localhost:6333/collections/e2e_audit_documents/exists "HTTP/1.1 200 OK"
+2026-09-10 16:00:26,750 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:26,755 INFO app.ingestion.pipeline: new 36a999eb-b7c7-47fd-ac69-55f97841a9d3 -> v1
+2026-09-10 16:00:26,758 INFO app.knowledge.document_pipeline: prelude        entities=2451 chunks=3
+2026-09-10 16:00:26,761 INFO app.knowledge.document_pipeline: mentions       cached=0 mentions=2
+2026-09-10 16:00:26,772 INFO app.knowledge.document_pipeline: resolution     auto=0 provisional=0 ambiguous=0 unresolved=2 cache_recorded=3
+2026-09-10 16:00:26,772 INFO app.knowledge.document_pipeline: claims         cms=0 llm_calls=0 llm_failures=0 run_calls_used=39 run_calls_remaining=149961 llm=0 unknown_predicates=0 built=0
+2026-09-10 16:00:26,772 INFO app.knowledge.document_pipeline: validate       -
+2026-09-10 16:00:26,772 INFO app.knowledge.document_pipeline: persist        accepted=0 pending_predicates=0
+2026-09-10 16:00:26,775 INFO app.knowledge.document_pipeline: knowledge_document id=36a999eb-b7c7-47fd-ac69-55f97841a9d3 v=1 status=ok claims=0 pending=0 proj=skipped 0.01s

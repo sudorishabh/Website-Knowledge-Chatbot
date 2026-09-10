@@ -1,0 +1,78 @@
+# Chunk tree (parents and their children)
+
+1 parent(s), 5 child(ren)
+
+## PARENT b7319d54-a268-5567-9e6d-4d23fc062a8c
+- heading: None · type: None · tokens: 1314 · pages: None · has_table: False
+
+```text
+India’s maritime sector is at a critical juncture, where decarbonisation imperatives must be pursued in a manner that is technically robust, operationally safe and economically viable. In this context, the present study provides a comprehensive and evidence-based assessment of a spectrum of low-carbon and alternative fuel pathways relevant to Indian maritime operations, examined through lifecycle and Greenhouse Gas Fuel Intensity (GFI)-based analytical parameters.
+
+The report adopts a systematic and data-driven framework and goes beyond conceptual discussions by analysing demand - supply dynamics, fuel mix scenarios, retrofitting and engine replacement pathways, as well as blend-fuel options that can be implemented without major engine modifications. The immediate priority going forward is the development of Phase II, encompassing a comprehensive implementation plan with defined short-, medium- and long-term action points for coastal vessels and foreign-going vessels. This phase will require close coordination among the Directorate General of Shipping, the NCoEGPS Green Fuel team and relevant technical and classification institutions, with due consideration of vessel typologies, size categories, fuel standards, certification frameworks and data-driven compliance mechanisms.
+
+Executive summary
+
+This report presents the estimates of the alternative and ZNZ fuel demand supply gap for India till 2035. Subsequently, the green Hydrogen and Renewable Energy (RE) based power to produce the alternative fuel is quantified. To align with GFI based trajectory large investment is needed both for ZNZ fuel production scale up and ZNZ fuel capable vessel manufacturing including alternative-fuel engines. To attract investment. sustained demand of these fuels and sound economical parameters is crucial. While the universal definition of ZNZ fuels and the clarity on reward distribution is still awaited from IMO, to comply with the IMO’s GFI based emission target generating Surplus Units (SU) and ensuing qualification for receiving financial rewards the short-, medium- and long-term strategies are developed. The role of alternative fuel engines, scope for Onboard Carbon Capture (OCC) and Fuel Cell integration too is critically analysed and assessed for adoption by Indian ships towards long term decarbonization. Finally, policy gaps are identified towards effective green fuel transition in Indian maritime sector.
+
+Figure Caption : Alternative Fuel Vessels Global (In-Service): Fuel Types v/s Total Number of Vessel(as on August 2024) Number with Percentage (as on August 2024) (a): Relative Share of All Alternative Fuels b): Relative Share of only Hydrogen Derived Fuels
+
+Towards meeting short to medium term GFI based emission targets at least up to 2035, blend fuel (dual -fuel and multifuel) strategy offers the most practical and economically viable pathway to India. It is found that, under the IMO proposed GFI regime, use of B30 (30% Biodiesel blend in Diesel) can meet direct compliance target only till 2031 where as B40 is needed to remain compliant until 2033. B50 covers direct compliance target till 2035. Although B40 and B50 are sufficient enough to meet Direct compliance emission targets till 2033 and 2035 respectively, multi-fuel blends such as Bio/E Alcohol (Methanol/2GEthanol 10 v/v %)-Biodiesel- Diesel blends can fetch much higher degree of Surplus Unit and Rewards thus making the transition economically attractive. The advantage of blend fuel is continued use of existing engines without investing to alternate fuel engines. Additionally, although Coastal Vessels <5000GT are not presently subjected to IMO compliance, however, emission guidelines for vessels between 400-5000 GT range is under consideration by IMO. Hence, in the present study the fuel-blend Scenarios are also built for Indian Coastal vessels.
+
+As a long term decarbonization strategy, adoption of dual-fuel engines for fuels only E/Bio (in the order Methanol> LBG/LNG> Ammonia) appears most preferred based on 8 sustainability parameters. However, considering two critical aspects i.e. supply readiness and cost of alternative engines, dual fuel engines are highly recommended for adoption only by new builds or vessels <5-7 years of age.
+
+Fuel Cell should be considered as promising option for Inland water and shortsea/coastal shipping. Direct Methanol Fuel Cell (DMFC) could be worth investing for India in very small vessel <100eKW (Inland water) category. India should also develop small to mid-sized (100-500ekW) LTMFC Fuel Cell ships (PSV, Ferries, RO-RO & Cargo) till storage and safety challenges of compressed or liquified hydrogen (LH2) as fuel persist. In long term once LH2 overcome the become viable technological and safety challenges, larger inland water ships can be integrated too. SOFC technology should leverage its high fuel flexibility especially Ammonia & Methanol. For cruise, and long-haul vessels, pilot projects need to be initiated with SOFC –Battery hybrid (immediate) and SOFC/ICE hybrid with alternative fuel options like Methanol and Ammonia (medium to long term) especially for auxiliary power units (AMUs).
+
+There is a heightened need to increasingly implement CO2 capture on-board and switching over to bio/ synthetic e-fuels from HFO with the advancement of alternate fuel engines. Immediate implementation strategy needs to be developed to pilot dual-fuel and multifuel blend in existing engines with OCC in few pilots for generating data to assess energy and economic viability. Domestic green corridor can be set up for with pilot demonstration. There is an urgent need of larger number of pilot demonstration of CCUS projects through valorisation of adsorbed CO2 especially for India with lack of geological CO2 storage sites along with innovation in sustainable CO2 adsorption material production.
+
+In order to facilitate early transition to ZNZ fuels, India urgently needs to develop standards for Hydrogen derived fuels Bio & E (Methanol, Ammonia, Methane) along with blend fuels, such as, dual-fuel (Alcohol-Diesel, Diesel-Biodiesel B30, B40 & B50) and mixed-fuels for Alcohol (Methanol/Ethanol), Diesel and Biodiesel for maritime application through BIS.
+
+Finally, this study highlights that along with ramping up domestic production of E& Bio Methanol, Ammonia and E LNG, India need to calibrate and undertake dynamic assessment of international shipping demand and target to create refueling/bunkering facilities in part of major ports along the coastal lines
+```
+    ### CHILD #0 09488524-d49c-5ff2-9fc3-33ffa7c97c25
+    - heading: None · type: None · tokens: 223 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Adoption of green fuels in Indian Maritime sector.'
+
+    ```text
+    India’s maritime sector is at a critical juncture, where decarbonisation imperatives must be pursued in a manner that is technically robust, operationally safe and economically viable. In this context, the present study provides a comprehensive and evidence-based assessment of a spectrum of low-carbon and alternative fuel pathways relevant to Indian maritime operations, examined through lifecycle and Greenhouse Gas Fuel Intensity (GFI)-based analytical parameters.
+    
+    The report adopts a systematic and data-driven framework and goes beyond conceptual discussions by analysing demand - supply dynamics, fuel mix scenarios, retrofitting and engine replacement pathways, as well as blend-fuel options that can be implemented without major engine modifications. The immediate priority going forward is the development of Phase II, encompassing a comprehensive implementation plan with defined short-, medium- and long-term action points for coastal vessels and foreign-going vessels. This phase will require close coordination among the Directorate General of Shipping, the NCoEGPS Green Fuel team and relevant technical and classification institutions, with due consideration of vessel typologies, size categories, fuel standards, certification frameworks and data-driven compliance mechanisms.
+    
+    Executive summary
+    ```
+    ### CHILD #1 1d3af53c-2ac5-5a2d-9bad-502676b0c2c5
+    - heading: None · type: None · tokens: 270 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Adoption of green fuels in Indian Maritime sector.'
+
+    ```text
+    Executive summary This report presents the estimates of the alternative and ZNZ fuel demand supply gap for India till 2035. Subsequently, the green Hydrogen and Renewable Energy (RE) based power to produce the alternative fuel is quantified. To align with GFI based trajectory large investment is needed both for ZNZ fuel production scale up and ZNZ fuel capable vessel manufacturing including alternative-fuel engines. To attract investment. sustained demand of these fuels and sound economical parameters is crucial. While the universal definition of ZNZ fuels and the clarity on reward distribution is still awaited from IMO, to comply with the IMO’s GFI based emission target generating Surplus Units (SU) and ensuing qualification for receiving financial rewards the short-, medium- and long-term strategies are developed. The role of alternative fuel engines, scope for Onboard Carbon Capture (OCC) and Fuel Cell integration too is critically analysed and assessed for adoption by Indian ships towards long term decarbonization. Finally, policy gaps are identified towards effective green fuel transition in Indian maritime sector.
+    
+    Figure Caption : Alternative Fuel Vessels Global (In-Service): Fuel Types v/s Total Number of Vessel(as on August 2024) Number with Percentage (as on August 2024) (a): Relative Share of All Alternative Fuels b): Relative Share of only Hydrogen Derived Fuels
+    ```
+    ### CHILD #2 07f44c29-3098-5654-8f08-ee4d9faabba8
+    - heading: None · type: None · tokens: 380 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Adoption of green fuels in Indian Maritime sector.'
+
+    ```text
+    essel(as on August 2024) Number with Percentage (as on August 2024) (a): Relative Share of All Alternative Fuels b): Relative Share of only Hydrogen Derived Fuels Towards meeting short to medium term GFI based emission targets at least up to 2035, blend fuel (dual -fuel and multifuel) strategy offers the most practical and economically viable pathway to India. It is found that, under the IMO proposed GFI regime, use of B30 (30% Biodiesel blend in Diesel) can meet direct compliance target only till 2031 where as B40 is needed to remain compliant until 2033. B50 covers direct compliance target till 2035. Although B40 and B50 are sufficient enough to meet Direct compliance emission targets till 2033 and 2035 respectively, multi-fuel blends such as Bio/E Alcohol (Methanol/2GEthanol 10 v/v %)-Biodiesel- Diesel blends can fetch much higher degree of Surplus Unit and Rewards thus making the transition economically attractive. The advantage of blend fuel is continued use of existing engines without investing to alternate fuel engines. Additionally, although Coastal Vessels <5000GT are not presently subjected to IMO compliance, however, emission guidelines for vessels between 400-5000 GT range is under consideration by IMO. Hence, in the present study the fuel-blend Scenarios are also built for Indian Coastal vessels.
+    
+    As a long term decarbonization strategy, adoption of dual-fuel engines for fuels only E/Bio (in the order Methanol> LBG/LNG> Ammonia) appears most preferred based on 8 sustainability parameters. However, considering two critical aspects i.e. supply readiness and cost of alternative engines, dual fuel engines are highly recommended for adoption only by new builds or vessels <5-7 years of age.
+    ```
+    ### CHILD #3 0b6e0bd0-fb90-5a8c-8747-65190228174e
+    - heading: None · type: None · tokens: 368 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Adoption of green fuels in Indian Maritime sector.'
+
+    ```text
+    However, considering two critical aspects i.e. supply readiness and cost of alternative engines, dual fuel engines are highly recommended for adoption only by new builds or vessels <5-7 years of age. Fuel Cell should be considered as promising option for Inland water and shortsea/coastal shipping. Direct Methanol Fuel Cell (DMFC) could be worth investing for India in very small vessel <100eKW (Inland water) category. India should also develop small to mid-sized (100-500ekW) LTMFC Fuel Cell ships (PSV, Ferries, RO-RO & Cargo) till storage and safety challenges of compressed or liquified hydrogen (LH2) as fuel persist. In long term once LH2 overcome the become viable technological and safety challenges, larger inland water ships can be integrated too. SOFC technology should leverage its high fuel flexibility especially Ammonia & Methanol. For cruise, and long-haul vessels, pilot projects need to be initiated with SOFC –Battery hybrid (immediate) and SOFC/ICE hybrid with alternative fuel options like Methanol and Ammonia (medium to long term) especially for auxiliary power units (AMUs).
+    
+    There is a heightened need to increasingly implement CO2 capture on-board and switching over to bio/ synthetic e-fuels from HFO with the advancement of alternate fuel engines. Immediate implementation strategy needs to be developed to pilot dual-fuel and multifuel blend in existing engines with OCC in few pilots for generating data to assess energy and economic viability. Domestic green corridor can be set up for with pilot demonstration. There is an urgent need of larger number of pilot demonstration of CCUS projects through valorisation of adsorbed CO2 especially for India with lack of geological CO2 storage sites along with innovation in sustainable CO2 adsorption material production.
+    ```
+    ### CHILD #4 30938ef4-396a-52b3-8a5b-713c75d521eb
+    - heading: None · type: None · tokens: 192 · page: None · pages: None · overlap_pages: None · has_table: False
+    - embed_text prefix: 'Adoption of green fuels in Indian Maritime sector.'
+
+    ```text
+    number of pilot demonstration of CCUS projects through valorisation of adsorbed CO2 especially for India with lack of geological CO2 storage sites along with innovation in sustainable CO2 adsorption material production. In order to facilitate early transition to ZNZ fuels, India urgently needs to develop standards for Hydrogen derived fuels Bio & E (Methanol, Ammonia, Methane) along with blend fuels, such as, dual-fuel (Alcohol-Diesel, Diesel-Biodiesel B30, B40 & B50) and mixed-fuels for Alcohol (Methanol/Ethanol), Diesel and Biodiesel for maritime application through BIS.
+    
+    Finally, this study highlights that along with ramping up domestic production of E& Bio Methanol, Ammonia and E LNG, India need to calibrate and undertake dynamic assessment of international shipping demand and target to create refueling/bunkering facilities in part of major ports along the coastal lines
+    ```
+

@@ -1,0 +1,86 @@
+{
+  "document_id": "74aba0c4-1457-4495-9263-a0b95aa97875",
+  "source_type": "website",
+  "title": "ISA SIDS and GRIHA Launch ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations",
+  "sections": [
+    {
+      "text": "The International Solar Alliance (ISA), through its SIDS Platform, and the GRIHA Council have launched the ISA-iSUN Design Challenge to promote the integration of solar energy and climate-resilient design into tourism infrastructure in Small Island Developing States (SIDS).",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/news/isa-sids-and-griha-launch-isa-isun-design-challenge-promote-solar-and-climate-resilient",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "74aba0c4-1457-4495-9263-a0b95aa97875",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "GRIHA Council",
+    "Solar energy",
+    "Climate resilience"
+  ],
+  "categories": [
+    "Sustainable Habitat"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-09-04T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": null,
+  "end_precision": null,
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "d6d51130fa369514d2cc880c1033c810c7c348e6f672bcb0f8db71adec5138ee",
+  "extra": {
+    "bundle": "news",
+    "nid": 13378,
+    "changed": "2026-09-08T09:34:52+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_news_tags",
+      "uuid": "109d1917-4dbd-435a-944b-7a9c9d804068",
+      "entity_type": "taxonomy_term--tags",
+      "label": "GRIHA Council"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "00575411-7e0b-4a54-8fb5-e836075d7e72",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Solar energy"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "a88d9489-d81b-43af-a76a-8c90d2a143e5",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Climate resilience"
+    },
+    {
+      "field_name": "field_news_themes",
+      "uuid": "06d2512c-f07c-468c-8489-4e20cf8aba83",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Sustainable Habitat"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_news_tags": [
+      "GRIHA Council",
+      "Solar energy",
+      "Climate resilience"
+    ],
+    "field_news_themes": [
+      "Sustainable Habitat"
+    ],
+    "field_news_date": "2026-09-04T11:30:03+00:00",
+    "field_news_source": "DigiTIMES",
+    "field_news_type": [
+      "electronic_media"
+    ]
+  }
+}

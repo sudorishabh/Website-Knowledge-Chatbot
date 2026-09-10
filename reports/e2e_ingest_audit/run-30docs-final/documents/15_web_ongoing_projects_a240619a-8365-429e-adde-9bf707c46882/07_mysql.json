@@ -1,0 +1,229 @@
+{
+  "e2e_audit_documents": [
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "source_type": "website",
+      "source_key": "https://teriin.org/project/adoption-green-fuels-indian-maritime-sector",
+      "bundle": "ongoing_projects",
+      "entity_type": "node",
+      "fingerprint": "2026-09-08T10:28:15+00:00",
+      "content_hash": "5ea5ef71872cfa0ef88b9348ef187e5cad6e806b43497f9a35adf6136986a61b",
+      "doc_version": 1,
+      "pipeline_version": "c1.i1.p2.e1",
+      "changed_mark": 1788863295,
+      "effective_start_date": "2026-01-14T00:00:00",
+      "title": "Adoption of green fuels in Indian Maritime sector.",
+      "url": "https://teriin.org/project/adoption-green-fuels-indian-maritime-sector",
+      "indexed_at": "2026-09-10T10:30:35",
+      "updated_at": "2026-09-10T10:30:35",
+      "date_source": "cms_field",
+      "start_precision": "day",
+      "effective_end_date": null,
+      "end_precision": null,
+      "raw_meta": "{\"field_ongoing_tag\": [\"Carbon intensity\", \"E-Fuels\", \"Fuel cell/hydrogen energy safety\", \"GFI\", \"Green Ammonia\", \"Green Methanol\", \"Green Shipping\", \"Greenhouse gases\", \"Hydrogen energy storage\", \"Renewable energy\", \"Renewable natural resources\", \"Sustainable Development Goals\", \"ZNZ Fuels\"], \"field_ongoing_theme\": [\"Pyrolytic Biofuels, Biochar & Green Chemicals\"], \"field_ongoing_start_date\": \"2026-01-14T04:30:00+00:00\", \"field_show_on_theme_page\": false, \"field_ongoing_stakeholders\": [\"Businesses\", \"Civil society/Grassroots\", \"Consultants\", \"Policy Makers\", \"Researchers/Post graduates\", \"Technocrats\"]}"
+    }
+  ],
+  "e2e_audit_documents_author": [],
+  "e2e_audit_documents_tag": [
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Carbon intensity"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "E-Fuels"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Fuel cell/hydrogen energy safety"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "GFI"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Green Ammonia"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Green Methanol"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Green Shipping"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Greenhouse gases"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Hydrogen energy storage"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Renewable energy"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Renewable natural resources"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "Sustainable Development Goals"
+    },
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "tag": "ZNZ Fuels"
+    }
+  ],
+  "e2e_audit_documents_theme": [
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "theme": "Pyrolytic Biofuels, Biochar & Green Chemicals",
+      "theme_type": "primary",
+      "parent": null,
+      "theme_group": "other",
+      "theme_path": "Pyrolytic Biofuels, Biochar & Green Chemicals",
+      "depth": 1
+    }
+  ],
+  "e2e_audit_documents_retry": [],
+  "e2e_audit_documents_dead_link": [],
+  "e2e_audit_documents_date_decision": [
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "origin": "website",
+      "bundle": "ongoing_projects",
+      "node_uuid": "a240619a-8365-429e-adde-9bf707c46882",
+      "page_pdf_count": 1,
+      "current_start_date": "2026-09-08T10:21:39",
+      "candidate_start_date": "2026-01-14T00:00:00",
+      "candidate_end_date": null,
+      "range_issue": null,
+      "date_type": "range_start",
+      "edition_label": null,
+      "date_source": "field_ongoing_start_date",
+      "confidence": "Decimal('1.000')",
+      "action": "propose_override",
+      "rule": "bundle_date_field",
+      "decided_by": "deterministic",
+      "evidence": "The ongoing_projects bundle states its date in field_ongoing_start_date ('2026-01-14T04:30:00+00:00'); the effective date is 2026-01-14. That field opens the period the content covers, so the date is when the work or event began.",
+      "llm_raw": null,
+      "prompt_version": null,
+      "url": "https://teriin.org/project/adoption-green-fuels-indian-maritime-sector",
+      "filename": null,
+      "updated_at": "2026-09-10T10:30:35"
+    }
+  ],
+  "e2e_audit_documents_entity_mention": [],
+  "e2e_audit_documents_assertion": [],
+  "e2e_audit_documents_assertion_rejection": [],
+  "e2e_audit_documents_predicate_candidate": [],
+  "e2e_audit_documents_knowledge_run": [
+    {
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "doc_version": 1,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "status": "ok",
+      "attempts": 0,
+      "seconds": 0.0162183,
+      "chunks_seen": 5,
+      "chunks_cached": 0,
+      "mentions": 0,
+      "entities_auto": 0,
+      "entities_provisional": 0,
+      "entities_ambiguous": 0,
+      "entities_unresolved": 0,
+      "claims_built": 0,
+      "claims_staged": 0,
+      "claims_rejected": 0,
+      "claims_retracted": 0,
+      "pending_predicates": 0,
+      "conflicts_disputed": 0,
+      "conflicts_superseded": 0,
+      "projection_status": "skipped",
+      "projection_version": null,
+      "projection_edges": 0,
+      "rejection_counts": "{}",
+      "errors": "[]",
+      "last_error": null,
+      "knowledge_version": "kv1:9f993bff646d51c0",
+      "created_at": "2026-09-10T10:30:35",
+      "updated_at": "2026-09-10T10:30:35"
+    }
+  ],
+  "e2e_audit_documents_attachment": [],
+  "e2e_audit_documents_attachment (as file)": [],
+  "e2e_audit_documents_entity_resolution_decision": [],
+  "e2e_audit_documents_entity_extraction": [
+    {
+      "content_hash": "636711e3364e84cb13821d830baa7cff716545a7ca0bd14fd5743cb40b82afd3",
+      "extraction_key": "bec20c377f8f914f9a4522a1d5ce90b75b16a0012bfe1630b482db0c56978bd1",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:35"
+    },
+    {
+      "content_hash": "79d9050527d6a517d37a148e25737e8c0ff72f6acd26bf6af955506db1ae25a1",
+      "extraction_key": "9e2c70b57528c8ca13ed5d63f2537bc15b60cdfc11a48fc2dbd976317e83074c",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:35"
+    },
+    {
+      "content_hash": "9b97cc5907f47778601c8bb1ea5551fae4c43234023708c27bcde9f505d09501",
+      "extraction_key": "3db9082aafbfe9e33ce8294f655f5e1391dbe7f629ec0292a4b3605de5dcb7d6",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:35"
+    },
+    {
+      "content_hash": "d0a788acef16f021d4d5279e829c618be55b8d2d034bb9dac0c48af234e446db",
+      "extraction_key": "67a89fb78b24b2ddc8424ce116130bd8f5a022f4bfdc29e80eb05ec8043cd86f",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:35"
+    },
+    {
+      "content_hash": "e4247ba91b3d991c5358d5f0d83bfc63aad2b900d5d45da686e6ecdf945ffd0a",
+      "extraction_key": "b789703d80a01bed3cc3f8fee578acc413371784e76162af9b0de6b14b9b09d4",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:35"
+    }
+  ],
+  "e2e_audit_documents_assertion_link": [],
+  "e2e_audit_ingest_log": [
+    {
+      "id": 15,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "source_type": "website",
+      "source_path": null,
+      "source_url": "https://teriin.org/project/adoption-green-fuels-indian-maritime-sector",
+      "bundle": "ongoing_projects",
+      "tags": "Carbon intensity, E-Fuels, Fuel cell/hydrogen energy safety, GFI, Green Ammonia, Green Methanol, Green Shipping, Greenhouse gases, Hydrogen energy storage, Renewable energy, Renewable natural resources, Sustainable Development Goals, ZNZ Fuels",
+      "title": "Adoption of green fuels in Indian Maritime sector.",
+      "status": "indexed",
+      "doc_version": 1,
+      "chunks_indexed": 6,
+      "fingerprint": "2026-09-08T10:28:15+00:00",
+      "content_hash": "5ea5ef71872cfa0ef88b9348ef187e5cad6e806b43497f9a35adf6136986a61b",
+      "error_message": null,
+      "event_time": "2026-09-10T10:30:35"
+    }
+  ],
+  "e2e_audit_documents_entity (referenced)": []
+}

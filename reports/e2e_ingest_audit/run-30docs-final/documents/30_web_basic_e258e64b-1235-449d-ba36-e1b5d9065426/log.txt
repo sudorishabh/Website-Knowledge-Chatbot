@@ -1,0 +1,16 @@
+2026-09-10 16:00:57,490 INFO app.ingestion.pipeline: Ingesting website e258e64b-1235-449d-ba36-e1b5d9065426 (basic/e258e64b-1235-449d-ba36-e1b5d9065426)
+2026-09-10 16:00:57,490 INFO app.ingestion.bundle_dates: Bundle 'basic' has no configured date field; its records keep their created stamp. Declare it in app.ingestion.bundle_dates.BUNDLE_DATE_FIELDS if it should use one.
+2026-09-10 16:00:57,515 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points "HTTP/1.1 200 OK"
+2026-09-10 16:00:57,855 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:57,868 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:57,868 INFO app.ingestion.indexer: Indexed 1 points (1 children: 1 embedded, 0 reused; 0 parents) into 'e2e_audit_documents'
+2026-09-10 16:00:57,880 INFO httpx: HTTP Request: GET http://localhost:6333/collections/e2e_audit_documents/exists "HTTP/1.1 200 OK"
+2026-09-10 16:00:57,887 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:57,893 INFO app.ingestion.pipeline: new e258e64b-1235-449d-ba36-e1b5d9065426 -> v1
+2026-09-10 16:00:57,897 INFO app.knowledge.document_pipeline: prelude        entities=2451 chunks=1
+2026-09-10 16:00:57,897 INFO app.knowledge.document_pipeline: mentions       cached=0 mentions=0
+2026-09-10 16:00:57,900 INFO app.knowledge.document_pipeline: resolution     auto=0 provisional=0 ambiguous=0 unresolved=0 cache_recorded=1
+2026-09-10 16:00:57,900 INFO app.knowledge.document_pipeline: claims         llm_calls=0 llm_failures=0 run_calls_used=47 run_calls_remaining=149953 llm=0 unknown_predicates=0 built=0
+2026-09-10 16:00:57,900 INFO app.knowledge.document_pipeline: validate       -
+2026-09-10 16:00:57,900 INFO app.knowledge.document_pipeline: persist        accepted=0 pending_predicates=0
+2026-09-10 16:00:57,903 INFO app.knowledge.document_pipeline: knowledge_document id=e258e64b-1235-449d-ba36-e1b5d9065426 v=1 status=ok claims=0 pending=0 proj=skipped 0.00s

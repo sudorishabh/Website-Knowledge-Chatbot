@@ -1,0 +1,217 @@
+{
+  "stage_report": {
+    "document_id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+    "doc_version": 1,
+    "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+    "status": "ok",
+    "seconds": 0.01,
+    "knowledge_version": "kv1:9f993bff646d51c0",
+    "counts": {
+      "chunks_seen": 1,
+      "chunks_cached": 0,
+      "mentions": 1,
+      "entities_auto": 0,
+      "entities_provisional": 0,
+      "entities_ambiguous": 1,
+      "entities_unresolved": 0,
+      "claims_built": 0,
+      "claims_staged": 0,
+      "claims_rejected": 0,
+      "claims_retracted": 0,
+      "pending_predicates": 0,
+      "conflicts_disputed": 0,
+      "conflicts_superseded": 0
+    },
+    "rejection_counts": {},
+    "projection": {
+      "status": "skipped",
+      "version": null,
+      "edges": 0
+    },
+    "stages": [
+      {
+        "stage": "prelude",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {
+          "entities": 2451,
+          "chunks": 1
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "supersede",
+        "skipped": true,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "mentions",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {
+          "cached": 0,
+          "mentions": 1
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "resolution",
+        "skipped": false,
+        "seconds": 0.01,
+        "counts": {
+          "auto": 0,
+          "provisional": 0,
+          "ambiguous": 1,
+          "unresolved": 0,
+          "cache_recorded": 1
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "claims",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {
+          "llm_calls": 0,
+          "llm_failures": 0,
+          "run_calls_used": 43,
+          "run_calls_remaining": 149957,
+          "llm": 0,
+          "unknown_predicates": 0,
+          "built": 0
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "validate",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "persist",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {
+          "accepted": 0,
+          "pending_predicates": 0
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "conflicts",
+        "skipped": true,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "project",
+        "skipped": true,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      }
+    ],
+    "errors": []
+  },
+  "knowledge_run_rows": [
+    {
+      "document_id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+      "doc_version": 1,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "status": "ok",
+      "attempts": 0,
+      "seconds": 0.0100351,
+      "chunks_seen": 1,
+      "chunks_cached": 0,
+      "mentions": 1,
+      "entities_auto": 0,
+      "entities_provisional": 0,
+      "entities_ambiguous": 1,
+      "entities_unresolved": 0,
+      "claims_built": 0,
+      "claims_staged": 0,
+      "claims_rejected": 0,
+      "claims_retracted": 0,
+      "pending_predicates": 0,
+      "conflicts_disputed": 0,
+      "conflicts_superseded": 0,
+      "projection_status": "skipped",
+      "projection_version": null,
+      "projection_edges": 0,
+      "rejection_counts": "{}",
+      "errors": "[]",
+      "last_error": null,
+      "knowledge_version": "kv1:9f993bff646d51c0",
+      "created_at": "2026-09-10T10:30:39",
+      "updated_at": "2026-09-10T10:30:39"
+    }
+  ],
+  "mentions": [
+    {
+      "id": 2776,
+      "chunk_id": "1b5aac13-7cd2-522e-a6cc-35e7abec9c26",
+      "document_id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+      "doc_version": 1,
+      "start_offset": 56,
+      "end_offset": 74,
+      "surface_text": "Sarbananda Sonowal",
+      "normalized_text": "sarbananda sonowal",
+      "entity_type": "PERSON",
+      "extraction_method": "pattern",
+      "extractor_version": "entity-extract-v1.1",
+      "confidence": 0.6,
+      "created_at": "2026-09-10T10:30:39"
+    }
+  ],
+  "resolution_decisions": [
+    {
+      "id": 2776,
+      "chunk_id": "1b5aac13-7cd2-522e-a6cc-35e7abec9c26",
+      "start_offset": 56,
+      "end_offset": 74,
+      "surface_text": "Sarbananda Sonowal",
+      "normalized_text": "sarbananda sonowal",
+      "entity_type": "PERSON",
+      "decision": "AMBIGUOUS",
+      "entity_id": null,
+      "claim_eligible": 1,
+      "tier": "none",
+      "score": null,
+      "margin": null,
+      "reason": "more than 25 candidates; surface too common",
+      "candidates": "[]",
+      "resolver_version": "entity-resolve-v1",
+      "created_at": "2026-09-10T10:30:39"
+    }
+  ],
+  "extraction_cache": [
+    {
+      "content_hash": "c8301da5899fcaf7d07232bcea305d4cf4d0bc5f7835424ef075e8c26e17bbba",
+      "extraction_key": "7ef3f1be32c57c41d254747389dc84f8c2045b8fcee6437fdb4067119d5debb8",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 1,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:30:39"
+    }
+  ],
+  "assertions": [],
+  "assertion_rejections": [],
+  "assertion_links": [],
+  "predicate_candidates": [],
+  "entities_referenced": []
+}

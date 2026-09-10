@@ -1,0 +1,17 @@
+2026-09-10 16:00:39,515 INFO app.ingestion.pipeline: Ingesting website 3c24d94b-f8bb-4475-b147-56dd0c35318f (https://teriin.org/event/darbari-seth-memorial-lecture-2026)
+2026-09-10 16:00:39,547 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,891 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,911 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,911 INFO app.ingestion.indexer: Indexed 4 points (3 children: 3 embedded, 0 reused; 1 parents) into 'e2e_audit_documents'
+2026-09-10 16:00:39,930 INFO httpx: HTTP Request: GET http://localhost:6333/collections/e2e_audit_documents/exists "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,937 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:39,943 INFO app.ingestion.pipeline: new 3c24d94b-f8bb-4475-b147-56dd0c35318f -> v1
+2026-09-10 16:00:39,946 INFO app.knowledge.document_pipeline: prelude        entities=2451 chunks=3
+2026-09-10 16:00:39,958 INFO app.knowledge.document_pipeline: mentions       cached=0 mentions=15
+2026-09-10 16:00:39,977 INFO app.knowledge.document_pipeline: resolution     auto=1 provisional=0 ambiguous=0 unresolved=14 cache_recorded=3
+2026-09-10 16:00:41,907 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:41,909 INFO app.knowledge.document_pipeline: claims         llm_calls=1 llm_failures=0 run_calls_used=44 run_calls_remaining=149956 llm=1 unknown_predicates=0 built=1
+2026-09-10 16:00:41,909 INFO app.knowledge.claims.validate: Rejected 1 assertions: {'missing_object_entity': 1}
+2026-09-10 16:00:41,909 INFO app.knowledge.document_pipeline: validate       accepted=0 rejected=1 rejected_missing_object_entity=1
+2026-09-10 16:00:41,918 INFO app.knowledge.document_pipeline: persist        accepted=0 pending_predicates=0 rejections_recorded=1
+2026-09-10 16:00:41,922 INFO app.knowledge.document_pipeline: knowledge_document id=3c24d94b-f8bb-4475-b147-56dd0c35318f v=1 status=ok claims=0 pending=0 proj=skipped 1.97s

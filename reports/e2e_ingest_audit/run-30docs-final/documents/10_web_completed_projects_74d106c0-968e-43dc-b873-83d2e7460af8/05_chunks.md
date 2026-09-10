@@ -1,0 +1,14 @@
+# Chunk tree (parents and their children)
+
+0 parent(s), 1 child(ren)
+
+## CHILDREN WITHOUT A PARENT RECORD (single-child windows)
+### CHILD #0 66d87d47-c279-5e75-a48e-27ecfd645f62
+- heading: None · type: None · tokens: 185 · page: None · pages: None · overlap_pages: None · has_table: False
+- embed_text prefix: 'Establishing Resource and Knowledge Centre (RKC) for the Distribution Sector under the All-India Discoms Association (AIDA)'
+
+```text
+TERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.
+
+The study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA.
+```

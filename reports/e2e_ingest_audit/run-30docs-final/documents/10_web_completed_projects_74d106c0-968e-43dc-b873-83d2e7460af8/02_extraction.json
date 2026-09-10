@@ -1,0 +1,55 @@
+{
+  "rich_text_fields": [
+    {
+      "field": "body",
+      "kind": "formatted_text",
+      "html_chars": 1085,
+      "html": "<p>TERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.</p><p>The study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA.</p>",
+      "text": "TERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.\n\nThe study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA."
+    }
+  ],
+  "record_body": "TERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.\n\nThe study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA.",
+  "record_body_chars": 1073,
+  "files_discovered": [],
+  "entity_refs": [
+    {
+      "field_name": "field_completed_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_completed_tags",
+      "uuid": "a411441c-e719-48b4-a63d-ce085e2a790a",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Energy services"
+    },
+    {
+      "field_name": "field_completed_tags",
+      "uuid": "1b4b7623-c398-4c06-a5a5-f2d0912fc52c",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Energy technology"
+    },
+    {
+      "field_name": "field_completed_theme",
+      "uuid": "d1561408-ba30-4835-a9da-96f7c311b55c",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Energy"
+    }
+  ],
+  "scalar_metadata": {
+    "field_completed_stakeholders": [
+      "Businesses"
+    ],
+    "field_completed_tags": [
+      "Energy services",
+      "Energy technology"
+    ],
+    "field_completed_theme": [
+      "Energy"
+    ],
+    "field_completed_end_date": "2026-03-31T11:30:00+00:00",
+    "field_completed_start_date": "2025-10-14T04:30:29+00:00",
+    "field_show_on_theme_page": false
+  }
+}

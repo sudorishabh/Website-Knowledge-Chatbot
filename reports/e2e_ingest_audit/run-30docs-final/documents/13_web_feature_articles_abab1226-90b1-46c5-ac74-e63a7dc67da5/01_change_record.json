@@ -1,0 +1,25 @@
+{
+  "status": "new",
+  "document_id": "abab1226-90b1-46c5-ac74-e63a7dc67da5",
+  "source_type": "website",
+  "source_key": "https://teriin.org/opinion/indias-carbon-market-needs-firewall",
+  "fingerprint": "2026-09-09T12:23:49+00:00",
+  "bundle": "feature_articles",
+  "entity_type": "node",
+  "changed_mark": 1788956629,
+  "filename": null,
+  "prior": null,
+  "outcome": "indexed",
+  "error": null,
+  "traceback": null,
+  "started_at": "2026-09-10T10:30:30.306649+00:00",
+  "finished_at": "2026-09-10T10:30:32.800508+00:00",
+  "elapsed_seconds": 2.494,
+  "stage_seconds": {
+    "build_doc": 0.0,
+    "pdf_extraction": null,
+    "chunk": 0.001,
+    "embed_and_upsert": 0.557,
+    "knowledge": 1.894
+  }
+}

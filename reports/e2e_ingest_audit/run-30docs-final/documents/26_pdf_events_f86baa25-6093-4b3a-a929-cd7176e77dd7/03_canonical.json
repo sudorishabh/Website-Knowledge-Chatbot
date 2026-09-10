@@ -1,0 +1,80 @@
+{
+  "document_id": "f86baa25-6093-4b3a-a929-cd7176e77dd7",
+  "source_type": "pdf_attachment",
+  "title": "World Sustainable Development Summit 2027: Curtain Raiser",
+  "sections": [
+    {
+      "text": "Agenda \nCurtain Raiser for World Sustainable Development Summit (WSDS) \n2027  \nVenue: Office of Vice Chancellor – Gauhati University \nDate 09-09-2026, Time – 1615 – 1730 hrs \n \n1615-1620 hrs \nVision of WSDS \n2027 \nDr. Vibha Dhawan, Director General, TERI  \nScreening of a Short Thematic Video on the World Sustainable \nDevelopment Summit (WSDS) 2027 and the Legacy of 25 Years of the \nJourney of WSDS \nOutlook for WSDS \n2027  \nMs. Leena Nandan, IAS, Ex–Secretary, MoEF&CC, \nGovt of India, and Distinguished Fellow, TERI \nPresentation on \nWSDS 2027 and \nconnecting the \ndots on Climate \nResilience for \nAssam and North \nEast \nMs. Taruna Idnani, Associate Fellow, TERI \n \nSpecial Remarks \nDr. Nani Gopal Mahanta, Vice Chancellor, \nGuwahati University \nSpecial Remarks \nDr. John Berchmans Ekka, Additional Chief Secretary \n(ACS), Industries, Commerce & Public Enterprises \nDepartment, Government of Assam* \nSpecial Remarks \nShri Ajay Tewari, IAS, Additional Chief Secretary \n(ACS), Home & Political Department, Government of \nAssam \nSpecial Inaugural \nAddress \nMr. Jayanta Malla Baruah, Hon’ble Minister of \nFinance, Environment & Forest, and Mines & \nMinerals, Govt of Assam \n1725-1730 hrs  \nVote of Thanks by Dr. Dipankar Saharia, Senior Director, TERI  \nHigh tea \n*to be confirmed\n\n| 1 615-1620 hrs | Vision of WSDS 2027 | Dr. Vibha Dhawan, Director General, TERI |\n| --- | --- | --- |\n| 1620 - 1625 hrs | Screening of a Short Thematic Video on the World Sustainable Development Summit (WSDS) 2027 and the Legacy of 25 Years of the Journey of WSDS |  |\n| 1625 - 1630 hrs | Outlook for WSDS 2027 | Ms. Leena Nandan, IAS, Ex–Secretary, MoEF&CC, Govt of India, and Distinguished Fellow, TERI |\n| 1630 - 1640 hrs | Presentation on WSDS 2027 and connecting the dots on Climate Resilience for Assam and North East | Ms. Taruna Idnani, Associate Fellow, TERI |\n| 1640 – 1650 hrs | Special Remarks | Dr. Nani Gopal Mahanta, Vice Chancellor, Guwahati University |\n| 1650 – 1700 hrs | Special Remarks | Dr. John Berchmans Ekka, Additional Chief Secretary (ACS), Industries, Commerce & Public Enterprises Department, Government of Assam* |\n| 1700 – 1710 hrs | Special Remarks | Shri Ajay Tewari, IAS, Additional Chief Secretary (ACS), Home & Political Department, Government of Assam |\n| 1710 – 1725 hrs | Special Inaugural Address | Mr. Jayanta Malla Baruah, Hon’ble Minister of Finance, Environment & Forest, and Mines & Minerals, Govt of Assam |\n| 1725-1730 hrs | Vote of Thanks by Dr. Dipankar Saharia, Senior Director, TERI |  |\n| High tea |  |  |",
+      "heading": null,
+      "page_start": 1,
+      "page_end": 1,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/event/world-sustainable-development-summit-2027-curtain-raiser",
+  "file_url": "https://teriin.org/sites/default/files/2026-09/Curtain%20Raiser%20WSDS%20Agenda.pdf",
+  "pdf_id": "f86baa25-6093-4b3a-a929-cd7176e77dd7",
+  "pdf_path": "Curtain Raiser WSDS Agenda.pdf",
+  "article_uuid": null,
+  "linked_pdf_id": null,
+  "linked_article_uuid": "ce219043-a7a7-41ed-9812-2ecfe3842fe1",
+  "authors": [],
+  "tags": [
+    "Climate vulnerability"
+  ],
+  "categories": [
+    "Resources & Sustainable Development"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-09-09T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "parent_page",
+  "effective_end_date": "2026-09-09T00:00:00+00:00",
+  "end_precision": "day",
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "27cbefba692341b21ca3c23204e97d8209ea11dc4c3c4fcf5381f35aa258e29e",
+  "extra": {
+    "bundle": "events"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_event_partners",
+      "uuid": "0b3ec95c-0968-470d-b9f9-2e9f7480eddd",
+      "entity_type": "taxonomy_term--partners",
+      "label": "MOEFCC"
+    },
+    {
+      "field_name": "field_event_partners",
+      "uuid": "acd72c83-ae44-476c-b574-bcd2f2242d75",
+      "entity_type": "taxonomy_term--partners",
+      "label": "UNDP"
+    },
+    {
+      "field_name": "field_event_partners",
+      "uuid": "d93abb92-d649-49f0-9215-921e1cc11855",
+      "entity_type": "taxonomy_term--partners",
+      "label": "Gauhati University"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Policy Makers"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "9436f609-07a0-4ab0-b2f9-0bb244e178d1",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Climate vulnerability"
+    },
+    {
+      "field_name": "field_event_theme",
+      "uuid": "7a26e06f-40be-4fa6-9ad2-7586d7f8ecd2",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Resources & Sustainable Development"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {}
+}

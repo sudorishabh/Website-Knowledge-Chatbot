@@ -1,0 +1,590 @@
+{
+  "raw": {
+    "fetched_at": "2026-09-10T15:54:58+05:30",
+    "jsonapi_resource": {
+      "type": "node--news",
+      "id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+      "links": {
+        "self": {
+          "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e?resourceVersion=id%3A17839"
+        }
+      },
+      "attributes": {
+        "drupal_internal__nid": 13379,
+        "drupal_internal__vid": 17839,
+        "langcode": "en",
+        "revision_timestamp": "2026-09-08T10:12:22+00:00",
+        "revision_log": null,
+        "status": true,
+        "title": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness",
+        "created": "2026-09-03T10:08:28+00:00",
+        "changed": "2026-09-08T10:12:22+00:00",
+        "promote": false,
+        "sticky": false,
+        "default_langcode": true,
+        "revision_translation_affected": true,
+        "metatag": null,
+        "path": {
+          "alias": "/news/sarbananda-sonowal-charts-course-zero-emission-shipping-corridors-pushes-ports-fast-track",
+          "pid": 12689,
+          "langcode": "en"
+        },
+        "body": {
+          "value": "<p><span>Minister of Ports, Shipping and Waterways (MoPSW), Shri Sarbananda Sonowal, visited The Energy and Resources Institute’s (TERI) Gwal Pahari campus in Gurugram and reviewed a series of green shipping initiatives, positioning the sector's decarbonisation as a priority area for his ministry.</span></p>",
+          "format": "basic_html",
+          "processed": "<p><span>Minister of Ports, Shipping and Waterways (MoPSW), Shri Sarbananda Sonowal, visited The Energy and Resources Institute’s (TERI) Gwal Pahari campus in Gurugram and reviewed a series of green shipping initiatives, positioning the sector's decarbonisation as a priority area for his ministry.</span></p>",
+          "summary": ""
+        },
+        "field_news_date": "2026-09-03T11:30:03+00:00",
+        "field_news_link": {
+          "uri": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2306501&reg=48&lang=2",
+          "title": "Read more",
+          "options": []
+        },
+        "field_news_source": "Press Information Bureau",
+        "field_news_type": [
+          "electronic_media"
+        ]
+      },
+      "relationships": {
+        "node_type": {
+          "data": {
+            "type": "node_type--node_type",
+            "id": "ad434096-8c31-46ca-b102-c7028cece671",
+            "meta": {
+              "drupal_internal__target_id": "news"
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/node_type?resourceVersion=id%3A17839"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/relationships/node_type?resourceVersion=id%3A17839"
+            }
+          }
+        },
+        "revision_uid": {
+          "data": {
+            "type": "user--user",
+            "id": "03d7bfdb-3407-4337-a410-2063c44ef7c1",
+            "meta": {
+              "drupal_internal__target_id": 1482
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/revision_uid?resourceVersion=id%3A17839"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/relationships/revision_uid?resourceVersion=id%3A17839"
+            }
+          }
+        },
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "ccaaa8d5-a8f0-4af4-a7b3-3bdf0bb732a4",
+            "meta": {
+              "drupal_internal__target_id": 0
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/uid?resourceVersion=id%3A17839"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/relationships/uid?resourceVersion=id%3A17839"
+            }
+          }
+        },
+        "field_language": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/field_language?resourceVersion=id%3A17839"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/relationships/field_language?resourceVersion=id%3A17839"
+            }
+          }
+        },
+        "field_news_image": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/field_news_image?resourceVersion=id%3A17839"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/relationships/field_news_image?resourceVersion=id%3A17839"
+            }
+          }
+        },
+        "field_news_tags": {
+          "data": [
+            {
+              "type": "taxonomy_term--tags",
+              "id": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+              "meta": {
+                "drupal_internal__target_id": 4462
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "73a47eed-8a68-49f2-9801-e054f73ef982",
+              "meta": {
+                "drupal_internal__target_id": 4127
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "745bf533-1e6e-4098-b7b6-ad4cd3a01083",
+              "meta": {
+                "drupal_internal__target_id": 4452
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/field_news_tags?resourceVersion=id%3A17839"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/relationships/field_news_tags?resourceVersion=id%3A17839"
+            }
+          }
+        },
+        "field_news_themes": {
+          "data": [
+            {
+              "type": "taxonomy_term--themes",
+              "id": "bce3b649-f0db-4448-8c00-0549838bfa05",
+              "meta": {
+                "drupal_internal__target_id": 4331
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/field_news_themes?resourceVersion=id%3A17839"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/c00a39be-c021-4e95-9ce0-1c4a1912bc5e/relationships/field_news_themes?resourceVersion=id%3A17839"
+            }
+          }
+        }
+      }
+    },
+    "included": [
+      {
+        "type": "taxonomy_term--tags",
+        "id": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5?resourceVersion=id%3A4462"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4462,
+          "drupal_internal__revision_id": 4462,
+          "langcode": "en",
+          "revision_created": "2025-01-27T06:22:48+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Green Shipping",
+          "description": null,
+          "weight": 0,
+          "changed": "2025-01-27T06:22:48+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/vid?resourceVersion=id%3A4462"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/relationships/vid?resourceVersion=id%3A4462"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/revision_user?resourceVersion=id%3A4462"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/relationships/revision_user?resourceVersion=id%3A4462"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/parent?resourceVersion=id%3A4462"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/acb919b8-eb3c-4ecd-933e-2c044df499d5/relationships/parent?resourceVersion=id%3A4462"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "73a47eed-8a68-49f2-9801-e054f73ef982",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/73a47eed-8a68-49f2-9801-e054f73ef982?resourceVersion=id%3A4127"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4127,
+          "drupal_internal__revision_id": 4127,
+          "langcode": "en",
+          "revision_created": "2022-02-15T13:18:34+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Zero emission",
+          "description": null,
+          "weight": 0,
+          "changed": "2022-02-15T13:18:34+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/73a47eed-8a68-49f2-9801-e054f73ef982/vid?resourceVersion=id%3A4127"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/73a47eed-8a68-49f2-9801-e054f73ef982/relationships/vid?resourceVersion=id%3A4127"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/73a47eed-8a68-49f2-9801-e054f73ef982/revision_user?resourceVersion=id%3A4127"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/73a47eed-8a68-49f2-9801-e054f73ef982/relationships/revision_user?resourceVersion=id%3A4127"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/73a47eed-8a68-49f2-9801-e054f73ef982/parent?resourceVersion=id%3A4127"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/73a47eed-8a68-49f2-9801-e054f73ef982/relationships/parent?resourceVersion=id%3A4127"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "745bf533-1e6e-4098-b7b6-ad4cd3a01083",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/745bf533-1e6e-4098-b7b6-ad4cd3a01083?resourceVersion=id%3A4452"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4452,
+          "drupal_internal__revision_id": 4452,
+          "langcode": "en",
+          "revision_created": "2024-12-04T10:38:19+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Green Fuels",
+          "description": null,
+          "weight": 0,
+          "changed": "2024-12-04T10:38:19+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/745bf533-1e6e-4098-b7b6-ad4cd3a01083/vid?resourceVersion=id%3A4452"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/745bf533-1e6e-4098-b7b6-ad4cd3a01083/relationships/vid?resourceVersion=id%3A4452"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/745bf533-1e6e-4098-b7b6-ad4cd3a01083/revision_user?resourceVersion=id%3A4452"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/745bf533-1e6e-4098-b7b6-ad4cd3a01083/relationships/revision_user?resourceVersion=id%3A4452"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/745bf533-1e6e-4098-b7b6-ad4cd3a01083/parent?resourceVersion=id%3A4452"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/745bf533-1e6e-4098-b7b6-ad4cd3a01083/relationships/parent?resourceVersion=id%3A4452"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--themes",
+        "id": "bce3b649-f0db-4448-8c00-0549838bfa05",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05?resourceVersion=id%3A4331"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4331,
+          "drupal_internal__revision_id": 4331,
+          "langcode": "en",
+          "revision_created": "2023-12-19T04:53:28+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Resource Efficiency & Governance",
+          "description": {
+            "value": "<p>Unsustainable consumption of resources is at the heart of the crisis of environmental degradation. Our work focuses on understanding the future demand for resources and promoting pathways for resource efficiency, waste management and circular economy. Our integrated modelling and analysis has contributed to shaping and influencing India’s policies on energy, environment and climate change. All our efforts continue to inform policy makers about solutions which need to be scaled up to decouple economic growth from environmental impacts.</p>",
+            "format": "basic_html",
+            "processed": "<p>Unsustainable consumption of resources is at the heart of the crisis of environmental degradation. Our work focuses on understanding the future demand for resources and promoting pathways for resource efficiency, waste management and circular economy. Our integrated modelling and analysis has contributed to shaping and influencing India’s policies on energy, environment and climate change. All our efforts continue to inform policy makers about solutions which need to be scaled up to decouple economic growth from environmental impacts.</p>"
+          },
+          "weight": 0,
+          "changed": "2024-03-26T06:32:45+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": "/resource-efficiency-and-governance",
+            "pid": 10563,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "d1a67c2b-18e2-4952-9a41-d042ccc56014",
+              "meta": {
+                "drupal_internal__target_id": "themes"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/vid?resourceVersion=id%3A4331"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/relationships/vid?resourceVersion=id%3A4331"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/revision_user?resourceVersion=id%3A4331"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/relationships/revision_user?resourceVersion=id%3A4331"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--themes",
+                "id": "7a26e06f-40be-4fa6-9ad2-7586d7f8ecd2",
+                "meta": {
+                  "drupal_internal__target_id": 30
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/parent?resourceVersion=id%3A4331"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/relationships/parent?resourceVersion=id%3A4331"
+              }
+            }
+          },
+          "field_theme_image": {
+            "data": {
+              "type": "file--file",
+              "id": "012b02a0-a3cf-4c0a-bc12-8eb1bca28ce6",
+              "meta": {
+                "alt": "resources",
+                "title": "",
+                "width": 1600,
+                "height": 430,
+                "drupal_internal__target_id": 9886
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/field_theme_image?resourceVersion=id%3A4331"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/bce3b649-f0db-4448-8c00-0549838bfa05/relationships/field_theme_image?resourceVersion=id%3A4331"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "parsed_drupal_record": {
+    "uuid": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+    "bundle": "news",
+    "nid": 13379,
+    "title": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness",
+    "url": "https://teriin.org/news/sarbananda-sonowal-charts-course-zero-emission-shipping-corridors-pushes-ports-fast-track",
+    "body": "Minister of Ports, Shipping and Waterways (MoPSW), Shri Sarbananda Sonowal, visited The Energy and Resources Institute’s (TERI) Gwal Pahari campus in Gurugram and reviewed a series of green shipping initiatives, positioning the sector's decarbonisation as a priority area for his ministry.",
+    "created": "2026-09-03T10:08:28+00:00",
+    "changed": "2026-09-08T10:12:22+00:00",
+    "metadata": {
+      "field_news_tags": [
+        "Green Shipping",
+        "Zero emission",
+        "Green Fuels"
+      ],
+      "field_news_themes": [
+        "Resource Efficiency & Governance"
+      ],
+      "field_news_date": "2026-09-03T11:30:03+00:00",
+      "field_news_source": "Press Information Bureau",
+      "field_news_type": [
+        "electronic_media"
+      ]
+    },
+    "files": [],
+    "refs": [
+      {
+        "field_name": "field_news_tags",
+        "uuid": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Green Shipping"
+      },
+      {
+        "field_name": "field_news_tags",
+        "uuid": "73a47eed-8a68-49f2-9801-e054f73ef982",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Zero emission"
+      },
+      {
+        "field_name": "field_news_tags",
+        "uuid": "745bf533-1e6e-4098-b7b6-ad4cd3a01083",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Green Fuels"
+      },
+      {
+        "field_name": "field_news_themes",
+        "uuid": "bce3b649-f0db-4448-8c00-0549838bfa05",
+        "entity_type": "taxonomy_term--themes",
+        "label": "Resource Efficiency & Governance"
+      }
+    ]
+  }
+}

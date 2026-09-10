@@ -1,0 +1,174 @@
+{
+  "knowledge_catch_up": {
+    "examined": 0,
+    "ok": 0,
+    "failed": 0
+  },
+  "graph_projection": {
+    "projection_version": "graph-project-v1:20260910T103101:f0d2981c",
+    "nodes": {
+      "Alias": 2793,
+      "Entity": 1726,
+      "Organization": 524,
+      "Person": 131,
+      "Predicate": 8,
+      "Project": 1071
+    },
+    "relationships": {
+      "HAS_ALIAS": 2793
+    },
+    "skipped": {}
+  },
+  "reconciliation": {
+    "ok": true,
+    "documents": 30,
+    "points": 1053,
+    "error": null,
+    "checks": [
+      {
+        "check": "indexed_without_points",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents the catalog reports as indexed that have no points at all. Clear their content hash (app.catalog.state.clear_change_markers) and let the next sweep rebuild them.",
+        "samples": []
+      },
+      {
+        "check": "points_without_catalog_row",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents with points but no catalog row. They are retrievable and uncatalogued; delete_document(id) removes them.",
+        "samples": []
+      },
+      {
+        "check": "duplicate_live_versions",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents whose points carry more than one doc_version — an interrupted swap. Re-index them to collapse it.",
+        "samples": []
+      },
+      {
+        "check": "version_mismatch",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents whose points disagree with the catalog's doc_version. Re-index them; the catalog is authoritative.",
+        "samples": []
+      },
+      {
+        "check": "chunk_id_mismatch",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Points whose payload chunk_id is not their own id. Citations resolve by payload, so these cite the wrong chunk.",
+        "samples": []
+      },
+      {
+        "check": "children_without_parent",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Child points naming a parent that does not exist. Context expansion falls back to the child alone for these.",
+        "samples": []
+      },
+      {
+        "check": "catalog_pipeline_drift",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents not built by pipeline c1.i1.p2.e1. Run scripts.reprocess_corpus to rebuild them.",
+        "samples": []
+      },
+      {
+        "check": "point_pipeline_drift",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents with points written by a pipeline other than c1.i1.p2.e1. Re-indexing replaces them.",
+        "samples": []
+      },
+      {
+        "check": "documents_without_date",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents with no effective date. They are invisible to date filters and to recency ranking; check the source exposes a date field.",
+        "samples": []
+      },
+      {
+        "check": "date_provenance_unrecorded",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "Documents whose effective_start_date has no recorded origin. Every write path sets it, so these came from one that does not — or predate scripts.backfill_date_provenance.",
+        "samples": []
+      },
+      {
+        "check": "stated_date_not_applied",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "The bundle's configured date field states a date that effective_start_date does not match. Either a sweep did not apply it, or something overwrote the value afterwards (app.ingestion.backfill lifts dates out of chunk payloads). Re-run scripts.backfill_bundle_dates.",
+        "samples": []
+      },
+      {
+        "check": "attachment_date_adrift",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "An attached file whose date or period differs from the page it hangs on. A file inherits both ends of its page's resolved range; only a publication statement verified inside the file's own text (date_source='document_text' or 'document_copyright') may differ. Re-run scripts.backfill_bundle_dates.",
+        "samples": []
+      },
+      {
+        "check": "inverted_date_range",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "A stored date range whose end falls before its start. `bundle_dates` drops an inverted end rather than storing it, so these were written by something else. Re-run scripts.backfill_bundle_dates.",
+        "samples": []
+      },
+      {
+        "check": "unmapped_bundle_dates",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "A catalogued node bundle with no entry in app.ingestion.bundle_dates.BUNDLE_DATE_FIELDS. Its documents keep their creation stamp — the safe direction — but nobody has said whether that is right. Declare it. (Custom blocks are exempt: they carry no `created` and are unmapped by design.)",
+        "samples": []
+      },
+      {
+        "check": "undeclared_source_date_field",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "A source field that looks like a date and holds a parseable one, which nothing has classified. It is being ignored — the safe direction — but if it is the date its bundle should carry, those documents are mis-dated. Classify it in app.ingestion.source_dates.FIELD_ROLES.",
+        "samples": []
+      },
+      {
+        "check": "year_precision_not_january",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "A year-precision date whose value is not 1 January. The day is a marker for the year, so anything else means the value and its precision disagree about what is known.",
+        "samples": []
+      },
+      {
+        "check": "month_precision_not_first_of_month",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "A month-precision date whose value is not the 1st. The day is a marker for the month, so anything else means the value and its precision disagree about what is known.",
+        "samples": []
+      },
+      {
+        "check": "graph_projection",
+        "count": 0,
+        "ok": true,
+        "skipped": false,
+        "detail": "projection matches MySQL and is current",
+        "samples": []
+      }
+    ]
+  }
+}

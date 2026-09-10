@@ -1,0 +1,86 @@
+{
+  "document_id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+  "source_type": "website",
+  "title": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness",
+  "sections": [
+    {
+      "text": "Minister of Ports, Shipping and Waterways (MoPSW), Shri Sarbananda Sonowal, visited The Energy and Resources Institute’s (TERI) Gwal Pahari campus in Gurugram and reviewed a series of green shipping initiatives, positioning the sector's decarbonisation as a priority area for his ministry.",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/news/sarbananda-sonowal-charts-course-zero-emission-shipping-corridors-pushes-ports-fast-track",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Green Shipping",
+    "Zero emission",
+    "Green Fuels"
+  ],
+  "categories": [
+    "Resource Efficiency & Governance"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-09-03T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": null,
+  "end_precision": null,
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "c8301da5899fcaf7d07232bcea305d4cf4d0bc5f7835424ef075e8c26e17bbba",
+  "extra": {
+    "bundle": "news",
+    "nid": 13379,
+    "changed": "2026-09-08T10:12:22+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_news_tags",
+      "uuid": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Green Shipping"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "73a47eed-8a68-49f2-9801-e054f73ef982",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Zero emission"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "745bf533-1e6e-4098-b7b6-ad4cd3a01083",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Green Fuels"
+    },
+    {
+      "field_name": "field_news_themes",
+      "uuid": "bce3b649-f0db-4448-8c00-0549838bfa05",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Resource Efficiency & Governance"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_news_tags": [
+      "Green Shipping",
+      "Zero emission",
+      "Green Fuels"
+    ],
+    "field_news_themes": [
+      "Resource Efficiency & Governance"
+    ],
+    "field_news_date": "2026-09-03T11:30:03+00:00",
+    "field_news_source": "Press Information Bureau",
+    "field_news_type": [
+      "electronic_media"
+    ]
+  }
+}

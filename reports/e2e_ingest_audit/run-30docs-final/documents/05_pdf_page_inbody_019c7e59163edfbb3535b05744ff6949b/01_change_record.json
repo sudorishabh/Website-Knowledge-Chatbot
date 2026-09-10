@@ -1,0 +1,25 @@
+{
+  "status": "new",
+  "document_id": "inbody:019c7e59163edfbb3535b05744ff6949b04cef47",
+  "source_type": "pdf_attachment",
+  "source_key": "https://www.teriin.org/sites/default/files/files/Book-on-Dr-RK-Pachauri.pdf",
+  "fingerprint": "inbody:019c7e59163edfbb3535b05744ff6949b04cef47",
+  "bundle": "page",
+  "entity_type": null,
+  "changed_mark": 1788323098,
+  "filename": "Book-on-Dr-RK-Pachauri.pdf",
+  "prior": null,
+  "outcome": "indexed",
+  "error": null,
+  "traceback": null,
+  "started_at": "2026-09-10T10:26:01.438172+00:00",
+  "finished_at": "2026-09-10T10:29:00.209350+00:00",
+  "elapsed_seconds": 178.77,
+  "stage_seconds": {
+    "build_doc": 27.697,
+    "pdf_extraction": 26.982,
+    "chunk": 2.433,
+    "embed_and_upsert": 68.316,
+    "knowledge": 80.287
+  }
+}

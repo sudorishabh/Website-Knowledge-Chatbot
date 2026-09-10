@@ -1,0 +1,86 @@
+{
+  "document_id": "36a999eb-b7c7-47fd-ac69-55f97841a9d3",
+  "source_type": "website",
+  "title": "Science Technology and Innovation Hub in Gaondongrem, Goa",
+  "sections": [
+    {
+      "text": "In Gaondongrem village, TERI is spearheading a transformative initiative to uplift rural Scheduled Tribe (ST) households. By integrating Science, Technology, and Innovation (STI) into the traditional agricultural landscape, this project bridges the gap between indigenous knowledge and modern efficiency. From implementing rainwater harvesting to fostering agri-business start-ups, the initiative is designed to create a self-reliant, vibrant rural economy that empowers women and youth while ensuring long-term climate resilience.\n\nProject Objectives\n\nThe project is built on four strategic pillars aimed at holistic rural development:\n\nCapacity Building: Enhancing organic crop yields through specialized workshops, technical training, and modern farm mechanization.\n\nResource Sustainability: Implementing innovative solutions for water availability and long-term water management.\n\nValue Addition: Processing raw produce to increase market appeal and consumer demand.\n\nEntrepreneurship: Fostering agri-business start-ups and expanding marketing outreach to link farmers directly to the economy.\n\nProject Summary\n\nThe project aims to uplift rural communities in Gaondongrem village, with a primary focus on Scheduled Tribe households, through the application of Science, Technology, and Innovation (STI). The initiative promotes sustainable agricultural practices, enhanced livelihood opportunities, and community-led economic development.\n\nKey interventions include capacity-building workshops and hands-on training to introduce farm mechanization and modern organic farming techniques, leading to increased productivity, improved produce quality, and higher farmer incomes. Sustainable water management solutions, particularly rainwater harvesting systems, have been promoted to improve water availability and strengthen climate resilience.\n\nThe project also emphasizes livelihood diversification by supporting value addition to agricultural produce, development of agri-business start-ups, and exploration of eco-tourism opportunities. Special focus is given to empowering women and youth through skill development and entrepreneurship. All interventions are implemented through a farmer-led institutional mechanism, ensuring long-term sustainability and fostering a self-reliant, vibrant rural economy.\n\nAchievements\n\nInfrastructure: Established a Common Facility Center (CFC) to serve as a centralized hub for training, processing, and collective community activities.\n\nAsset Creation: Developed 14 community-owned equipment assets to support diverse agricultural and allied activities.\n\nInstitutional Building: Formed the STI-Hub Farmers’ Association to manage resources and ensure transparent post-project transition to Self-Help Groups (SHGs).\n\nEmpowerment: Significant measurable increase in the technical knowledge and leadership confidence of local women and youth.\n\nLab Testing of Local Food Products (as per FSSAI Guidelines)\n\nQuality Assurance & Market Readiness\n\nTo ensure local products compete in the mainstream market, the project facilitated rigorous Lab Testing (as per FSSAI Guidelines) for:\n\nKarjat Rice & Cashew Nuts\n\nChili Powder & Honey\n\nThese certifications have been instrumental in building consumer trust, standardizing products, and unlocking new market access for local producers.\n\nOverall Impact:\n\nThe Gaondongrem STI Hub stands as a replicable, scalable model. It demonstrates that when integrated technology meets community-led institutional mechanisms, it doesn't just address vulnerabilities—it transforms them into sustainable economic opportunities.",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/project/science-technology-and-innovation-hub-gaondongrem-goa",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "36a999eb-b7c7-47fd-ac69-55f97841a9d3",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Sustainable Livelihood"
+  ],
+  "categories": [
+    "Marine and Coastal"
+  ],
+  "language": "en",
+  "effective_start_date": "2023-01-23T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": "2026-01-22T00:00:00+00:00",
+  "end_precision": "day",
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "37fbdaa7b370dfb29d52ee2081de537d3783a882b023d9d2f2447abf7a3c5564",
+  "extra": {
+    "bundle": "completed_projects",
+    "nid": 13181,
+    "changed": "2026-08-31T08:30:58+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_completed_stakeholders",
+      "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Civil society/Grassroots"
+    },
+    {
+      "field_name": "field_completed_tags",
+      "uuid": "377a4dc9-cf36-4dee-8706-e27e2fe4ad0f",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable Livelihood"
+    },
+    {
+      "field_name": "field_completed_theme",
+      "uuid": "dd0ec0cf-3a4f-49b0-b714-29acddba5cab",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Marine and Coastal"
+    },
+    {
+      "field_name": "field_show_on_regional_page",
+      "uuid": "d1053077-c940-4c04-bc05-0aeae390bb73",
+      "entity_type": "taxonomy_term--regional_centre",
+      "label": "Western Regional Centre, Goa"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_completed_stakeholders": [
+      "Civil society/Grassroots"
+    ],
+    "field_completed_tags": [
+      "Sustainable Livelihood"
+    ],
+    "field_completed_theme": [
+      "Marine and Coastal"
+    ],
+    "field_show_on_regional_page": [
+      "Western Regional Centre, Goa"
+    ],
+    "field_completed_end_date": "2026-01-22T11:30:00+00:00",
+    "field_completed_start_date": "2023-01-23T04:30:00+00:00",
+    "field_show_on_theme_page": true
+  }
+}

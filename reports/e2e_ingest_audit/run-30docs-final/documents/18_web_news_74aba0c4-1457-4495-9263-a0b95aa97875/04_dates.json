@@ -1,0 +1,32 @@
+{
+  "canonical": {
+    "effective_start_date": "2026-09-04T00:00:00+00:00",
+    "start_precision": "day",
+    "date_source": "cms_field",
+    "effective_end_date": null,
+    "end_precision": null,
+    "edition_label": null
+  },
+  "website_evidence": {
+    "start_value": "2026-09-04T00:00:00+00:00",
+    "start_precision": "day",
+    "source": "cms_field",
+    "rule": "bundle_date_field",
+    "end_value": null,
+    "end_precision": null,
+    "bundle": "news",
+    "fields": [
+      "field_news_date"
+    ],
+    "raw_values": [
+      "2026-09-04T11:30:03+00:00"
+    ],
+    "field_role": "date",
+    "range_issue": null
+  },
+  "record_created": "2026-09-04T09:31:12+00:00",
+  "record_changed": "2026-09-08T09:34:52+00:00",
+  "parent_page_resolution": null,
+  "file_resolution": null,
+  "parent_page_canonical_date": null
+}

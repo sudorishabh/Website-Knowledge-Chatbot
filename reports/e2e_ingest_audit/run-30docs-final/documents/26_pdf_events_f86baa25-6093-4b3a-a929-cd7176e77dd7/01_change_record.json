@@ -1,0 +1,25 @@
+{
+  "status": "new",
+  "document_id": "f86baa25-6093-4b3a-a929-cd7176e77dd7",
+  "source_type": "pdf_attachment",
+  "source_key": "https://teriin.org/sites/default/files/2026-09/Curtain%20Raiser%20WSDS%20Agenda.pdf",
+  "fingerprint": "2026-09-09T06:39:23+00:00",
+  "bundle": "events",
+  "entity_type": null,
+  "changed_mark": 1788935963,
+  "filename": "Curtain Raiser WSDS Agenda.pdf",
+  "prior": null,
+  "outcome": "indexed",
+  "error": null,
+  "traceback": null,
+  "started_at": "2026-09-10T10:30:47.122348+00:00",
+  "finished_at": "2026-09-10T10:30:48.586495+00:00",
+  "elapsed_seconds": 1.464,
+  "stage_seconds": {
+    "build_doc": 0.845,
+    "pdf_extraction": 0.75,
+    "chunk": 0.004,
+    "embed_and_upsert": 0.554,
+    "knowledge": 0.041
+  }
+}

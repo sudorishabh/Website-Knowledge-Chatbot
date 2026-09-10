@@ -1,0 +1,87 @@
+{
+  "parents": 0,
+  "children": 1,
+  "chunks": [
+    {
+      "chunk_id": "d1d49c62-25f3-54dc-b66a-73dffdee4a4a",
+      "text": "The International Solar Alliance (ISA), through its SIDS Platform, and the GRIHA Council have launched the ISA-iSUN Design Challenge to promote the integration of solar energy and climate-resilient design into tourism infrastructure in Small Island Developing States (SIDS).",
+      "is_parent": false,
+      "meta": {
+        "document_id": "74aba0c4-1457-4495-9263-a0b95aa97875",
+        "source_type": "website",
+        "title": "ISA SIDS and GRIHA Launch ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations",
+        "source_url": "https://teriin.org/news/isa-sids-and-griha-launch-isa-isun-design-challenge-promote-solar-and-climate-resilient",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "74aba0c4-1457-4495-9263-a0b95aa97875",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [
+          "GRIHA Council",
+          "Solar energy",
+          "Climate resilience"
+        ],
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-09-04T00:00:00+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "news",
+          "nid": 13378,
+          "changed": "2026-09-08T09:34:52+00:00"
+        }
+      },
+      "embed_text": "ISA SIDS and GRIHA Launch ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations\n\nThe International Solar Alliance (ISA), through its SIDS Platform, and the GRIHA Council have launched the ISA-iSUN Design Challenge to promote the integration of solar energy and climate-resilient design into tourism infrastructure in Small Island Developing States (SIDS).",
+      "section_heading": null,
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 0,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 53,
+      "content_hash": "d6d51130fa369514d2cc880c1033c810c7c348e6f672bcb0f8db71adec5138ee",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "d1d49c62-25f3-54dc-b66a-73dffdee4a4a",
+        "document_id": "74aba0c4-1457-4495-9263-a0b95aa97875",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "news",
+        "title": "ISA SIDS and GRIHA Launch ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations",
+        "chunk_text": "The International Solar Alliance (ISA), through its SIDS Platform, and the GRIHA Council have launched the ISA-iSUN Design Challenge to promote the integration of solar energy and climate-resilient design into tourism infrastructure in Small Island Developing States (SIDS).",
+        "content_hash": "d6d51130fa369514d2cc880c1033c810c7c348e6f672bcb0f8db71adec5138ee",
+        "token_count": 53,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "GRIHA Council",
+          "Solar energy",
+          "Climate resilience"
+        ],
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/news/isa-sids-and-griha-launch-isa-isun-design-challenge-promote-solar-and-climate-resilient",
+        "effective_start_date": "2026-09-04T00:00:00+00:00",
+        "article_uuid": "74aba0c4-1457-4495-9263-a0b95aa97875",
+        "embed_hash": "991957d52bad72669192762cd9152cf6d312b1b55acde4302b36324a142b0d30",
+        "chunk_index": 0,
+        "nid": 13378,
+        "changed": "2026-09-08T09:34:52+00:00"
+      },
+      "embed_hash": "991957d52bad72669192762cd9152cf6d312b1b55acde4302b36324a142b0d30"
+    }
+  ]
+}
