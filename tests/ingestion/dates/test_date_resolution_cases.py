@@ -10,6 +10,14 @@ The statements and dates below are taken from
 ``reports/phase0/override_audit.csv`` and the Phase 0 audits. Nothing here
 special-cases a filename: the fixtures are inputs, and the rules under test are
 general.
+
+The default fixture page is an ``Announcements`` shelf — a ``page``-bundle node
+holding three files, dated only by its Drupal creation stamp. That matters for
+what a *refused* override now means here: the file does not fall back to the
+shelf's stamp, it ends up with **no date**, because a stamp shared by three
+documents is a fact about the page (see
+:func:`app.ingestion.date_rules.page_date_is_usable`). Each test's subject is
+unchanged — that the proposed date did not become the document's.
 """
 
 from __future__ import annotations
@@ -157,7 +165,12 @@ def test_the_approved_examples_still_resolve(
         file=_file(filename=filename, created=LATER_UPLOAD, origin="attachment"),
     )
     assert got.overridden is True, f"{filename} should override"
-    assert got.start_value == expected
+    # Compared on the day: the two override paths spell the same value
+    # differently — the interpreter hands back a bare `YYYY-MM-DD`, the
+    # deterministic rules a stored midnight-UTC timestamp — and which of them
+    # answers is not what this test is about. Two of these six now cost no model
+    # call at all, because the filename states the same day the body does.
+    assert str(got.start_value)[:10] == expected
 
 
 # --------------------------------------------------------------------------- #
@@ -185,9 +198,14 @@ def test_a_masthead_reconstructed_from_the_filename_is_rejected(monkeypatch):
         file=_file(filename="The-Pioneer-Chandigarh-Tuesday-December-24-2013.pdf",
                    created=LATER_UPLOAD, origin="attachment"),
     )
-    assert got.overridden is False, "a filename-derived masthead must not override"
-    assert got.start_value == PAGE_DATE
-    assert got.needs_review is True
+    # The *model's* reconstruction is still refused — the masthead it quoted is
+    # not in the document. What dates the file now is the filename read directly,
+    # as a name, at the precision it actually states; the two must not be
+    # confused, so the rule and the source name which one answered.
+    assert got.decision.rule == "title_states_date"
+    assert got.canonical_source == "document_title"
+    assert got.start_value == "2013-12-24T00:00:00+00:00"
+    assert got.llm_raw is None, "a name that answers costs no model call"
 
 
 # --------------------------------------------------------------------------- #
@@ -218,7 +236,7 @@ def test_other_date_kinds_never_move_the_date(
                          publication_statement=statement),
     )
     assert got.overridden is False
-    assert got.start_value == PAGE_DATE
+    assert got.start_value is None, "refused, and a shelf stamp is not a fallback"
     assert got.decision.date_type == date_type
 
 
@@ -234,7 +252,7 @@ def test_an_update_year_does_not_move_the_date(monkeypatch):
                                   "being updated in 2023"),
     )
     assert got.overridden is False
-    assert got.start_value == PAGE_DATE
+    assert got.start_value is None
 
 
 def test_a_citation_year_does_not_move_the_date(monkeypatch):
@@ -248,7 +266,7 @@ def test_a_citation_year_does_not_move_the_date(monkeypatch):
                                   "Needs Assessment for Transformative Climate Action"),
     )
     assert got.overridden is False
-    assert got.start_value == PAGE_DATE
+    assert got.start_value is None
 
 
 def test_a_month_only_statement_does_not_invent_a_day(monkeypatch):
@@ -259,7 +277,7 @@ def test_a_month_only_statement_does_not_invent_a_day(monkeypatch):
                          publication_statement="Colombo, September 2007"),
     )
     assert got.overridden is False
-    assert got.start_value == PAGE_DATE
+    assert got.start_value is None
 
 
 def test_a_cover_month_without_publication_wording_does_not_move_the_date(monkeypatch):
@@ -270,14 +288,23 @@ def test_a_cover_month_without_publication_wording_does_not_move_the_date(monkey
                          publication_statement="January 2023 Final Report"),
     )
     assert got.overridden is False
-    assert got.start_value == PAGE_DATE
+    assert got.start_value is None
 
 
 # --------------------------------------------------------------------------- #
 # Annual reports: an edition label, never a date
 # --------------------------------------------------------------------------- #
 
-def test_an_annual_report_yields_an_edition_and_keeps_the_page_date(monkeypatch):
+def test_an_annual_report_is_dated_from_its_own_name(monkeypatch):
+    """The reported failure, end to end. Ten annual reports hang off one
+    `Annual Reports` page whose node was typed on 2022-02-09, and every edition
+    was carrying that day — the 2024-25 report included. The file's own name says
+    which edition it is, so it is dated to 2024 at **year** precision: the name
+    establishes a year and nothing more, and 1 January is the marker for it.
+
+    The edition label is still produced and is still not a date; the two now
+    simply agree about the year rather than the label being the only true thing
+    on the record."""
     got = _resolve(
         monkeypatch,
         pdf_text="ANNUAL REPORT 2024/25 Vision Creating Innovative Solutions",
@@ -288,9 +315,12 @@ def test_an_annual_report_yields_an_edition_and_keeps_the_page_date(monkeypatch)
                    title="Annual Reports"),
         file=_file(filename="TERI-Annual-Report-2024-25.pdf"),
     )
-    assert got.start_value == "2022-02-09T06:59:06+00:00"
-    assert got.edition_label == "2024-2025"
-    assert got.overridden is False
+    assert got.start_value == "2024-01-01T00:00:00+00:00"
+    assert got.start_precision == "year"
+    assert got.edition_label == "2024-25", "canonical spelling, per app.core.editions"
+    assert got.overridden is True
+    assert got.canonical_source == "document_title"
+    assert got.decision.rule == "title_states_date"
 
 
 def test_an_edition_in_the_filename_is_labelled_without_reading_the_pdf():
@@ -333,7 +363,9 @@ def test_a_filename_year_alone_does_not_move_the_date(monkeypatch):
 
 
 def test_a_pdf_creation_date_alone_does_not_move_the_date(monkeypatch):
-    """Several PDFs uploaded with the page; DocInfo is years older."""
+    """Several PDFs uploaded with the page; DocInfo is years older. A PDF
+    creation timestamp has never been allowed to date a document, and the file
+    ends up undated rather than borrowing the shelf's stamp."""
     _no_llm(monkeypatch)
     monkeypatch.setattr(
         date_resolution, "_read_pdf_signals",
@@ -345,17 +377,22 @@ def test_a_pdf_creation_date_alone_does_not_move_the_date(monkeypatch):
         file=_file(created="2019-03-20T00:00:00+00:00", origin="attachment"),
     )
     got = resolve(evidence, content=b"%PDF-")
-    assert got.start_value == "2019-03-18T00:00:00+00:00"
+    assert got.overridden is False
+    assert got.start_value is None
 
 
-def test_several_pdfs_uploaded_together_keep_the_page_date(monkeypatch):
+def test_several_pdfs_uploaded_together_are_still_not_dated_from_the_page(monkeypatch):
+    """Fifteen files that arrived within a month of the page. Arriving together
+    says they were uploaded together, not that they were written together — and
+    the page's creation stamp is one date for fifteen documents."""
     _no_llm(monkeypatch)
     evidence = build_evidence(
         document_id="d1", node=_node(created="2018-09-27T00:00:00+00:00", files=15),
         file=_file(created="2018-10-23T00:00:00+00:00", origin="attachment"),
     )
     got = resolve(evidence, content=b"%PDF-")
-    assert got.start_value == "2018-09-27T00:00:00+00:00"
+    assert got.start_value is None
+    assert got.canonical_source == "no_evidence"
 
 
 def test_a_migration_era_file_date_is_never_treated_as_an_upload(monkeypatch):
@@ -368,12 +405,13 @@ def test_a_migration_era_file_date_is_never_treated_as_an_upload(monkeypatch):
     assert got.start_value == "2012-06-23T00:00:00+00:00"
 
 
-def test_an_unreadable_pdf_on_a_routed_page_keeps_the_page_date(monkeypatch):
-    """Real bytes PyMuPDF cannot parse: no text, so nothing can be grounded."""
+def test_an_unreadable_pdf_on_a_routed_page_cannot_be_dated(monkeypatch):
+    """Real bytes PyMuPDF cannot parse: no text, so nothing can be grounded —
+    and on a shelf page there is nothing to fall back to either."""
     got = _resolve(
         monkeypatch, pdf_text="",
         verdict=_verdict(candidate_start_date="2024-06-01",
                          publication_statement="Published on 1 June 2024"),
     )
     assert got.overridden is False
-    assert got.start_value == PAGE_DATE
+    assert got.start_value is None

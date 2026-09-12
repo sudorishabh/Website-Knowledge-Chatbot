@@ -903,6 +903,10 @@ CREATE TABLE IF NOT EXISTS `{table}_date_decision` (
     prompt_version  VARCHAR(32)   NULL,
     url             VARCHAR(1024) NULL,
     filename        VARCHAR(512)  NULL,
+    -- Provenance for a date read from the file's own naming; NULL otherwise.
+    title_source      VARCHAR(24) NULL,
+    title_kind        VARCHAR(16) NULL,
+    title_disposition VARCHAR(16) NULL,
     updated_at      DATETIME      NOT NULL,
     PRIMARY KEY (document_id),
     KEY idx_action (action),
@@ -930,6 +934,14 @@ def ensure_date_decision_table() -> None:
         # `end_invalid` | `end_without_start`. NULL means either a well-formed
         # range or no range at all — the two cases nobody has to look at.
         _ensure_column(cur, table, "range_issue", "range_issue VARCHAR(24) NULL")
+        # Which of the file's own strings gave it a date, what shape of
+        # statement that was, and what became of it. NULL for every path that
+        # did not read the naming, which is most of them.
+        _ensure_column(cur, table, "title_source",
+                       "title_source VARCHAR(24) NULL")
+        _ensure_column(cur, table, "title_kind", "title_kind VARCHAR(16) NULL")
+        _ensure_column(cur, table, "title_disposition",
+                       "title_disposition VARCHAR(16) NULL")
         conn.commit()
 
 

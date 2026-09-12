@@ -351,16 +351,21 @@ def date_checks() -> list[Check]:
             # because it is a join, not a rule: the link table says which files
             # hang off which page, and inheritance means the two dates agree.
             # A date the document itself stated is the sanctioned exception, in
-            # either of its two forms: a quoted publication statement
-            # (`document_text`) or a corroborated copyright year
-            # (`document_copyright`).
+            # each of its three forms: a quoted publication statement
+            # (`document_text`), a corroborated copyright year
+            # (`document_copyright`) or a date the file's own name states
+            # (`document_title`). So is the deliberate absence of a date
+            # (`no_evidence`) — several PDFs on a page dated only by its Drupal
+            # creation stamp, which is a date about the page and not about any
+            # file on it. See `date_rules.page_date_is_usable`.
             cur.execute(
                 f"SELECT d.document_id FROM `{table}_attachment` a "
                 f"JOIN `{table}` d ON d.document_id = a.file_uuid "
                 f"JOIN `{table}` p ON p.document_id = a.document_id "
                 f"WHERE d.source_type = 'pdf_attachment' "
                 f"  AND COALESCE(d.date_source, '') NOT IN "
-                f"      ('document_text', 'document_copyright') "
+                f"      ('document_text', 'document_copyright', 'document_title', "
+                f"       'no_evidence') "
                 f"  AND (DATE(d.effective_start_date) <> DATE(p.effective_start_date) "
                 f"       OR (d.effective_start_date IS NULL) <> (p.effective_start_date IS NULL) "
                 f"       OR NOT (d.effective_end_date <=> p.effective_end_date)) "
@@ -423,9 +428,11 @@ def date_checks() -> list[Check]:
         _check("attachment_date_adrift", adrift,
                "An attached file whose date or period differs from the page it "
                "hangs on. A file inherits both ends of its page's resolved "
-               "range; only a publication statement verified inside the file's "
-               "own text (date_source='document_text' or 'document_copyright') "
-               "may differ. "
+               "range unless it stated something itself — a verified publication "
+               "statement ('document_text'), a corroborated copyright year "
+               "('document_copyright') or a date in its own name "
+               "('document_title') — or unless the page's date was not the "
+               "file's to borrow ('no_evidence'). "
                "Re-run scripts.backfill_bundle_dates."),
         _check("inverted_date_range", inverted,
                "A stored date range whose end falls before its start. "

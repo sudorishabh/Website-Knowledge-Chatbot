@@ -200,16 +200,29 @@ def test_a_period_precision_reaches_the_chunk_payload(precision):
 
 def test_the_precision_marker_still_needs_no_bump_of_its_own():
     """Adding `start_precision` did not require a payload bump: absent means "a
-    full date", which was true of every point already in the collection.
+    full date", which was true of every point already in the collection. That
+    reasoning is unchanged, and this test exists to keep it separate from the
+    reasons that *did* justify one.
 
-    That reasoning is unchanged. PAYLOAD is 2 for a different reason — the
-    publication-date keys were *renamed*, so old points carry keys no reader
-    consults — and this test exists to keep the two apart. Bumping it again for
-    a purely additive key would still be wrong.
+    Each bump so far, and why:
+
+    * **2** — the publication-date keys were *renamed*, so old points carry keys
+      no reader consults.
+    * **3** — an attached PDF's `effective_start_date` is now *decided*
+      differently: on a page holding several PDFs the file's own name states its
+      date, and where nothing states one and the page is dated only by its Drupal
+      creation stamp the file is left undated. A value change rather than a
+      structural one, which stretches this component — but it is the component
+      that governs the payload, and without a bump a document whose body text has
+      not changed keeps the wrong date forever. `reprocess.py` selects on
+      `PIPELINE_VERSION` and nothing else, so this is the only lever there is.
+
+    Neither is "a new optional key", which is still not a reason.
     """
     from app.ingestion.version import PAYLOAD
 
-    assert PAYLOAD == 2, (
-        "PAYLOAD moved again; check the reason is a key readers actually miss, "
-        "not merely a new optional one."
+    assert PAYLOAD == 3, (
+        "PAYLOAD moved again; check the reason is a key readers actually miss or "
+        "a value the same input would no longer produce — not merely a new "
+        "optional key."
     )

@@ -362,6 +362,13 @@ Drupal page's date, not the report's. Runs unconditionally, regardless of the
 `faithfulness_check` setting: this is one specific false claim, not a
 judgement call, so it is checked rather than merely requested.
 
+Ingestion has since stopped *producing* that date — a PDF sharing its page is
+now dated from its own name or left undated (see
+[ingestion 06](../ingestion/06-canonical-document-and-dates.md)), so the 2024-25
+report carries 2024 rather than its shelf's 2022 stamp. This guard stays: it
+catches the model inventing the page date from the header even when the block
+never carried it, which is a different failure from the one ingestion fixed.
+
 `verify_date_claims(answer, blocks)` looks only at blocks carrying
 `edition_label` (§ page dates, below) and flags two distinct failures per
 offending sentence:

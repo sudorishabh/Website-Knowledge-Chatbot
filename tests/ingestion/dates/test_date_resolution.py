@@ -66,8 +66,8 @@ def _verdict(**kwargs) -> DateInterpretation:
     ],
 )
 def test_no_deterministic_rule_can_propose_a_date_change(evidence):
-    assert decide(evidence).action in ("keep_page_date", "needs_llm",
-                                       "needs_manual_review")
+    assert decide(evidence).action in ("keep_page_date", "drop_page_date",
+                                       "needs_llm", "needs_manual_review")
 
 
 # --------------------------------------------------------------------------- #
@@ -139,12 +139,17 @@ def test_a_late_upload_on_a_single_pdf_page_is_reviewed_not_overridden():
 # Required case 3 — several PDFs uploaded together
 # --------------------------------------------------------------------------- #
 
-def test_pdfs_uploaded_alongside_their_multi_pdf_page_keep_the_page_date():
+def test_pdfs_uploaded_alongside_their_multi_pdf_page_are_not_dated_from_it():
+    """Arriving with the page still means the page has nothing to say about
+    *which* of its fifteen files this is. The rule is unchanged — the upload gap
+    is small, so nothing is routed — but the outcome on a page dated only by its
+    creation stamp is no date rather than a shared one."""
     got = decide(_ev(pdf_count=15,
                      node_created="2018-09-27T00:00:00+00:00",
                      file_created="2018-10-23T00:00:00+00:00"))
-    assert got.action == "keep_page_date"
+    assert got.action == "drop_page_date"
     assert got.rule == "multi_pdf_uploaded_with_page"
+    assert got.candidate_start_date is None
 
 
 # --------------------------------------------------------------------------- #
@@ -166,9 +171,12 @@ def test_a_late_upload_on_a_multi_pdf_page_is_reviewed_not_overridden():
 
 
 def test_several_pdfs_alone_do_not_give_each_one_its_own_date():
+    """Twenty files sharing a page is not evidence that any of them has a date;
+    it is evidence that the page's date is not any of theirs."""
     got = decide(_ev(pdf_count=20, file_created="2020-01-10T00:00:00+00:00",
                      node_created="2020-01-01T00:00:00+00:00"))
-    assert got.action == "keep_page_date"
+    assert got.action == "drop_page_date"
+    assert got.candidate_start_date is None
 
 
 # --------------------------------------------------------------------------- #
@@ -704,11 +712,12 @@ def test_an_in_body_pdf_with_a_much_later_upload_path_is_reviewed():
     assert got.rule == "multi_pdf_url_month_review"
 
 
-def test_a_multi_pdf_page_with_no_evidence_keeps_the_page_date():
+def test_a_multi_pdf_page_with_no_evidence_yields_no_date():
     got = decide(_ev(origin="inbody", pdf_count=70, file_created=None,
                      url="https://teriin.org/sites/default/files/files/x.pdf"))
-    assert got.action == "keep_page_date"
+    assert got.action == "drop_page_date"
     assert got.rule == "multi_pdf_no_evidence"
+    assert "undated" in got.evidence
 
 
 def test_the_evidence_bundle_never_carries_pdf_bytes():

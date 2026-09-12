@@ -222,8 +222,7 @@ def build_attachment_doc(
         # Inherited whole from the page, never derived from the file.
         effective_end_date=resolved.end_value,
         end_precision=resolved.end_precision,
-        date_evidence=(_overridden_evidence(parent_date, resolved)
-                       if resolved.overridden else inherit_date(parent_date)),
+        date_evidence=_evidence_for(parent_date, resolved),
         extra=extra,
         entity_refs=refs,
         **drupal_facets(node.metadata or {}, refs),
@@ -254,12 +253,23 @@ def inherit_date(parent_date):
     return inherited(parent_date)
 
 
-def _overridden_evidence(parent_date, resolved):
-    """Provenance for the one case that is not inheritance.
+def _evidence_for(parent_date, resolved):
+    """Provenance for whichever of the three outcomes happened.
 
-    The parent's resolution is still recorded — "would have been X" — because
-    the interesting fact about an override is what it displaced.
+    Inheritance is the ordinary one and is the parent's own resolution, unchanged.
+    The other two both displace it, and in both the parent's resolution is still
+    recorded — "would have been X" — because the interesting fact about not
+    inheriting is what was not inherited.
     """
+    if resolved.dropped:
+        return _dropped_evidence(parent_date, resolved)
+    if resolved.overridden:
+        return _overridden_evidence(parent_date, resolved)
+    return inherit_date(parent_date)
+
+
+def _overridden_evidence(parent_date, resolved):
+    """Provenance for a file that stated its own date."""
     from dataclasses import replace
 
     return replace(
@@ -267,13 +277,36 @@ def _overridden_evidence(parent_date, resolved):
         start_value=resolved.start_value,
         source=resolved.canonical_source,
         # The decision's own precision: a quoted publication statement gives a
-        # day, a corroborated copyright statement gives a year.
+        # day, a corroborated copyright statement gives a year, and a title gives
+        # whatever it actually named.
         start_precision=resolved.start_precision,
         # A statement about a publication gives a day or a year, not a period;
         # the page's end date belonged to the date it displaced.
         end_value=None,
         end_precision=None,
-        rule="document_statement_override",
+        rule=(resolved.decision.rule if resolved.decision
+              else "document_statement_override"),
+    )
+
+
+def _dropped_evidence(parent_date, resolved):
+    """Provenance for a file the system declined to date.
+
+    The whole value of this row is that it is not silence: it records that the
+    page *had* a date, that the date was its creation stamp, and that the file
+    was one of several sharing it — which is the answer to "why does this PDF
+    have no date?" and equally to "why did you not just use 2018-04-04?".
+    """
+    from dataclasses import replace
+
+    return replace(
+        parent_date,
+        start_value=None,
+        start_precision=None,
+        end_value=None,
+        end_precision=None,
+        source=resolved.canonical_source,
+        rule=(resolved.decision.rule if resolved.decision else "drop_page_date"),
     )
 
 

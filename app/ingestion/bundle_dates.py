@@ -100,8 +100,22 @@ CREATED = "created"
 #:                   publication statement establishes a day. Labelling the
 #:                   first as the second would make a claim the evidence does
 #:                   not carry.
+#: ``document_title`` a date the file's own link text, filename or internal
+#:                   title states (:mod:`app.ingestion.title_dates`). Its own
+#:                   value rather than ``document_text`` because the evidence is
+#:                   a *name*, not a sentence: "Annual Report 2024-25" is a
+#:                   strong claim about a year and no claim at all about a day,
+#:                   and a reader must be able to tell it from a quoted
+#:                   publication statement.
+#: ``no_evidence``   there is no date. One of several PDFs on a page whose own
+#:                   date is only its Drupal creation stamp, and the file states
+#:                   nothing about itself. Recorded rather than left NULL so
+#:                   "we looked and found nothing" is distinguishable from "this
+#:                   row predates the resolver", which is what
+#:                   ``reconcile.date_checks.unrecorded_date_source`` alarms on.
 Source = Literal[
     "created", "cms_field", "parent_page", "document_text", "document_copyright",
+    "document_title", "no_evidence",
 ]
 
 #: What is wrong with a record's date *range*, when something is. ``None`` means

@@ -141,22 +141,35 @@ def test_an_attachment_move_passes_the_same_gate():
 # --------------------------------------------------------------------------- #
 
 class _Cursor:
-    """A cursor that answers the one query under test.
+    """A cursor that answers the two queries under test.
 
     `fetchone` returns None so `schema._column_exists` reports every legacy
     `published_*` column as absent — i.e. this models a **fully migrated**
     database, which is the state these tests are about. The half-migrated
     read path (COALESCE over the legacy column) is exercised against the real
     schema, not here.
+
+    The second query counts PDFs per page. It is answered by counting the
+    fixture rows rather than by a separate fixture, so a test that declares two
+    attachments on one page gets a page that holds two — the two facts cannot
+    drift apart and say different things about the same page.
     """
 
     def __init__(self, rows):
         self._rows = rows
+        self._last = ""
 
-    def execute(self, *_a, **_k):
+    def execute(self, sql=None, *_a, **_k):
+        self._last = sql or ""
         return None
 
     def fetchall(self):
+        if "COUNT(DISTINCT file_uuid)" in self._last:
+            counts: dict[str, set] = {}
+            for row in self._rows:
+                counts.setdefault(row["parent_id"], set()).add(row["document_id"])
+            return [{"document_id": page, "n": len(files)}
+                    for page, files in counts.items()]
         return self._rows
 
     def fetchone(self):
@@ -211,7 +224,12 @@ def _row(**kwargs):
             "effective_start_date": CREATED, "start_precision": "day",
             "effective_end_date": None, "end_precision": None,
             "date_source": "parent_page",
-            "url": "https://teriin.org/a.pdf", "bundle": "research_papers"}
+            "url": "https://teriin.org/a.pdf", "bundle": "research_papers",
+            # What the file is called, and what the page calls it. Both are
+            # read now: on a multi-PDF page the naming is what tells one file
+            # from another.
+            "title": None, "filename": "a.pdf", "origin": "attachment",
+            "parent_title": "A paper"}
     base.update(kwargs)
     return base
 
@@ -555,3 +573,110 @@ def test_the_report_names_documents_it_could_not_re_derive(capsys):
 def test_an_undated_document_does_not_break_the_report(capsys):
     report([_move(old_start="")], [])
     assert "attachments" in capsys.readouterr().out
+
+
+# --------------------------------------------------------------------------- #
+# The backfill applies the resolver's rules, it does not compete with them
+# --------------------------------------------------------------------------- #
+
+def _shelf_page():
+    """A `page` bundle: its date is only the day the node was typed."""
+    return {"p1": resolve_effective_dates("page", "2022-02-09T00:00:00+00:00", {})}
+
+
+def test_a_shelf_file_is_dated_from_its_name_not_from_the_page(rows):
+    """The bug this script must not reintroduce. Two annual reports on one shelf
+    page: inheritance would stamp both 2022-02-09, which is what ingestion has
+    just stopped doing."""
+    rows([_row(document_id="f1", filename="TERI-Annual-Report-2024-25.pdf",
+               bundle="page"),
+          _row(document_id="f2", filename="TAR_2016-17.pdf", bundle="page")])
+    moves = {m.document_id: m for m in attachment_moves(_shelf_page())}
+    assert moves["f1"].new_start == "2024-01-01T00:00:00+00:00"
+    assert moves["f2"].new_start == "2016-01-01T00:00:00+00:00"
+    assert {m.source for m in moves.values()} == {"document_title"}
+
+
+def test_a_shelf_file_that_names_nothing_is_cleared_not_inherited(rows):
+    """The other half, and the more dangerous one: a sweep that wrote the page's
+    stamp here would undo the fix for 300 documents in one run."""
+    rows([_row(document_id="f1", filename="Brochure.pdf", bundle="page"),
+          _row(document_id="f2", filename="Flyer.pdf", bundle="page")])
+    moves = {m.document_id: m for m in attachment_moves(_shelf_page())}
+    assert moves["f1"].new_start is None
+    assert moves["f1"].start_cleared is True
+    assert moves["f1"].source == "no_evidence"
+    assert moves["f1"].start_precision is None
+
+
+def test_a_lone_file_on_a_shelf_page_still_inherits(rows):
+    """One PDF on a page is that page's document, here exactly as in ingestion —
+    and its name is not read even though it states a year."""
+    rows([_row(document_id="f1", filename="TERI-Annual-Report-2024-25.pdf",
+               bundle="page")])
+    moves = attachment_moves(_shelf_page())
+    assert len(moves) == 1
+    assert moves[0].new_start == "2022-02-09T00:00:00+00:00"
+    assert moves[0].source == "parent_page"
+
+
+def test_a_page_title_reused_as_the_files_label_is_not_read_as_the_files_name(rows):
+    """`canonical.from_pdf` falls back to the node's title when a file has no
+    description, so a file's stored title is often the *shelf's* name. Reading it
+    as link text would date every file on 'Annual Reports 2024-25' to 2024."""
+    rows([_row(document_id="f1", filename="Brochure.pdf", bundle="page",
+               title="Annual Reports 2024-25", parent_title="Annual Reports 2024-25"),
+          _row(document_id="f2", filename="Flyer.pdf", bundle="page",
+               title="Annual Reports 2024-25", parent_title="Annual Reports 2024-25")])
+    moves = {m.document_id: m for m in attachment_moves(_shelf_page())}
+    assert moves["f1"].new_start is None
+    assert moves["f1"].source == "no_evidence"
+
+
+def test_the_backfill_and_the_resolver_agree_on_the_same_file(rows):
+    """The requirement stated as a test: one set of rules, two callers. If the
+    script ever grew its own copy, this is what would catch it."""
+    from types import SimpleNamespace
+
+    from app.ingestion.date_resolution import build_evidence, resolve
+
+    filename = "TERI-Annual-Report-2024-25.pdf"
+    rows([_row(document_id="f1", filename=filename, bundle="page"),
+          _row(document_id="f2", filename="TAR_2016-17.pdf", bundle="page")])
+    by_script = attachment_moves(_shelf_page())[0]
+
+    node = SimpleNamespace(uuid="p1", title="Annual Reports",
+                           url="https://teriin.org/x",
+                           created="2022-02-09T00:00:00+00:00", bundle="page",
+                           metadata={}, files=[object(), object()])
+    file = SimpleNamespace(uuid="f1", url="https://teriin.org/a.pdf",
+                           filename=filename, description=None,
+                           origin="attachment", created=None)
+    by_ingestion = resolve(
+        build_evidence(document_id="f1", node=node, file=file), content=None)
+
+    assert by_script.new_start == by_ingestion.start_value
+    assert by_script.start_precision == by_ingestion.start_precision
+    assert by_script.source == by_ingestion.canonical_source
+
+
+def test_a_name_on_a_ranged_page_keeps_the_period_it_says_nothing_about(rows):
+    """The same range rule as the resolver: a year-precision name establishes no
+    end, so the project's end is left alone."""
+    rows([_row(document_id="f1", filename="Progress-Report-2021-22.pdf",
+               bundle="completed_projects", parent_title="A project"),
+          _row(document_id="f2", filename="Other.pdf",
+               bundle="completed_projects", parent_title="A project")])
+    moves = {m.document_id: m for m in attachment_moves(_project_page())}
+    assert moves["f1"].new_start == "2021-01-01T00:00:00+00:00"
+    assert moves["f1"].new_end == "2022-12-31T00:00:00+00:00"
+
+
+def test_a_point_date_on_a_ranged_page_clears_the_period(rows):
+    rows([_row(document_id="f1", filename="Minutes_14-03-2021.pdf",
+               bundle="completed_projects", parent_title="A project"),
+          _row(document_id="f2", filename="Other.pdf",
+               bundle="completed_projects", parent_title="A project")])
+    moves = {m.document_id: m for m in attachment_moves(_project_page())}
+    assert moves["f1"].new_start == "2021-03-14T00:00:00+00:00"
+    assert moves["f1"].new_end is None

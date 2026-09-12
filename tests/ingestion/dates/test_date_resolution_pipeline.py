@@ -46,6 +46,21 @@ def _file(**kwargs) -> SimpleNamespace:
     )
 
 
+def _dated_node(**kwargs) -> SimpleNamespace:
+    """A page whose bundle *states* its date, resolving to ``NODE_DATE``.
+
+    Used wherever a test's subject is the interpreter rather than the shelf rule.
+    A file may only fall back to its page's date when that date is a claim about
+    the content — see :func:`app.ingestion.date_rules.page_date_is_usable` — so a
+    test that asserts "the page's date stands" has to be run against a page whose
+    date actually stands for something. ``page``-bundle nodes, whose date is only
+    a Drupal creation stamp, are used below for the cases where that is the point.
+    """
+    kwargs.setdefault("bundle", "news")
+    kwargs.setdefault("metadata", {"field_news_date": NODE_DATE})
+    return _node(**kwargs)
+
+
 def _evidence(node=None, file=None, count=None):
     return build_evidence(document_id="d1", node=node or _node(),
                           file=file or _file(), page_pdf_count=count)
@@ -100,7 +115,7 @@ def test_a_late_upload_does_not_move_the_date(monkeypatch):
         confidence=0.99, recommended_action="override")
     verdict.set_grounded(False, False)          # nothing readable to ground against
     monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: verdict)
-    node = _node(files=[_file(), _file(uuid="f2")])
+    node = _dated_node(files=[_file(), _file(uuid="f2")])
     file = _file(created="2024-06-01T00:00:00+00:00")
     got = resolve_pdf_date(_evidence(node=node, file=file), content=b"%PDF-")
     assert got.start_value == NODE_DATE
@@ -137,8 +152,13 @@ def _grounding(verdict: DateInterpretation, text: str) -> tuple[bool, bool]:
 
 
 def _routed_evidence():
-    """A multi-PDF page whose file date diverges — the routed shape."""
-    node = _node(files=[_file(), _file(uuid="f2"), _file(uuid="f3")])
+    """A multi-PDF page whose file date diverges — the routed shape.
+
+    The page states its own date (`_dated_node`), so the fallback these tests
+    assert is a real one: the subject here is which verdicts survive the gates,
+    not whether a creation stamp may be borrowed.
+    """
+    node = _dated_node(files=[_file(), _file(uuid="f2"), _file(uuid="f3")])
     return _evidence(node=node, file=_file(created="2024-06-01T00:00:00+00:00"))
 
 
@@ -363,8 +383,10 @@ def test_two_pdfs_on_one_page_can_get_different_dates(monkeypatch):
 
 
 def test_one_dated_and_one_undated_pdf_on_the_same_page(monkeypatch):
-    """The mixed shelf: the file that states a date gets it, the file that states
-    nothing falls back to the page — and the fallback is recorded, not silent."""
+    """The mixed shelf: the file that states a date gets it, and the file that
+    states nothing gets **no date** — the page's 2025 stamp is a fact about the
+    page, and two files that shared it were published five years apart. What is
+    recorded either way is the reason, not silence."""
     monkeypatch.setattr("app.ingestion.date_llm.interpret",
                         lambda _e: pytest.fail("the model must not be called"))
     page_date = "2025-09-30T04:28:20+00:00"
@@ -386,12 +408,14 @@ def test_one_dated_and_one_undated_pdf_on_the_same_page(monkeypatch):
     assert dated.start_precision == "year"
     assert dated.overridden is True
 
-    assert undated.start_value == page_date, "no verifiable date of its own"
-    assert undated.start_precision == "day", "the page's precision, inherited"
+    assert undated.start_value is None, "no verifiable date of its own"
+    assert undated.start_precision is None, "and so no precision to claim"
     assert undated.overridden is False
+    assert undated.dropped is True
+    assert undated.canonical_source == "no_evidence"
     assert undated.decision.rule == "multi_pdf_no_evidence"
-    assert "read for a date of its own" in undated.decision.evidence
-    assert "fallback" in undated.decision.evidence
+    assert "read for a date" in undated.decision.evidence
+    assert "undated" in undated.decision.evidence
 
 
 def test_the_multi_pdf_fallback_keeps_the_pages_provenance_and_precision(monkeypatch):
@@ -554,37 +578,43 @@ def test_a_copyright_year_corroborated_by_docinfo_overrides_at_year_precision(mo
     assert "llm" not in got.used and "pdf_text" in got.used
 
 
-def test_a_copyright_year_the_docinfo_does_not_corroborate_keeps_the_page_date(monkeypatch):
+def test_a_copyright_year_the_docinfo_does_not_corroborate_leaves_it_undated(monkeypatch):
     _fill_signals(monkeypatch, pdf_created="2024-03-02T10:42:52+00:00", front_text=BOOK_COPYRIGHT)
     got = resolve_pdf_date(_shelf_page_evidence(), content=b"%PDF-")
 
     assert got.overridden is False
-    assert got.start_value == "2025-09-30T04:28:20+00:00"
+    assert got.start_value is None, "an uncorroborated year is not a date, and "                                    "neither is the shelf's creation stamp"
     assert got.decision.rule == "multi_pdf_no_evidence"
-    # The fallback reason has to be on the persisted field: `evidence` is the
-    # column an auditor reads, and `supporting_evidence` is not stored.
-    assert "read for a date of its own" in got.decision.evidence
-    assert "fallback" in got.decision.evidence
+    # The reason has to be on the persisted field: `evidence` is the column an
+    # auditor reads, and `supporting_evidence` is not stored.
+    assert "read for a date" in got.decision.evidence
+    assert "undated" in got.decision.evidence
     assert "llm" not in got.used
 
 
-def test_a_docinfo_date_alone_still_never_moves_the_page_date(monkeypatch):
-    """The audited newsletter: DocInfo 2026-09-01, no copyright statement."""
+def test_a_docinfo_date_alone_still_never_sets_a_date(monkeypatch):
+    """The audited newsletter: DocInfo 2026-09-01, no copyright statement. A PDF
+    creation timestamp has never been allowed to date a document and still is
+    not — the file is left undated rather than dated from its own metadata."""
     _fill_signals(monkeypatch, pdf_created="2026-09-01T06:30:49+00:00",
                   front_text="TERI ALUMNI ASSOCIATION INAUGURAL ISSUE, SEPTEMBER 2026 CONTENTS Editorial")
     got = resolve_pdf_date(_shelf_page_evidence(), content=b"%PDF-")
 
     assert got.overridden is False
+    assert got.start_value is None
     assert got.decision.rule == "multi_pdf_no_evidence"
     # Reading the file must not have widened the routing to the model.
-    assert got.decision.action == "keep_page_date" and "llm" not in got.used
+    assert got.decision.action == "drop_page_date" and "llm" not in got.used
 
 
-def test_a_copyright_year_equal_to_the_pages_year_changes_nothing(monkeypatch):
+def test_a_copyright_year_equal_to_the_pages_year_proposes_nothing(monkeypatch):
+    """The rule declines, because agreeing with the page buys nothing. On a shelf
+    page that leaves the file undated — declining to override is not the same as
+    endorsing the stamp."""
     _fill_signals(monkeypatch, pdf_created="2025-02-01T00:00:00+00:00",
                   front_text="© TERI Alumni Association 2025")
     got = resolve_pdf_date(_shelf_page_evidence(), content=b"%PDF-")
-    assert got.overridden is False and got.start_value == "2025-09-30T04:28:20+00:00"
+    assert got.overridden is False and got.start_value is None
 
 
 def test_an_implausible_copyright_year_is_refused(monkeypatch):
@@ -650,11 +680,12 @@ def test_the_audited_book_shape_overrides_from_real_bytes(monkeypatch):
     assert got.overridden is True
     assert got.start_value == "2020-01-01T00:00:00+00:00" and got.start_precision == "year"
 
-    # Same bytes with a DocInfo year that disagrees: nothing moves.
+    # Same bytes with a DocInfo year that disagrees: nothing is corroborated, so
+    # nothing is proposed — and a shelf stamp is not a fallback.
     content = _book_pdf(copyright_line="© TERI Alumni Association 2020",
                         creation="D:20240302104252+00'00'")
     got = resolve_pdf_date(_shelf_page_evidence(), content=content)
-    assert got.overridden is False and got.start_value == "2025-09-30T04:28:20+00:00"
+    assert got.overridden is False and got.start_value is None
 
 
 # --------------------------------------------------------------------------- #
@@ -704,6 +735,59 @@ def test_an_override_reaches_the_document(monkeypatch):
     doc, recorded = _build_doc(monkeypatch, node=node, file=_file(), resolved=resolved)
     assert doc.effective_start_date == "2025-03-31"
     assert len(recorded) == 1 and recorded[0].action == "propose_override"
+
+
+def test_a_title_override_reaches_the_document_with_its_own_provenance(monkeypatch):
+    from app.ingestion.date_resolution import ResolvedDate
+    from app.ingestion.date_rules import DateDecision
+
+    resolved = ResolvedDate(
+        start_value="2024-01-01T00:00:00+00:00", start_precision="year",
+        decision=DateDecision(
+            document_id="f1", action="propose_override",
+            candidate_start_date="2024-01-01T00:00:00+00:00",
+            candidate_precision="year", date_type="publication",
+            source="document_title", confidence=0.95, rule="title_states_date",
+            title_kind="edition", decided_by="deterministic"),
+    )
+    node = _node(metadata={}, refs=[], files=[_file(), _file(uuid="f2")])
+    doc, recorded = _build_doc(monkeypatch, node=node,
+                               file=_file(filename="TERI-Annual-Report-2024-25.pdf"),
+                               resolved=resolved)
+    assert doc.effective_start_date == "2024-01-01T00:00:00+00:00"
+    assert doc.start_precision == "year"
+    assert doc.date_source == "document_title"
+    assert doc.effective_end_date is None
+    # The parent's resolution is still on the record: what an override displaced
+    # is the interesting fact about it.
+    assert doc.date_evidence.rule == "title_states_date"
+    assert len(recorded) == 1
+
+
+def test_a_dropped_date_reaches_the_document_as_no_date(monkeypatch):
+    """The undated outcome has to survive the document builder intact — a
+    leftover precision or an inherited end would each be a claim the resolver
+    explicitly declined to make."""
+    from app.ingestion.date_resolution import ResolvedDate
+    from app.ingestion.date_rules import DateDecision
+
+    resolved = ResolvedDate(
+        start_value=None, start_precision=None, end_value=None, end_precision=None,
+        decision=DateDecision(
+            document_id="f1", action="drop_page_date", candidate_start_date=None,
+            source="node_effective_date", confidence=0.0,
+            rule="multi_pdf_no_evidence", decided_by="deterministic",
+            evidence="One of 8 PDFs ... left undated."),
+    )
+    node = _node(metadata={}, refs=[], files=[_file(), _file(uuid="f2")])
+    doc, recorded = _build_doc(monkeypatch, node=node, file=_file(), resolved=resolved)
+    assert doc.effective_start_date is None
+    assert doc.start_precision is None
+    assert doc.effective_end_date is None
+    assert doc.end_precision is None
+    assert doc.date_source == "no_evidence", "not NULL: 'we looked' is a finding"
+    assert doc.date_evidence.start_value is None
+    assert len(recorded) == 1 and recorded[0].action == "drop_page_date"
 
 
 def test_a_year_precision_override_reaches_the_document_as_a_year(monkeypatch):
