@@ -158,7 +158,8 @@ def test_dry_run_still_runs_every_stage(wired):
     """A rehearsal that skipped the work would prove nothing."""
     build, _ = _run(dry_run=True, skip_project=True)
     assert [s.name for s in build.stages if not s.skipped] == [
-        "seed", "acronyms", "ambiguity", "pi-promotion", "claims", "conflicts",
+        "seed", "acronyms", "ambiguity", "pi-promotion", "author-promotion",
+        "claims", "conflicts",
     ]  # mentions is skipped unless --with-mentions
     assert _stage(build, "seed").counts["entities"] == 2
     assert _stage(build, "claims").counts["built"] == 2
@@ -194,8 +195,8 @@ def test_write_run_calls_the_writers_in_order(wired):
 def test_stage_order_is_fixed(wired):
     build, _ = _run(skip_project=True)
     assert [s.name for s in build.stages] == [
-        "seed", "acronyms", "ambiguity", "pi-promotion", "mentions", "claims",
-        "conflicts", "project",
+        "seed", "acronyms", "ambiguity", "pi-promotion", "author-promotion",
+        "mentions", "claims", "conflicts", "project",
     ]
 
 
@@ -204,7 +205,8 @@ def test_skips_are_honoured(wired):
                     skip_project=True)
     assert "save_entities" not in wired.calls
     assert {s.name for s in build.stages if s.skipped} == {
-        "seed", "acronyms", "pi-promotion", "mentions", "project"
+        "seed", "acronyms", "pi-promotion", "author-promotion", "mentions",
+        "project",
     }
 
 
