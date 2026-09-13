@@ -6,10 +6,15 @@ forensics, and an unreachable graph costs a retry rather than data.
 
 What is projected, and what is refused
 --------------------------------------
-* **Entities**: only ``claim_eligible`` ones. The 803 provisional people do not
-  reach the graph at all, so a traversal cannot arrive at a name-level identity
-  and mistake it for a person. Trust is carried onto the node, so
-  ``pi_attested`` stays distinguishable from ``authoritative``.
+* **Entities**: ``claim_eligible`` ones, plus those holding a predicate-scoped
+  trust level (``author_attested``). The provisional people still do not reach
+  the graph at all, so a traversal cannot arrive at a name-level identity and
+  mistake it for a person. Trust and the real ``claim_eligible`` value are both
+  carried onto the node, so ``pi_attested`` stays distinguishable from
+  ``authoritative`` — and an ``author_attested`` node is visibly not eligible
+  for anything beyond the one predicate its level grants. Without this a scoped
+  claim would exist in MySQL and be unprojectable, since a claim whose subject
+  has no node is refused by ``_partition_projectable``.
 * **Claims**: every staged claim, whatever its status, because history is the
   point — a superseded claim is still the answer to "who led this in 2019".
 * **Current-state edges**: only from claims that are ``active``, non-disputed,
@@ -117,13 +122,43 @@ def _load_entities() -> list[dict[str, Any]]:
     from app.core.clients import mysql_connection
 
     table = state_table()
+    clause, params = _projectable_clause()
     with mysql_connection() as conn, conn.cursor() as cur:
         cur.execute(
             f"SELECT entity_id, entity_type, canonical_name, normalized_name, "
-            f"trust, cms_uuid, source, status FROM `{table}_entity` "
-            "WHERE status = 'active' AND claim_eligible = 1"
+            f"trust, claim_eligible, cms_uuid, source, status FROM `{table}_entity` "
+            f"WHERE status = 'active' AND {clause}",
+            params,
         )
         return list(cur.fetchall())
+
+
+def _projectable_clause() -> tuple[str, list[str]]:
+    """SQL for "this entity may hold a node", and its parameters.
+
+    Broad eligibility is not the only reason to exist in the graph. A
+    predicate-scoped trust level — ``author_attested`` — is deliberately *not*
+    ``claim_eligible``, because that flag means "eligible for anything". But its
+    claims are real, and a claim whose subject has no node cannot be projected
+    at all, so the authorship edge would exist in MySQL and nowhere else.
+
+    Widening here does not widen eligibility. The node carries its true
+    ``claim_eligible`` value, so a consumer can still tell the two apart, and
+    every other gate is untouched: validation still refuses these people as the
+    *object* of a claim, and :func:`_current_state_rows` still requires an
+    entity-valued object, which ``AUTHORED`` does not have.
+
+    Read from :data:`app.knowledge.seed.PREDICATE_SCOPED_TRUST` rather than
+    listed here, so a new scoped level cannot be added without its entities
+    becoming projectable.
+    """
+    from app.knowledge.seed import PREDICATE_SCOPED_TRUST
+
+    levels = sorted(PREDICATE_SCOPED_TRUST)
+    if not levels:
+        return "claim_eligible = 1", []
+    placeholders = ", ".join(["%s"] * len(levels))
+    return f"(claim_eligible = 1 OR trust IN ({placeholders}))", levels
 
 
 def _load_entities_by_ids(entity_ids: set[str]) -> list[dict[str, Any]]:
@@ -140,6 +175,7 @@ def _load_entities_by_ids(entity_ids: set[str]) -> list[dict[str, Any]]:
         return []
     table = state_table()
     ids = sorted(entity_ids)
+    clause, params = _projectable_clause()
     out: list[dict[str, Any]] = []
     with mysql_connection() as conn, conn.cursor() as cur:
         for start in range(0, len(ids), 500):
@@ -147,10 +183,10 @@ def _load_entities_by_ids(entity_ids: set[str]) -> list[dict[str, Any]]:
             placeholders = ", ".join(["%s"] * len(batch))
             cur.execute(
                 f"SELECT entity_id, entity_type, canonical_name, normalized_name, "
-                f"trust, cms_uuid, source, status FROM `{table}_entity` "
-                f"WHERE status = 'active' AND claim_eligible = 1 "
+                f"trust, claim_eligible, cms_uuid, source, status FROM `{table}_entity` "
+                f"WHERE status = 'active' AND {clause} "
                 f"AND entity_id IN ({placeholders})",
-                batch,
+                [*params, *batch],
             )
             out.extend(cur.fetchall())
     return out
@@ -348,7 +384,11 @@ def _write_projection(
             "normalized_name": e["normalized_name"],
             "entity_type": e["entity_type"],
             "trust": e["trust"],
-            "claim_eligible": True,
+            # The real value, not an assumption. It used to be safe to hardcode
+            # because only eligible entities were loaded; a predicate-scoped
+            # level is projected without being eligible, and a node claiming
+            # otherwise would misrepresent it to every consumer.
+            "claim_eligible": bool(e.get("claim_eligible", 1)),
             "cms_uuid": e["cms_uuid"],
             "source": e["source"],
             "status": e["status"],
