@@ -299,8 +299,9 @@ def test_an_annual_report_is_dated_from_its_own_name(monkeypatch):
     """The reported failure, end to end. Ten annual reports hang off one
     `Annual Reports` page whose node was typed on 2022-02-09, and every edition
     was carrying that day — the 2024-25 report included. The file's own name says
-    which edition it is, so it is dated to 2024 at **year** precision: the name
-    establishes a year and nothing more, and 1 January is the marker for it.
+    which edition it is, so it is dated to **2025** — the year the 2024-25
+    period ends in, which is when an edition covering it is published — at year
+    precision, 1 January standing in for the year.
 
     The edition label is still produced and is still not a date; the two now
     simply agree about the year rather than the label being the only true thing
@@ -315,7 +316,7 @@ def test_an_annual_report_is_dated_from_its_own_name(monkeypatch):
                    title="Annual Reports"),
         file=_file(filename="TERI-Annual-Report-2024-25.pdf"),
     )
-    assert got.start_value == "2024-01-01T00:00:00+00:00"
+    assert got.start_value == "2025-01-01T00:00:00+00:00"
     assert got.start_precision == "year"
     assert got.edition_label == "2024-25", "canonical spelling, per app.core.editions"
     assert got.overridden is True

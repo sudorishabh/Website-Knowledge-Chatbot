@@ -281,6 +281,20 @@ class TitleFinding:
     disposition: str = "none"
 
 
+def _reading(found) -> str:
+    """The clause that explains a reading a reader would otherwise have to infer.
+
+    Only editions need one, and they need it badly: nothing about the pair
+    ``'2024-25'`` and ``2025-01-01`` says on its face which end of the span was
+    taken, so "why is this 2025 and not 2024?" would be unanswerable from the
+    stored row. Everything else reads straight off its own statement.
+    """
+    if found.title_kind != "edition":
+        return ""
+    return (f" — the year the {found.raw_statement} period ends in, which is "
+            f"when an edition covering it is published")
+
+
 def read_title_evidence(evidence: PdfEvidence) -> TitleFinding:
     """The date the file's own naming states, and whether it may be used.
 
@@ -355,9 +369,9 @@ def read_title_evidence(evidence: PdfEvidence) -> TitleFinding:
                 f"The file's {found.title_source.replace('_', ' ')} states "
                 f"{found.raw_statement!r}, read as "
                 f"{found.normalized_value.isoformat()} at {found.precision} "
-                f"precision. One of {page.pdf_count} PDFs on this page, so the "
-                f"page's {str(page.effective_date)[:10]} is a date about the "
-                f"page and not about this file."
+                f"precision{_reading(found)}. One of {page.pdf_count} PDFs on "
+                f"this page, so the page's {str(page.effective_date)[:10]} is a "
+                f"date about the page and not about this file."
             ),
             rule="title_states_date",
             # Which of the file's strings answered, and what shape of statement
@@ -554,20 +568,19 @@ def resolve(evidence: PdfEvidence, content: bytes | None = None) -> ResolvedDate
     try:
         # Free, and the first thing asked: a file that names its own date.
         #
-        # Two kinds of name settle it outright, and nothing else is read, asked
-        # or paid for. A **full date** leaves nothing to establish. An
-        # **edition** — "2024-25" — names the period the document *covers*, and
-        # `app.core.editions` is explicit that such a label is never a date: an
-        # annual report for 2024-25 was not published on any particular day the
-        # label implies, so there is no day for a closer reading to find.
+        # One kind of name settles it outright: a **full date** leaves nothing
+        # for anything else to establish, so nothing is read, asked or paid for.
         #
-        # A month or a bare year is a point statement that the document's own
-        # text may legitimately sharpen ("2024_December" in the name, "DATED
-        # 11-12-2024" in the first line), so those take the ordinary path and are
-        # reconciled at the end — see `_reconcile_with_title`.
+        # Everything else fixes a *period* the document's own text may sharpen
+        # within — "2024_December" in the name and "DATED 11-12-2024" in the
+        # first line are the same claim, stated twice, and the finer one wins.
+        # An edition is included in that: it names the year the period ends in,
+        # and a date inside that year is a sharpening rather than a contradiction.
+        # What no text may do is move the document *outside* the named period —
+        # see `_reconcile_with_title`.
         finding = read_title_evidence(evidence)
         titled = finding.decision
-        if titled is not None and titled.title_kind in ("full_date", "edition"):
+        if titled is not None and titled.title_kind == "full_date":
             return _outcome(titled, evidence, used=list(titled.used),
                             finding=finding)
 
@@ -683,7 +696,10 @@ def _reconcile_with_title(
 
     A text-based override that falls **inside** the named period is a sharpening
     and is kept — that is the tender bulletin whose filename says December 2024
-    and whose first line says the 11th.
+    and whose first line says the 11th. The same holds for an edition: a file
+    named ``…2024-25`` is dated to 2025, so a body date in March 2025 sharpens
+    it and a body date in March *2024* does not, because 2024 is the year the
+    period opened in and not the year the name resolved to.
 
     A text-based override that falls **outside** it is a disagreement, and the
     name wins: the name is what a person wrote about this file, the text is what
@@ -705,13 +721,6 @@ def _reconcile_with_title(
     if titled.title_kind == "bare_year":
         return replace(decision, title_source=titled.title_source,
                        title_kind=titled.title_kind, title_disposition="rejected")
-    if titled.title_kind == "edition":
-        # Nothing sharpens a period the document *covers* into a day it was
-        # published on. Stated here as well as in `resolve`'s short-circuit
-        # because an edition read from the PDF's DocInfo title is only found
-        # after the bytes are open, and which field it came from must not change
-        # what it means.
-        return titled
     inside = _same_period(
         titled.candidate_precision,
         date.fromisoformat(str(titled.candidate_start_date)[:10]),

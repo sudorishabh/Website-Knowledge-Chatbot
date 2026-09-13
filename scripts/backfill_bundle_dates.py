@@ -59,11 +59,28 @@ from app.ingestion.bundle_dates import (
     resolve_effective_dates,
 )
 
-#: ``date_source`` values that mean "the file-level resolver already decided
-#: this, with evidence this script does not have". Inheritance must not
-#: overwrite them. See :func:`attachment_moves`.
-RESOLVER_OWNED_SOURCES: frozenset[str] = frozenset({
-    "document_text", "document_copyright", "document_title", "no_evidence",
+#: ``date_source`` values this script cannot recompute, and therefore preserves.
+#:
+#: The line is drawn at **what the evidence needs**, not at "the resolver
+#: decided it". Both of these were read out of the PDF's own bytes — a quoted
+#: publication statement, a copyright year its DocInfo corroborates — and this
+#: script has no bytes. Overwriting them with anything it *can* work out would
+#: replace better evidence with worse.
+TEXT_DERIVED_SOURCES: frozenset[str] = frozenset({
+    "document_text", "document_copyright",
+})
+
+#: ``date_source`` values this script **re-derives on every run**.
+#:
+#: ``document_title`` and ``no_evidence`` come from the file's naming and from
+#: the shape of its page — both of which are in the catalogue, so
+#: :func:`_attachment_target` reaches them by calling the same functions
+#: ingestion calls. Skipping them as "already decided" is what made the
+#: ending-year change invisible to 55 documents: the rule moved, the rows did
+#: not, and a dry run reported two. A re-derived value that has not changed is
+#: not a move, so nothing churns.
+RECOMPUTED_SOURCES: frozenset[str] = frozenset({
+    "document_title", "no_evidence",
 })
 
 
@@ -334,14 +351,17 @@ def attachment_moves(resolutions: dict[str, EffectiveDate]) -> list[Move]:
     the bug this script exists to correct: a sweep quietly re-stamping 300
     documents with the day their shelf page was typed.
 
-    The rule that *does* need bytes — a publication statement or a copyright year
-    read out of the PDF — is not re-run here. Its verdicts are recognised instead
-    and left alone, along with everything else the resolver already settled:
+    The rule that *does* need bytes is not re-run here; its verdicts are
+    recognised and left alone (:data:`TEXT_DERIVED_SOURCES`):
 
     * ``document_text`` — a publication statement verified inside the PDF's text.
     * ``document_copyright`` — a copyright year its own DocInfo corroborates.
-    * ``document_title`` — a date the file's own name states.
-    * ``no_evidence`` — deliberately undated.
+
+    Everything else is **re-derived, not preserved** (:data:`RECOMPUTED_SOURCES`).
+    A row already reading ``document_title`` is not evidence that the current
+    rule would still produce that date — when the edition rule moved from the
+    opening year of a span to the closing one, 55 documents needed exactly this
+    path and a skip list would have hidden every one of them.
     """
     from app.catalog.db import state_table
     from app.core.clients import mysql_connection
@@ -387,7 +407,7 @@ def attachment_moves(resolutions: dict[str, EffectiveDate]) -> list[Move]:
         if document_id in seen:
             continue
         seen.add(document_id)
-        if row["date_source"] in RESOLVER_OWNED_SOURCES:
+        if row["date_source"] in TEXT_DERIVED_SOURCES:
             continue
         parent = resolutions.get(row["parent_id"])
         if parent is None or not parent.start_value:
@@ -396,11 +416,19 @@ def attachment_moves(resolutions: dict[str, EffectiveDate]) -> list[Move]:
         stored_end = _iso(row["effective_end_date"])
         target = _attachment_target(
             row, parent, pdf_count=pdf_counts.get(row["parent_id"], 1))
-        if (stored == (target.start or None)
-                or (stored and target.start
-                    and target.start[:10] == stored[:10])) \
-                and target.precision == (row["start_precision"] or "day") \
-                and (target.end or "")[:10] == (stored_end or "")[:10]:
+        # "Already correct" has to include "already correctly undated", or every
+        # run re-proposes the same 321 no-op writes. A NULL precision means
+        # `day` only where there is a date for it to describe; with no date
+        # there is no precision, and reading one in makes an undated row look
+        # different from an undated target forever.
+        stored_precision = row["start_precision"] or ("day" if stored else None)
+        same_day = (
+            (stored or None) == (target.start or None)
+            or bool(stored and target.start and target.start[:10] == stored[:10])
+        )
+        if (same_day
+                and target.precision == stored_precision
+                and (target.end or "")[:10] == (stored_end or "")[:10]):
             continue
         moves.append(Move(
             document_id=document_id, source_type="pdf_attachment",

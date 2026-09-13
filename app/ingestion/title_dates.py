@@ -31,7 +31,9 @@ either side is therefore never a year here. ``_2024.`` is; ``IoET_brochure_2026`
 is; ``1695701669D2.1`` is not.
 
 **Precision follows the statement.** "09 March 2026" gives a day, "feb21" a
-month, "2024-25" a year. The value stored is the first day of the established
+month, "2024-25" a year — the year the period *ends* in, because an annual
+report for 2024-25 is published at the close of it and dating it 2024 puts it a
+year before it existed. The value stored is the first day of the established
 period and the precision says how much is actually known, the same contract
 :mod:`app.ingestion.bundle_dates` uses for ``field_rpaper_year``. Nothing here
 rounds a year up into a day.
@@ -45,7 +47,7 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
-from app.core.editions import normalise_edition
+from app.core.editions import EDITION_RE, edition_end_year, normalise_edition
 
 __all__ = ["TITLE_SOURCES", "TitleDate", "read_title_date", "title_date"]
 
@@ -199,6 +201,31 @@ def _build(year: int, month: int, day: int, precision: str,
                      title_source=source, title_kind=kind)
 
 
+def _edition_in(text: str) -> str | None:
+    r"""The canonical edition label in ``text``, if one is there *as a label*.
+
+    :func:`app.core.editions.normalise_edition` owns the spelling and is not
+    re-implemented here. What this adds is the boundary rule the rest of this
+    module already applies to every year it reads: a span glued to a letter or
+    digit is part of an identifier, not a date.
+
+    ``EDITION_RE`` alone stops at ``(?!\d)``, which is enough to keep
+    ``2024-251`` out but lets ``Project-2024-25A`` through — and a scheme code
+    ending in a letter is exactly the shape that made the delimiter rule
+    necessary for bare years. Applying it to editions too makes the two
+    consistent.
+    """
+    for match in EDITION_RE.finditer(text):
+        before = text[match.start() - 1] if match.start() else ""
+        after = text[match.end()] if match.end() < len(text) else ""
+        if before.isalnum() or after.isalnum():
+            continue
+        label = normalise_edition(match.group(0))
+        if label is not None:
+            return label
+    return None
+
+
 def read_title_date(text: str | None, source: str = "filename") -> TitleDate | None:
     """The most precise date ``text`` states, or None.
 
@@ -266,12 +293,17 @@ def read_title_date(text: str | None, source: str = "filename") -> TitleDate | N
     # Year precision. An edition span wins over a bare year because it is the
     # more specific reading of the same characters: "2016-17" is one statement
     # about a period, not two loose years.
-    edition = normalise_edition(cleaned)
-    if edition is not None:
-        year = int(edition[:4])
+    #
+    # **The year taken is the one the period ends in.** "Annual Report 2024-25"
+    # covers April 2024 to March 2025 and is published at the close of it, so
+    # 2024 dated the report a year before it existed. The label is kept verbatim
+    # in `raw_statement` so the row still shows where 2025 came from.
+    found = _edition_in(cleaned)
+    if found is not None:
+        year = edition_end_year(found)
         if _MIN_YEAR <= year <= _MAX_YEAR:
             return TitleDate(normalized_value=date(year, 1, 1), precision="year",
-                             raw_statement=edition, title_source=source,
+                             raw_statement=found, title_source=source,
                              title_kind="edition")
     for match in _YEAR_RE.finditer(cleaned):
         if _HORIZON_RE.search(

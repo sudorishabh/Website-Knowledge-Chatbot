@@ -85,32 +85,37 @@ def _resolve(node, file, monkeypatch=None):
 # --------------------------------------------------------------------------- #
 
 def test_the_annual_report_shelf_dates_each_edition_from_its_own_name(monkeypatch):
-    """Ten editions on one page. They are not ten copies of a 2022 document."""
+    """Ten editions on one page. They are not ten copies of a 2022 document.
+
+    Each is dated to the year its period *ends* in: the 2024-25 report is a 2025
+    document, published at the close of the year it covers."""
+    monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     node = _shelf(files=10)
     got = {
-        name: _resolve(node, _file(filename=name), monkeypatch).start_value
+        name: _resolve(node, _file(filename=name)).start_value
         for name in ("TERI-Annual-Report-2024-25.pdf",
                      "TERI-Annual-Report-2019-20.pdf",
                      "TAR_2016-17.pdf")
     }
     assert got == {
-        "TERI-Annual-Report-2024-25.pdf": "2024-01-01T00:00:00+00:00",
-        "TERI-Annual-Report-2019-20.pdf": "2019-01-01T00:00:00+00:00",
-        "TAR_2016-17.pdf": "2016-01-01T00:00:00+00:00",
+        "TERI-Annual-Report-2024-25.pdf": "2025-01-01T00:00:00+00:00",
+        "TERI-Annual-Report-2019-20.pdf": "2020-01-01T00:00:00+00:00",
+        "TAR_2016-17.pdf": "2017-01-01T00:00:00+00:00",
     }
     assert SHELF_DATE not in got.values()
 
 
 def test_the_fcra_shelf_stops_sharing_one_stamp(monkeypatch):
     """69 financial statements spanning eight years, all stored as 2018-04-04."""
+    monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     node = _shelf(files=69, title="FCRA Financials")
     dates = [
-        _resolve(node, _file(filename=name), monkeypatch).start_value
+        _resolve(node, _file(filename=name)).start_value
         for name in ("Balance_Sheet_22_23.pdf", "Receipts-&-Payments-2024-25.pdf",
                      "Income-and-Expenditure_17-18.pdf")
     ]
-    assert dates == ["2022-01-01T00:00:00+00:00", "2024-01-01T00:00:00+00:00",
-                     "2017-01-01T00:00:00+00:00"]
+    assert dates == ["2023-01-01T00:00:00+00:00", "2025-01-01T00:00:00+00:00",
+                     "2018-01-01T00:00:00+00:00"]
 
 
 def test_a_newsletter_issue_is_dated_to_its_month(monkeypatch):
@@ -123,14 +128,16 @@ def test_a_newsletter_issue_is_dated_to_its_month(monkeypatch):
 def test_the_decision_row_quotes_the_words_that_dated_the_file(monkeypatch):
     """"Why does this PDF have the date 2024?" has to be answerable from the
     stored row, which means the row has to contain the statement itself."""
+    monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     got = _resolve(_shelf(files=10),
-                   _file(filename="TERI-Annual-Report-2024-25.pdf"), monkeypatch)
+                   _file(filename="TERI-Annual-Report-2024-25.pdf"))
     assert got.decision.rule == "title_states_date"
     assert got.decision.decided_by == "deterministic"
     assert "'2024-25'" in got.decision.evidence
     assert "filename" in got.decision.evidence
     assert "10 PDFs" in got.decision.evidence
-    assert "llm" not in got.used, "a name that answers costs nothing"
+    # The one reading a person could not check from the value alone.
+    assert "ends in" in got.decision.evidence
 
 
 # --------------------------------------------------------------------------- #
@@ -331,7 +338,7 @@ def test_a_text_verdict_outside_the_named_period_loses_to_the_name(monkeypatch):
     got = _resolve(_shelf(files=20),
                    _file(filename="TERI-Annual-Report-2024-25.pdf",
                          created="2025-06-01T00:00:00+00:00"))
-    assert got.start_value == "2024-01-01T00:00:00+00:00"
+    assert got.start_value == "2025-01-01T00:00:00+00:00"
     assert got.canonical_source == "document_title"
 
 
@@ -359,10 +366,11 @@ def test_the_drop_does_not_widen_what_gets_read_or_asked():
 def test_the_filename_outranks_the_drupal_link_label(monkeypatch):
     """A link label describes the page's slot, not the file sitting in it. Ten
     annual reports hang off labels that all read "Annual Report"."""
+    monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     got = _resolve(_shelf(files=10),
                    _file(filename="TERI-Annual-Report-2024-25.pdf",
-                         description="Annual Report"), monkeypatch)
-    assert got.start_value == "2024-01-01T00:00:00+00:00"
+                         description="Annual Report"))
+    assert got.start_value == "2025-01-01T00:00:00+00:00"
     assert got.decision.title_source == "filename"
 
 
@@ -382,10 +390,11 @@ def test_a_stale_link_label_does_not_beat_a_clear_filename(monkeypatch):
 
 
 def test_the_link_label_still_answers_for_an_unnamed_file(monkeypatch):
+    monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     got = _resolve(_shelf(files=10),
                    _file(filename="download.pdf",
-                         description="Annual Report 2021-2022"), monkeypatch)
-    assert got.start_value == "2021-01-01T00:00:00+00:00"
+                         description="Annual Report 2021-2022"))
+    assert got.start_value == "2022-01-01T00:00:00+00:00"
     assert got.decision.title_source == "link_text"
 
 
@@ -511,7 +520,7 @@ def test_an_edition_from_a_name_does_not_destroy_the_inherited_period(monkeypatc
     unconditional, which threw away information the file never contradicted."""
     monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     got = _resolve(_ranged(), _file(filename="Progress-Report-2022-23.pdf"))
-    assert got.start_value == "2022-01-01T00:00:00+00:00"
+    assert got.start_value == "2023-01-01T00:00:00+00:00"
     assert got.start_precision == "year"
     assert got.end_value == "2025-12-31T00:00:00+00:00", "the period survives"
     assert got.end_precision == "day"
@@ -545,7 +554,7 @@ def test_an_override_after_the_inherited_end_drops_it_rather_than_inverting(
     something else having written the column."""
     monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     got = _resolve(_ranged(), _file(filename="Follow-up-Report-2026-27.pdf"))
-    assert got.start_value == "2026-01-01T00:00:00+00:00"
+    assert got.start_value == "2027-01-01T00:00:00+00:00"
     assert got.end_value is None
 
 
@@ -554,12 +563,14 @@ def test_an_override_after_the_inherited_end_drops_it_rather_than_inverting(
 # --------------------------------------------------------------------------- #
 
 def test_the_decision_names_the_source_kind_and_disposition(monkeypatch):
+    monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
     got = _resolve(_shelf(files=10),
-                   _file(filename="TERI-Annual-Report-2024-25.pdf"), monkeypatch)
+                   _file(filename="TERI-Annual-Report-2024-25.pdf"))
     assert got.decision.title_source == "filename"
     assert got.decision.title_kind == "edition"
     assert got.decision.title_disposition == "replaced"
     assert "'2024-25'" in got.decision.evidence
+    assert got.start_value == "2025-01-01T00:00:00+00:00"
 
 
 def test_a_name_that_merely_agreed_is_still_recorded(monkeypatch):
@@ -657,3 +668,54 @@ def test_the_decision_insert_binds_every_column_it_names():
     assert captured["sql"].count("%s") == len(captured["params"])
     assert "title_source" in captured["sql"]
     assert "filename" in captured["params"]
+
+
+# --------------------------------------------------------------------------- #
+# A reporting period names the year it ends in
+# --------------------------------------------------------------------------- #
+
+def test_a_multi_pdf_edition_is_dated_to_the_ending_year(monkeypatch):
+    monkeypatch.setattr("app.ingestion.date_llm.interpret", lambda _e: None)
+    got = _resolve(_shelf(files=10),
+                   _file(filename="TERI-Annual-Report-2024-25.pdf"))
+    assert got.start_value == "2025-01-01T00:00:00+00:00"
+    assert got.start_precision == "year"
+    assert got.canonical_source == "document_title"
+    assert got.decision.title_kind == "edition"
+    assert got.decision.title_source == "filename"
+    assert got.decision.title_disposition == "replaced"
+    assert "'2024-25'" in got.decision.evidence, "the span is kept verbatim"
+
+
+def test_a_single_pdf_edition_still_inherits_its_page(monkeypatch):
+    """The ending-year change is about how a span is read, not about who may
+    read one. A page holding one file is still authoritative for it."""
+    got = _resolve(_shelf(files=1),
+                   _file(filename="TERI-Annual-Report-2024-25.pdf"), monkeypatch)
+    assert got.start_value == SHELF_DATE
+    assert got.overridden is False
+    assert got.canonical_source == "parent_page"
+
+
+def test_a_body_date_inside_the_named_year_sharpens_the_edition(monkeypatch):
+    """2024-25 resolves to 2025, so March 2025 is inside the period it named."""
+    _with_text(monkeypatch, "Released 15 March 2025 by TERI",
+               "2025-03-15", "Released 15 March 2025")
+    got = _resolve(_shelf(files=20), _file(filename="Report_2024-25.pdf",
+                                           created="2025-06-01T00:00:00+00:00"))
+    assert str(got.start_value)[:10] == "2025-03-15"
+    assert got.canonical_source == "document_text"
+    assert got.decision.title_disposition == "refined"
+
+
+def test_a_body_date_in_the_opening_year_cannot_move_the_edition(monkeypatch):
+    """March 2024 is the year the period *opened* in, not the year the name
+    resolved to, so it is a contradiction rather than a sharpening."""
+    _with_text(monkeypatch, "Released 15 March 2024 by TERI",
+               "2024-03-15", "Released 15 March 2024")
+    got = _resolve(_shelf(files=20), _file(filename="Report_2024-25.pdf",
+                                           created="2025-06-01T00:00:00+00:00"))
+    assert got.start_value == "2025-01-01T00:00:00+00:00"
+    assert got.start_precision == "year"
+    assert got.canonical_source == "document_title"
+    assert "outside" in got.decision.evidence

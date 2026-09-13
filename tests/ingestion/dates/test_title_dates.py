@@ -44,12 +44,12 @@ def _read(text):
     ("2005SF32-nhpc-report-final-may-07.pdf", ("2007-05-01", "month", "month_year")),
     # A quarter opens at the first month it names.
     ("April-June2020_SB_NL.pdf", ("2020-04-01", "month", "month_year")),
-    # A reporting period: a year, and only a year.
-    ("TERI-Annual-Report-2024-25.pdf", ("2024-01-01", "year", "edition")),
-    ("Auditor-Report-2024-25.pdf", ("2024-01-01", "year", "edition")),
-    ("Balance_Sheet_22_23.pdf", ("2022-01-01", "year", "edition")),
+    # A reporting period: a year, and only a year — the one it *ends* in.
+    ("TERI-Annual-Report-2024-25.pdf", ("2025-01-01", "year", "edition")),
+    ("Auditor-Report-2024-25.pdf", ("2025-01-01", "year", "edition")),
+    ("Balance_Sheet_22_23.pdf", ("2023-01-01", "year", "edition")),
     ("Air-Quality-Status-Report-of-Maharashtra-2022-23.pdf",
-     ("2022-01-01", "year", "edition")),
+     ("2023-01-01", "year", "edition")),
     # A bare year, correctly labelled as the weak reading it is.
     ("IoET_brochure_2026.pdf", ("2026-01-01", "year", "bare_year")),
     ("Presentation_IGES_ISAP_2017.pdf", ("2017-01-01", "year", "bare_year")),
@@ -108,7 +108,7 @@ def test_the_most_precise_reading_of_a_string_wins():
 def test_an_edition_span_beats_the_bare_year_inside_it():
     """"2016-17" is one statement about a period, not two loose years — and the
     difference is what the caller weighs it by."""
-    assert _read("TAR_2016-17.pdf") == ("2016-01-01", "year", "edition")
+    assert _read("TAR_2016-17.pdf") == ("2017-01-01", "year", "edition")
 
 
 def test_a_file_extension_is_never_read_as_part_of_a_date():
@@ -131,7 +131,7 @@ def test_the_filename_beats_a_generic_link_label():
     editions sit behind labels reading "Annual Report"."""
     found = title_date(link_text="Annual Report",
                        filename="TERI-Annual-Report-2024-25.pdf")
-    assert found.normalized_value.isoformat() == "2024-01-01"
+    assert found.normalized_value.isoformat() == "2025-01-01"
     assert found.title_source == "filename"
 
 
@@ -167,14 +167,14 @@ def test_link_text_still_answers_when_the_file_names_nothing():
     including one whose filename has no year at all. Last, not unused."""
     found = title_date(link_text="Annual Report 2021-2022",
                        filename="TERI_Annual_Report_upload.pdf")
-    assert found.normalized_value.isoformat() == "2021-01-01"
+    assert found.normalized_value.isoformat() == "2022-01-01"
     assert found.title_source == "link_text"
 
 
 def test_a_source_that_states_no_date_is_skipped_not_treated_as_an_answer():
     found = title_date(link_text="Auditor's Report",
                        filename="Auditor-Report-2024-25.pdf")
-    assert found.normalized_value.isoformat() == "2024-01-01"
+    assert found.normalized_value.isoformat() == "2025-01-01"
     assert found.title_source == "filename"
 
 
@@ -240,9 +240,75 @@ def test_the_horizon_guard_only_looks_at_the_adjacent_word():
     ("Agenda 2030 progress report 14 April 2023.pdf",
      ("2023-04-14", "day", "full_date")),
     ("Vision 2030 update March 2021.pdf", ("2021-03-01", "month", "month_year")),
-    ("Post 2030 Annual Report 2019-20.pdf", ("2019-01-01", "year", "edition")),
+    ("Post 2030 Annual Report 2019-20.pdf", ("2020-01-01", "year", "edition")),
     # Two bare years, the first a horizon: the second still answers.
     ("Beyond 2030 brochure 2024.pdf", ("2024-01-01", "year", "bare_year")),
 ])
 def test_a_horizon_does_not_suppress_a_real_date_in_the_same_name(text, expected):
     assert _read(text) == expected
+
+# --------------------------------------------------------------------------- #
+# A reporting period is dated to the year it ends in
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize("text, expected", [
+    # The two spellings of the same span resolve identically.
+    ("TERI-Annual-Report-2024-25.pdf", "2025-01-01"),
+    ("Annual_Report_2024-2025.pdf", "2025-01-01"),
+    ("Annual_Report_2023-24.pdf", "2024-01-01"),
+    ("Report_2019-20.pdf", "2020-01-01"),
+    ("Balance_Sheet_22_23.pdf", "2023-01-01"),
+    ("Income-and-Expenditure_17-18.pdf", "2018-01-01"),
+])
+def test_an_edition_is_dated_to_the_year_it_ends_in(text, expected):
+    """An annual report for 2024-25 covers April 2024 to March 2025 and is
+    published at the close of it. Dating it 2024 put it a year before it
+    existed."""
+    found = read_title_date(text)
+    assert found.normalized_value.isoformat() == expected
+    assert found.precision == "year"
+    assert found.title_kind == "edition"
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Report_2025.pdf", "2025-01-01"),
+    ("Report_2024.pdf", "2024-01-01"),
+    ("IoET_brochure_2026.pdf", "2026-01-01"),
+])
+def test_a_plain_year_is_untouched_by_the_edition_rule(text, expected):
+    """The change applies to a span, never to an ordinary year."""
+    found = read_title_date(text)
+    assert found.normalized_value.isoformat() == expected
+    assert found.title_kind == "bare_year"
+
+
+def test_the_end_year_is_derived_from_the_label_not_reparsed():
+    """`find_editions` only ever produces a *consecutive* span, so the end is
+    the start plus one — arithmetic, not a second parse that could disagree."""
+    from app.core.editions import edition_end_year, normalise_edition
+
+    assert edition_end_year("2024-25") == 2025
+    assert edition_end_year(normalise_edition("Annual Report 2024-2025")) == 2025
+    assert edition_end_year("2019-20") == 2020
+
+
+def test_the_span_is_kept_verbatim_so_the_reading_stays_checkable():
+    """`2025` on its own cannot be argued with. `'2024-25' -> 2025` can."""
+    found = read_title_date("TERI-Annual-Report-2024-25.pdf")
+    assert found.raw_statement == "2024-25"
+    assert found.normalized_value.isoformat() == "2025-01-01"
+
+
+def test_a_span_glued_to_an_identifier_is_not_an_edition():
+    """The boundary rule bare years have always had, now applied to spans too:
+    `Project-2024-25A` is a code, and a code ending in a letter is exactly the
+    shape that made the rule necessary."""
+    found = read_title_date("Project-2024-25A.pdf")
+    assert found is None or found.title_kind != "edition"
+
+
+def test_a_standard_number_is_not_an_edition():
+    """`ISO9001-2015` names a standard and its revision year. `9001-2015` is not
+    a consecutive span, so it never reads as one."""
+    found = read_title_date("ISO9001-2015.pdf")
+    assert found is None or found.title_kind != "edition"

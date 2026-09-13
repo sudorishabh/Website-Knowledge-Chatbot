@@ -592,8 +592,9 @@ def test_a_shelf_file_is_dated_from_its_name_not_from_the_page(rows):
                bundle="page"),
           _row(document_id="f2", filename="TAR_2016-17.pdf", bundle="page")])
     moves = {m.document_id: m for m in attachment_moves(_shelf_page())}
-    assert moves["f1"].new_start == "2024-01-01T00:00:00+00:00"
-    assert moves["f2"].new_start == "2016-01-01T00:00:00+00:00"
+    # The year each period *ends* in: the 2024-25 report is a 2025 document.
+    assert moves["f1"].new_start == "2025-01-01T00:00:00+00:00"
+    assert moves["f2"].new_start == "2017-01-01T00:00:00+00:00"
     assert {m.source for m in moves.values()} == {"document_title"}
 
 
@@ -668,7 +669,7 @@ def test_a_name_on_a_ranged_page_keeps_the_period_it_says_nothing_about(rows):
           _row(document_id="f2", filename="Other.pdf",
                bundle="completed_projects", parent_title="A project")])
     moves = {m.document_id: m for m in attachment_moves(_project_page())}
-    assert moves["f1"].new_start == "2021-01-01T00:00:00+00:00"
+    assert moves["f1"].new_start == "2022-01-01T00:00:00+00:00"
     assert moves["f1"].new_end == "2022-12-31T00:00:00+00:00"
 
 
@@ -680,3 +681,72 @@ def test_a_point_date_on_a_ranged_page_clears_the_period(rows):
     moves = {m.document_id: m for m in attachment_moves(_project_page())}
     assert moves["f1"].new_start == "2021-03-14T00:00:00+00:00"
     assert moves["f1"].new_end is None
+
+
+# --------------------------------------------------------------------------- #
+# Re-derived, not preserved
+# --------------------------------------------------------------------------- #
+
+def test_a_title_derived_row_is_re_resolved_not_skipped(rows):
+    """The rule can move. A row already reading `document_title` is not evidence
+    that today's rule would still produce that date — when the edition reading
+    changed from the opening year of a span to the closing one, 55 documents
+    needed exactly this path, and treating the source as "already decided" hid
+    every one of them behind a dry run reporting two."""
+    rows([_row(document_id="f1", filename="TERI-Annual-Report-2024-25.pdf",
+               bundle="page", date_source="document_title",
+               effective_start_date=None),
+          _row(document_id="f2", filename="Other.pdf", bundle="page")])
+    moves = {m.document_id: m for m in attachment_moves(_shelf_page())}
+    assert "f1" in moves
+    assert moves["f1"].new_start == "2025-01-01T00:00:00+00:00"
+
+
+@pytest.mark.parametrize("source", ["document_text", "document_copyright"])
+def test_a_text_derived_row_is_left_alone(rows, source):
+    """These were read out of the PDF's bytes and this script has no bytes.
+    Recomputing them from the naming would replace better evidence with worse."""
+    rows([_row(document_id="f1", filename="TERI-Annual-Report-2024-25.pdf",
+               bundle="page", date_source=source),
+          _row(document_id="f2", filename="Other.pdf", bundle="page")])
+    moves = {m.document_id: m for m in attachment_moves(_shelf_page())}
+    assert "f1" not in moves
+
+
+def test_an_already_undated_row_is_not_re_proposed_every_run(rows):
+    """Idempotence. A NULL precision means `day` only where there is a date for
+    it to describe; reading one in anyway made every undated row look different
+    from an undated target forever, and a second dry run proposed 321 no-op
+    writes."""
+    rows([_row(document_id="f1", filename="Brochure.pdf", bundle="page",
+               date_source="no_evidence", effective_start_date=None,
+               start_precision=None),
+          _row(document_id="f2", filename="Flyer.pdf", bundle="page",
+               date_source="no_evidence", effective_start_date=None,
+               start_precision=None)])
+    assert attachment_moves(_shelf_page()) == []
+
+
+def test_an_undated_row_that_should_now_have_a_date_still_moves(rows):
+    """The other direction: re-deriving has to be able to *add* a date, or the
+    idempotence guard would freeze the corpus."""
+    rows([_row(document_id="f1", filename="TERI-Annual-Report-2024-25.pdf",
+               bundle="page", date_source="no_evidence",
+               effective_start_date=None, start_precision=None),
+          _row(document_id="f2", filename="Flyer.pdf", bundle="page",
+               date_source="no_evidence", effective_start_date=None,
+               start_precision=None)])
+    moves = {m.document_id: m for m in attachment_moves(_shelf_page())}
+    assert moves["f1"].new_start == "2025-01-01T00:00:00+00:00"
+    assert "f2" not in moves
+
+
+def test_the_two_source_sets_do_not_overlap():
+    """A source is either recomputed or preserved. Being in both would make the
+    order of two `if`s decide the corpus."""
+    from scripts.backfill_bundle_dates import (
+        RECOMPUTED_SOURCES,
+        TEXT_DERIVED_SOURCES,
+    )
+
+    assert RECOMPUTED_SOURCES & TEXT_DERIVED_SOURCES == frozenset()
