@@ -53,6 +53,10 @@ CREATE TABLE IF NOT EXISTS `{table}` (
     -- "which documents are not on the current version".
     pipeline_version VARCHAR(32) NULL,
     changed_mark BIGINT        NULL,
+    -- NULL for a document with indexed content; 'metadata_only' for one whose
+    -- source states identity and attachments but no body. See
+    -- app.catalog.models.StateRecord.content_state.
+    content_state VARCHAR(16) NULL,
     effective_start_date DATETIME      NULL,
     title        VARCHAR(1024) NULL,
     url          VARCHAR(1024) NULL,
@@ -756,6 +760,10 @@ def ensure_state_table() -> None:
             cur, table, "pipeline_version", "pipeline_version VARCHAR(32) NULL"
         )
         _ensure_index(cur, table, "idx_pipeline_version", "(pipeline_version)")
+        # NULL on every existing row, which is the right default: everything
+        # already catalogued got there by producing chunks. Only the narrow
+        # metadata-only path in `app.ingestion.pipeline` ever sets it.
+        _ensure_column(cur, table, "content_state", "content_state VARCHAR(16) NULL")
         migrate_renamed_facets(cur, table)
         for facet in STATE_FACETS:
             cur.execute(_STATE_CHILD_DDL.format(table=table, facet=facet))

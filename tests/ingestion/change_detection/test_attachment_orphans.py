@@ -101,7 +101,7 @@ def catalog(monkeypatch):
     # links before this runs to know what the update let go of.
     monkeypatch.setattr(
         pipeline, "_save_state",
-        lambda record, doc, content_hash, version, indexed=True: site.rewrite_links(
+        lambda record, doc, content_hash, version, indexed=True, **_k: site.rewrite_links(
             record.document_id, [link.uuid for link in doc.file_links]
         ),
     )

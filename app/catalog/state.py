@@ -228,6 +228,7 @@ def _row_to_record(row: dict) -> StateRecord:
         start_precision=row.get("start_precision"),
         effective_end_date=until.isoformat() if isinstance(until, datetime) else until,
         end_precision=row.get("end_precision"),
+        content_state=row.get("content_state") or None,
     )
 
 
@@ -411,12 +412,12 @@ def upsert(record: StateRecord, *, mark_indexed: bool = True) -> None:
             INSERT INTO `{table}`
                 (document_id, source_type, source_key, bundle, entity_type,
                  fingerprint, content_hash, doc_version, pipeline_version,
-                 changed_mark, effective_start_date,
+                 changed_mark, content_state, effective_start_date,
                  date_source, start_precision,
                  effective_end_date, end_precision, title, url,
                  raw_meta, indexed_at, updated_at)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s)
+                    %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 source_type  = VALUES(source_type),
                 source_key   = VALUES(source_key),
@@ -432,6 +433,10 @@ def upsert(record: StateRecord, *, mark_indexed: bool = True) -> None:
                 -- rebuilt still reads as stale and is rebuilt later.
                 pipeline_version = COALESCE(VALUES(pipeline_version), pipeline_version),
                 changed_mark = VALUES(changed_mark),
+                -- VALUES, not COALESCE: a page that gains a body stops being
+                -- metadata-only, and the row has to be able to say so. The
+                -- write that indexes it passes NULL and clears the marker.
+                content_state = VALUES(content_state),
                 effective_start_date = VALUES(effective_start_date),
                 -- VALUES, not COALESCE. These describe
                 -- `effective_start_date`, which is itself overwritten
@@ -463,6 +468,7 @@ def upsert(record: StateRecord, *, mark_indexed: bool = True) -> None:
                 record.doc_version,
                 record.pipeline_version,
                 record.changed_mark,
+                record.content_state,
                 _to_datetime(record.effective_start_date),
                 record.date_source,
                 record.start_precision,
