@@ -779,8 +779,12 @@ def test_a_stale_status_is_reported(monkeypatch):
 
 
 def test_an_entity_projected_as_ineligible_is_reported(monkeypatch):
-    """Belt and braces: the projector only ever writes `claim_eligible: true`,
-    so a false one means something wrote the graph outside the projector."""
+    """A graph value that disagrees with MySQL is reported either way.
+
+    The projector writes the entity's real `claim_eligible`, so a predicate-scoped
+    entity legitimately carries `false`. What is never legitimate is the graph
+    disagreeing with the catalog -- here MySQL says eligible and the graph does
+    not."""
     report = _verify(
         monkeypatch,
         mysql_entities=[_mysql_entity("person_a", "pi_attested")],
