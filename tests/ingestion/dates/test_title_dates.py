@@ -205,3 +205,44 @@ def test_the_label_guard_does_not_swallow_a_real_day():
     """It must not become a blanket refusal of numbers near words."""
     assert _read("No. 22 dated 11-12-2024") == ("2024-12-11", "day", "full_date")
     assert _read("Press release 09 March 2026") == ("2026-03-09", "day", "full_date")
+
+
+# --------------------------------------------------------------------------- #
+# A year the document looks *towards* is not the year it was written
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize("text", [
+    # The named case. "Post-2015" is the development agenda; the bulletin
+    # announcing it was released on 9 July 2014.
+    "Post_2015_bulletin and_TEDDY_launch.pdf",
+    "Post 2030_Agenda.pdf",
+    "Post 2030_Concept_Note.pdf",
+    "Event_Summary_Agenda_2030_and_Beyond.pdf",
+    "Vision 2030 brochure.pdf",
+    "Towards-2047.pdf",
+    "Emissions by 2030.pdf",
+])
+def test_a_policy_horizon_is_not_read_as_a_date(text):
+    """Refused outright rather than downgraded, because there is no weaker true
+    reading underneath: the number is not a date at all. Measured on the live
+    corpus, this was the last remaining way a shelf file took a wrong year."""
+    assert read_title_date(text) is None
+
+
+def test_the_horizon_guard_only_looks_at_the_adjacent_word():
+    """It must not refuse every year that follows one of these words somewhere.
+    "Post Harvest Losses 2015" is a 2015 document about post-harvest losses."""
+    assert _read("Post Harvest Losses 2015.pdf") == ("2015-01-01", "year", "bare_year")
+
+
+@pytest.mark.parametrize("text, expected", [
+    # A horizon in the name must not suppress a real date elsewhere in it.
+    ("Agenda 2030 progress report 14 April 2023.pdf",
+     ("2023-04-14", "day", "full_date")),
+    ("Vision 2030 update March 2021.pdf", ("2021-03-01", "month", "month_year")),
+    ("Post 2030 Annual Report 2019-20.pdf", ("2019-01-01", "year", "edition")),
+    # Two bare years, the first a horizon: the second still answers.
+    ("Beyond 2030 brochure 2024.pdf", ("2024-01-01", "year", "bare_year")),
+])
+def test_a_horizon_does_not_suppress_a_real_date_in_the_same_name(text, expected):
+    assert _read(text) == expected

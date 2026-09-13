@@ -121,6 +121,25 @@ _SEQUENCE_LABEL_RE = re.compile(
 #: that an unrelated earlier word cannot reach the number.
 _LABEL_LOOKBACK = 10
 
+# A year introduced by one of these is a policy *horizon* — a year the document
+# is looking towards — not the year it was written. "Post-2015" is the name of a
+# development agenda and `Post_2015_bulletin_and_TEDDY_launch.pdf` was released
+# on 9 July 2014; "Agenda 2030" and "Vision 2030" are the same shape. Unlike the
+# sequence-label guard this refuses the reading outright rather than falling
+# through to a coarser one, because there is no weaker true reading underneath:
+# the number is not a date at all.
+#
+# Immediately adjacent only. Widening the window to catch
+# "Roadmap-to-India-2030" would start refusing years that merely follow a
+# preposition somewhere earlier in a long filename, and that file is anchored by
+# its page's stated date in any case.
+_HORIZON_RE = re.compile(
+    r"(?:post|agenda|vision|beyond|towards?|by|upto|until|till)[\s_\-]*$",
+    re.IGNORECASE,
+)
+#: Enough for "towards" plus a separator.
+_HORIZON_LOOKBACK = 9
+
 # The corpus runs 1989-2030; anything outside is a scanner clock or an ID.
 _MIN_YEAR = 1989
 _MAX_YEAR = 2030
@@ -254,8 +273,11 @@ def read_title_date(text: str | None, source: str = "filename") -> TitleDate | N
             return TitleDate(normalized_value=date(year, 1, 1), precision="year",
                              raw_statement=edition, title_source=source,
                              title_kind="edition")
-    match = _YEAR_RE.search(cleaned)
-    if match is not None:
+    for match in _YEAR_RE.finditer(cleaned):
+        if _HORIZON_RE.search(
+            cleaned[max(0, match.start() - _HORIZON_LOOKBACK):match.start()]
+        ):
+            continue    # a year the document looks towards, not one it was written in
         return _build(int(match.group(1)), 1, 1, "year", match, source, "bare_year")
     return None
 
