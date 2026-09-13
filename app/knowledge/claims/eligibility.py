@@ -91,17 +91,34 @@ def eligible_from_decisions(
     return list(seen.values())
 
 
-def is_eligible_in_store(entity_id: str, index: Any) -> bool:
-    """Whether the store *currently* says this entity may carry claims.
+def is_eligible_in_store(
+    entity_id: str, index: Any, predicate: str | None = None
+) -> bool:
+    """Whether the store *currently* says this entity may carry this claim.
 
     Re-checked at validation time rather than trusted from the decision, so a
     demotion takes effect immediately instead of waiting for every old decision
     to be rewritten.
+
+    ``predicate`` admits the predicate-scoped trust levels -- today only
+    ``author_attested``, which grants ``AUTHORED`` and nothing else. It is
+    optional and defaults to None, which asks the broad question alone: a caller
+    that does not name a predicate cannot accidentally be granted a scoped one.
+
+    The stored ``claim_eligible`` flag remains the fast path and still means
+    "eligible for anything". Only when it is false does the trust level get a
+    second, narrower question.
     """
     row = index.entities.get(entity_id)
     if row is None:
         return False
-    return bool(row.get("claim_eligible", 0))
+    if bool(row.get("claim_eligible", 0)):
+        return True
+    if predicate is None:
+        return False
+    from app.knowledge.seed import is_claim_eligible_for
+
+    return is_claim_eligible_for(str(row.get("trust") or ""), predicate)
 
 
 def entity_type_of(entity_id: str, index: Any) -> str | None:

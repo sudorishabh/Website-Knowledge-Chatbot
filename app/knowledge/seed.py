@@ -97,14 +97,48 @@ TRUST_PROVISIONAL = "provisional"
 # level so a promotion stays auditable and reversible.
 TRUST_PI_ATTESTED = "pi_attested"
 
+# A name an authoritative CMS author field states wrote a document, which then
+# survived every discriminating test in app.knowledge.author_promotion. Its own
+# level for the same reason as pi_attested -- a promotion stays auditable and
+# reversible -- but weaker: a PI field is a curated assertion about one coded
+# project, while an author facet accumulates every name printed on anything.
+#
+# Deliberately NOT in CLAIM_ELIGIBLE_TRUST. This level grants one predicate,
+# AUTHORED, and nothing else: the CMS states outright who wrote a document, so
+# that fact needs no identity beyond the name, whereas "X works at Y" asserts
+# something about the person and still requires an identity the corpus has
+# distinguished. See `is_claim_eligible_for`.
+TRUST_AUTHOR_ATTESTED = "author_attested"
+
 CLAIM_ELIGIBLE_TRUST = frozenset(
     {TRUST_AUTHORITATIVE, TRUST_DERIVED, TRUST_PI_ATTESTED}
 )
 
+#: Trust levels that grant only specific predicates, and which ones. Kept beside
+#: CLAIM_ELIGIBLE_TRUST so the two cannot drift: a level appears in one or the
+#: other, never both.
+PREDICATE_SCOPED_TRUST: dict[str, frozenset[str]] = {
+    TRUST_AUTHOR_ATTESTED: frozenset({"AUTHORED"}),
+}
+
 
 def is_claim_eligible(trust: str) -> bool:
-    """Whether an identity at this trust level may carry claims."""
+    """Whether an identity at this trust level may carry claims of any kind."""
     return trust in CLAIM_ELIGIBLE_TRUST
+
+
+def is_claim_eligible_for(trust: str, predicate: str | None) -> bool:
+    """Whether this trust level may carry a claim under this predicate.
+
+    Broad eligibility first, then the scoped grants. A caller that does not know
+    its predicate gets the broad answer only, so an unscoped check can never be
+    widened by accident -- the scoped level has to be asked about explicitly.
+    """
+    if is_claim_eligible(trust):
+        return True
+    if predicate is None:
+        return False
+    return predicate in PREDICATE_SCOPED_TRUST.get(trust, frozenset())
 
 
 @dataclass
