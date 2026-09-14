@@ -87,18 +87,35 @@ def paraphrases(search_query: str, n: int) -> list[str]:
         return []
 
 
-def paraphrase_search(
-    query: str, *, limit: int
-) -> list[Any]:
-    """One paraphrase's dense pull (cached embed); [] on failure."""
+def _leg_search(query: str, *, limit: int, trace_stage: str) -> list[Any]:
+    """One derived query's dense pull (cached embed); [] on failure.
+
+    Shared by every leg that searches a *rewritten* query rather than the user's
+    own: the paraphrases below, and the sub-queries of a decomposed question.
+    They differ only in what the trace should call them, and a leg that fails
+    must cost its own ranking and nothing else."""
     try:
         return search(
             query, limit=limit, query_vector=embed_query(query),
-            trace_stage="multi_query_leg",
+            trace_stage=trace_stage,
         )
     except Exception:
-        logger.warning("Paraphrase search failed for %r.", query, exc_info=True)
+        logger.warning("%s failed for %r.", trace_stage, query, exc_info=True)
         return []
+
+
+def paraphrase_search(query: str, *, limit: int) -> list[Any]:
+    """One paraphrase's dense pull (cached embed); [] on failure."""
+    return _leg_search(query, limit=limit, trace_stage="multi_query_leg")
+
+
+def subquery_search(query: str, *, limit: int) -> list[Any]:
+    """One sub-query's dense pull (cached embed); [] on failure.
+
+    The retrieval half of question decomposition: the ranking this returns is
+    fused with the base pull by the same RRF every other leg goes through, which
+    is also what de-duplicates a passage several parts of the question reach."""
+    return _leg_search(query, limit=limit, trace_stage="subquery_leg")
 
 
 _CORRECTIVE_SYSTEM = (

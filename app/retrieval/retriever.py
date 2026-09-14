@@ -12,7 +12,7 @@ by observability/metrics (see docs/operations.md), not import paths.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Sequence
 
 from app.config import get_settings
 from app.core.clients.embeddings import embed_query
@@ -31,6 +31,7 @@ from app.retrieval.search.strategies import (
     keyword_search,
     paraphrase_search,
     paraphrases,
+    subquery_search,
 )
 from app.retrieval.search.title_leg import title_search
 from app.retrieval.understanding.filters import date_conditions
@@ -146,6 +147,43 @@ def graph_blocks_for(
     except Exception:  # pragma: no cover - defence in depth
         logger.warning("Graph routing hook failed; using retrieval.", exc_info=True)
         return []
+
+
+def _graph_subquery_blocks(
+    subqueries: Sequence[Any],
+    existing: list[ContextBlock],
+    *,
+    n: int,
+    filters: list[Any] | None,
+    source_type: str | None,
+) -> list[ContextBlock]:
+    """``existing`` plus whatever the graph can answer for the nominated parts.
+
+    Same contract as the whole-question leg it reuses: every part is offered to
+    `graph_blocks_for`, which returns blocks or nothing, so a part the graph
+    cannot serve costs one declined attempt and changes nothing. De-duplicated
+    against the blocks already held — the whole question and one of its parts
+    routinely resolve to the same rows — by the key the graph/semantic merge
+    already uses, so a row cannot be printed twice.
+    """
+    from app.retrieval.subqueries import GRAPH
+
+    merged = list(existing)
+    seen = {_block_key(b) for b in merged}
+    for sub in subqueries:
+        if not sub.goes_to(GRAPH):
+            continue
+        for block in graph_blocks_for(
+            sub.text, n=n, filters=filters, source_type=source_type
+        ):
+            key = _block_key(block)
+            if key not in seen:
+                seen.add(key)
+                merged.append(block)
+    if len(merged) != len(existing):
+        logger.info("Graph answered %d extra block(s) for question parts.",
+                    len(merged) - len(existing))
+    return merged
 
 
 # Context slots kept for ordinary retrieval whenever the graph has also
@@ -285,11 +323,20 @@ def retrieve(
     source_type: str | None = None,
     capabilities: set[str] | None = None,
     temporal: Any | None = None,
+    subqueries: Sequence[Any] | None = None,
 ) -> list[ContextBlock]:
     """``temporal`` is the question's `TemporalIntent`, or None to behave exactly
     as before it existed: no temporal ranking, and the UPCOMING gate detecting
     its own mode. The caller passes it only when `temporal_intent_enabled` is
-    set, so the flag is honoured in one place rather than three."""
+    set, so the flag is honoured in one place rather than three.
+
+    ``subqueries`` is the plan for a multi-part question (see
+    :mod:`app.retrieval.subqueries`), or empty for the single-query path every
+    ordinary question still takes. Each one contributes at most one more ranking
+    to the same RRF every other leg goes through, and may nominate itself to the
+    graph; neither can remove a candidate the base pull found. Planned in
+    `app.pipeline` rather than here because the requirements it is built from
+    come from `app.generation.answer_plan`, which retrieval may not import."""
     settings = get_settings()
     n = n or settings.retrieval_top_k
 
@@ -309,6 +356,16 @@ def retrieve(
     graph_blocks = graph_blocks_for(
         search_query, n=n, filters=filters, source_type=source_type
     )
+    # A part of the question may route to the graph even when the whole question
+    # does not: "which customers were affected by Project X and how much revenue
+    # did they lose?" blends a relationship lookup with a measurement, and the
+    # policy layer declines the blend. Each nominated part is offered separately,
+    # still through the same `graph_blocks_for` contract — blocks or nothing —
+    # and de-duplicated against what the whole question already returned.
+    if subqueries:
+        graph_blocks = _graph_subquery_blocks(
+            subqueries, graph_blocks, n=n, filters=filters, source_type=source_type
+        )
 
     # Prefer website content only when the feature is on, the user didn't pin a
     # source (explicit intent → honor their filter with a single pull, else the
@@ -374,8 +431,16 @@ def retrieve(
     # type, whose single filtered pull the caller has already narrowed.
     use_title_leg = not source_type
 
+    # The semantic half of decomposition: one dense pull per part, fused like
+    # every other leg. Deliberately not gated the way `multi` is — a multi-part
+    # question is multi-part whether or not it is long, scoped or filtered, and
+    # the planner has already decided there is more than one thing being asked.
+    from app.retrieval.subqueries import SEMANTIC, texts as subquery_texts
+
+    subquery_legs = subquery_texts(subqueries or [], SEMANTIC)
+
     with span("rag.search") as s:
-        if multi or keyword_terms or content_terms or use_title_leg:
+        if multi or keyword_terms or content_terms or use_title_leg or subquery_legs:
             from concurrent.futures import ThreadPoolExecutor
 
             rankings: list[list[Any]] = []
@@ -434,6 +499,21 @@ def retrieve(
                             if r
                         )
                         mq.set("paraphrases", len(queries))
+                if subquery_legs:
+                    with span("rag.subquery_legs") as sq:
+                        rankings.extend(
+                            r
+                            for r in pool.map(
+                                retrieval_log.bound(
+                                    lambda q: subquery_search(
+                                        q, limit=settings.retrieval_candidate_k,
+                                    )
+                                ),
+                                subquery_legs,
+                            )
+                            if r
+                        )
+                        sq.set("legs", len(subquery_legs))
                 if keyword_future is not None:
                     with span("rag.keyword_leg") as kw:
                         keyword_hits = keyword_future.result()
@@ -470,6 +550,7 @@ def retrieve(
                 "keyword": bool(keyword_terms),
                 "content_terms": bool(content_terms),
                 "title": bool(use_title_leg),
+                "subqueries": len(subquery_legs),
             },
         )
 

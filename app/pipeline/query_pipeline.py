@@ -148,6 +148,45 @@ def _temporal_intent(pq: ProcessedQuery) -> Any | None:
     return pq.temporal_intent
 
 
+def _subquery_plan(pq: ProcessedQuery, requirements_future: Any) -> list[Any]:
+    """The multi-part plan for this query, or ``[]`` to retrieve as one query.
+
+    The single place `subquery_planning_enabled` is read. Off, the requirements
+    future is never joined here, so retrieval starts without waiting for it and
+    the empty plan is a no-op through every leg below.
+
+    Fails to ``[]``: a planning problem must cost the decomposition, never the
+    answer — the base pull runs regardless, so an empty plan is simply the
+    behaviour this query had before the feature existed.
+    """
+    settings = get_settings()
+    if not getattr(settings, "subquery_planning_enabled", False):
+        return []
+    from app.retrieval import subqueries as planning
+
+    try:
+        plan = planning.plan(
+            pq.search_query,
+            requirements_future.result(),
+            limit=getattr(settings, "subquery_max", 3),
+        )
+    except Exception:
+        logger.warning("Sub-query planning failed; retrieving as one query.",
+                       exc_info=True)
+        return []
+    if plan:
+        logger.info("Decomposed into %d parts: %s",
+                    len(plan), [s.text for s in plan])
+        retrieval_log.note(
+            subqueries=[
+                {"text": s.text, "requirement": s.requirement,
+                 "routes": list(s.routes)}
+                for s in plan
+            ]
+        )
+    return plan
+
+
 def _capabilities(pq: ProcessedQuery) -> set[str]:
     """The detected multi-label intents (empty on the passthrough fallback)."""
     if pq.understanding is None:
@@ -349,7 +388,7 @@ def _prepare(
         # short-circuit here also skips rebuilding it.
         return {**semantic, "cached": True}, None
 
-    def _run_retrieve() -> list[ContextBlock]:
+    def _run_retrieve(subqueries: list[Any]) -> list[ContextBlock]:
         return retrieve(
             pq.search_query,
             filters=pq.filters,
@@ -359,6 +398,7 @@ def _prepare(
             source_type=pq.source_type,
             capabilities=caps,
             temporal=_temporal_intent(pq),
+            subqueries=subqueries,
         )
 
     # The deterministic catalog section (combined queries only), the answer
@@ -377,15 +417,24 @@ def _prepare(
         requirements_future = pool.submit(
             copy_context().run, extract_requirements, pq.search_query
         )
+        # Sub-query planning is the one thing that needs the requirements
+        # *before* retrieval rather than after it, so with the feature on the
+        # extraction joins the critical path instead of overlapping it. Off — the
+        # default — nothing waits here and the two still run concurrently exactly
+        # as they did. `Future.result()` caches, so the join below is free either
+        # way. The plan is built here rather than inside `retrieve` because it is
+        # derived from `app.generation.answer_plan`, which retrieval may not
+        # import (see tests/test_architecture.py).
+        subqueries = _subquery_plan(pq, requirements_future)
         if combined and not chained:
             db_future = pool.submit(
                 copy_context().run, _db_section, pq, question, history
             )
-            blocks = _run_retrieve()
+            blocks = _run_retrieve(subqueries)
             db_prefix = db_future.result()
         else:
             db_prefix = ""
-            blocks = _run_retrieve()
+            blocks = _run_retrieve(subqueries)
         requirements = requirements_future.result()
 
     if not blocks:

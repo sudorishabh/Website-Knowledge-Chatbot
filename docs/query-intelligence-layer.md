@@ -401,3 +401,88 @@ date ingestion could not recover.
   dates, a `POINT_IN_TIME`/`DATE_RANGE` question scores neutral everywhere and
   ranking is unchanged. Guessing a window here would be the second temporal
   classifier this phase must not add.
+
+---
+
+# Phase C — sub-query planning + per-part routing (implemented)
+
+Settings: `subquery_planning_enabled` (default **false**), `subquery_max` (3).
+
+## What changed
+
+| File | Change |
+| --- | --- |
+| `app/retrieval/subqueries.py` | **New.** Requirements → anchored, routed `SubQuery` objects |
+| `app/retrieval/retriever.py` | `retrieve(subqueries=…)`; `_graph_subquery_blocks`; one dense leg per part |
+| `app/retrieval/search/strategies.py` | `_leg_search` extracted; `subquery_search` added beside `paraphrase_search` |
+| `app/pipeline/query_pipeline.py` | `_subquery_plan` — the single flag read |
+| `app/config.py` | the two settings |
+
+## Where the decomposition comes from
+
+`answer_plan.extract_requirements`, unchanged. Phase C adds **no** decomposition
+and **no** LLM call: it consumes a list the pipeline already computes on every
+query.
+
+That list is the constraint that shaped everything else. It returns short **noun
+phrases** — `["services", "certifications"]`, not standalone questions — so a
+requirement cannot be searched as-is without losing what it is about. Each part
+is therefore re-anchored to the query's own proper nouns, taken from
+`strategies.extract_key_terms` (quoted phrases, capitalised names, acronyms,
+codes, years):
+
+```
+"Which projects did TERI run under SDG 7 and how much funding did they receive?"
+  requirements  ["projects run", "funding received"]
+  sub-queries   "TERI SDG 7 projects run"      -> semantic, graph
+                "TERI SDG 7 funding received"  -> semantic, graph
+```
+
+## A layering constraint worth recording
+
+`extract_requirements` lives in `app/generation/` (layer 6); `app/retrieval/` is
+layer 5 and **may not import it** — `tests/test_architecture.py` fails the build
+for a runtime upward import. So the plan is built in `app/pipeline/` (layer 7),
+which already calls the extractor, and passed *down* into `retrieve` as plain
+data. No new deferred-upward exception was needed.
+
+## Routing
+
+| Leg | Decided by | Notes |
+| --- | --- | --- |
+| **Qdrant** | always | one dense pull per part, fused by the existing RRF |
+| **GraphDB** | `relational.read_relational` nominates; `policy.attempt` decides | the same probe understanding already uses; the graph declines by returning `[]` |
+| **MySQL** | whole question only, unchanged (`_db_section`) | see below |
+
+**MySQL is deliberately not routed per part.** `answer_structured` needs a
+`QueryAnalysis` with an `operation` slot; without one it falls back to
+`parse_structured`, which is an LLM call. Routing each part to the catalog would
+mean classifying each part — a second decomposition system, which this phase was
+told not to build. A mixed database+content question therefore keeps its catalog
+section on exactly the path it always had, and gains decomposed content
+retrieval around it.
+
+## Merging and de-duplication
+
+Neither is new code:
+
+* **Semantic** — each part contributes one more ranking to `fusion.rrf`, which
+  keys by candidate id. A passage two parts both reach is one candidate, and is
+  *promoted* for appearing in both.
+* **Graph** — per-part blocks are de-duplicated against the whole question's by
+  `retriever._block_key`, the same key the graph/semantic merge already uses.
+
+## The latency cost, stated plainly
+
+Planning needs the requirements **before** retrieval, so with the flag on the
+extraction moves from running beside retrieval to running ahead of it. That is a
+real added serial LLM call on the critical path. With the flag off the future is
+never joined, the two still overlap exactly as before, and
+`test_flag_off_never_even_joins_the_requirements` pins it.
+
+## When it does nothing
+
+`plan()` returns `[]` — a no-op through every leg — for a single requirement, a
+failed extraction, parts that de-duplicate below two, and any part identical to
+the base query. The single-query path is preserved by construction, not by a
+branch.

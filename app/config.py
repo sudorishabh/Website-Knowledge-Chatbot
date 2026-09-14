@@ -153,6 +153,20 @@ class Settings(BaseSettings):
     # the pre-existing UPCOMING gate exactly as they are. Launches OFF; flip
     # after eval.
     temporal_intent_enabled: bool = False
+    # Sub-query planning: turn the requirements `answer_plan.extract_requirements`
+    # already extracts into separately retrieved parts — one dense pull each,
+    # fused by the existing RRF, plus a graph attempt for any part that names a
+    # relationship. Only fires when the extractor found two or more parts, so an
+    # ordinary question keeps the single-query path. Adds no decomposition of its
+    # own and no extra LLM call, but it does put the existing extraction on the
+    # critical path (retrieval has to wait for the plan), which is the cost to
+    # weigh. OFF reproduces today's behaviour exactly. Launches OFF; flip after
+    # eval.
+    subquery_planning_enabled: bool = False
+    # How many parts of a multi-part question are retrieved separately. Each one
+    # is an embedding plus a Qdrant pull; past a handful the extra rankings are
+    # noise against real latency.
+    subquery_max: int = 3
     # One-shot corrective retrieval: when the reranked top candidate's raw
     # semantic score is below corrective_min_score, reformulate the query once,
     # search again, RRF-fuse and rerank. Strictly one iteration. Launches OFF;
