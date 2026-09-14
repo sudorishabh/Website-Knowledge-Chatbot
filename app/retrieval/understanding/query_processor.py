@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from app.config import get_settings
 from app.core.clients.llm import get_llm, get_structured_llm
 from app.core.dates import IsoDate, current_date_directive, exclusive_end
+from app.retrieval.understanding import clarify
 from app.retrieval.understanding.catalog_prompt import (
     catalog_coverage_directive,
     catalog_inventory_directive,
@@ -188,6 +189,16 @@ class ProcessedQuery:
     # Full multi-label understanding (v2) for exposure/debugging; None on the
     # passthrough fallback. Downstream still routes on `intent`/`analysis`.
     understanding: QueryUnderstanding | None = None
+    # A question to ask the user instead of answering this turn, or None to
+    # answer as usual. Only ever set when `clarification_enabled` is on, the
+    # turn was labelled `clarification_needed`, and no clarification is already
+    # open — so the default is None on every path that exists today.
+    clarification: clarify.Clarification | None = None
+    # The earlier question this turn was merged with, when it is the answer to a
+    # clarification; None on an ordinary turn. Recorded for the trace, and as the
+    # marker that says why `search_query` mentions something the user did not
+    # type in this turn.
+    clarified_from: str | None = None
 
     @property
     def is_ambiguous(self) -> bool:
@@ -653,16 +664,30 @@ def _edition_conditions(question: str) -> list[Any]:
 
 
 def process(question: str, history: Sequence[dict[str, str]] | None = None) -> ProcessedQuery:
-    passthrough = ProcessedQuery(original=question, search_query=question, intent="qa")
     settings = get_settings()
+    clarifying = bool(getattr(settings, "clarification_enabled", False))
+    # An open clarification makes this turn the *answer* to the previous
+    # question rather than a question of its own, so the two are merged before
+    # anything reads them. `answered` doubles as the one-round guard: it is
+    # non-None exactly when a clarification is already open, and the decision
+    # below is skipped in that case, so the sequence can only be clarify→answer.
+    #
+    # With the flag off this is None and `effective` is `question` itself, which
+    # is what keeps every path below byte-identical to before.
+    answered = clarify.pending(history) if clarifying else None
+    effective = clarify.merge(answered, question) if answered else question
+    passthrough = ProcessedQuery(
+        original=question, search_query=effective, intent="qa",
+        clarified_from=answered,
+    )
     votes = max(1, int(settings.analysis_votes))
     threshold = float(getattr(settings, "intent_confidence_threshold", 0.5))
     try:
         if votes > 1:
-            samples = _voted_understanding(question, history, votes)
+            samples = _voted_understanding(effective, history, votes)
         else:
             model = get_structured_llm().with_structured_output(QueryUnderstanding)
-            samples = [model.invoke(_understanding_messages(question, history))]
+            samples = [model.invoke(_understanding_messages(effective, history))]
     except Exception:
         logger.warning("Query analysis failed; using passthrough.", exc_info=True)
         return passthrough
@@ -673,15 +698,24 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
         return passthrough
 
     understanding = _merge_understanding(samples, threshold=threshold)
-    analysis = _to_legacy_analysis(question, understanding)
+    analysis = _to_legacy_analysis(effective, understanding)
     # A chitchat draw on a real question is unrecoverable downstream, so it is
     # checked against the corpus here rather than trusted. See `_corrected_intent`.
-    analysis.intent = _corrected_intent(question, analysis.intent)
+    analysis.intent = _corrected_intent(effective, analysis.intent)
+    # Read from the understanding, not from `analysis.intent`: by this line the
+    # terminal label has already been collapsed onto chitchat and possibly
+    # rescued back to qa, and neither still says the user was unclear.
+    clarification = (
+        clarify.decide(understanding, effective)
+        if clarifying and answered is None
+        else None
+    )
     logger.info(
-        "intent: %s -> route=%s%s",
+        "intent: %s -> route=%s%s%s",
         [f"{p.label}:{p.confidence}" for p in understanding.intents],
         analysis.intent,
         " (ambiguous)" if _is_ambiguous(understanding.intents) else "",
+        " (clarifying)" if clarification is not None else "",
     )
     return ProcessedQuery(
         original=question,
@@ -690,7 +724,9 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
         answer_format=analysis.answer_format,
         source_type=analysis.source_type,
         language=analysis.language,
-        filters=_facet_filters(analysis) + _edition_conditions(question),
+        filters=_facet_filters(analysis) + _edition_conditions(effective),
         analysis=analysis,
         understanding=understanding,
+        clarification=clarification,
+        clarified_from=answered,
     )

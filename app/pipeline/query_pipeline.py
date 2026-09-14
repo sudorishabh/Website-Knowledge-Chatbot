@@ -22,6 +22,7 @@ from app.observability import retrieval_log
 from app.observability.metrics import collect_into, component_totals
 from app.observability.tracing import record_query_metrics, span
 from app.retrieval.context.citations import build_citations
+from app.retrieval.understanding.clarify import Clarification
 from app.retrieval.understanding.query_processor import ProcessedQuery, process
 from app.retrieval.retriever import retrieve
 
@@ -83,6 +84,11 @@ def _trace_understanding(pq: ProcessedQuery, *, top_k: int) -> None:
         filters=pq.filters,
         top_k=top_k,
         is_ambiguous=pq.is_ambiguous,
+        # Whether this turn asked a question back, and whether it was itself the
+        # answer to one — without both, a trace for a clarified turn shows a
+        # search query holding words the user never typed and no reason why.
+        clarifying=pq.clarification is not None,
+        clarified_from=pq.clarified_from,
         capabilities=sorted(_capabilities(pq)),
         intents=[
             {"label": p.label, "confidence": p.confidence, "rationale": p.rationale}
@@ -90,6 +96,42 @@ def _trace_understanding(pq: ProcessedQuery, *, top_k: int) -> None:
         ],
         analysis=pq.analysis,
     )
+
+
+def _clarification_result(
+    clarification: Clarification, *, answer_format: str = "default"
+) -> dict[str, Any]:
+    """The turn that asks the user a question instead of answering.
+
+    Shaped as an ordinary result so every existing consumer — the buffered
+    return, the SSE driver, the metrics recorder — handles it without knowing
+    what it is. The rendered text carries the state (see
+    ``app.retrieval.understanding.clarify``): it ends with the marker the next
+    turn recognises, so a client that does nothing but echo the answer back in
+    ``history`` already implements the whole protocol.
+
+    ``intent`` is reported as ``clarification`` rather than the route the query
+    would have taken. By this point that route is chitchat-or-rescued-qa, which
+    describes what the classifier did and not what the user was sent, and the
+    metrics that matter here are "how often do we ask" and "does asking help".
+
+    ``clarification`` is an *additive* key. Nothing has to read it — the question
+    and its options are already in the answer text — but a client that wants to
+    render options as buttons has them structured rather than parsed back out of
+    prose.
+    """
+    retrieval_log.note(
+        clarification_kind=clarification.kind,
+        clarification_options=len(clarification.options),
+    )
+    return {
+        **_empty("clarification", clarification.render(), answer_format=answer_format),
+        "clarification": {
+            "question": clarification.question,
+            "options": list(clarification.options),
+            "kind": clarification.kind,
+        },
+    }
 
 
 def _capabilities(pq: ProcessedQuery) -> set[str]:
@@ -198,6 +240,17 @@ def _prepare(
     with span("rag.query_understanding"):
         pq: ProcessedQuery = process(question, history)
     _trace_understanding(pq, top_k=n)
+    # Ahead of the chitchat branch, because that is exactly where an unclear
+    # question used to end up: `clarification_needed` is terminal, so
+    # `_legacy_intent_and_format` collapses it onto chitchat and the small-talk
+    # prompt answers a question it was never given. `process` only sets this when
+    # the feature is on and no clarification is already open (see
+    # `app.retrieval.understanding.clarify.pending`), so with the flag off this
+    # is always None and the line below is unreachable.
+    if pq.clarification is not None:
+        return _clarification_result(
+            pq.clarification, answer_format=pq.answer_format
+        ), None
     if pq.intent == "chitchat":
         return _empty("chitchat", chitchat(question, history)), None
 
@@ -444,7 +497,7 @@ def _stream_result(result: dict[str, Any]) -> Iterator[dict[str, Any]]:
     """Emit a ready-made result dict (cache hit, chit-chat, structured lookup, or
     refusal) as the standard token / sources / done SSE event sequence."""
     yield {"type": "token", "text": result.get("answer", "")}
-    yield {
+    sources = {
         "type": "sources",
         "citations": result.get("citations", []),
         "intent": result.get("intent", "qa"),
@@ -453,6 +506,14 @@ def _stream_result(result: dict[str, Any]) -> Iterator[dict[str, Any]]:
         "conflict": result.get("conflict", False),
         "numeric_mismatch": result.get("numeric_mismatch", False),
     }
+    # Additive and absent on every other path, so a client that has never heard
+    # of clarification sees the event it has always seen. The question and its
+    # options are already in the answer text above; this is the same thing
+    # structured, for a client that wants to render the options as buttons.
+    clarification = result.get("clarification")
+    if clarification:
+        sources["clarification"] = clarification
+    yield sources
     yield {"type": "done"}
 
 

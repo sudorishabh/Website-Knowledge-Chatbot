@@ -137,6 +137,13 @@ class Settings(BaseSettings):
     # self-reported score. Terminal intents (chitchat/out_of_scope/…) are gated
     # by the same bar.
     intent_confidence_threshold: float = 0.5
+    # Act on the `clarification_needed` intent instead of letting it collapse
+    # onto chitchat: ask the user one question back, with catalog-derived options
+    # where they exist, and merge their reply into the next turn's query. State
+    # rides on the client-echoed history, so no session store is involved. OFF
+    # reproduces today's behaviour exactly — the label is still detected and
+    # still discarded. Launches OFF; flip after eval.
+    clarification_enabled: bool = False
     # One-shot corrective retrieval: when the reranked top candidate's raw
     # semantic score is below corrective_min_score, reformulate the query once,
     # search again, RRF-fuse and rerank. Strictly one iteration. Launches OFF;

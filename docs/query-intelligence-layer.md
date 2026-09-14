@@ -248,3 +248,68 @@ That ordering is the thing that already satisfies goal 10, and it was arrived at
 by measurement documented in the module. Phase B adds temporal fit *inside* the
 relevance band, never above it — so a newer document still cannot outrank a more
 relevant older one. Phase E pins this with a test.
+
+---
+
+# Phase A — clarification + conversation state (implemented)
+
+Setting: `clarification_enabled` (default **false**). With it false, every path
+below is byte-identical to before: `clarify.pending` is never called, the merged
+question *is* the question, and `ProcessedQuery.clarification` stays `None`, so
+the pipeline's guard is unreachable.
+
+## What changed
+
+| File | Change |
+| --- | --- |
+| `app/retrieval/understanding/clarify.py` | **New.** The decision, the options, the marker, the merge, the guard |
+| `app/retrieval/understanding/query_processor.py` | `ProcessedQuery` gains `clarification` and `clarified_from` (both defaulted); `process` merges an open clarification before understanding and decides afterwards |
+| `app/pipeline/query_pipeline.py` | `_clarification_result`; a guard in `_prepare` ahead of the chitchat branch; an additive `clarification` key on the `sources` SSE event |
+| `app/config.py` | `clarification_enabled: bool = False` |
+
+## The protocol
+
+```
+turn 1   user: "show me the projects"
+         understanding -> [clarification_needed]
+         answer text:  Which of these did you mean?
+                       1. Completed Projects
+                       2. Ongoing Projects
+                       Reply with your answer and I will take it from there.   <- MARKER
+
+turn 2   client echoes that turn back inside `history`
+         user: "Ongoing Projects"
+         pending(history) -> "show me the projects"          (marker matched)
+         merge(...)       -> "show me the projects: Ongoing Projects"
+         clarification decision skipped  -> one round, always
+         ... existing understanding -> routing -> retrieval -> generation
+```
+
+## Why the marker is a readable sentence
+
+The UI escapes HTML before rendering (`ui/script.js`: `renderMarkdown` →
+`escapeHtml`) and writes raw text into the bubble while tokens stream. An HTML
+comment or a sentinel token would therefore be **visible** — first mid-stream,
+then permanently. A marker the reader can understand is the only kind this
+transport allows.
+
+The cost is that changing `MARKER`'s wording breaks state for conversations
+already in flight. Those degrade rather than fail: the follow-up is answered on
+its own instead of being merged.
+
+## Why `is_ambiguous` is not a trigger
+
+`_is_ambiguous` is a near-tie between *content intents* (qa vs database). That is
+a routing question retrieval can settle, not evidence the user was unclear.
+Clarifying on it would interrupt questions that answer perfectly well, so the
+only trigger is the explicit `clarification_needed` label. Pinned by
+`test_a_near_tie_between_content_intents_is_not_a_clarification`.
+
+## One correction to §3
+
+The Phase 0 table said an ambiguous question "gets small talk". That is true only
+for turns that read like neither small talk nor a question ("what about that
+one?", "show me a table"). `_corrected_intent` already rescues a chitchat verdict
+whenever the wording reads as an information request, so "show me performance"
+reached retrieval before this phase. Phase A reads the *understanding* rather
+than the route it produced, so it covers both shapes.
