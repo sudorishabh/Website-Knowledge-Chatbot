@@ -149,10 +149,15 @@ def corrective_requery(
     filters: list[Any] | None,
     limit: int,
     table_boost: float,
+    temporal: Any | None = None,
 ) -> list[Any]:
     """One-shot corrective retrieval: reformulate, search once, RRF-fuse with
     the current ranking, rerank once more. Strictly one iteration; any failure
-    or empty gain keeps the original ranking."""
+    or empty gain keeps the original ranking.
+
+    ``temporal`` is passed straight through to the rerank so the corrective pass
+    orders on the same keys as the pass it replaces; None reproduces the
+    previous behaviour."""
     try:
         reformulated = corrective_query(search_query, ranked)
         if not reformulated:
@@ -166,7 +171,8 @@ def corrective_requery(
         seen = {c.id for c in ranked}
         if not any(c.id not in seen for c in extra):
             return ranked
-        return rerank(search_query, rrf([ranked, extra]), table_boost=table_boost)
+        return rerank(search_query, rrf([ranked, extra]),
+                      table_boost=table_boost, temporal=temporal)
     except Exception:
         logger.warning("Corrective requery failed; keeping original ranking.",
                        exc_info=True)

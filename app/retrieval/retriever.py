@@ -62,6 +62,7 @@ def _supplement_attachments(
     query_vector: list[float],
     n: int,
     segregate: bool,
+    temporal: Any | None = None,
 ) -> list[ContextBlock]:
     """Detailed answers: when admitted website blocks have attached PDFs that
     contributed nothing to the context, pull those attachments' chunks once and
@@ -104,7 +105,7 @@ def _supplement_attachments(
         new = [c for c in extra if c.id not in seen]
         if not new:
             return blocks
-        reranked = rerank(search_query, list(ranked) + new)
+        reranked = rerank(search_query, list(ranked) + new, temporal=temporal)
         return build_context(reranked, limit=n, segregate=segregate)
     except Exception:
         logger.warning("Attachment supplementation failed; keeping original blocks.",
@@ -283,7 +284,12 @@ def retrieve(
     answer_format: str | None = None,
     source_type: str | None = None,
     capabilities: set[str] | None = None,
+    temporal: Any | None = None,
 ) -> list[ContextBlock]:
+    """``temporal`` is the question's `TemporalIntent`, or None to behave exactly
+    as before it existed: no temporal ranking, and the UPCOMING gate detecting
+    its own mode. The caller passes it only when `temporal_intent_enabled` is
+    set, so the flag is honoured in one place rather than three."""
     settings = get_settings()
     n = n or settings.retrieval_top_k
 
@@ -504,7 +510,9 @@ def retrieve(
 
     with span("rag.rerank") as s:
         table_boost = settings.rerank_table_boost if answer_format == "table" else 0.0
-        ranked = rerank(search_query, candidates, table_boost=table_boost)
+        ranked = rerank(
+            search_query, candidates, table_boost=table_boost, temporal=temporal
+        )
         s.set("survivors", len(ranked))
         retrieval_log.note(rerank_survivors=len(ranked))
     if (
@@ -517,7 +525,7 @@ def retrieve(
             ranked = corrective_requery(
                 search_query, ranked,
                 filters=filters, limit=settings.retrieval_candidate_k,
-                table_boost=table_boost,
+                table_boost=table_boost, temporal=temporal,
             )
             score_after = ranked[0].semantic_score if ranked else 0.0
             # Did the retry actually lift the top result? Recorded so we can
@@ -543,7 +551,7 @@ def retrieve(
         with span("rag.attachment_pull"):
             blocks = _supplement_attachments(
                 blocks, ranked, search_query=search_query, query_vector=query_vector,
-                n=n, segregate=dual,
+                n=n, segregate=dual, temporal=temporal,
             )
     if graph_blocks:
         # Merged last, so attachment supplementation above still operates on the
@@ -566,23 +574,50 @@ def retrieve(
     # a chunk is `effective_start_date`, which is when the page went up, not when the
     # event runs. Removal-only and it never empties the context, so the worst it
     # can do is leave the context exactly as it was.
-    blocks = _gate_temporal(search_query, blocks)
+    blocks = _gate_temporal(search_query, blocks, temporal=temporal)
     _observe_in_shadow(search_query, blocks)
     return blocks
 
 
-def _gate_temporal(search_query: str, blocks: list[ContextBlock]) -> list[ContextBlock]:
-    """Apply the question's temporal scope to the finished context."""
+def _gate_temporal(
+    search_query: str,
+    blocks: list[ContextBlock],
+    *,
+    temporal: Any | None = None,
+) -> list[ContextBlock]:
+    """Apply the question's temporal scope to the finished context.
+
+    ``temporal`` carries the mode query understanding already classified. It is
+    detected on the same string this function would have detected on, so passing
+    it changes nothing about which mode is chosen — it only saves the second
+    regex pass and makes the mode inspectable upstream. With it absent the
+    function detects for itself, exactly as it always did.
+
+    Only the two *scheduled-occurrence* modes gate. A point-in-time or
+    date-range question is already scoped by `filters.date_conditions` before the
+    search runs, and re-applying it here would be a second, weaker copy of that
+    logic; those modes reach ranking instead.
+    """
     if not blocks:
         return blocks
     try:
         from app.retrieval.search import temporal_gate
 
-        mode = temporal_gate.detect_mode(search_query)
-        if mode != temporal_gate.UPCOMING:
+        if temporal is None:
+            # Exactly the pre-Phase-B path: detect here, and only UPCOMING gates.
+            mode = temporal_gate.detect_mode(search_query)
+            gate = (temporal_gate.gate_upcoming
+                    if mode == temporal_gate.UPCOMING else None)
+        else:
+            mode = temporal.mode
+            gate = {
+                temporal_gate.UPCOMING: temporal_gate.gate_upcoming,
+                temporal_gate.PAST: temporal_gate.gate_past,
+            }.get(mode)
+        if gate is None:
             return blocks
         with span("rag.temporal_gate") as s:
-            gated = temporal_gate.gate_upcoming(blocks)
+            gated = gate(blocks)
             s.set("mode", mode)
             s.set("dropped", len(blocks) - len(gated))
         return gated

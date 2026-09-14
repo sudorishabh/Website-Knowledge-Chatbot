@@ -13,12 +13,21 @@ So candidates are *banded* instead, and ranked on the bands in priority order:
 1. **relevance** — scores within ``rerank_relevance_tolerance`` are "similarly
    relevant" and go on to compete on the keys below; a candidate a band lower
    never climbs past one above it, however new or full it is;
-2. **authority** — within a relevance band, a canonical source (an organisation's
+2. **temporal fit** — within a relevance band, a passage covering the time the
+   question is about leads one that does not (see
+   :mod:`app.retrieval.search.temporal_gate`). Inert unless the question named a
+   time: with no temporal intent every candidate scores alike and this band is a
+   constant, so it cannot reorder anything;
+3. **authority** — within a temporal band, a canonical source (an organisation's
    own service or hub page) leads a secondary retelling of the same material;
-3. **completeness** — within an authority band, a passage holding
+4. **completeness** — within an authority band, a passage holding
    ``rerank_substance_ratio`` times the text of another says substantially more
    and leads it;
-4. **recency** — comparable passages settle on the effective date, newest first.
+5. **recency** — comparable passages settle on the effective date, newest first.
+
+Note what is *not* here: a freshness term that applies to every query. Recency is
+the last key, and temporal fit only speaks when the question named a time — so a
+newer document never wins on being newer.
 
 Two editions of the same annual report land in one relevance band, and unless one
 is a fragment the newer leads. An older passage that actually answers the
@@ -98,6 +107,13 @@ def _recency_scores(candidates: Sequence[Candidate]) -> list[float]:
 # source. The scale below is laid out in steps of 0.15, so a tolerance under that
 # separates every tier while keeping candidates inside one tier together.
 _AUTHORITY_TOLERANCE = 0.10
+
+# Temporal fit is emitted on a coarse, discrete scale (see `temporal_gate`:
+# 1.0 match / 0.75 partial / 0.5 unknown / 0.25 miss). A tolerance below the
+# smallest of those gaps separates every tier, and — the property that matters —
+# collapses to a single band when every candidate scores the same, which is what
+# a question with no temporal intent produces.
+_TEMPORAL_TOLERANCE = 0.10
 
 # Authority by the bundle a website node belongs to. The ordering is editorial
 # provenance, not topic: a page the organisation maintains *as its statement* on
@@ -253,13 +269,18 @@ class _Scored(NamedTuple):
     substance: float
     recency: float
     authority: float
+    # How well the document's period matches the time the question is about.
+    # Constant (and therefore inert) whenever there is no temporal intent, which
+    # is why the default is the same neutral value every other unknown takes.
+    temporal: float = _UNKNOWN
 
 
 class _Ranked(NamedTuple):
     """A scored candidate placed in the ranking."""
 
     relevance_band: int   # 0 is the most relevant band
-    authority_band: int   # 0 is the most authoritative, cut within the relevance band
+    temporal_band: int    # 0 is the best temporal fit, cut within the relevance band
+    authority_band: int   # 0 is the most authoritative, cut within the temporal band
     substance_band: int   # 0 is the fullest band, cut within the authority band
     scored: _Scored
 
@@ -312,33 +333,67 @@ def _substance_bands(
     )
 
 
-def _authority_bands(
+def _temporal_bands(
     scored: Sequence[_Scored], relevance_bands: Sequence[int]
 ) -> list[int]:
-    """Authority band per candidate, cut *within* each relevance band.
+    """Temporal-fit band per candidate, cut *within* each relevance band.
 
-    Negated because :func:`_bands` numbers from the highest value down and
-    authority is better when higher, matching relevance and unlike substance
-    where the raw value is already "more text".
+    Inside, never above: a candidate a relevance band lower cannot climb past
+    one above it however perfectly it fits the period, which is the same
+    guarantee authority and completeness already have and the reason a newer
+    document cannot win on being newer. What this does change is the order of
+    candidates the relevance step has already called equivalent — and there,
+    covering the year the user asked about is a better reason to lead than being
+    a more canonical kind of page, which is why it sits above authority.
+
+    Inert by construction when there is no temporal intent: every candidate then
+    scores ``FIT_UNKNOWN``, one band holds all of them, and the key below it
+    decides exactly as before.
     """
     return _nested_bands(
-        [s.authority for s in scored], relevance_bands, tolerance=_AUTHORITY_TOLERANCE
+        [s.temporal for s in scored], relevance_bands, tolerance=_TEMPORAL_TOLERANCE
+    )
+
+
+def _authority_bands(
+    scored: Sequence[_Scored], enclosing: Sequence[Any]
+) -> list[int]:
+    """Authority band per candidate, cut *within* each enclosing band.
+
+    The enclosing band is (relevance, temporal fit): each key is only ever a
+    question between candidates that already tied above it, so authority is
+    asked only of candidates that are both comparably relevant and comparably
+    well-matched to the period.
+    """
+    return _nested_bands(
+        [s.authority for s in scored], enclosing, tolerance=_AUTHORITY_TOLERANCE
     )
 
 
 def _sort_key(r: _Ranked) -> tuple[float, ...]:
     """The ranking priority, most significant first: relevance band, then
-    authority band, then completeness band, then recency, then the fine-grained
-    relevance within the band — a deterministic last resort, and by construction
-    a sub-tolerance difference that the band already declared immaterial.
+    temporal-fit band, then authority band, then completeness band, then
+    recency, then the fine-grained relevance within the band — a deterministic
+    last resort, and by construction a sub-tolerance difference that the band
+    already declared immaterial.
 
     Authority moved above completeness because completeness is a length proxy and
     a canonical page is short: see the module docstring for the measurement that
     prompted it. It stays *below* relevance, so a canonical page that does not
     answer the question still cannot climb over a passage that does.
+
+    Temporal fit sits directly under relevance for the same kind of reason, in
+    the other direction: when a question names a time, a passage from that time
+    is a better answer than a more canonical passage from a different one — a
+    2019 hub page does not answer "what happened in 2023" better than a 2023
+    news item. It is still *under* relevance, so this remains a tie-break among
+    comparable passages and never "the newest document wins". And with no
+    temporal intent every candidate scores alike, so the band is a constant and
+    the order is exactly what it was before this key existed.
     """
     return (
         r.relevance_band,
+        r.temporal_band,
         r.authority_band,
         r.substance_band,
         -r.scored.recency,
@@ -499,12 +554,35 @@ def _semantic_scores(query: str, candidates: Sequence[Candidate], provider: str)
     return dense
 
 
+def _temporal_scores(
+    candidates: Sequence[Candidate], temporal: Any | None
+) -> list[float]:
+    """Temporal fit per candidate, or a flat neutral list.
+
+    Flat — and therefore inert — whenever there is no intent, the intent cannot
+    rank (``NONE``/``UPCOMING``), or scoring raises. The last case is the reason
+    this is wrapped at all: a temporal signal is an improvement to an ordering
+    that already works, and it must never be able to cost a ranking. Same
+    posture as ``retriever._gate_temporal``.
+    """
+    from app.retrieval.search.temporal_gate import FIT_UNKNOWN, temporal_fit
+
+    if temporal is None or not getattr(temporal, "ranks", False):
+        return [FIT_UNKNOWN] * len(candidates)
+    try:
+        return [temporal_fit(c.payload, temporal) for c in candidates]
+    except Exception:
+        logger.warning("Temporal fit failed; ranking without it.", exc_info=True)
+        return [FIT_UNKNOWN] * len(candidates)
+
+
 def rerank(
     query: str,
     candidates: Sequence[Candidate],
     *,
     top_n: int | None = None,
     table_boost: float = 0.0,
+    temporal: Any | None = None,
 ) -> list[Candidate]:
     """Candidates in ranked order, best first, capped at `top_n`.
 
@@ -539,10 +617,11 @@ def rerank(
     substance = _substance_scores(candidates)
     recency = _recency_scores(candidates)
     authority = _authority_scores(candidates)
+    temporal_fits = _temporal_scores(candidates, temporal)
 
     kept: list[_Scored] = []
-    for cand, sem, sub, rec, auth in zip(
-        candidates, semantic, substance, recency, authority
+    for cand, sem, sub, rec, auth, fit in zip(
+        candidates, semantic, substance, recency, authority, temporal_fits
     ):
         if threshold and sem < threshold:
             continue
@@ -553,28 +632,37 @@ def rerank(
         kept.append(
             _Scored(
                 candidate=cand, relevance=sem + boost, semantic=sem,
-                substance=sub, recency=rec, authority=auth,
+                substance=sub, recency=rec, authority=auth, temporal=fit,
             )
         )
 
     relevance_bands = _bands(
         [s.relevance for s in kept], tolerance=_relevance_tolerance(query, settings)
     )
-    authority_bands = _authority_bands(kept, relevance_bands)
+    temporal_bands = _temporal_bands(kept, relevance_bands)
+    # Authority is cut inside the temporal band for the same reason completeness
+    # is cut inside authority: each key is only ever a question between
+    # candidates that already tied above it, and banding across the whole set
+    # would let a candidate from a worse-fitting group place the boundary.
+    authority_bands = _authority_bands(
+        kept, [(rb, tb) for rb, tb in zip(relevance_bands, temporal_bands)]
+    )
     # Completeness is cut inside the authority band, not the relevance band: two
     # candidates only compete on length once they are the same *kind* of source,
     # otherwise a long attachment would still set the boundary that splits two
     # canonical pages.
     substance_bands = _substance_bands(
         kept,
-        [(rb, ab) for rb, ab in zip(relevance_bands, authority_bands)],
+        [(rb, tb, ab) for rb, tb, ab
+         in zip(relevance_bands, temporal_bands, authority_bands)],
         tolerance=_substance_tolerance(settings),
     )
     ranked = sorted(
         (
-            _Ranked(relevance_band=rb, authority_band=ab, substance_band=sb, scored=s)
-            for rb, ab, sb, s in zip(
-                relevance_bands, authority_bands, substance_bands, kept
+            _Ranked(relevance_band=rb, temporal_band=tb, authority_band=ab,
+                    substance_band=sb, scored=s)
+            for rb, tb, ab, sb, s in zip(
+                relevance_bands, temporal_bands, authority_bands, substance_bands, kept
             )
         ),
         key=_sort_key,

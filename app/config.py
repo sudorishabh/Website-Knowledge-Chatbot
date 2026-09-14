@@ -144,6 +144,15 @@ class Settings(BaseSettings):
     # reproduces today's behaviour exactly — the label is still detected and
     # still discarded. Launches OFF; flip after eval.
     clarification_enabled: bool = False
+    # Act on the temporal intent `temporal_gate.detect_mode` already classifies:
+    # rank by how well a document's period fits the time the question is about
+    # (a band cut INSIDE the relevance band, so relevance still decides), and
+    # gate past-tense questions about scheduled occurrences the way upcoming ones
+    # already are. Reads only payload fields that exist today; adds no date
+    # filtering — that stays `filters.date_conditions`. OFF leaves ranking and
+    # the pre-existing UPCOMING gate exactly as they are. Launches OFF; flip
+    # after eval.
+    temporal_intent_enabled: bool = False
     # One-shot corrective retrieval: when the reranked top candidate's raw
     # semantic score is below corrective_min_score, reformulate the query once,
     # search again, RRF-fuse and rerank. Strictly one iteration. Launches OFF;

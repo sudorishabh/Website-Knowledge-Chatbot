@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from app.config import get_settings
 from app.core.clients.llm import get_llm, get_structured_llm
 from app.core.dates import IsoDate, current_date_directive, exclusive_end
+from app.retrieval.search.temporal_gate import TemporalIntent, detect_mode
 from app.retrieval.understanding import clarify
 from app.retrieval.understanding.catalog_prompt import (
     catalog_coverage_directive,
@@ -199,6 +200,12 @@ class ProcessedQuery:
     # marker that says why `search_query` mentions something the user did not
     # type in this turn.
     clarified_from: str | None = None
+    # The time this question is about: the mode `temporal_gate.detect_mode`
+    # classifies, plus the window understanding already extracted. Always
+    # computed (a regex over a string the analysis produced anyway) so the trace
+    # can show it; only *acted on* when `temporal_intent_enabled` is set, which
+    # the pipeline decides — see `app.pipeline.query_pipeline._prepare`.
+    temporal_intent: "TemporalIntent" = field(default_factory=lambda: TemporalIntent())
 
     @property
     def is_ambiguous(self) -> bool:
@@ -679,6 +686,7 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
     passthrough = ProcessedQuery(
         original=question, search_query=effective, intent="qa",
         clarified_from=answered,
+        temporal_intent=TemporalIntent(mode=detect_mode(effective)),
     )
     votes = max(1, int(settings.analysis_votes))
     threshold = float(getattr(settings, "intent_confidence_threshold", 0.5))
@@ -729,4 +737,15 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
         understanding=understanding,
         clarification=clarification,
         clarified_from=answered,
+        # Detected on `analysis.search_query` — the exact string `retrieve` is
+        # handed and the one `_gate_temporal` has always detected on itself.
+        # Same input, same classifier, so the promoted mode is by construction
+        # the mode the gate would have computed, and the UPCOMING path cannot
+        # change. The window is the one understanding already extracted; it is
+        # not re-derived here.
+        temporal_intent=TemporalIntent(
+            mode=detect_mode(analysis.search_query),
+            date_from=analysis.date_from,
+            date_to=analysis.date_to,
+        ),
     )

@@ -313,3 +313,91 @@ one?", "show me a table"). `_corrected_intent` already rescues a chitchat verdic
 whenever the wording reads as an information request, so "show me performance"
 reached retrieval before this phase. Phase A reads the *understanding* rather
 than the route it produced, so it covers both shapes.
+
+---
+
+# Phase B — temporal intent wiring (implemented)
+
+Setting: `temporal_intent_enabled` (default **false**). Read in exactly one
+place — `query_pipeline._temporal_intent` — which hands `retrieve` either the
+question's `TemporalIntent` or `None`. With `None`, ranking and the pre-existing
+`UPCOMING` gate are byte-identical to Phase A.
+
+## What changed
+
+| File | Change |
+| --- | --- |
+| `app/retrieval/search/temporal_gate.py` | `TemporalIntent`, `temporal_fit`, `gate_past`; `gate_upcoming` refactored onto a shared body |
+| `app/retrieval/search/reranker.py` | A temporal-fit band, cut inside the relevance band and above authority |
+| `app/retrieval/retriever.py` | `retrieve(temporal=...)`; `_gate_temporal` selects a gate by mode |
+| `app/retrieval/search/strategies.py` | `corrective_requery` threads `temporal` into its rerank |
+| `app/retrieval/understanding/query_processor.py` | `ProcessedQuery.temporal_intent`, promoted in `process` |
+| `app/pipeline/query_pipeline.py` | `_temporal_intent` — the single flag read |
+| `app/config.py` | `temporal_intent_enabled: bool = False` |
+
+## The three layers, and what each is allowed to do
+
+| Layer | Mechanism | Modes |
+| --- | --- | --- |
+| **Filter** (unchanged) | `filters.date_conditions` → precision-aware Qdrant overlap conditions, applied before the search | any question whose window understanding extracted |
+| **Gate** | `temporal_gate.gate_upcoming` / `gate_past`, removal-only, scheduled bundles only, never empties the context | `UPCOMING`, `PAST` |
+| **Rank** | `temporal_fit` → a band cut *inside* the relevance band | `CURRENT`, `PAST`, `POINT_IN_TIME`, `DATE_RANGE` |
+
+Nothing in Phase B filters by date. Point-in-time and date-range questions keep
+using `date_conditions` exactly as before; the ranking signal scores *degree of
+fit* among the candidates that filter already admitted, which is the part it
+could not express.
+
+## The ranking invariant
+
+```
+relevance → temporal fit → authority → substance → recency
+```
+
+Temporal fit is **inside** the relevance band. A candidate a relevance band
+lower cannot climb past one above it however perfectly it fits the period, so a
+newer-but-less-relevant document still loses — pinned by
+`test_a_newer_but_less_relevant_document_still_loses` and, exhaustively across
+all five modes, by `test_temporal_fit_never_overrules_relevance_across_bands`.
+
+It sits *above* authority because when a question names a time, a passage from
+that time answers better than a more canonical passage from a different one: a
+2019 hub page does not answer "what happened in 2023" better than a 2023 news
+item does.
+
+## Why "current" is not "newest"
+
+`temporal_fit` under `CURRENT` scores **validity**, not publication date:
+
+* an `ongoing_projects` node started in 2005 and still open → `FIT_MATCH`
+* a news item published last January, whose period closed the same day → `FIT_MISS`
+
+That is the opposite ordering to a freshness score, and it is the requirement.
+Open-endedness is read from `OPEN_ENDED_BUNDLES`, the same reading
+`date_conditions` already applies to its lower bound.
+
+## Unknown is never a miss
+
+`FIT_UNKNOWN` (0.5) sits between match and miss, and every case where the answer
+is not known returns it: no temporal intent, an intent whose window was never
+extracted, a document with no date, malformed metadata, or an exception while
+scoring. Scoring an unknown as a miss would quietly demote every document whose
+date ingestion could not recover.
+
+## Known limitations
+
+* **`doc_version` is not a ranking signal.** It reaches the prompt already, and
+  `is_current == True` is a mandatory pre-filter in `build_filter`, so every
+  candidate that reaches ranking is the current version and the field carries no
+  ordering information. `is_current` *is* read by `temporal_fit`, as defence in
+  depth, for the case where a superseded chunk reaches ranking anyway.
+* **Latest vs current are the same mode.** `detect_mode` maps "latest" into
+  `CURRENT` by its existing lexicon. The distinction the brief draws — "current"
+  = valid now, "latest" = most recent applicable — is served by the band order
+  rather than by two modes: fit decides validity, and recency (already the last
+  key) settles the remainder. Splitting them would mean changing `_PATTERNS`,
+  which is the classifier Phase B was told to reuse rather than replace.
+* **A window is only as good as the extraction.** When understanding returns no
+  dates, a `POINT_IN_TIME`/`DATE_RANGE` question scores neutral everywhere and
+  ranking is unchanged. Guessing a window here would be the second temporal
+  classifier this phase must not add.

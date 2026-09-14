@@ -134,6 +134,20 @@ def _clarification_result(
     }
 
 
+def _temporal_intent(pq: ProcessedQuery) -> Any | None:
+    """The question's temporal intent, or None to retrieve as before.
+
+    The single place `temporal_intent_enabled` is read. `process` computes the
+    intent either way — it is a regex over a string the analysis produced anyway,
+    and having it on the trace is worth more than the microseconds — but nothing
+    downstream sees it unless the flag is set, so OFF leaves both ranking and the
+    pre-existing UPCOMING gate byte-identical.
+    """
+    if not getattr(get_settings(), "temporal_intent_enabled", False):
+        return None
+    return pq.temporal_intent
+
+
 def _capabilities(pq: ProcessedQuery) -> set[str]:
     """The detected multi-label intents (empty on the passthrough fallback)."""
     if pq.understanding is None:
@@ -344,6 +358,7 @@ def _prepare(
             answer_format=pq.answer_format,
             source_type=pq.source_type,
             capabilities=caps,
+            temporal=_temporal_intent(pq),
         )
 
     # The deterministic catalog section (combined queries only), the answer
@@ -689,6 +704,7 @@ def _search_blocks(
         pq.search_query,
         filters=pq.filters, n=top_k, answer_format=pq.answer_format,
         source_type=pq.source_type, capabilities=_capabilities(pq),
+        temporal=_temporal_intent(pq),
     )
     retrieval_log.note_context(blocks)
     retrieval_log.note_outcome(
