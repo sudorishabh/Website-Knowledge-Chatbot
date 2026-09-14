@@ -267,6 +267,83 @@ def _document_result(
     }
 
 
+def _series_blocks(documents: Any) -> list[ContextBlock]:
+    """The series' editions as context blocks, so the real citation builder can
+    describe them.
+
+    Not a second card format: `build_citations` reads a payload, and these
+    payloads carry exactly the keys it reads for a PDF attachment. A card for the
+    2024-25 edition here is therefore the same card that edition gets on any
+    other answer, built by the same function.
+    """
+    return [
+        ContextBlock(
+            n=i,
+            text="",
+            payload={
+                "document_id": doc.document_id,
+                "chunk_id": doc.document_id,
+                "source_type": "pdf_attachment",
+                "bundle": "report",
+                "title": doc.title,
+                "edition_label": doc.edition,
+                "file_url": doc.url,
+            },
+        )
+        for i, doc in enumerate(documents, start=1)
+    ]
+
+
+def _series_result(pq: ProcessedQuery) -> dict[str, Any]:
+    """List or count the annual-report series, from the catalogue.
+
+    The second half of the document-discovery gap. `resolve` deliberately
+    returns no edition for "list of annual reports" — narrowing a series
+    question to its newest member would answer something else — and that None
+    used to end the matter, so the question fell through to an *unfiltered*
+    semantic search and the model was asked to find a list of editions inside
+    two pages of report prose. It refused, and the citation fallback attached
+    whatever the unfiltered pull had found, which is where the unrelated cards
+    came from.
+
+    Deterministic and terminal: the answer is assembled from catalogued titles
+    and the resolved editions, there is no model call, and it returns before
+    retrieval — so there are no stray blocks for citations to fall back onto.
+    """
+    series = pq.series
+    documents = series.documents
+    blocks = _series_blocks(documents)
+    from app.retrieval.understanding.annual_report_editions import COUNT
+
+    if series.kind == COUNT:
+        noun = "annual report" if len(documents) == 1 else "annual reports"
+        answer = f"There are {len(documents)} {noun} available."
+    else:
+        lines = "\n".join(
+            f"- {doc.title or f'Annual Report {doc.edition}'} [{block.n}]"
+            for doc, block in zip(documents, blocks)
+        )
+        answer = (
+            f"There are {len(documents)} annual reports available:\n{lines}"
+        )
+
+    retrieval_log.note(
+        series_lookup=series.kind,
+        editions=list(series.editions),
+    )
+    return {
+        "answer": answer,
+        "citations": [c.model_dump() for c in build_citations(blocks)],
+        # Its own labels, beside `document_lookup`, so the three discovery
+        # shapes stay separable in the metrics rather than blurring into one.
+        "intent": f"series_{series.kind}",
+        "answer_format": pq.answer_format,
+        "used_chunks": len(blocks),
+        "conflict": False,
+        "cached": False,
+    }
+
+
 def _capabilities(pq: ProcessedQuery) -> set[str]:
     """The detected multi-label intents (empty on the passthrough fallback)."""
     if pq.understanding is None:
@@ -386,6 +463,24 @@ def _prepare(
         ), None
     if pq.intent == "chitchat":
         return _empty("chitchat", chitchat(question, history)), None
+
+    # A request for the annual-report series itself — list it, or count it.
+    # Terminal *before* retrieval, unlike the single-document lookup below:
+    # that one waits for retrieval because it needs the catalogued title on a
+    # retrieved chunk, whereas the series carries its own titles. Returning here
+    # is also what removes the unrelated source cards — retrieval never runs, so
+    # there is nothing for the citation fallback to pick up.
+    #
+    # Ahead of the structured branch on purpose. Which route the classifier chose
+    # does not change what "list of annual reports" is asking for, and the
+    # catalogue route cannot answer it anyway: `list_records` is scoped to
+    # website nodes and the editions are attachments.
+    if pq.series is not None:
+        with span("rag.series_lookup") as s:
+            result = _series_result(pq)
+            s.set("kind", pq.series.kind)
+            s.set("editions", len(pq.series.documents))
+        return result, None
 
     caps = _capabilities(pq)
     # A query that needs both catalog facts and document content: keep the

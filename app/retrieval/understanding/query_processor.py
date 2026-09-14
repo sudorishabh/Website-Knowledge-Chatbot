@@ -12,7 +12,11 @@ from app.config import get_settings
 from app.core.clients.llm import get_llm, get_structured_llm
 from app.core.dates import IsoDate, current_date_directive, exclusive_end
 from app.retrieval.search.temporal_gate import TemporalIntent, detect_mode
-from app.retrieval.understanding.annual_report_editions import EditionResolution
+from app.retrieval.understanding.annual_report_editions import (
+    EditionResolution,
+    SeriesRequest,
+    series_request,
+)
 from app.retrieval.understanding import clarify
 from app.retrieval.understanding.catalog_prompt import (
     catalog_coverage_directive,
@@ -213,6 +217,11 @@ class ProcessedQuery:
     # edition, and the catalogued documents for it. Retrieval still applies it as
     # a filter exactly as before; see `app.pipeline.query_pipeline._document_result`.
     edition: EditionResolution | None = None
+    # A request for the annual-report *series* rather than one edition — list
+    # it, or count it. Kept apart from `edition` on purpose: a series request
+    # must never become a Qdrant filter, and the two answer different
+    # questions. None for every question that is not about the series.
+    series: SeriesRequest | None = None
 
     @property
     def is_ambiguous(self) -> bool:
@@ -678,6 +687,21 @@ def _edition(question: str) -> "EditionResolution | None":
     return resolution
 
 
+def _series_request(question: str) -> "SeriesRequest | None":
+    """Whether this question asks for the annual-report series itself.
+
+    Wrapped for the same reason `_edition` is: a resolver problem must cost the
+    deterministic answer, never the query. A None here simply leaves the
+    question on the path it takes today.
+    """
+    try:
+        return series_request(question)
+    except Exception:
+        logger.warning("Annual-report series detection failed; the question "
+                       "proceeds as usual.", exc_info=True)
+        return None
+
+
 def _edition_conditions(resolution: "EditionResolution | None") -> list[Any]:
     """Qdrant conditions scoping retrieval to a resolved edition, or nothing.
 
@@ -739,6 +763,10 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
     # Resolved once and used twice: as the pre-search filter it has always been,
     # and as the answer to a request that asks for the document itself.
     edition = _edition(effective)
+    # Independent of the edition above, and deliberately so: a series question
+    # resolves to no edition (see `resolve`), and the two must not be able to
+    # collapse into one another.
+    series = _series_request(effective)
     # A chitchat draw on a real question is unrecoverable downstream, so it is
     # checked against the corpus here rather than trusted. See `_corrected_intent`.
     analysis.intent = _corrected_intent(effective, analysis.intent)
@@ -781,4 +809,5 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
             date_to=analysis.date_to,
         ),
         edition=edition,
+        series=series,
     )
