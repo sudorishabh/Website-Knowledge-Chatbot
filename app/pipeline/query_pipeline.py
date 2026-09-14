@@ -23,6 +23,7 @@ from app.observability.metrics import collect_into, component_totals
 from app.observability.tracing import record_query_metrics, span
 from app.retrieval.context.citations import build_citations
 from app.retrieval.understanding.clarify import Clarification
+from app.retrieval.understanding.document_request import is_document_request
 from app.retrieval.understanding.query_processor import ProcessedQuery, process
 from app.retrieval.retriever import retrieve
 
@@ -185,6 +186,85 @@ def _subquery_plan(pq: ProcessedQuery, requirements_future: Any) -> list[Any]:
             ]
         )
     return plan
+
+
+# How the answer opens, by how the edition was chosen. `default_latest` means
+# the user said "the annual report" and the resolver took the newest, so the
+# sentence says which one it picked rather than implying they asked for it.
+_EDITION_LEAD: dict[str, str] = {
+    "latest": "The latest annual report is",
+    "default_latest": "The most recent annual report is",
+    "earliest": "The earliest annual report is",
+    "named": "The annual report you asked for is",
+}
+
+
+def _document_name(block: ContextBlock, edition: str) -> str:
+    """What to call this document in the answer.
+
+    The catalogued title when the chunk carries one — it is the anchor text the
+    page uses for each edition ("Annual Report 2024-2025"), which is the only
+    place an edition's identity exists as prose. Falls back to the resolved
+    edition rather than inventing a title.
+    """
+    title = str(block.payload.get("title") or "").strip()
+    return title or f"the {edition} annual report"
+
+
+def _document_result(
+    pq: ProcessedQuery, blocks: list[ContextBlock]
+) -> dict[str, Any]:
+    """Answer a request for the document itself, from the document's identity.
+
+    The case this exists for: "give me the latest annual report" resolved
+    correctly to the 2024-25 edition and retrieved two chunks from deep inside
+    it, and generation then refused — rightly, because pages 148-150 do not say
+    which edition is the latest one. No report states that about itself, so no
+    amount of retrieval was ever going to ground it. The answer is the
+    document's *identity*, which `pq.edition` has held since query understanding.
+
+    Deterministic, and deliberately so: no model call, no new lookup, no second
+    source of truth about which document this is. The prose is assembled from
+    the resolved edition and the catalogued titles already on the retrieved
+    chunks, and the source cards come from `build_citations` — the same function
+    that describes every other answer's sources, so a card here is identical to
+    the card the same document gets anywhere else.
+
+    Citations cover every retrieved block rather than only the cited ones: they
+    are all chunks of the document being named, so each is a true source for the
+    claim, and this is also the set the user already sees today.
+    """
+    resolution = pq.edition
+    lead = _EDITION_LEAD.get(resolution.kind, "The annual report you asked for is")
+
+    named: list[str] = []
+    seen: set[str] = set()
+    for block in blocks:
+        key = str(block.payload.get("document_id") or block.payload.get("title") or "")
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        named.append(f"{_document_name(block, resolution.edition)} [{block.n}]")
+
+    citations = build_citations(blocks)
+    retrieval_log.note(
+        document_lookup=True,
+        edition=resolution.edition,
+        edition_kind=resolution.kind,
+        documents=len(seen) or len(blocks),
+    )
+    return {
+        "answer": f"{lead} {', '.join(named)}.",
+        "citations": [c.model_dump() for c in citations],
+        # Its own label rather than the route the classifier took: the metric
+        # worth having is how often a document request is answered as one.
+        "intent": "document_lookup",
+        "answer_format": pq.answer_format,
+        "used_chunks": len(blocks),
+        "conflict": any(b.conflict for b in blocks),
+        "cached": False,
+    }
 
 
 def _capabilities(pq: ProcessedQuery) -> set[str]:
@@ -450,6 +530,20 @@ def _prepare(
             if listing is not None:
                 return listing, None
         return _empty(pq.intent, REFUSAL, answer_format=pq.answer_format), None
+
+    # A request for the document itself, and the document is already resolved.
+    # Terminal here rather than in the structured branch above, because that is
+    # where the identity becomes answerable: retrieval has just supplied the
+    # catalogued title and the blocks the source cards are built from, so the
+    # answer and its citations describe the same document by construction and no
+    # second lookup is needed. Placed after the empty-retrieval paths, so an
+    # edition that resolved but matched no chunks keeps its existing behaviour.
+    if pq.edition is not None and is_document_request(question):
+        with span("rag.document_lookup") as s:
+            result = _document_result(pq, blocks)
+            s.set("edition", pq.edition.edition)
+            s.set("kind", pq.edition.kind)
+        return result, None
 
     with span("rag.answer_plan") as s:
         plan = build_plan(requirements, blocks)

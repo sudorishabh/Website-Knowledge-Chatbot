@@ -12,6 +12,7 @@ from app.config import get_settings
 from app.core.clients.llm import get_llm, get_structured_llm
 from app.core.dates import IsoDate, current_date_directive, exclusive_end
 from app.retrieval.search.temporal_gate import TemporalIntent, detect_mode
+from app.retrieval.understanding.annual_report_editions import EditionResolution
 from app.retrieval.understanding import clarify
 from app.retrieval.understanding.catalog_prompt import (
     catalog_coverage_directive,
@@ -206,6 +207,12 @@ class ProcessedQuery:
     # can show it; only *acted on* when `temporal_intent_enabled` is set, which
     # the pipeline decides — see `app.pipeline.query_pipeline._prepare`.
     temporal_intent: "TemporalIntent" = field(default_factory=lambda: TemporalIntent())
+    # The annual-report edition this question resolved to, or None. Carried
+    # rather than discarded because for a request that asks *for* the document
+    # ("give me the latest annual report") this object IS the answer — the
+    # edition, and the catalogued documents for it. Retrieval still applies it as
+    # a filter exactly as before; see `app.pipeline.query_pipeline._document_result`.
+    edition: EditionResolution | None = None
 
     @property
     def is_ambiguous(self) -> bool:
@@ -644,30 +651,52 @@ def _corrected_intent(question: str, intent: Intent) -> Intent:
     return "qa"
 
 
-def _edition_conditions(question: str) -> list[Any]:
-    """Annual-report edition conditions for this question, or nothing.
+def _edition(question: str) -> "EditionResolution | None":
+    """The annual-report edition this question resolves to, or None.
 
-    "Latest annual report" cannot be answered by ranking: the newest edition is
-    absent from the unfiltered candidate set, so it is resolved here and applied
-    as a filter before retrieval. Returns [] for every question that does not
-    name an edition, which leaves retrieval byte-identical to before -
-    including for annual-report *content* questions that name no edition.
+    Split out from :func:`_edition_conditions` so the *resolution* survives the
+    call. It used to be consumed for its filter and dropped on the same line,
+    which is why "give me latest annual report" could resolve correctly to the
+    2024-25 edition and still be answered by asking a model to find that fact in
+    two pages of report prose. The identity is the answer to a question like
+    that; it has to reach the pipeline for the pipeline to be able to give it.
 
     Failures are contained: the resolver logs and returns None if the series
-    cannot be read, and this adds no condition.
+    cannot be read, and retrieval proceeds unfiltered exactly as before.
     """
     try:
-        from app.retrieval.understanding.annual_report_editions import conditions_for, resolve
+        from app.retrieval.understanding.annual_report_editions import resolve
 
         resolution = resolve(question)
     except Exception:
         logger.warning("Annual-report edition resolution failed; retrieval "
                        "proceeds unfiltered.", exc_info=True)
-        return []
+        return None
+    if resolution is None:
+        return None
+    logger.info("annual-report edition: %s", resolution.describe())
+    return resolution
+
+
+def _edition_conditions(resolution: "EditionResolution | None") -> list[Any]:
+    """Qdrant conditions scoping retrieval to a resolved edition, or nothing.
+
+    "Latest annual report" cannot be answered by ranking: the newest edition is
+    absent from the unfiltered candidate set, so it is resolved before search and
+    applied as a filter. Returns [] for every question that resolved to no
+    edition, which leaves retrieval byte-identical to before — including for
+    annual-report *content* questions that name no edition.
+    """
     if resolution is None:
         return []
-    logger.info("annual-report edition: %s", resolution.describe())
-    return conditions_for(resolution)
+    try:
+        from app.retrieval.understanding.annual_report_editions import conditions_for
+
+        return conditions_for(resolution)
+    except Exception:  # pragma: no cover - defence in depth
+        logger.warning("Annual-report edition conditions failed; retrieval "
+                       "proceeds unfiltered.", exc_info=True)
+        return []
 
 
 def process(question: str, history: Sequence[dict[str, str]] | None = None) -> ProcessedQuery:
@@ -707,6 +736,9 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
 
     understanding = _merge_understanding(samples, threshold=threshold)
     analysis = _to_legacy_analysis(effective, understanding)
+    # Resolved once and used twice: as the pre-search filter it has always been,
+    # and as the answer to a request that asks for the document itself.
+    edition = _edition(effective)
     # A chitchat draw on a real question is unrecoverable downstream, so it is
     # checked against the corpus here rather than trusted. See `_corrected_intent`.
     analysis.intent = _corrected_intent(effective, analysis.intent)
@@ -732,7 +764,7 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
         answer_format=analysis.answer_format,
         source_type=analysis.source_type,
         language=analysis.language,
-        filters=_facet_filters(analysis) + _edition_conditions(effective),
+        filters=_facet_filters(analysis) + _edition_conditions(edition),
         analysis=analysis,
         understanding=understanding,
         clarification=clarification,
@@ -748,4 +780,5 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
             date_from=analysis.date_from,
             date_to=analysis.date_to,
         ),
+        edition=edition,
     )
