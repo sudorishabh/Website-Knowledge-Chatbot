@@ -1,0 +1,250 @@
+# Query Intelligence Layer — Phase 0: discovery and baseline
+
+Branch: `feature/query-intelligence-layer` (cut from `main` @ `0d61baf`, clean tree).
+
+This document records what the read path already does, what it does **not** do,
+and the smallest integration points for the new layer. It is written before any
+code changes so the later diffs can be read against it.
+
+---
+
+## 1. The headline finding
+
+**Most of the target architecture already exists.** This codebase is not a naive
+RAG pipeline: it already has multi-label query understanding, three-way source
+routing, band-based reranking with authority and recency, a temporal-scope
+classifier, document conflict flagging, and a full claim-level
+supersession/validity model in the knowledge layer.
+
+The work is therefore **not** to build a Query Intelligence Layer from scratch.
+It is to:
+
+1. **connect signals that are computed and then discarded** (the
+   `clarification_needed` intent, five of six temporal modes, claim-level
+   supersession), and
+2. **add the three genuinely missing capabilities** (clarification state across
+   turns, sub-query execution, temporal-fit ranking).
+
+Building a parallel layer would duplicate — and eventually contradict — machinery
+that is already measured and tested. Every phase below extends an existing seam.
+
+---
+
+## 2. The read path as it stands
+
+```
+POST /chat  (app/api/chat.py)            SSE: token | correction | sources | done
+  └─ stream_answer                       (app/pipeline/query_pipeline.py)
+       └─ _prepare
+            ├─ process()                 (retrieval/understanding/query_processor.py)
+            │    • N-sample voted LLM call -> QueryUnderstanding (multi-label)
+            │    • merged -> QueryAnalysis (single-label, legacy contract)
+            │    • _corrected_intent: lexical rescue of chitchat misfires
+            │    • filters = facet filters + annual-report edition conditions
+            ├─ chitchat / structured / scoped_summary short-circuits
+            ├─ embed_query -> semantic_cache.lookup
+            ├─ parallel: extract_requirements | _db_section | retrieve
+            │    └─ retrieve()           (retrieval/retriever.py)
+            │         ├─ graph leg       (retrieval/graph/policy.attempt)
+            │         ├─ base pull       (plain or website-biased dual)
+            │         ├─ recall legs     keyword | content-term | title | multi-query
+            │         ├─ rrf fusion      (search/fusion.py)
+            │         ├─ rerank          (search/reranker.py)
+            │         ├─ corrective loop (one shot, flagged off)
+            │         ├─ build_context   (context/builder.py: dedup, parent
+            │         │                    expansion, conflict flagging, budget)
+            │         ├─ graph merge
+            │         └─ _gate_temporal  (UPCOMING only)
+            └─ build_plan -> plan_directive
+       └─ generate_stream -> faithfulness verify -> date-claim guard -> citations
+```
+
+### Conversation state
+
+There is **none on the server**. `QueryRequest.history` is a client-supplied
+`list[ChatTurn]`, passed down to `process()` (for pronoun resolution) and to
+generation. There is no session store, no turn id, no server-side memory.
+
+This is the single most important constraint on Phase 1: clarification state has
+to be carried somewhere, and the existing model offers only the history the
+client echoes back.
+
+---
+
+## 3. Goal-by-goal: what exists, what is missing
+
+| # | Goal | Status | Where |
+| --- | --- | --- | --- |
+| 1 | Answer clear questions directly | **Done** | `process()` never clarifies on the qa path |
+| 2 | Targeted clarification | **Detected, then discarded** | `clarification_needed` is a real intent label, but `_legacy_intent_and_format` collapses it onto `chitchat`, which answers with generic small talk |
+| 3 | Data-driven options | **Done for one case only** | `structured/filters.AmbiguousFilter` + `resolve.plausible()` + `tools._ambiguous_result` produce a numbered, catalog-derived clarification for ambiguous author/theme/tag/bundle names. Nothing equivalent for vague *content* questions |
+| 4 | Multi-turn clarification state | **Missing** | no session model (§2) |
+| 5 | Decomposition | **Partial** | `generation/answer_plan.extract_requirements` already splits a question into separately-answerable requirements, and `build_plan` checks each against retrieved text. But the requirements never become *sub-queries* — one retrieval serves them all |
+| 6 | Multi-query retrieval | **Present but wrong shape, and off** | `strategies.paraphrases` generates literal paraphrases (the spec explicitly rules these out); gated by `multi_query_enabled=False`, ≥5 words, no filters, content intent |
+| 7 | Source routing | **Done at query level** | structured→MySQL, graph→Neo4j, search→Qdrant, chosen in `_prepare` + `retriever.retrieve`. Missing only *per-sub-query* routing |
+| 8 | Temporal intent | **Classified, mostly unused** | `search/temporal_gate.detect_mode` returns PAST / UPCOMING / CURRENT / POINT_IN_TIME / DATE_RANGE / NONE. Only `UPCOMING` changes anything; its own docstring says so |
+| 9 | Relevance + temporal + authority + validity ranking | **Partial** | `reranker.py` bands on relevance → authority → substance → recency. Authority is *derived* from `source_type`/`bundle`. Temporal **fit** (does this document's validity window cover the asked-for time?) is not a signal |
+| 10 | Never blindly prefer newest | **Done — preserve** | The band design is explicitly built for this; the module docstring documents the measurement behind it. Must not be regressed |
+| 11 | Competing versions / conflicts | **Two half-systems** | `context/builder._flag_conflicts` flags document-level disagreement; `knowledge/claims/conflicts.py` has a full mechanical ladder (functional predicates, overlap, basis rank, `supersedes`/`contradicts` links, `disputed`). The claim ladder never reaches document ranking |
+| 12 | Avoid stale info on current-state questions | **Partial** | `volatility.is_volatile` widens the relevance band so recency can break more ties. `claims.is_current_state_eligible` exists graph-side |
+| 13 | Preserve history | **Done — preserve** | `conflicts.py`: "A conflict changes *status*, never existence." |
+| 14 | Loop prevention | **Missing** | nothing tracks how many times we have asked |
+| 15 | Preserve ingestion | **Constraint** | see §4 |
+
+---
+
+## 4. Files deliberately NOT touched
+
+Per the preservation rule, the following are treated as intentional and are
+out of scope for every phase. The new layer reads their outputs; it never
+changes them.
+
+| Area | Paths | Why it stays |
+| --- | --- | --- |
+| Ingestion pipeline | `app/ingestion/**` (all 40 modules) | source-specific parsing, Drupal field mappings, chunking config, payload construction, date resolution rules |
+| Knowledge build | `app/knowledge/**` | claim extraction, gazetteer, graph projection, author/PI promotion, the conflict ladder itself |
+| Catalog schema | `app/catalog/schema.py`, `app/catalog/entities.py` | fixed MySQL table/column mappings |
+| Corpus vocabulary | `app/core/corpus.py`, `app/core/editions.py` | bundle names, scheduled-bundle set, edition conventions |
+| Qdrant payload keys | any writer of `effective_start_date`, `bundle`, `source_type`, `parent_chunk_id` | the read path consumes these names; it must not rename them |
+
+**No new ingest-time metadata is required by any phase.** Every temporal and
+authority signal the plan uses (`effective_start_date`, `effective_end_date`,
+`bundle`, `source_type`, and claim `valid_from`/`valid_until`/`status`) is
+already written today. This is checked per phase.
+
+---
+
+## 5. Integration points (smallest safe seams)
+
+| Phase | Seam | Nature of the change |
+| --- | --- | --- |
+| 1 | `query_processor._legacy_intent_and_format` + `_prepare` | stop collapsing `clarification_needed` onto chitchat; return a clarification result instead of an answer |
+| 1 | `ProcessedQuery` | additive fields (`clarification`, `temporal_intent`); dataclass with defaults, so every existing construction site keeps working |
+| 1 | conversation state | **derived from `history`**, not a new store — see §6 |
+| 2 | `structured/resolve.plausible`, `catalog/queries`, `understanding/catalog_prompt` | reuse the existing catalog-derived option machinery for content questions |
+| 3 | `answer_plan.extract_requirements` | already computed; promote requirements to routed sub-queries instead of re-decomposing |
+| 3 | `retriever.retrieve` multi-query leg | replace paraphrase generation with retrieval *perspectives*; keep RRF and the existing gates |
+| 4 | `retriever._gate_temporal`, `reranker._sort_key` | widen the gate beyond UPCOMING; add a temporal-fit band |
+| 5 | `context/builder._flag_conflicts`, `retrieval/graph/templates` | surface claim status/supersession into block payloads |
+| 6 | `reranker.rerank` | one band order that carries all signals |
+| 7 | `tests/retrieval/`, `tests/pipeline/` | regression suite |
+
+### Layering
+
+The new modules live inside `app/retrieval/` (layer 5) and are integrated from
+`app/pipeline/` (layer 7). **No new top-level package**, so `LAYERS` in
+`tests/test_architecture.py` needs no entry and no new deferred-upward exception
+is created. This is deliberate: adding a top-level package would require an
+architecture-test change on day one.
+
+---
+
+## 6. Conversation state without a session store
+
+The clarification loop needs to remember: the original query, the question
+asked, the user's answer, and how many rounds have been spent. The server has no
+session. Three options were considered:
+
+1. **New server-side session store** (Redis/MySQL) — rejected: it introduces
+   state, expiry and identity concerns into a deployment that is deliberately
+   stateless, for one feature.
+2. **New request/response fields** — a `clarification` object on `QueryRequest`
+   echoed by the client. Clean, but requires a client change before the feature
+   works at all.
+3. **Derive state from `history`** — the assistant's clarification turn is
+   *already* in the history the client echoes back. Marking it machine-readably
+   makes the history itself the state carrier.
+
+**Chosen: (3), with (2) as an additive optional enhancement.** A clarification
+turn is emitted with a marker; on the next turn, if the previous assistant turn
+was a clarification, the current user turn is read as the answer to it, the two
+are merged into one normalized query, and **clarification is not offered again
+for that thread** — which is also the loop guard. Zero client changes required;
+richer clients may still consume the structured `clarification` SSE event.
+
+---
+
+## 7. Baseline
+
+- Branch cut from a clean tree; no uncommitted work was at risk.
+- Test suite: recorded in the Phase 0 commit message.
+- Flag convention observed: every substantial read-path feature in this repo
+  ships behind a setting that defaults **off** (`multi_query_enabled`,
+  `keyword_leg_enabled`, `corrective_loop_enabled`, `graph_retrieval_enabled`,
+  `entity_resolution_enabled`). The new layer follows the same convention.
+
+---
+
+# Re-scoped plan (supersedes §5's phase table)
+
+Phase 0 established that the seven-phase plan was written against a system
+simpler than this one. Three of its phases are substantially already built, and
+one of them cannot be built further without either changing ingestion or
+guessing. What follows replaces it.
+
+## 8. Corrected status — the things that surprised us
+
+Four capabilities the original plan lists as work are already in production:
+
+| Capability | Where | Consequence for the plan |
+| --- | --- | --- |
+| **Superseded versions never retrieved** | `search/hybrid_search.build_filter` makes `is_current == True` a *mandatory* condition on every search | Goal 12 is done at the document-version level. Nothing to add |
+| **Point-in-time / date-range filtering** | `understanding/filters.date_conditions` — precision-aware interval overlap: closed periods end at `effective_end_date`, open-ended bundles run to the present, points end at their own stated precision | Goals 8's `point_in_time` and `date_range` already work whenever understanding extracts the dates |
+| **Historical preservation** | `knowledge/claims/conflicts.py` ("a conflict changes *status*, never existence"); `graph/templates._overlap` imposes no minimum date | Goal 13 done. A 1996-1999 relationship is as retrievable as last year's |
+| **Version visible to the model** | `doc_version` reaches the prompt via `generation/prompts.py:590` | Goal 9's version signal is already surfaced |
+
+And the payload already carries every field the remaining work needs —
+`effective_start_date`, `effective_end_date`, `start_precision`, `end_precision`,
+`is_current`, `doc_version`, `bundle`, `source_type`. **No ingestion change is
+required by any phase below.**
+
+## 9. The real gaps
+
+| Gap | Goals | Nature |
+| --- | --- | --- |
+| **A. Clarification is computed, then thrown away** | 2, 3, 4, 14 | `clarification_needed` is a first-class intent label that `_legacy_intent_and_format` collapses onto `chitchat`, so an ambiguous question gets small talk. No state carrier, no loop guard. Data-driven options machinery already exists but serves only ambiguous entity *names* | 
+| **B. Temporal intent is classified, then thrown away** | 8, 9, 10, 12 | `temporal_gate.detect_mode` returns six modes; `retriever._gate_temporal` acts on one. `current`/`latest`/`historical` never influence ranking |
+| **C. Sub-queries are never separately retrieved or routed** | 5, 7 | `answer_plan.extract_requirements` already splits the question into separately-answerable parts, and they already run in parallel with retrieval — but one retrieval serves all of them, and none is routed by part |
+| **D. Multi-query generates paraphrases, not perspectives** | 6 | `strategies.paraphrases` produces the literal rewordings the spec rules out; off by default |
+| **E. No evaluation harness for any of this** | 7 (phase) | The 86-question benchmark is referenced throughout the code's docstrings but there is no regression suite for query-intelligence behaviour |
+
+## 10. Phases
+
+Five phases, ordered by value and by how self-contained they are. Each ships
+behind its own setting defaulting **off**, per §7.
+
+| # | Phase | Gap | Touches |
+| --- | --- | --- | --- |
+| **A** | **Clarification + conversation state** | A | `understanding/clarify.py` (new), `query_processor` (stop discarding the label; additive `ProcessedQuery` fields), `pipeline/query_pipeline` (emit a clarification result), `schemas/query` (additive) |
+| **B** | **Temporal intent wiring** | B | `understanding/query_processor` (promote `temporal_intent` to the normalized query), `retriever._gate_temporal` (widen past UPCOMING), `search/reranker` (a temporal-fit band, cut *inside* the relevance band) |
+| **C** | **Sub-query planning + per-part routing** | C | `retrieval/planning/` (new subpackage), reusing `extract_requirements`; routes parts across the three existing legs and de-duplicates |
+| **D** | **Retrieval perspectives** | D | `search/strategies.paraphrases` → perspective generation; RRF, gating and every other leg unchanged |
+| **E** | **Evaluation harness** | E | `tests/retrieval/`, `tests/pipeline/` — the fourteen scenarios the brief names, including malformed LLM output and store failures |
+
+### What is deliberately NOT a phase
+
+The original **Phase 5 (conflict / version / supersession)** is dropped as a
+code phase. Document-version supersession is already enforced as a hard filter
+(§8), and claim-level supersession already has a complete mechanical ladder in
+`knowledge/claims/conflicts.py`.
+
+What remains is *document-level competing-fact detection*, and
+`context/builder._conflicting` documents why it stops where it does: two
+attachments under one Drupal node are indistinguishable from two editions of one
+publication, because they share a node, a title and an `effective_start_date`.
+The largest such nodes carry 69 financial statements, 68 announcements and 43
+brochures. Treating that relationship as disagreement previously flagged about a
+quarter of all answers, mostly wrongly.
+
+Separating the two shapes needs **a content signal and a threshold measured
+against a labelled set** — or a `supersedes` relation written at ingest time.
+Both are out of bounds: the first is measurement, not code; the second changes
+ingestion. **This is reported as a stop condition rather than implemented.**
+
+### Ranking invariant to protect
+
+`reranker.py` ranks relevance band → authority band → substance band → recency.
+That ordering is the thing that already satisfies goal 10, and it was arrived at
+by measurement documented in the module. Phase B adds temporal fit *inside* the
+relevance band, never above it — so a newer document still cannot outrank a more
+relevant older one. Phase E pins this with a test.
