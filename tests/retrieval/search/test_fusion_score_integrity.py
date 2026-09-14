@@ -32,6 +32,7 @@ from types import SimpleNamespace
 import pytest
 
 from app.retrieval import retriever
+from app.retrieval.search import strategies
 from app.retrieval.context.builder import build_context
 from app.retrieval.search.fusion import rrf
 from app.retrieval.search.hybrid_search import Candidate, _to_candidate
@@ -155,7 +156,8 @@ def _settings(**overrides):
     base = dict(
         retrieval_top_k=6, retrieval_candidate_k=40, website_candidate_k=20,
         prefer_website_enabled=True, multi_query_enabled=False,
-        multi_query_paraphrases=2, keyword_leg_enabled=False,
+        multi_query_paraphrases=2, multi_query_distinct_threshold=0.92,
+        keyword_leg_enabled=False,
         corrective_loop_enabled=False, corrective_min_score=CORRECTIVE_MIN,
         rerank_table_boost=0.15, graph_routing_enabled=False,
         # reranker
@@ -184,8 +186,11 @@ def _wire(monkeypatch, settings, *, website, pdfs, extra_leg):
     monkeypatch.setattr(retriever, "search", lambda *a, **k: [website] + pdfs)
     monkeypatch.setattr(retriever, "_observe_in_shadow", lambda *a, **k: None)
     monkeypatch.setattr(retriever, "keyword_search", lambda *a, **k: extra_leg)
-    monkeypatch.setattr(retriever, "paraphrases", lambda q, n: ["p1"])
-    monkeypatch.setattr(retriever, "paraphrase_search", lambda q, **k: extra_leg)
+    monkeypatch.setattr(
+        retriever, "perspectives",
+        lambda q, n, **kw: [strategies.Perspective("p1")],
+    )
+    monkeypatch.setattr(retriever, "perspective_search", lambda q, **k: extra_leg)
 
 
 QUERY = "what are the impacts of biofuel adoption on rural incomes"

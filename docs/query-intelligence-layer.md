@@ -486,3 +486,90 @@ never joined, the two still overlap exactly as before, and
 failed extraction, parts that de-duplicate below two, and any part identical to
 the base query. The single-query path is preserved by construction, not by a
 branch.
+
+---
+
+# Phase D — retrieval perspectives (implemented)
+
+Setting: `multi_query_enabled` (unchanged, default **false**),
+`multi_query_distinct_threshold` (new, 0.92).
+
+## What changed
+
+| File | Change |
+| --- | --- |
+| `app/retrieval/search/strategies.py` | `paraphrases` → `perspectives`; `Perspective`; `_is_rewording`; `_distinct`; `paraphrase_search` → `perspective_search` |
+| `app/retrieval/retriever.py` | the multi-query block passes the query vector in and the carried vectors out |
+| `app/config.py` | `multi_query_distinct_threshold` |
+
+**No extra LLM call.** Phase D reuses the multi-query call that was already
+being made and asks it for something else.
+
+## Perspectives vs paraphrases
+
+A paraphrase re-asks one question in other words, so its embedding lands in the
+same neighbourhood and the extra pull returns what the base pull already had.
+A perspective asks about a *different aspect of the same subject* — the
+incidents, the delays, the complaints — because those get written up in
+different documents. That is what raises recall.
+
+```
+Original:  What issues affected Project X?
+GOOD       Project X incidents · Project X delays and blockers
+           Project X quality problems · Project X unresolved risks
+BAD        What problems affected Project X?
+           What issues did Project X have?
+           Which problems were associated with Project X?
+```
+
+## Two guards, because one is not enough
+
+Measured against the brief's own bad examples:
+
+| Candidate | lexical | semantic |
+| --- | --- | --- |
+| "What issues did Project X have?" | **reject** (all content words already in the original) | — |
+| "What problems affected Project X?" | pass | **reject** (cosine ≥ threshold) |
+| "Which problems were associated with Project X?" | pass | **reject** (cosine ≥ threshold) |
+| "Project X delays and blockers" | pass | pass → its own leg |
+
+The lexical guard is free and catches pure rewordings. It cannot see a synonym
+swap — "problems" is a new word — which is why the semantic guard exists. The
+semantic guard also runs pairwise between accepted perspectives, so two angles
+landing in one neighbourhood become one leg.
+
+## The vector is carried, not recomputed
+
+Judging a perspective requires embedding it, and the pull would otherwise embed
+the same string again. `Perspective` carries the vector through to
+`perspective_search`, so an accepted perspective costs exactly one embedding —
+the same as before Phase D.
+
+## Fallback
+
+`perspectives()` returns `[]` on: a generation failure, a malformed structured
+response, or **every candidate being rejected as a duplicate**. All three are
+the same outcome, and it is not a degradation: `retriever.retrieve` fuses
+`[base] + rankings`, so the original query is always its own leg and falling
+back to it is exactly the retrieval this query would have had.
+
+One call, bounded by `n`, no retry and no recursion — pinned by
+`test_generation_runs_exactly_once`.
+
+## What was deliberately not changed
+
+The eligibility gates (`multi_query_enabled`, content capability, no pinned
+source, no filters, ≥ 5 words), RRF, every other leg, and the `multi_query_leg`
+trace label — that name is the stable contract in the trace and the metrics, and
+what changed is what the leg searches *for*.
+
+## Known limitations
+
+* **`multi_query_paraphrases` keeps its name.** It now counts perspectives.
+  Renaming it would break deployed `.env` files for a cosmetic gain.
+* **`multi_query_distinct_threshold = 0.92` is not calibrated against this
+  corpus.** It borrows the value `dedup_cosine_threshold` uses to draw the
+  equivalent line between two chunks. It is the right knob to tune first if
+  perspectives are being over- or under-rejected.
+* **Perspective quality is still the model's.** The guards can reject a
+  duplicate; they cannot make a bland generation insightful.

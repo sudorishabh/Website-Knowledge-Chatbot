@@ -29,8 +29,8 @@ from app.retrieval.search.strategies import (
     extract_content_terms,
     extract_key_terms,
     keyword_search,
-    paraphrase_search,
-    paraphrases,
+    perspective_search,
+    perspectives,
     subquery_search,
 )
 from app.retrieval.search.title_leg import title_search
@@ -374,7 +374,7 @@ def retrieve(
     dual = bool(settings.prefer_website_enabled) and not source_type and answer_format != "table"
     # Multi-query only where recall expansion helps: an open-ended content
     # search (not a pure structured lookup), no explicit scope already narrowing
-    # the pull, and enough words that paraphrases can actually diverge (short
+    # the pull, and enough words that perspectives can actually diverge (short
     # factoids are already unambiguous). The capabilities come from query
     # understanding; an empty set (the degraded passthrough) is treated as QA.
     content_search = not capabilities or bool(capabilities & _MULTI_QUERY_INTENTS)
@@ -445,7 +445,7 @@ def retrieve(
 
             rankings: list[list[Any]] = []
             # Paraphrase generation and the keyword pull overlap the base
-            # pull, so the added wall-clock is only the paraphrase searches
+            # pull, so the added wall-clock is only the perspective searches
             # that follow the generation step.
             with ThreadPoolExecutor(max_workers=4) as pool:
                 base_future = pool.submit(
@@ -483,22 +483,33 @@ def retrieve(
                 )
                 if multi:
                     with span("rag.multi_query") as mq:
-                        queries = pool.submit(
-                            paraphrases, search_query, settings.multi_query_paraphrases
+                        # The query vector goes in so the generator can measure
+                        # each angle against the question it came from, and the
+                        # accepted ones come back carrying their own vectors —
+                        # so a perspective is embedded once, not once to judge it
+                        # and again to search it.
+                        angles = pool.submit(
+                            perspectives, search_query,
+                            settings.multi_query_paraphrases,
+                            query_vector=query_vector,
                         ).result()
                         rankings.extend(
                             r
                             for r in pool.map(
                                 retrieval_log.bound(
-                                    lambda q: paraphrase_search(
-                                        q, limit=settings.retrieval_candidate_k,
+                                    lambda p: perspective_search(
+                                        p.text, limit=settings.retrieval_candidate_k,
+                                        query_vector=p.vector,
                                     )
                                 ),
-                                queries,
+                                angles,
                             )
                             if r
                         )
-                        mq.set("paraphrases", len(queries))
+                        mq.set("perspectives", len(angles))
+                        retrieval_log.note(
+                            perspectives=[p.text for p in angles]
+                        )
                 if subquery_legs:
                     with span("rag.subquery_legs") as sq:
                         rankings.extend(

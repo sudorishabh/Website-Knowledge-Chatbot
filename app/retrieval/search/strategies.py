@@ -8,8 +8,12 @@ package for these.
 from __future__ import annotations
 
 import logging
+import math
 import re
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, Sequence
+
+from app.config import get_settings
 
 from app.core.clients.embeddings import embed_query
 from app.core.clients.llm import get_llm, get_structured_llm
@@ -53,41 +57,174 @@ def dual_search(
     return website + others
 
 
-_PARAPHRASE_SYSTEM = (
-    "Rewrite the search query as alternative phrasings that could retrieve "
-    "relevant passages a literal match might miss. Vary the wording and "
-    "specificity; keep the meaning; do not add facts or constraints.\n"
-    "Example: 'impact of biofuel adoption on rural incomes' -> "
-    "['how biofuels affect farmer earnings in rural areas', "
-    "'economic effects of biofuel programmes on village households']"
+_PERSPECTIVE_SYSTEM = (
+    "A search over a document corpus is about to run for the user's query. "
+    "Propose alternative queries that would surface passages the original "
+    "wording would miss.\n"
+    "Each one must look at a DIFFERENT ASPECT of the subject — a different kind "
+    "of thing that would be written about it — not the same question in "
+    "different words. Ask what *sorts of documents* would answer the query, and "
+    "name one of those per line.\n"
+    "Keep the subject exactly as the user named it. Add no facts, no entities, "
+    "no constraints and no dates the query did not contain.\n"
+    "Example. Query: 'What issues affected Project X?'\n"
+    "  GOOD - different aspects: 'Project X incidents', 'Project X delays and "
+    "blockers', 'Project X quality problems', 'Project X unresolved risks'\n"
+    "  BAD - the same question reworded: 'What problems affected Project X?', "
+    "'What issues did Project X have?', 'Which problems were associated with "
+    "Project X?'\n"
+    "Return only the alternative queries."
 )
 
+# Content words, for the lexical half of the distinctness guard.
+_PERSPECTIVE_WORD = re.compile(r"[a-z][a-z'-]{2,}")
 
-def paraphrases(search_query: str, n: int) -> list[str]:
-    """LLM paraphrases of the query for the multi-query pull; [] on failure."""
+
+@dataclass(frozen=True)
+class Perspective:
+    """One retrieval perspective, and the vector its pull will use.
+
+    The vector is carried rather than recomputed: the distinctness guard has to
+    embed a perspective to judge it, and the pull would otherwise embed the same
+    string again — a second network round trip per accepted leg for a value
+    already in hand. ``None`` when embedding was unavailable, in which case the
+    pull embeds as it always did.
+    """
+
+    text: str
+    vector: list[float] | None = None
+
+
+def _content_words(text: str) -> set[str]:
+    """The query's own vocabulary, minus the scaffolding of a question."""
+    return {
+        w for w in _PERSPECTIVE_WORD.findall((text or "").lower())
+        if w not in _STOPWORDS
+    }
+
+
+def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    return 0.0 if na == 0.0 or nb == 0.0 else dot / (na * nb)
+
+
+def _is_rewording(candidate: str, original: str) -> bool:
+    """Whether ``candidate`` only rearranges words the original already had.
+
+    The free half of the guard, needing no embedding: a query whose content
+    words are all present in the original contributes nothing new to the lexical
+    legs and very little to the dense one. "What issues did Project X have?" is
+    exactly this; "Project X delays and blockers" is not.
+    """
+    words = _content_words(candidate)
+    return not words or words <= _content_words(original)
+
+
+def _distinct(
+    search_query: str,
+    candidates: Sequence[Any],
+    *,
+    n: int,
+    query_vector: Sequence[float] | None,
+) -> list[Perspective]:
+    """The candidates worth their own retrieval leg, in order, capped at ``n``.
+
+    An embedding failure degrades to the lexical guard alone rather than
+    dropping the perspective: a missing vector is a missing *check*, not
+    evidence of duplication.
+    """
+    threshold = float(getattr(get_settings(), "multi_query_distinct_threshold", 0.92))
+    seen: set[str] = {(search_query or "").strip().lower()}
+    kept: list[Perspective] = []
+    for candidate in candidates:
+        text = str(candidate or "").strip()
+        key = text.lower()
+        if not text or key in seen or _is_rewording(text, search_query):
+            continue
+        vector: list[float] | None = None
+        if query_vector is not None:
+            try:
+                vector = embed_query(text)
+            except Exception:
+                logger.debug("Could not embed perspective %r.", text, exc_info=True)
+            if vector is not None:
+                # Too close to the question itself, or to an angle already
+                # taken: either way this leg would re-pull a neighbourhood the
+                # ranking already covers.
+                if _cosine(vector, query_vector) >= threshold:
+                    continue
+                if any(
+                    p.vector is not None and _cosine(vector, p.vector) >= threshold
+                    for p in kept
+                ):
+                    continue
+        seen.add(key)
+        kept.append(Perspective(text=text, vector=vector))
+        if len(kept) >= n:
+            break
+    return kept
+
+
+def perspectives(
+    search_query: str, n: int, *, query_vector: Sequence[float] | None = None
+) -> list[Perspective]:
+    """Up to ``n`` genuinely different angles on the query; ``[]`` on failure.
+
+    Replaces the paraphrase generator this used to be. Paraphrasing was the
+    wrong instrument: re-asking one question in three ways retrieves three
+    near-identical neighbourhoods, so the extra pulls cost latency and return
+    what the base pull already had. What raises recall is asking about a
+    *different aspect* of the same subject — the incidents, the delays, the
+    complaints — because those get written up in different documents.
+
+    This uses the multi-query LLM call that was already being made. It asks for
+    something else; it adds no call of its own.
+
+    Returning ``[]`` is a success, not a failure. The base query is always a leg
+    in its own right (``retriever.retrieve`` fuses ``[base] + rankings``), so
+    falling back to it is exactly the retrieval this query would have had — which
+    is the right outcome when every generated angle turned out to be the question
+    again in other words.
+    """
     from pydantic import BaseModel
 
-    class Paraphrases(BaseModel):
+    class _Generated(BaseModel):
         queries: list[str] = []
 
     try:
         # Diversity is the point here, so temperature ~0.7 (not the pinned
         # parsing temperature).
-        model = get_llm(temperature=0.7).with_structured_output(Paraphrases)
-        result: Paraphrases = model.invoke(
+        model = get_llm(temperature=0.7).with_structured_output(_Generated)
+        result: _Generated = model.invoke(
             [
-                ("system", _PARAPHRASE_SYSTEM),
-                ("human", f"Give {n} paraphrases of: {search_query}"),
+                ("system", _PERSPECTIVE_SYSTEM),
+                ("human", f"Give {n} alternative queries for: {search_query}"),
             ]
         )
-        cleaned = [q.strip() for q in result.queries if q and q.strip()]
-        return [q for q in cleaned if q.lower() != search_query.lower()][:n]
+        # Tolerant of a malformed structured response: a missing or non-list
+        # `queries` reads as "nothing generated", which is the base-query path.
+        raw = getattr(result, "queries", None)
+        raw = list(raw) if isinstance(raw, (list, tuple)) else []
     except Exception:
-        logger.warning("Paraphrase generation failed; base query only.", exc_info=True)
+        logger.warning("Perspective generation failed; base query only.", exc_info=True)
         return []
 
+    kept = _distinct(search_query, raw, n=n, query_vector=query_vector)
+    if raw and not kept:
+        logger.info("All %d generated perspective(s) restated the query; "
+                    "retrieving with the base query alone.", len(raw))
+    return kept
 
-def _leg_search(query: str, *, limit: int, trace_stage: str) -> list[Any]:
+
+def _leg_search(
+    query: str,
+    *,
+    limit: int,
+    trace_stage: str,
+    query_vector: Sequence[float] | None = None,
+) -> list[Any]:
     """One derived query's dense pull (cached embed); [] on failure.
 
     Shared by every leg that searches a *rewritten* query rather than the user's
@@ -96,17 +233,25 @@ def _leg_search(query: str, *, limit: int, trace_stage: str) -> list[Any]:
     must cost its own ranking and nothing else."""
     try:
         return search(
-            query, limit=limit, query_vector=embed_query(query),
-            trace_stage=trace_stage,
+            query, limit=limit, trace_stage=trace_stage,
+            query_vector=(list(query_vector) if query_vector is not None
+                          else embed_query(query)),
         )
     except Exception:
         logger.warning("%s failed for %r.", trace_stage, query, exc_info=True)
         return []
 
 
-def paraphrase_search(query: str, *, limit: int) -> list[Any]:
-    """One paraphrase's dense pull (cached embed); [] on failure."""
-    return _leg_search(query, limit=limit, trace_stage="multi_query_leg")
+def perspective_search(
+    query: str, *, limit: int, query_vector: Sequence[float] | None = None
+) -> list[Any]:
+    """One perspective's dense pull; [] on failure.
+
+    The trace stage stays ``multi_query_leg``: that name is the stable label in
+    the retrieval trace and the metrics, and what Phase D changed is what the
+    leg searches *for*, not that there is a leg."""
+    return _leg_search(query, limit=limit, trace_stage="multi_query_leg",
+                       query_vector=query_vector)
 
 
 def subquery_search(query: str, *, limit: int) -> list[Any]:

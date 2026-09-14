@@ -126,7 +126,18 @@ class Settings(BaseSettings):
     # (qa intent, no explicit filters, non-trivial length). Launches OFF; flip
     # after eval.
     multi_query_enabled: bool = False
+    # How many extra perspectives to ask for. Named `paraphrases` because that is
+    # what the generator produced before Phase D and the name is already in
+    # deployed .env files; it now counts genuinely different angles on the query
+    # (see `strategies.perspectives`), not rewordings of it.
     multi_query_paraphrases: int = 2
+    # Cosine above which a generated perspective is "the question again" — too
+    # close to the original, or to an angle already accepted, to earn its own
+    # retrieval leg. Rejecting everything is a valid outcome: the base query is
+    # always a leg, so the fallback is the retrieval this query would have had.
+    # Same value as `dedup_cosine_threshold` below, which draws the equivalent
+    # line between two chunks, for the same reason.
+    multi_query_distinct_threshold: float = 0.92
     # Self-consistency routing: number of concurrent query-analysis samples,
     # majority-voted per field. 1 = single pinned-temperature call (today's
     # behavior); >1 samples at exploratory temperature. Flip to 3 only after

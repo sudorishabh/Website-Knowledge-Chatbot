@@ -1,7 +1,7 @@
 """Unit tests for multi-query retrieval and reciprocal-rank fusion.
 
 Covers the RRF math (id-dedup, first-sighting payload, deterministic ties),
-the paraphrase cleaner, and the per-query gates in ``retrieve()`` (flag off,
+the generated-query cleaner, and the per-query gates in ``retrieve()`` (flag off,
 short query, explicit filters/source, non-content capability). LLM and Qdrant
 are stubbed; no network.
 """
@@ -67,21 +67,26 @@ class _FakeLLM:
         return SimpleNamespace(queries=self._queries)
 
 
-def test_paraphrases_cleaned_deduped_capped(monkeypatch):
+def test_generated_queries_cleaned_deduped_capped(monkeypatch):
+    """Unchanged contract, on the generator that replaced paraphrasing: strip,
+    drop the echoed base query, cap at n. See test_perspectives.py for the
+    distinctness rules Phase D added."""
     monkeypatch.setattr(
         strategies, "get_llm",
-        lambda **kw: _FakeLLM(["  Alt one ", "", "BASE QUERY", "alt two", "alt three"]),
+        lambda **kw: _FakeLLM(
+            ["  Alt one ", "", "BASE QUERY", "alt two", "alt three"]
+        ),
     )
-    out = strategies.paraphrases("base query", 2)
-    assert out == ["Alt one", "alt two"]  # stripped, base echo dropped, capped
+    out = strategies.perspectives("base query", 2)
+    assert [p.text for p in out] == ["Alt one", "alt two"]
 
 
-def test_paraphrases_fail_open(monkeypatch):
+def test_generation_fails_open(monkeypatch):
     def boom(**kw):
         raise RuntimeError("llm down")
 
     monkeypatch.setattr(strategies, "get_llm", boom)
-    assert strategies.paraphrases("base query", 2) == []
+    assert strategies.perspectives("base query", 2) == []
 
 
 # --------------------------------------------------------------------------- #
@@ -91,7 +96,8 @@ def test_paraphrases_fail_open(monkeypatch):
 def _settings(**overrides):
     base = dict(
         retrieval_top_k=6, retrieval_candidate_k=40, prefer_website_enabled=False,
-        multi_query_enabled=True, multi_query_paraphrases=2, rerank_table_boost=0.15,
+        multi_query_enabled=True, multi_query_paraphrases=2,
+        multi_query_distinct_threshold=0.92, rerank_table_boost=0.15,
         keyword_leg_enabled=False, corrective_loop_enabled=False,
         corrective_min_score=0.2,
     )
@@ -109,12 +115,15 @@ def _wire(monkeypatch, *, settings, base_candidates):
     )
 
 
-def test_multi_query_fuses_paraphrase_pulls(monkeypatch):
+def test_multi_query_fuses_perspective_pulls(monkeypatch):
     _wire(monkeypatch, settings=_settings(), base_candidates=[_cand("a"), _cand("b")])
-    monkeypatch.setattr(retriever, "paraphrases", lambda q, n: ["p1", "p2"])
+    monkeypatch.setattr(
+        retriever, "perspectives",
+        lambda q, n, **kw: [strategies.Perspective("p1"), strategies.Perspective("p2")],
+    )
     pulls: list = []
     monkeypatch.setattr(
-        retriever, "paraphrase_search",
+        retriever, "perspective_search",
         lambda q, **kw: pulls.append(q) or [_cand("b"), _cand("c")],
     )
 
@@ -125,29 +134,29 @@ def test_multi_query_fuses_paraphrase_pulls(monkeypatch):
     assert {b.id for b in out} == {"a", "b", "c"}
 
 
-def test_multi_query_no_paraphrases_uses_base(monkeypatch):
+def test_multi_query_no_perspectives_uses_base(monkeypatch):
     base = [_cand("a")]
     _wire(monkeypatch, settings=_settings(), base_candidates=base)
-    monkeypatch.setattr(retriever, "paraphrases", lambda q, n: [])
+    monkeypatch.setattr(retriever, "perspectives", lambda q, n, **kw: [])
 
     out = retriever.retrieve("what are the impacts of biofuel adoption", query_vector=[0.1])
     assert [b.id for b in out] == ["a"]
 
 
 def test_multi_query_gates(monkeypatch):
-    def no_paraphrase(q, n):
-        raise AssertionError("paraphrase generation must not run")
+    def no_generation(q, n, **kw):
+        raise AssertionError("perspective generation must not run")
 
     base = [_cand("a")]
 
     # Flag off.
     _wire(monkeypatch, settings=_settings(multi_query_enabled=False), base_candidates=base)
-    monkeypatch.setattr(retriever, "paraphrases", no_paraphrase)
+    monkeypatch.setattr(retriever, "perspectives", no_generation)
     retriever.retrieve("what are the impacts of biofuel adoption", query_vector=[0.1])
 
     # Short query, explicit source, filters, non-content capability.
     _wire(monkeypatch, settings=_settings(), base_candidates=base)
-    monkeypatch.setattr(retriever, "paraphrases", no_paraphrase)
+    monkeypatch.setattr(retriever, "perspectives", no_generation)
     retriever.retrieve("biofuel impacts", query_vector=[0.1])
     retriever.retrieve("what are the impacts of biofuel adoption",
                        query_vector=[0.1], source_type="pdf")
