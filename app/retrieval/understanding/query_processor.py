@@ -697,6 +697,31 @@ def _widen_content_question(question: str, analysis: QueryAnalysis) -> None:
         analysis.intent = "qa"
 
 
+def _drop_implicit_tags(question: str, analysis: QueryAnalysis) -> None:
+    """Keep an extracted tag only when the user asked for tagged content.
+
+    ``tags`` is applied as a hard AND condition on every search leg and as the
+    catalog's tag join, so a subject word the model placed there ("where IPCC
+    is mentioned" -> ``tags=[IPCC]``) shrinks the corpus to the documents an
+    editor happened to label — measured at 2, against 22 carrying IPCC in the
+    title. Dropping it costs nothing the question wanted: the word still
+    reaches the keyword and content-term legs from the question text, where
+    the reranker weighs it as content. A question that names the facet
+    ("tagged 'policy'") keeps the filter it asked for.
+
+    Decided here, once, because every consumer — the Qdrant facet filter, the
+    planner's tag join, the catalog fallback and the semantic-cache
+    fingerprint — reads this same ``analysis``.
+    """
+    if not analysis.tags or content_scope.names_tag_facet(question):
+        return
+    logger.info(
+        "Tags %r were not asked for as tags; matching them as content instead.",
+        analysis.tags,
+    )
+    analysis.tags = []
+
+
 def _edition(question: str) -> "EditionResolution | None":
     """The annual-report edition this question resolves to, or None.
 
@@ -810,6 +835,9 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
     # A type word is a filter only in a catalog-shaped question; one that
     # conditions on what the documents say spans every type. See `content_scope`.
     _widen_content_question(effective, analysis)
+    # A tag is a filter only when the user asked for tagged content; a subject
+    # word the model put there is matched as content. See `content_scope`.
+    _drop_implicit_tags(effective, analysis)
     # Read from the understanding, not from `analysis.intent`: by this line the
     # terminal label has already been collapsed onto chitchat and possibly
     # rescued back to qa, and neither still says the user was unclear.

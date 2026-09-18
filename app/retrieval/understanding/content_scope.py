@@ -1,4 +1,4 @@
-"""When a content-type word describes rather than filters.
+"""When a word in the question describes content rather than filtering on it.
 
 The problem
 -----------
@@ -34,6 +34,16 @@ Deliberately narrow. Topic words ("about X", "on X", "regarding X") are not
 predicates: the structured layer already accounts for them through
 `app.retrieval.structured.topic`, and a type word beside a topic ("news about
 COP28") is often meant literally. Only a verb about the text itself widens.
+
+The same distinction, for tags
+------------------------------
+The model also lifts subject words into the ``tags`` scope slot — "where IPCC
+is mentioned" became ``tags=[IPCC]`` — and a tag is applied as a hard condition
+on every search leg. Tags here are long-tail CMS metadata (3,530 distinct tags
+over 7,680 documents, about three each), so the filter kept the 2 documents an
+editor had labelled IPCC and excluded the 22 with IPCC in their title. A tag
+is a filter the user chose only when the question names the facet
+("tagged 'policy'"); otherwise the word is content, and it is matched as such.
 """
 from __future__ import annotations
 
@@ -67,3 +77,20 @@ def conditions_on_text(question: str) -> bool:
     since March" and "articles about IPCC" (a topic, not a predicate).
     """
     return bool(_CONTENT_PREDICATE.search(question or ""))
+
+
+# The tag facet, named. Only "tag" and its inflections: "keyword" and "label"
+# are everyday words for the subject itself ("where the keyword IPCC appears")
+# and would re-create the filter this exists to remove.
+_TAG_FACET = re.compile(r"\btag(?:s|ged|ging)?\b", re.IGNORECASE)
+
+
+def names_tag_facet(question: str) -> bool:
+    """Whether the question asks for tagged content by name.
+
+    True for "how many posts are tagged 'policy'" and "news with the tag
+    COP28"; false for "where IPCC is mentioned" and "articles about IPCC",
+    where a tag the model extracted is a subject word, not a facet the user
+    chose.
+    """
+    return bool(_TAG_FACET.search(question or ""))

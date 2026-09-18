@@ -1,10 +1,14 @@
-"""A content-type word is a filter only in a catalog-shaped question.
+"""A word in the question is a filter only when the user chose it as one.
 
-Covers `content_scope.conditions_on_text` and the processor guard built on it
-(`query_processor._widen_content_question`): a question that asks for
-documents by what they *say* spans every content type, whichever bundle the
-model set, and leaves the catalog route for the content one. A question about
-the catalog itself keeps its type word literal.
+Covers `content_scope` and the two processor guards built on it:
+
+* `_widen_content_question` — a question that asks for documents by what they
+  *say* spans every content type, whichever bundle the model set, and leaves
+  the catalog route for the content one. A question about the catalog itself
+  keeps its type word literal.
+* `_drop_implicit_tags` — a tag the model extracted is a hard filter only when
+  the question names the tag facet ("tagged 'policy'"); otherwise the word is
+  matched as content.
 """
 from __future__ import annotations
 
@@ -189,3 +193,79 @@ def test_process_leaves_a_catalog_question_alone(monkeypatch):
 
     assert pq.intent == "structured"
     assert pq.analysis is not None and pq.analysis.bundle == "article"
+
+
+# --------------------------------------------------------------------------- #
+# Tags: a filter only when the user asked for tagged content.
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize("question", [
+    "how many posts are tagged 'policy'?",
+    "list the news with the tag COP28",
+    "documents tagged IPCC",
+    "which tags does the Climate theme carry?",
+    "show everything tagging Solid waste",
+])
+def test_naming_the_tag_facet(question):
+    assert content_scope.names_tag_facet(question)
+
+
+@pytest.mark.parametrize("question", [
+    "list down all the articles where IPCC mentioned",
+    "list the articles about IPCC",
+    "where the keyword IPCC appears",   # a content word, not the facet
+    "news labelled climate",            # not this facet's name
+    "",
+])
+def test_a_subject_word_does_not_name_the_tag_facet(question):
+    assert not content_scope.names_tag_facet(question)
+
+
+def test_an_implicit_tag_is_dropped():
+    """The live trace: tags=[IPCC] from "where IPCC mentioned" kept 2 documents."""
+    a = _analysis(intent="qa", tags=["IPCC"])
+    qp._drop_implicit_tags("list down all the articles where IPCC mentioned", a)
+    assert a.tags == []
+
+
+@pytest.mark.parametrize("tags", [["policy"], ["CoP28", "Climate change"]])
+def test_an_explicit_tag_is_kept(tags):
+    a = _analysis(intent="structured", operation="count", tags=tags)
+    qp._drop_implicit_tags("how many posts are tagged with these?", a)
+    assert a.tags == tags
+
+
+def test_no_tags_is_a_no_op():
+    a = _analysis(intent="qa")
+    qp._drop_implicit_tags("where IPCC is mentioned", a)
+    assert a.tags == []
+
+
+def _tag_conditions(pq):
+    return [c for c in pq.filters if getattr(c, "key", None) == "tags"]
+
+
+def test_process_applies_no_tag_filter_for_the_traced_question(monkeypatch):
+    """Both slot values from the 2026-09-18 trace: bundle=article, tags=[IPCC]."""
+    u = _understanding(operation="list", bundle="article",
+                       scope=qp.QueryScope(tags=["IPCC"]))
+    monkeypatch.setattr(qp, "get_structured_llm", lambda: _One(u))
+    monkeypatch.setattr(qp, "get_settings", lambda: SimpleNamespace(analysis_votes=1))
+
+    pq = qp.process("list down all the articles where IPCC mentioned")
+
+    assert pq.intent == "qa"
+    assert pq.analysis is not None and pq.analysis.tags == []
+    assert _tag_conditions(pq) == []
+
+
+def test_process_keeps_the_tag_filter_the_user_asked_for(monkeypatch):
+    u = _understanding(query_rewrite="how many posts are tagged 'policy'?",
+                       operation="count", scope=qp.QueryScope(tags=["policy"]))
+    monkeypatch.setattr(qp, "get_structured_llm", lambda: _One(u))
+    monkeypatch.setattr(qp, "get_settings", lambda: SimpleNamespace(analysis_votes=1))
+
+    pq = qp.process("how many posts are tagged 'policy'?")
+
+    assert pq.analysis is not None and pq.analysis.tags == ["policy"]
+    assert len(_tag_conditions(pq)) == 1
