@@ -254,8 +254,8 @@ a signal RRF is free to discount.
 
 A bare word-overlap match would let the organisation's own name in every
 title win, or let "research" — 1.5% of titles, but a whole genre, not a page
-— beat a genuinely rare title word. Three guards, all computed per-query
-against the live title table rather than configured once:
+— beat a genuinely rare title word. Four guards, the first three computed
+per-query against the live title table rather than configured once:
 
 1. **≥2 matched title words**, or exactly one — but only when that one word is
    long (`_DISTINCTIVE_MIN_LEN = 6`), the title itself is short (≤6 words), and
@@ -268,6 +268,19 @@ against the live title table rather than configured once:
    most" from being the effective ranking.
 3. **Word-level matching, not substring** — "vision" inside "Visionary"
    previously outranked "Mission and Goals" for a mission/vision question.
+4. **A word that names a kind of document never carries a match alone**
+   (`_names_a_kind`, applied in `_rare_terms`), however rare it is in the
+   titles. "articles" is in one title of 8,631 — the "Articles & Publications"
+   index — so by frequency it identified that page exactly, and *"list the
+   articles where IPCC is mentioned"* retrieved the index's link labels in
+   place of anything about IPCC; "reports" alone matched 37 short titles
+   carrying "Report", "projects" 39, "events" 8. The vocabulary
+   (`_kind_words`) is not a list kept here: it is the bundle names, display
+   labels and collective words of every type the glossary describes, through
+   the same `topic.bundle_words` the structured layer uses, imported lazily
+   and failing open to the frequency-only rule. Two-word agreement is
+   unaffected — "annual reports", "articles publications" and "papers
+   discussing Article 6" still resolve their pages.
 
 Singular/plural is the one inflection crossed deliberately (`centres` ↔
 `centre`, `reports` ↔ `report`), because pages are named one way and asked

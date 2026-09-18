@@ -62,6 +62,7 @@ _STOP = frozenset(
     with would you your about after before between during over under more most
     tell give find list any some all please kindly need want know like get see
     available offer offers offered provide provides provided conduct conducts
+    down mention mentions mentioned mentioning
     """.split()
 )
 

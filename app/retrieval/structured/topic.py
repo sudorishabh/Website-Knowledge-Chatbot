@@ -63,6 +63,7 @@ _STOP = frozenset(
     being having made make makes making use uses using given gives take takes
     find finds found look looks looking want wants need needs came come comes
     coming released release releases issued issue issues produced produce
+    down mention mentions mentioned mentioning
     """.split()
 )
 

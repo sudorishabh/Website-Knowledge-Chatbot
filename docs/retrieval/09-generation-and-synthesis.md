@@ -92,12 +92,12 @@ because each clause exists for a specific observed failure, not as boilerplate:
 | --- | --- |
 | 1 — context only | Outside-knowledge answers |
 | 2 — cite every claim | Unattributable prose |
-| 3 — the exact refusal string, with four carve-outs | A model that refuses a partial answer the context *does* support, refuses a yes/no it can evidence, refuses a "where do I get X" question because the block names X without narrating a how-to, or gives a bare refusal when the context shows something merely *adjacent* to what was asked |
+| 3 — the exact refusal string, with five carve-outs | A model that refuses a partial answer the context *does* support, refuses a yes/no it can evidence, refuses a "where do I get X" question because the block names X without narrating a how-to, gives a bare refusal when the context shows something merely *adjacent* to what was asked, or refuses "list the articles where X is mentioned" because it cannot enumerate every article — the first carve-out has it list the retrieved blocks that mention X, one per block with title, date and citation, framed as what the sources include; the kind of document the user named is descriptive, not a filter. Measured 2026-09-18 on six IPCC blocks: as the *last* bullet the same instruction was still refused; as the *first* it produced the list, so its position is pinned by `tests/generation/test_grounded_prompt_rules.py` |
 | 4 — no invention | Fabricated sources, URLs, page numbers |
 | 5 — website precedence (mixed only) | A PDF version presented as equally true when the website disagrees |
 | 6 — the block structure (mixed) / one continuous answer (single) | See above |
 | 7 — context is reference material | Prompt injection from inside a passage |
-| 8 — no document counts, and the "official page" carve-out | Treating a sample of pages as the whole corpus ("how many reports exist"); the `official page` marker (`CANONICAL_MARKER`, threshold `_CANONICAL_AUTHORITY = 0.85` on `derived_authority`) lets a genuine standing statement — a service catalogue, a themes page — be read as source material rather than over-generalised from |
+| 8 — no document counts, the "official page" carve-out, and the retrieved-list carve-out | Treating a sample of pages as the whole corpus ("how many reports exist"); the `official page` marker (`CANONICAL_MARKER`, threshold `_CANONICAL_AUTHORITY = 0.85` on `derived_authority`) lets a genuine standing statement — a service catalogue, a themes page — be read as source material rather than over-generalised from |
 | 9 — newer-wins, temporal phrasing, and the edition/page-date split | The largest rule by far; see next section |
 
 ### Rule 9: dates, precedence, and the edition/page-date split

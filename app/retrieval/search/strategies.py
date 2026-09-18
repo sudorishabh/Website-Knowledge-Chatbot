@@ -362,7 +362,7 @@ _STOPWORDS = frozenset(
     in into is it its me my of on or say says should show that the their there
     these this those to us was were what when where which who whom whose why will
     with would you your about after before between during over under more most
-    tell give find list
+    tell give find list down mention mentions mentioned mentioning
     """.split()
 )
 # Lowercase content words, used only when nothing more precise was found. Three
