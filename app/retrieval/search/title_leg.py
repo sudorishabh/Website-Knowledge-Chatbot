@@ -35,6 +35,10 @@ Deliberate limits
 * Requires two-word overlap, or one word that is both long and rare across the
   title catalogue, so "What is TERI?" does not match every page whose title
   contains "TERI" and "research" does not match every page about research.
+* A word that names a *kind* of document ("articles", "reports", "events",
+  "projects") never carries a match alone, however rare it is in the titles:
+  it says what is wanted, not which page. Two-word agreement still resolves
+  the pages such words are part of ("annual reports", "articles publications").
 * Website nodes only. An attachment inherits its parent's title, so matching
   titles across attachments would return the same document many times over.
 """
@@ -204,16 +208,81 @@ def _df(counts: dict[str, int], term: str) -> int:
     return max(counts.get(term, 0), counts.get(f"{term}s", 0))
 
 
+# Words that name a kind of document rather than a page, loaded once from the
+# content-type registry on first use. None until then; a failed load is not
+# cached, so a transient import problem self-heals on the next question.
+_kind_words_cache: frozenset[str] | None = None
+
+
+def _kind_words() -> frozenset[str]:
+    """Every word that names a content type users ask about by name.
+
+    The bundle names and display labels of each type the glossary describes
+    (`catalog_prompt.BUNDLE_MEANINGS`), plus the collective words
+    ("publications", "documents"), through the same `topic.bundle_words` the
+    structured layer uses to account for them — so a type added to the
+    registry is covered without this module knowing it, and the two layers
+    cannot disagree about what a type word is.
+
+    Imported lazily for the same reason `title_candidates` loads the
+    catalogue lazily: the structured package brings its clients with it, and
+    this leg wants only its vocabulary. Fails open to the empty set — today's
+    rule, frequency alone — rather than blocking the leg.
+    """
+    global _kind_words_cache
+    if _kind_words_cache is not None:
+        return _kind_words_cache
+    try:
+        from app.retrieval.structured.topic import bundle_words
+        from app.retrieval.understanding.catalog_prompt import BUNDLE_MEANINGS
+
+        words = set(bundle_words(None))
+        for bundle, _meaning in BUNDLE_MEANINGS:
+            words |= bundle_words(bundle)
+    except Exception:
+        logger.warning(
+            "Content-type vocabulary unavailable; a kind word may name a page.",
+            exc_info=True,
+        )
+        return frozenset()
+    _kind_words_cache = frozenset(words)
+    return _kind_words_cache
+
+
+def _names_a_kind(term: str) -> bool:
+    """Whether a query term names a kind of document, in either number."""
+    kinds = _kind_words()
+    if not kinds:
+        return False
+    return (
+        term in kinds
+        or f"{term}s" in kinds
+        or (term.endswith("s") and term[:-1] in kinds)
+    )
+
+
 def _rare_terms(
     terms: Sequence[str], rows: Sequence[tuple[str, str, str | None]],
     *, counts: dict[str, int] | None = None,
 ) -> list[str]:
-    """The terms rare enough in the catalogue to name a page by themselves."""
+    """The terms rare enough in the catalogue to name a page by themselves.
+
+    A word that names a *kind* of document never does, however rare it is in
+    the titles. "articles" is in one title of 8,631 — the "Articles &
+    Publications" index — so by frequency alone it identified that page
+    exactly, and "list the articles where IPCC is mentioned" retrieved the
+    index's link labels in place of anything about IPCC. The user was not
+    naming the page; they were saying what kind of thing they wanted. The
+    same held for "reports" (37 short titles carry "Report"), "projects" (39)
+    and "events" (8). Two-word agreement is unaffected, so "annual reports"
+    and "articles publications" still resolve their pages.
+    """
+    named = [t for t in terms if not _names_a_kind(t)]
     if not rows:
-        return list(terms)
+        return named
     counts = _title_frequencies(rows) if counts is None else counts
     ceiling = max(_MIN_DF_CEILING, int(len(rows) * _MAX_SINGLE_HIT_SHARE))
-    return [t for t in terms if _df(counts, t) <= ceiling]
+    return [t for t in named if _df(counts, t) <= ceiling]
 
 
 def _selective_terms(
