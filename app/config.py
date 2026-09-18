@@ -155,6 +155,15 @@ class Settings(BaseSettings):
     # reproduces today's behaviour exactly — the label is still detected and
     # still discarded. Launches OFF; flip after eval.
     clarification_enabled: bool = False
+    # The bar the `clarification_needed` label must clear to be *acted on*,
+    # separate from `intent_confidence_threshold` because the cost is not
+    # symmetric: a wrong content label still retrieves and can still answer,
+    # whereas a wrong clarification spends the user's whole turn asking about a
+    # question that had an answer. Observed at 0.74 on "director generak of
+    # teri" — the model's own rationale was "vague/typo", and TERI's Director
+    # General was in the 2022-23 annual report. The label stays on the trace
+    # below the bar, so the false-positive rate is still measurable.
+    clarification_min_confidence: float = 0.8
     # Act on the temporal intent `temporal_gate.detect_mode` already classifies:
     # rank by how well a document's period fits the time the question is about
     # (a band cut INSIDE the relevance band, so relevance still decides), and

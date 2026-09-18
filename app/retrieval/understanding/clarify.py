@@ -20,7 +20,12 @@ What it does not do
 -------------------
 * **It is not a second classifier.** The trigger is the label the existing
   understanding call already emits. No extra LLM call is made, here or anywhere
-  on the clarification path — the question and its options are deterministic.
+  on the clarification path — the question, its options and the two guards that
+  can decline to ask it are all deterministic.
+
+* **It does not trust the label on its own.** See :func:`decide`: the verdict
+  has to clear a confidence bar of its own, and a turn that names a subject is
+  not interrupted just to ask what it is about.
 * **It does not use ``is_ambiguous``.** That signal is a near-tie between
   *content intents* (qa vs database), which is a routing question the pipeline
   can answer by retrieving. It is not evidence that the user's meaning is
@@ -58,6 +63,8 @@ import logging
 import re
 from dataclasses import dataclass, field
 from typing import Any, Sequence
+
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -259,6 +266,77 @@ _QUESTION_BARE = (
     "documents you are asking about?"
 )
 
+# --------------------------------------------------------------------------- #
+# "Does the turn name a subject?" — the veto
+# --------------------------------------------------------------------------- #
+# The understanding prompt defines the label as "too vague or underspecified to
+# route without guessing (e.g. a format request naming no subject)", and the
+# example is the whole of it: what makes "show me a table" unanswerable is that
+# there is nothing to look for. Nothing enforced that definition, so the label
+# was trusted on turns that named a subject perfectly well —
+# "director generak of teri" drew `clarification_needed` at 0.74 with the
+# rationale "Request is vague/typo; no clear question target", and TERI's
+# Director General was sitting in the 2022-23 annual report. The user spent a
+# turn being asked what topic they meant.
+#
+# So a turn that names a subject is not clarified *when the catalog cannot back
+# the question with options*. The two halves of that matter separately:
+#
+# * With options, asking is grounded and cheap — "projects" really does span
+#   completed and ongoing, and a choice between two names the catalog holds is
+#   worth a turn even though "projects" is a subject. That path is untouched.
+# * Without options the question degrades to `_QUESTION_BARE`, which asks the
+#   user to restate what they already said. That is the case this vetoes, and
+#   the case that fired above.
+#
+# Deliberately structural, like `_looks_like_real_question` in `query_processor`
+# and for the same reason: a pure function of the text is exactly as
+# deterministic as the text, which is the property worth buying back from a
+# classifier that `analysis_votes = 1` lets decide on one sample.
+
+# Words that are a *request* or an answer *shape* rather than a thing to look
+# for. Not a copy of `query_processor._STOPWORDS`: this set has to reject the
+# format vocabulary ("table", "json", "chart") that the chitchat probe has no
+# reason to care about, and it keeps subject nouns the other set drops.
+_NOT_A_SUBJECT = frozenset("""
+    the a an of to in on for and or with by from as at into over under about
+    across per via both each any all some many few much more most other another
+    such than then there here
+    is are was were be been being am do does did done have has had having
+    can could may might must shall should will would
+    what which who whom whose when where why how
+    this that these those it its they them their thing things stuff
+    one ones anything something everything nothing anyone someone
+    dunno idk whatever else yes yeah nope
+    i we you your our my me us mine ours yours
+    show showing give given tell telling send sending share sharing get getting
+    find finding fetch fetching provide providing make making need needing
+    want wanting like please kindly help
+    list lists listed listing enumerate table tables chart charts graph graphs
+    diagram diagrams flowchart flowcharts timeline timelines bullet bullets
+    point points json csv xml yaml markdown format formatted formatting
+    summarize summarise summary summarised summarized overview breakdown
+    """.split())
+
+_SUBJECT_WORD = re.compile(r"[A-Za-z][A-Za-z'-]{2,}")
+
+# Two, not one. A single content word is a topic hint and not much more —
+# "performance", "projects" — and those are exactly the turns where asking is
+# the right move and where the catalog most often has options to offer. Two or
+# more words naming something ("director general teri") is a subject.
+MIN_SUBJECT_WORDS = 2
+
+
+def names_a_subject(question: str) -> bool:
+    """Whether the turn names something to look for.
+
+    Counts *distinct* words so "reports reports" is one subject word, not two.
+    """
+    words = {
+        w.lower() for w in _SUBJECT_WORD.findall(question or "")
+    } - _NOT_A_SUBJECT
+    return len(words) >= MIN_SUBJECT_WORDS
+
 
 def decide(understanding: Any, question: str) -> Clarification | None:
     """A question back to the user, or None to answer as usual.
@@ -268,14 +346,49 @@ def decide(understanding: Any, question: str) -> Clarification | None:
     which is the property that matters most here, and the one the caller relies
     on to stay byte-compatible when the feature is off.
 
+    The verdict is necessary but no longer sufficient. Two guards stand between
+    the label and a question, because the label is one stochastic sample
+    (``analysis_votes`` defaults to 1) and acting on it wrongly costs the user a
+    whole turn:
+
+    1. the label must clear ``clarification_min_confidence``, a bar of its own
+       rather than the one every content label shares;
+    2. if the catalog cannot back the question with options, the turn must not
+       already name a subject (:func:`names_a_subject`) — there is nothing to
+       ask a user who has told us what they are asking about.
+
+    Both are one-directional: they can only decline to clarify, never cause a
+    clarification that the label did not ask for.
+
     The caller is responsible for the one-round guard (see :func:`pending`); this
     function is a pure read of one turn's understanding and holds no state.
     """
     if understanding is None:
         return None
-    labels = {p.label for p in getattr(understanding, "intents", []) or []}
-    if CLARIFICATION_LABEL not in labels:
+    confidence = max(
+        (
+            float(getattr(p, "confidence", 0.0) or 0.0)
+            for p in getattr(understanding, "intents", []) or []
+            if getattr(p, "label", None) == CLARIFICATION_LABEL
+        ),
+        default=None,
+    )
+    if confidence is None:
+        return None
+    floor = float(getattr(get_settings(), "clarification_min_confidence", 0.8))
+    if confidence < floor:
+        logger.info(
+            "Not clarifying: %s at %.2f is below the %.2f bar.",
+            CLARIFICATION_LABEL, confidence, floor,
+        )
         return None
     options, kind = _options(question, understanding)
+    if not options and names_a_subject(question):
+        logger.info(
+            "Not clarifying: the turn names a subject and the catalog has no "
+            "options to offer, so there is nothing to ask that the user has "
+            "not already said."
+        )
+        return None
     text = _QUESTION_WITH_OPTIONS.get(kind, _QUESTION_BARE) if options else _QUESTION_BARE
     return Clarification(question=text, options=options, kind=kind)

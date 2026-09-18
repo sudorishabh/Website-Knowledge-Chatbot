@@ -325,3 +325,172 @@ def test_a_later_independent_vague_question_may_clarify_again(
     _understanding["result"] = _u([("clarification_needed", 0.9)])
     pq = qp.process("show me a table", history)
     assert pq.clarification is not None
+
+
+# --------------------------------------------------------------------------- #
+# The two guards between the label and a question
+# --------------------------------------------------------------------------- #
+# Reported from production: "director generak of teri" was answered with
+# "I need a little more to go on — could you say what topic or which documents
+# you are asking about?", and the very next turn, "who is the director general
+# of TERI", answered it from the 2022-23 annual report. The trace shows a single
+# intent, `clarification_needed` at 0.74, rationale "Request is vague/typo; no
+# clear question target" — the model clarified because of a typo, and nothing
+# downstream could disagree.
+
+
+@pytest.fixture
+def _floor(monkeypatch):
+    """Set the confidence bar, returning a setter so a test can pick its own."""
+    from app.config import get_settings
+
+    def _set(value):
+        monkeypatch.setattr(
+            get_settings(), "clarification_min_confidence", value, raising=False
+        )
+
+    return _set
+
+
+@pytest.fixture
+def _no_options(monkeypatch):
+    """The case the bug fell into: nothing the catalog can offer."""
+    monkeypatch.setattr(clarify, "_options", lambda *a, **k: ([], ""))
+
+
+# --- Guard 1: a bar of its own ---------------------------------------------- #
+
+def test_the_reported_confidence_is_below_the_default_bar(_no_options):
+    """0.74 cleared `intent_confidence_threshold` (0.5) and must not clear this."""
+    assert clarify.decide(
+        _u([("clarification_needed", 0.74)]), "director generak of teri"
+    ) is None
+
+
+def test_a_confident_verdict_still_clarifies(_floor, _no_options):
+    _floor(0.8)
+    assert clarify.decide(
+        _u([("clarification_needed", 0.9)]), "show me a table"
+    ) is not None
+
+
+def test_the_bar_is_inclusive(_floor, _no_options):
+    _floor(0.8)
+    assert clarify.decide(
+        _u([("clarification_needed", 0.8)]), "show me a table"
+    ) is not None
+
+
+def test_a_bar_of_zero_restores_the_previous_behaviour(_floor, _no_options):
+    """The flag's own escape hatch: the guard is configuration, not a rewrite."""
+    _floor(0.0)
+    assert clarify.decide(
+        _u([("clarification_needed", 0.1)]), "what about that one?"
+    ) is not None
+
+
+def test_the_bar_reads_the_clarification_label_not_the_highest_one(
+    _floor, _no_options
+):
+    """A confident *content* label alongside a weak clarification verdict must
+    not lend it its confidence."""
+    _floor(0.8)
+    understanding = _u([("qa", 0.95), ("clarification_needed", 0.6)])
+    assert clarify.decide(understanding, "show me a table") is None
+
+
+# --- Guard 2: a turn that names a subject ----------------------------------- #
+
+@pytest.mark.parametrize("question", [
+    "director generak of teri",          # the reported turn
+    "director general of TERI",
+    "annual report 2023",
+    "solar capacity in Gujarat",
+    "vibha dhawan biography",
+])
+def test_a_turn_naming_a_subject_is_not_clarified(question, _floor, _no_options):
+    """Even at full confidence: a bare question back would ask the user to
+    restate what they have already said."""
+    _floor(0.0)
+    assert clarify.decide(_u([("clarification_needed", 1.0)]), question) is None
+
+
+@pytest.mark.parametrize("question", [
+    "show me a table",
+    "what about that one?",
+    "in json please",
+    "give me a list",
+    "summarize it",
+    "dunno",
+    "as a chart",
+    "",
+])
+def test_a_turn_naming_no_subject_is_still_clarified(question, _floor, _no_options):
+    _floor(0.0)
+    assert clarify.decide(_u([("clarification_needed", 1.0)]), question) is not None
+
+
+def test_options_outrank_the_subject_veto(monkeypatch, _floor):
+    """The veto applies only where the question degrades to the bare wording.
+    Options the catalog holds are a real choice and worth a turn even when the
+    turn names a subject — that path must not be narrowed."""
+    _floor(0.0)
+    monkeypatch.setattr(
+        clarify, "_options", lambda *a, **k: (["Climate Change", "Energy"], "theme")
+    )
+    result = clarify.decide(
+        _u([("clarification_needed", 1.0)]), "climate and energy projects"
+    )
+    assert clarify.names_a_subject("climate and energy projects")
+    assert result is not None and result.options == ["Climate Change", "Energy"]
+
+
+# --- names_a_subject, on its own -------------------------------------------- #
+
+def test_request_and_format_words_are_not_subjects():
+    assert not clarify.names_a_subject("show me the table as a list in json")
+
+
+def test_one_content_word_is_not_yet_a_subject():
+    """A single word is a topic hint, and those are the turns where asking back
+    helps most — "projects" is the option-backed case in the tests above."""
+    assert not clarify.names_a_subject("performance")
+    assert not clarify.names_a_subject("show me the projects")
+    assert clarify.names_a_subject("show me the water projects")
+
+
+def test_repeated_words_count_once():
+    assert not clarify.names_a_subject("reports reports reports")
+
+
+def test_short_tokens_do_not_count():
+    assert not clarify.names_a_subject("a b of x y")
+
+
+def test_the_veto_is_a_pure_function_of_the_text():
+    question = "director generak of teri"
+    assert clarify.names_a_subject(question) is clarify.names_a_subject(question)
+
+
+# --- The reported turn, end to end through `process` ------------------------ #
+
+def test_the_reported_turn_reaches_retrieval_instead_of_asking(
+    monkeypatch, _understanding, _no_options
+):
+    """The bug, at the seam that produced it."""
+    _enable(monkeypatch)
+    _understanding["result"] = _u([("clarification_needed", 0.74)])
+    pq = qp.process("director generak of teri")
+    assert pq.clarification is None
+
+
+def test_the_label_is_still_reported_when_it_is_not_acted_on(
+    monkeypatch, _understanding, _no_options
+):
+    """The guards decline to *ask*; they do not hide the verdict, so the
+    false-positive rate stays visible on the trace."""
+    _enable(monkeypatch)
+    _understanding["result"] = _u([("clarification_needed", 0.74)])
+    pq = qp.process("director generak of teri")
+    assert pq.clarification is None
+    assert [p.label for p in pq.understanding.intents] == ["clarification_needed"]
