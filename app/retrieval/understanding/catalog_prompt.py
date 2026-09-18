@@ -33,12 +33,20 @@ BUNDLE_LIST = ", ".join(DEFAULT_BUNDLES)
 # trap sits under "reports", "papers" and "briefs", so every type users name
 # gets described rather than only the one that broke.
 #
+# The literal reading has a boundary of its own, stated in
+# CONTENT_QUESTION_RULE below: it holds for questions about the catalog. A
+# question about what documents *say* ("articles where IPCC is mentioned") uses
+# the type word descriptively, and the catalog cannot answer it whatever type is
+# set. `query_processor._widen_content_question` enforces the same rule on the
+# wording, so the prompt is the first line and not the only one.
+#
 # Keyed by bundle so the glossary cannot drift from the source registry —
 # `tests/test_shared_prompt.py` asserts every key is a real bundle and that the
 # undescribed remainder is still advertised as valid.
 BUNDLE_MEANINGS: tuple[tuple[str, str], ...] = (
-    ("article", "standalone articles and blog posts. Plain \"article(s)\" means "
-                "THIS type — it is not a generic word for a record here"),
+    ("article", "standalone articles and blog posts. Plain \"article(s)\" in a "
+                "catalog question means THIS type — it is not a generic word for a "
+                "record here"),
     ("feature_articles", "long-form feature pieces — only when the user says "
                          "\"feature\" or \"featured\""),
     ("news", "news items, announcements, press coverage, news stories"),
@@ -57,18 +65,31 @@ BUNDLE_MEANINGS: tuple[tuple[str, str], ...] = (
 _DESCRIBED = tuple(name for name, _ in BUNDLE_MEANINGS)
 _OTHER_BUNDLES = tuple(b for b in DEFAULT_BUNDLES if b not in _DESCRIBED)
 
+# The boundary of the literal reading. A type word filters the catalog; it
+# cannot filter what the catalog does not hold, and the catalog holds no text.
+CONTENT_QUESTION_RULE = (
+    "A type word is a filter only in a question ABOUT THE CATALOG — a count, or "
+    "a list by date, author or theme. When the question asks for documents by "
+    "what they SAY (\"articles where IPCC is mentioned\", \"reports that discuss "
+    "hydrogen\", \"news referring to COP28\"), the type word is descriptive: "
+    "leave the content type null so the question spans every type, and do not "
+    "turn the subject into a tag. This holds for every type here, not only "
+    "articles."
+)
+
 BUNDLE_GLOSSARY = (
-    "Content types, with the everyday words users use for each. When the user's "
-    "word appears here, set the content type to that bundle — do not fall back "
-    "to \"no specific type\" just because the word could also be read "
-    "collectively:\n"
+    "Content types, with the everyday words users use for each. In a question "
+    "about the catalog, when the user's word appears here, set the content type "
+    "to that bundle — do not fall back to \"no specific type\" just because the "
+    "word could also be read collectively:\n"
     + "\n".join(f"- {name}: {meaning}." for name, meaning in BUNDLE_MEANINGS)
     + "\nAlso valid, rarely asked about by name: " + ", ".join(_OTHER_BUNDLES) + ".\n"
     "\"Projects\" with no completed/ongoing cue spans two of these types. Pass "
     "the user's own word through as the content type (\"projects\") — the query "
     "layer will ask which they meant. Do not pick one of the two, and do not "
     "leave the type off: picking reports one type's total as if it were every "
-    "project, and omitting it counts articles and papers as projects."
+    "project, and omitting it counts articles and papers as projects.\n"
+    + CONTENT_QUESTION_RULE
 )
 
 VOCABULARY = (

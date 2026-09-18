@@ -315,3 +315,50 @@ def test_classifier_prompt_import_stays_client_free():
         [sys.executable, "-c", code], capture_output=True, text=True, check=True
     ).stdout.strip()
     assert out == "", f"classifier prompt import pulled in {out}"
+
+
+# --------------------------------------------------------------------------- #
+# CONTENT_QUESTION_RULE — the boundary of the literal reading.
+# --------------------------------------------------------------------------- #
+
+def test_the_glossary_scopes_the_literal_reading_to_catalog_questions():
+    """"articles" means the `article` bundle in "how many articles in 2023"; in
+    "articles where IPCC is mentioned" it is a word for "things you wrote", and
+    the catalog cannot answer the question whatever type is set."""
+    assert "In a question about the catalog" in prompt.BUNDLE_GLOSSARY
+    assert "in a catalog question means THIS type" in prompt.BUNDLE_GLOSSARY
+    assert prompt.CONTENT_QUESTION_RULE in prompt.BUNDLE_GLOSSARY
+
+
+def test_the_content_rule_says_what_to_do_and_that_it_is_general():
+    assert "what they SAY" in prompt.CONTENT_QUESTION_RULE
+    assert "leave the content type null" in prompt.CONTENT_QUESTION_RULE
+    assert "do not turn the subject into a tag" in prompt.CONTENT_QUESTION_RULE
+    assert "every type here, not only articles" in prompt.CONTENT_QUESTION_RULE
+
+
+def test_the_content_rule_reaches_every_prompt_that_fills_the_bundle_slot():
+    """Riding inside BUNDLE_GLOSSARY, so the classifier, the parse fallback and
+    the planner cannot drift apart on it."""
+    for system in (
+        understanding_prompts.UNDERSTANDING_SYSTEM,
+        answerer._PARSE_SYSTEM,
+        planner._PLANNER_SYSTEM,
+    ):
+        assert prompt.CONTENT_QUESTION_RULE in system
+
+
+def test_the_classifier_separates_type_words_from_content():
+    text = understanding_prompts.UNDERSTANDING_SYSTEM
+    assert "- Type word vs content:" in text
+    assert "the catalog holds no text" in text
+    assert "'list the articles where IPCC is mentioned' -> [qa" in text
+    assert "'reports that discuss green hydrogen' -> [qa]" in text
+    # the contrast is kept beside it so the literal reading is not unlearned
+    assert "'latest 5 reports under Climate Change' -> [database]" in text
+
+
+def test_the_classifier_reserves_tags_for_the_named_facet():
+    text = understanding_prompts.UNDERSTANDING_SYSTEM
+    assert "tags (only when the user names the facet" in text
+    assert "is NOT a tag" in text
