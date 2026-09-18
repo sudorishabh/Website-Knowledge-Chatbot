@@ -91,10 +91,29 @@ _PATTERNS: tuple[tuple[str, str], ...] = (
     (UPCOMING, r"\bupcoming\b|\bforthcoming\b|\bscheduled\b|\bwill (?:be )?(?:take place|happen|run|host)"
                r"|\bnext (?:week|month|year|session|summit|conference|event)\b"
                r"|\bany (?:planned|future)\b|\bplanned\b|\bfuture\b(?!\s+of\b)"),
-    (PAST, r"\bpast\b|\bprevious(?:ly)?\b|\bformer\b|\bused to\b|\bhistor(?:y|ical)\b"
-           r"|\bearlier\b|\bonce\b|\bcompleted\b"),
-    (CURRENT, r"\bcurrent(?:ly)?\b|\bright now\b|\bat present\b|\bpresently\b"
-              r"|\bongoing\b|\bunderway\b|\bactive\b|\btoday\b|\blatest\b"),
+    (PAST, r"\bpast\b|\bprevious(?:ly)?\b|\bformer(?:ly)?\b|\bused to\b|\bhistor(?:y|ical)\b"
+           r"|\bearlier\b|\bonce\b|\bcompleted\b"
+           # Past-tense identity and role questions, the exact mirror of the
+           # present-tense ones below: both ask who holds a post, and the only
+           # thing separating them is the tense of the verb. Sitting above
+           # CURRENT is what makes a question carrying both cues ("who is the
+           # *former* head") read as the past question it actually is.
+           r"|\bwho\s+(?:was|were)\b|\bwho\s+served\b|\bstepped\s+down\b"
+           r"|\bsucceeded\s+by\b|\bno\s+longer\b"),
+    # An identity or role question asks about *now* even when it says so with
+    # nothing but a present-tense verb. "Who is the director general" asks who
+    # holds the post today; answering it from a 2020 page that was true when it
+    # was written is the failure this clause exists to prevent, and no explicit
+    # cue word ("currently", "today") appears anywhere in it to catch.
+    #
+    # Necessarily narrow. A bare "is" is far too common to read as a temporal
+    # signal, so the pattern requires the interrogative that makes the sentence
+    # a question about a person or a post: `who is/are`, or a verb of holding
+    # office. "What is the budget" gains no temporal intent from this.
+    (CURRENT, r"\bcurrent(?:ly)?\b|\bnow\b|\bat present\b|\bpresently\b"
+              r"|\bongoing\b|\bunderway\b|\bactive\b|\btoday\b|\blatest\b"
+              r"|\bwho\s+(?:is|are)\b"
+              r"|\bwho\s+(?:heads|leads|runs|chairs|directs|manages|oversees)\b"),
 )
 
 
@@ -176,16 +195,38 @@ def _is_scheduled(payload: Any) -> bool:
     return str(payload.get("bundle") or "") in SCHEDULED_BUNDLES
 
 
-def _is_open_ended(payload: Any) -> bool:
-    """Whether this bundle's period runs to the present rather than to a date.
+#: Source types that are fixed artefacts — written once, on a date — rather than
+#: pages an organisation maintains. Whatever bundle such a document inherits from
+#: the page it hangs on, nothing about the document itself runs to the present.
+_ARTEFACT_SOURCE_TYPES: frozenset[str] = frozenset({"pdf_attachment"})
 
-    ``ongoing_projects`` declares only a start, deliberately — stored, that is
-    indistinguishable from a single-date document, and reading it as a point
-    would call a project running since 2005 "not current". The same reading
-    ``filters.date_conditions`` already applies to the lower bound.
+
+def _is_open_ended(payload: Any) -> bool:
+    """Whether this document's period runs to the present rather than to a date.
+
+    True for a *page* of an open-ended bundle. ``ongoing_projects`` declares only
+    a start, deliberately — stored, that is indistinguishable from a single-date
+    document, and reading it as a point would call a project running since 2005
+    "not current". The same reading ``filters.date_conditions`` already applies
+    to the lower bound.
+
+    False for an attachment of such a page, whatever bundle it inherited. The
+    open-ended period is the project's, and the page is what carries it; a PDF
+    attached to that page is a dated artefact, written once, on the date it
+    states. Reading the inherited bundle alone made every such attachment a
+    perfect fit for any question about the present — one band above every dated
+    document — and the corpus holds some 24 attachment chunks under this bundle
+    for every page chunk. Measured on the reported "who is X": a 2019
+    building-retrofit guideline attached to an ongoing project led the context
+    above a 2023 brief, scoring lowest of the six on relevance, on the strength
+    of a foreword signed with the subject's then title; the answer gave that
+    title in the present tense. The guideline's date came from its own copyright
+    line, and that is exactly the date its period should close on.
     """
     from app.core.corpus import OPEN_ENDED_BUNDLES
 
+    if str(payload.get("source_type") or "") in _ARTEFACT_SOURCE_TYPES:
+        return False
     return str(payload.get("bundle") or "") in OPEN_ENDED_BUNDLES
 
 

@@ -34,7 +34,7 @@ def dual_search(
     """Two pulls sharing one query vector: website (source_type == website) and
     "not website". Preserves any non-source filters (language / date) on both.
     Their union guarantees the website's best chunks are fetched even though PDFs
-    dominate the corpus (see docs/website-preference-retrieval.md)."""
+    dominate the corpus (see docs/retrieval/04-search-and-fusion.md)."""
     from qdrant_client.models import FieldCondition, MatchValue
 
     base = list(filters or [])

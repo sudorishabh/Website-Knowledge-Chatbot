@@ -49,7 +49,7 @@ class Candidate:
   after `reranker.rerank` (doc 05). Never compare it to a configured
   threshold.
 - **`semantic_score`** is the value every configured floor is actually
-  calibrated against (`website_chunk_floor`, `pdf_high_confidence_floor`,
+  calibrated against (`rerank_score_threshold`,
   `corrective_min_score`, `rerank_score_threshold`). Set once, in `_to_candidate`,
   the moment a candidate is born from a real Qdrant hit, and preserved through
   every later stage.
@@ -58,8 +58,9 @@ class Candidate:
 
 This three-way split exists to fix a real defect: `rrf` used to overwrite
 `score` and the floors read `score`, so enabling the keyword or multi-query leg
-put every fused candidate an order of magnitude below `website_chunk_floor`
-and silently emptied the website group. `tests/test_fusion_score_integrity.py`
+put every fused candidate an order of magnitude below the cosine-scaled
+floors, emptying the website group through an admission floor since retired.
+`tests/retrieval/search/test_fusion_score_integrity.py`
 pins the separation.
 
 ### The mandatory filter
@@ -126,7 +127,14 @@ dual = prefer_website_enabled and not source_type and answer_format != "table"
 concatenation (not yet fused; that happens later against the recall-expansion
 legs too). The reason is corpus composition: PDFs numerically dominate the
 collection, so an unweighted pull under-represents website pages even when
-they are the better answer. See `docs/website-preference-retrieval.md` for the
+they are the better answer.
+
+This is a **recall** guarantee and nothing more. Both halves land in one list,
+are ranked together, and are admitted together: source kind survives only as one
+term of the authority band (see [05](05-ranking-and-temporal-gating.md)), which
+sits below relevance, temporal fit and — on a question about the present —
+recency. It used to mean more, and [06](06-context-and-citations.md) records
+what. See the archived `redundant/docs/website-preference-retrieval.md` for the
 measurement behind it.
 
 Dual is skipped whenever the caller already pinned a `source_type` (honouring

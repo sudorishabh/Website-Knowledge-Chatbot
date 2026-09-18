@@ -97,29 +97,26 @@ class Settings(BaseSettings):
     verify_corpus_after_sweep: bool = True
     retrieval_top_k: int = 6
     retrieval_candidate_k: int = 40
-    # Website-content preference (see docs/website-preference-retrieval.md).
-    # When enabled, retrieval runs two pulls — website (source_type == "website")
-    # and "not website" — merges them, and the context builder leads with a
-    # concise website section (capped) followed by PDF depth. Enabled by default;
-    # validate on representative queries before relying on it in production.
+    # Website-content preference (see docs/retrieval/04-search-and-fusion.md).
+    # A *recall* guarantee, and only that: retrieval runs two pulls — website
+    # (source_type == "website") and "not website" — and unions them, so the
+    # website's best chunks are fetched even though PDFs dominate the corpus by
+    # volume and would otherwise fill a single pull. What happens next is the
+    # same for every candidate: one ranking, one admission pass, one answer.
+    #
+    # It used to mean more than that. The context builder admitted website
+    # blocks first under their own cap and relevance floor, gave PDFs two
+    # remaining slots plus a conditional third, and emitted them in that order
+    # whatever the ranking said; the generation prompt then told the model that
+    # "website sources are authoritative" and split the answer in two. Asked who
+    # the director general is, that chain led with a three-year-old announcement
+    # and filed the document correcting it in a captioned aside underneath.
+    # Source kind is now one term of the authority band in the reranker — a
+    # tie-break between passages already judged comparably relevant, comparably
+    # current and comparably well-matched to the period — and nothing more.
     prefer_website_enabled: bool = True
     # Website-only candidates pulled alongside the (larger) not-website pull.
     website_candidate_k: int = 20
-    # Max website blocks admitted (the concise lead). PDFs then follow under
-    # their own budget (see pdf_max_slots). Users' website needs are typically
-    # met in ~2.
-    website_max_slots: int = 2
-    # Per-chunk raw-semantic relevance floor a website chunk must clear to take a
-    # website slot (prevents padding the answer with weak website text). Scale is
-    # reranker-provider specific (dense cosine here); tuned empirically in eval.
-    website_chunk_floor: float = 0.30
-    # PDF budget after the website lead (segregated/dual retrieval only). The top
-    # pdf_max_slots PDF chunks are admitted unconditionally; one extra ("3rd")
-    # slot opens only for a candidate whose raw semantic_score clears the
-    # high-confidence bar below, and nothing past that slot is ever admitted.
-    # Scale matches website_chunk_floor (raw semantic_score); tune in eval.
-    pdf_max_slots: int = 2
-    pdf_high_confidence_floor: float = 0.5
     hybrid_use_sparse: bool = False
     # Multi-query recall expansion: LLM paraphrases of the search query are
     # searched in parallel and RRF-fused with the base pull. Gated per query
@@ -289,9 +286,10 @@ class Settings(BaseSettings):
     dedup_cosine_threshold: float = 0.92
     # Max tokens of retrieved context sent to the LLM. Blocks are parent chunks
     # (~1800 tokens each), so this gates roughly context_token_budget / 1800
-    # passages; 9000 keeps ~5 diverse sources — sized so the website-preference
-    # split (2 website + ~3 PDF depth) can fit. Prefill cost/latency rises only on
-    # content-rich queries (see docs/website-preference-retrieval.md §9, §13).
+    # passages; 9000 keeps ~5 diverse sources. Sized when that was 2 website
+    # blocks plus ~3 of PDF depth; the split is gone but the budget it implied
+    # is the right one, and the blocks are now whichever 5 rank highest.
+    # Prefill cost/latency rises only on content-rich queries.
     context_token_budget: int = 9000
     faithfulness_check: bool = False
     metrics_log_enabled: bool = True

@@ -111,7 +111,7 @@ def _wire(monkeypatch, *, settings, base_candidates):
     monkeypatch.setattr(retriever, "rerank", lambda q, cands, **kw: cands)
     monkeypatch.setattr(
         retriever, "build_context",
-        lambda ranked, *, limit, segregate: list(ranked),
+        lambda ranked, *, limit, temporal=None, question="": list(ranked),
     )
 
 

@@ -29,15 +29,14 @@ def test_today_anchor_points_back_at_rule_9():
 def test_the_anchor_is_computed_fresh_each_call_not_baked_into_the_constant():
     """`GROUNDED_SYSTEM_PROMPT` is built once at import for prompt-caching — the
     date must never be part of it, or a long-running process would answer
-    against the date it started at. (The prompt does contain one illustrative
-    date inside its worked example, which is fine — the anchor's own heading is
-    what must be absent.)"""
+    against the date it started at. (The prompt does contain illustrative dates
+    inside its worked examples, which is fine — the anchor's own heading is what
+    must be absent.)"""
     assert "## Today's date" not in prompts.GROUNDED_SYSTEM_PROMPT
-    assert "## Today's date" not in prompts.SINGLE_SOURCE_SYSTEM_PROMPT
 
 
 def test_the_built_system_prompt_carries_the_anchor():
-    system = answerer._build_system(None, None, mixed=False)
+    system = answerer._build_system(None, None)
     assert "## Today's date" in system
 
 
@@ -46,7 +45,7 @@ def test_the_anchor_is_appended_after_everything_else(monkeypatch):
     and correction text — appending first and being overwritten would silently
     drop it."""
     system = answerer._build_system(
-        "list", "A prior draft made unsupported claims.", mixed=False,
+        "list", "A prior draft made unsupported claims.",
     )
     assert system.rindex("## Today's date") > system.rindex("unsupported claims")
 
@@ -56,7 +55,7 @@ def test_the_anchor_is_appended_after_everything_else(monkeypatch):
 # --------------------------------------------------------------------------- #
 
 def test_rule_9_tells_the_model_to_prefer_the_canonical_block():
-    prompt = prompts.grounded_system_prompt(mixed=False)
+    prompt = prompts.grounded_system_prompt()
     assert prompts.CANONICAL_MARKER in prompt
     assert "not signals of authority" in prompt
 
@@ -64,7 +63,7 @@ def test_rule_9_tells_the_model_to_prefer_the_canonical_block():
 def test_length_is_explicitly_named_as_not_authority():
     """The exact failure this guards against: a long attachment outranking a
     short, direct, canonical statement purely by being longer."""
-    prompt = prompts.grounded_system_prompt(mixed=False)
+    prompt = prompts.grounded_system_prompt()
     assert "60-word" in prompt and "400-word" in prompt
 
 
@@ -74,19 +73,18 @@ def test_length_is_explicitly_named_as_not_authority():
 # --------------------------------------------------------------------------- #
 
 def test_rule_3_covers_where_can_i_download_questions():
-    prompt = prompts.grounded_system_prompt(mixed=False)
+    prompt = prompts.grounded_system_prompt()
     assert "where can i find/get/download" in prompt.lower()
 
 
 def test_rule_3_covers_adjacent_evidence_as_a_supported_negative():
-    prompt = prompts.grounded_system_prompt(mixed=False)
+    prompt = prompts.grounded_system_prompt()
     assert "adjacent to what was asked" in prompt
 
 
 def test_the_refusal_constant_and_grounded_prompt_still_agree():
     """The extensions must not fork the actual refusal text rule 3 quotes."""
-    assert prompts.REFUSAL in prompts.grounded_system_prompt(mixed=False)
-    assert prompts.REFUSAL in prompts.grounded_system_prompt(mixed=True)
+    assert prompts.REFUSAL in prompts.grounded_system_prompt()
 
 
 def test_the_five_block_context_can_still_refuse():
@@ -97,13 +95,17 @@ def test_the_five_block_context_can_still_refuse():
 
 
 # --------------------------------------------------------------------------- #
-# 4. Both prompt variants still share the same rule numbering the history and
-#    graph-facts rules append onto (pre-existing invariant; must still hold
-#    after inserting new sub-bullets into rules 3 and 9, since those are
-#    sub-bullets and not new top-level numbered rules).
+# 4. The rule numbering the history and graph-facts rules append onto
+#    (pre-existing invariant; must still hold after inserting new sub-bullets
+#    into rules 3 and 9, since those are sub-bullets and not new top-level
+#    numbered rules).
+#
+#    This used to assert over two prompt variants. There is one now: a context
+#    mixing website and PDF blocks no longer selects a different prompt, because
+#    it no longer gets a different answer shape.
 # --------------------------------------------------------------------------- #
 
-def test_both_prompt_variants_still_share_the_rule_numbering():
-    for prompt in (prompts.GROUNDED_SYSTEM_PROMPT, prompts.SINGLE_SOURCE_SYSTEM_PROMPT):
-        assert "\n10. " not in prompt
-        assert re.search(r"\b9\. ", prompt)
+def test_the_grounded_prompt_ends_its_rule_list_where_the_extras_start():
+    prompt = prompts.GROUNDED_SYSTEM_PROMPT
+    assert "\n10. " not in prompt
+    assert re.search(r"\b9\. ", prompt)

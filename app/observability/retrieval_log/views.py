@@ -424,6 +424,14 @@ def context_blocks(
             "conflict": bool(getattr(block, "conflict", False)),
             "text_chars": len(text),
         }
+        # Only when set, so an ordinary answer's trace is unchanged. Written as
+        # one field rather than two booleans because a block is at most one of
+        # them and "superseded"/"supersedes" differ by two characters — easy to
+        # misread in a dump, which is where this is read.
+        if getattr(block, "superseded", False):
+            entry["supersession"] = "superseded"
+        elif getattr(block, "supersedes", False):
+            entry["supersession"] = "supersedes"
         entry["source" if compact else "metadata"] = (
             _describe(metadata) if compact else metadata
         )

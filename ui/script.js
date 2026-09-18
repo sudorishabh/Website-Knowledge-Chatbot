@@ -613,14 +613,21 @@
   /* ---------------------------------------------------------------- *
    * Answer blocks
    *
-   * An answer grounded in both website and PDF sources arrives wrapped
-   * in <website_answer> / <pdf_answer> tags. Website content is
-   * authoritative and always leads; the PDF block is additive and absent
-   * when it has nothing to add. An answer from one kind of source is
-   * asked for untagged, and a PDF block that arrives without a website
-   * block anyway is demoted to plain prose here — it is the answer, not
-   * a supplement to one. The parsing rules mirror
-   * app/generation/sections.py — keep the two in step.
+   * A reader for the retired two-block contract, kept for one reason.
+   *
+   * Answers used to arrive wrapped in <website_answer> / <pdf_answer>
+   * tags, website leading and the PDF block rendered below as a
+   * captioned "From our documents" aside. Nothing asks a model for that
+   * shape any more: website and PDF evidence is ranked together and
+   * answered once, so a live answer arrives untagged and falls straight
+   * through to the plain-text branch.
+   *
+   * What still arrives wrapped is an answer served from the semantic
+   * cache that was generated before the change. Without this parser it
+   * would render its tags as literal text, so the tolerance stays until
+   * the cache has turned over. The rules mirror
+   * app/generation/sections.py — keep the two in step, and retire them
+   * together.
    * ---------------------------------------------------------------- */
   const WEBSITE_TAG = "website_answer";
   const PDF_TAG = "pdf_answer";

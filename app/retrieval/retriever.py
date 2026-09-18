@@ -62,7 +62,6 @@ def _supplement_attachments(
     search_query: str,
     query_vector: list[float],
     n: int,
-    segregate: bool,
     temporal: Any | None = None,
 ) -> list[ContextBlock]:
     """Detailed answers: when admitted website blocks have attached PDFs that
@@ -107,7 +106,8 @@ def _supplement_attachments(
         if not new:
             return blocks
         reranked = rerank(search_query, list(ranked) + new, temporal=temporal)
-        return build_context(reranked, limit=n, segregate=segregate)
+        return build_context(reranked, limit=n, temporal=temporal,
+                             question=search_query)
     except Exception:
         logger.warning("Attachment supplementation failed; keeping original blocks.",
                        exc_info=True)
@@ -638,12 +638,13 @@ def retrieve(
         _observe_in_shadow(search_query, [])
         return list(graph_blocks)
     with span("rag.context_build"):
-        blocks = build_context(ranked, limit=n, segregate=dual)
+        blocks = build_context(ranked, limit=n, temporal=temporal,
+                               question=search_query)
     if answer_format == "detailed" and blocks:
         with span("rag.attachment_pull"):
             blocks = _supplement_attachments(
                 blocks, ranked, search_query=search_query, query_vector=query_vector,
-                n=n, segregate=dual, temporal=temporal,
+                n=n, temporal=temporal,
             )
     if graph_blocks:
         # Merged last, so attachment supplementation above still operates on the

@@ -20,6 +20,19 @@ class ContextBlock:
     score: float = 0.0
     conflict: bool = False
     also_available: list[dict[str, Any]] = field(default_factory=list)
+    #: Set when a *newer* block in the same context describes this block's
+    #: subject in the past tense — a role that has since changed hands, an
+    #: affiliation since left. ``superseded`` marks the older statement,
+    #: ``supersedes`` the newer one that dates it. Both are only ever set for a
+    #: question about the present; see
+    #: ``app.retrieval.context.builder.flag_supersession``.
+    #:
+    #: Advisory, not a filter. The older block stays in the context and stays
+    #: citable — it is still the evidence for what was true then — and the flags
+    #: reach the prompt so the answer can say "was" where it would otherwise
+    #: have said "is".
+    superseded: bool = False
+    supersedes: bool = False
 
 
 # The marker `app.retrieval.graph.facts` puts on its block, and the predicate

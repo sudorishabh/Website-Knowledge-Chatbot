@@ -41,46 +41,50 @@ until someone records why, the same way.
 
 ---
 
-## The grounded prompt: two shapes, chosen by what arrived
+## The grounded prompt: one shape, for every context
 
-`generate_answer` / `generate_stream` pick one of two system prompts —
-`GROUNDED_SYSTEM_PROMPT` (mixed) or `SINGLE_SOURCE_SYSTEM_PROMPT`
-(single-source) — via `has_mixed_sources(blocks)`. Both are built once at
-import as pure string constants, because assembling them per call would be
-work repeated on every question for text that never changes.
+`generate_answer` / `generate_stream` use `GROUNDED_SYSTEM_PROMPT`, built once
+at import as a pure string constant — assembling it per call would repeat work
+on every question for text that never changes.
 
-`has_mixed_sources` counts the *kinds* of source in the context: `website` vs.
-everything else (`pdf`, `pdf_attachment`, …). The graph's verified-relationship
-block (§ Graph facts, below) counts as neither — `_source_kinded` excludes it
-— because before that exclusion a context of one graph block plus website
-passages looked "mixed" and the graph's facts were rendered under a "From our
-documents" PDF heading they had no business under.
+The answer structure it demands is one continuous answer from all the blocks
+together, whatever mix of sources they came from, with no section labelled by
+where its material came from. Rule text and a worked example both exist because
+the failure mode is a model that manufactures a supplementary section and fills
+it by restating the answer.
 
-| Context holds | Prompt | Structure demanded |
-| --- | --- | --- |
-| Website **and** non-website blocks | Mixed | Two wrapped blocks, `<website_answer>` then `<pdf_answer>`, always in that order |
-| One kind only | Single-source | One continuous, untagged answer |
+### What this replaced, and why
 
-The two-block split is not offered as a stylistic option in the mixed case —
-it is *mandatory*, and the single-source prompt does not merely omit the
-option, it **prohibits** wrapping: rule text and a worked example both exist
-because the failure mode is a model that manufactures a second section under
-a single-kind context and fills it by restating the answer.
+There were two prompts, selected by `has_mixed_sources(blocks)`. A context
+holding both website and non-website blocks was answered in two wrapped blocks,
+`<website_answer>` then `<pdf_answer>` — the second captioned "From our
+documents" by the frontend — "always in that order", explicitly "whatever the
+relevance scores say". A single-kind context got a second prompt with the
+structure stripped out.
 
-### Why website leads
+Rule 5 of the mixed variant made website content authoritative: when a website
+block and a PDF block disagreed, the website statement *was* the answer, never
+offered as an equal alternative.
 
-Rule 5 (mixed variant) makes website content authoritative: when a website
-block and a PDF block disagree, the website statement is the answer, stated as
-such, never offered as an equal alternative. The PDF block is additive — it
-must add something the website block does not already say, or it is dropped
-entirely, tags included. A PDF-only context still gets its block, un-nested,
-because with nothing above it the block *is* the answer (see `sections.py`,
-below).
+That is the sentence that produced a reported failure. Asked "who is Ajay
+Mathur", the model was handed a 2020 web page headed "Statement by Dr Ajay
+Mathur, Director General, TERI" and a 2023 PDF saying he "was earlier ... at
+TERI as its Director General" — and instructed to take the web page and file the
+correction in the aside below it. The reader was left to reconcile two answers
+that contradicted each other.
+
+Source kind is now one term of the authority band in the reranker (see
+[05](05-ranking-and-temporal-gating.md)) — a tie-break between passages already
+judged comparably relevant, comparably well-matched to the period and, on a
+question about the present, comparably recent — and nothing more. Rule 5 now
+says blocks are weighed on what they say and when they said it, never on what
+kind of source they came from, and rule 6 says one answer may cite website
+pages, documents and the knowledge graph together.
 
 ### Rules 1–9, and what each defends against
 
-The base prompt (`_RULES_HEAD` + `_MIXED_RULES`/`_SINGLE_RULES` +
-`_RULES_TAIL`) is nine numbered rules, continued by callers that append more
+The base prompt (`_RULES_HEAD` + `_RULES_SOURCES` + `_RULES_TAIL`) is nine
+numbered rules, continued by callers that append more
 (history at 10, graph facts after that — see below). Worth reading closely
 because each clause exists for a specific observed failure, not as boilerplate:
 
@@ -229,8 +233,23 @@ particular call.
 `answerer.py` is deliberately thin: it assembles the system prompt (base +
 history rule + graph-facts rule + format directive + correction + plan
 directive + `today_anchor()`), a `MessagesPlaceholder` for history, and one
-human turn (`"Numbered context:\n{context}\n\nQuestion: {question}"`), then
-invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
+human turn (`"Numbered context:\n{context}\n\n{dates}Question: {question}"`),
+then invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
+
+- **The dates note** (`prompts.supersession_note`) fills `{dates}`, and is
+  empty for every context the builder did not flag — which is almost all of
+  them, so the human turn is then exactly what it was. When
+  `flag_supersession` has marked a pair (see
+  [06](06-context-and-citations.md)), it states in one paragraph, by block
+  number and date, which block is the most recent account of the subject and
+  which are older, and that a role the older ones give in the present tense was
+  true as of their own dates. Rule 9 and the header markers say the same thing.
+  On the run that still opened with the superseded block, both were in the
+  prompt, the block was [6] of six, and the context ran to 30,000 characters;
+  this is the same computed fact placed beside the question, where the model is
+  looking when it starts to write. No model call and no second classifier —
+  every word derives from flags already set — and it names no person or
+  organisation.
 
 - **History** (`_history_messages`) collapses roles to human/ai, drops blank
   turns, and keeps the last `HISTORY_MAX_TURNS = 12` messages (~6 exchanges).
@@ -248,14 +267,19 @@ invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
   talk / meta questions, using `CHITCHAT_SYSTEM_PROMPT` and no context at all.
 
 `format_context_blocks(blocks)` renders the blocks into the human turn's
-`{context}` slot: it groups consecutive same-kind blocks under `— TERI
-website —` / `— PDF documents —` headers only when the context was actually
-segregated by source and led by website (`_is_website_led` — contiguous
-website-then-pdf with at least one website block); an interleaved pull stays
-label-free. The graph facts block is exempted from grouping the same way it
-is exempted from `has_mixed_sources` — otherwise the context opened with a
-`— PDF documents —` heading directly above verified graph relationships,
-telling the model they were PDF content.
+`{context}` slot, in ranked order, each under its own `[n]` header. It used to
+group consecutive same-kind blocks under `— TERI website —` / `— PDF
+documents —` headings whenever the context had been segregated by source;
+announcing that grouping to the model was half of what made it answer in two
+parts, and the graph's facts block — which carries no `source_type` by design —
+fell to the "not website" branch and was introduced as PDF content. The headings
+went with the segregation. Each block still names its own kind in its own
+header, which is what weighing the evidence needs.
+
+A block flagged by `flag_supersession` (see
+[06](06-context-and-citations.md)) carries one extra note in that header: either
+"a later source below describes this as past" or "dates an earlier statement
+above". Rule 9 tells the model what to do with each.
 
 ---
 
@@ -416,15 +440,22 @@ miss it.
 
 ---
 
-## The two-block structure: `sections.py`
+## The retired two-block structure: `sections.py`
 
-Parses a raw answer (still carrying `<website_answer>`/`<pdf_answer>` tags,
-or none) into an ordered `list[Section]` for a caller that wants to render the
-two categories separately, plus `strip_tags`, which is what the verification
-passes above actually use — they reason about claims, not presentation, so
-tags never reach the LLM-facing checks.
+Parses a raw answer carrying `<website_answer>`/`<pdf_answer>` tags into an
+ordered `list[Section]`, plus `strip_tags`, which is what the verification
+passes above actually use — they reason about claims, not presentation, so tags
+never reach the LLM-facing checks.
 
-Parsing is deliberately **tolerant**: the tags come from a model, not code,
+**Nothing asks a model for those tags any more** (see "What this replaced"
+above), so a live answer arrives untagged and every function here falls through
+to its plain-text branch. It is kept because the semantic cache holds answers
+generated under the old contract, and one served from there still arrives
+wrapped — unparsed, it would render its tags as literal text. `ui/script.js`
+mirrors these rules for the same reason; retire the two together once the cache
+has turned over.
+
+Parsing is deliberately **tolerant**: the tags came from a model, not code,
 and a stream can be cut mid-tag, so a malformed or missing wrapper degrades to
 plain text rather than losing the answer. Behaviour worth knowing:
 

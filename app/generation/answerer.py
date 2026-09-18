@@ -20,11 +20,23 @@ from app.generation.prompts import (
     has_graph_facts,
     format_directive,
     grounded_system_prompt,
-    has_mixed_sources,
+    supersession_note,
     today_anchor,
 )
 
 logger = logging.getLogger(__name__)
+
+#: The human turn. `{dates}` is the supersession note with a blank line after it,
+#: or the empty string, so a context the builder did not flag renders exactly as
+#: it always has. Placed between the context and the question rather than in the
+#: system prompt: it is a per-request fact about *this* evidence, and the end of
+#: the human turn is where the model is looking when it starts to write.
+_HUMAN_TURN = "Numbered context:\n{context}\n\n{dates}Question: {question}"
+
+
+def _dates(blocks: list[ContextBlock]) -> str:
+    note = supersession_note(blocks)
+    return f"{note}\n\n" if note else ""
 
 # Prior turns threaded into the answer prompt so the model can resolve follow-up
 # references ("it", "that one", the original question) that the standalone query
@@ -91,16 +103,17 @@ def _build_system(
     answer_format: str | None,
     correction: str | None,
     *,
-    mixed: bool,
     has_history: bool = False,
     graph_facts: bool = False,
     plan_directive: str = "",
 ) -> str:
     """The grounded system prompt for this call.
 
-    `mixed` says whether the context holds both source kinds; it picks the
-    answer structure and must reach the format directive too, since the
-    directive's scope note refers to whichever structure is in force.
+    The context's composition used to select between two prompts here, because
+    a context holding both website and PDF blocks was answered in two labelled
+    sections. It no longer does: the blocks arrive as one ranked evidence set
+    and get one answer, so there is one prompt and the format directive has one
+    structure to describe.
 
     `graph_facts` says whether one of the blocks is the knowledge graph's
     verified-relationship block, which needs a rule of its own about reading
@@ -108,14 +121,14 @@ def _build_system(
     are added, continuing the list the base prompt ends at, so the model is
     never handed a rule 11 with no rule 10.
     """
-    system = grounded_system_prompt(mixed=mixed)
+    system = grounded_system_prompt()
     next_rule = 10
     if has_history:
         system += f"\n{_HISTORY_RULE}"
         next_rule += 1
     if graph_facts:
         system += f"\n{graph_facts_rule(next_rule)}"
-    directive = format_directive(answer_format, mixed=mixed)
+    directive = format_directive(answer_format)
     if directive:
         system += f"\n\n{directive}"
     if correction:
@@ -145,7 +158,6 @@ def generate_answer(
     system = _build_system(
         answer_format,
         correction,
-        mixed=has_mixed_sources(blocks),
         has_history=bool(messages),
         graph_facts=has_graph_facts(blocks),
         plan_directive=plan_directive,
@@ -154,7 +166,7 @@ def generate_answer(
         [
             ("system", system),
             MessagesPlaceholder("history"),
-            ("human", "Numbered context:\n{context}\n\nQuestion: {question}"),
+            ("human", _HUMAN_TURN),
         ]
     )
     chain = prompt | get_llm(temperature=0.2) | StrOutputParser()
@@ -162,6 +174,7 @@ def generate_answer(
         {
             "history": messages,
             "context": format_context_blocks(blocks),
+            "dates": _dates(blocks),
             "question": question,
         }
     ).strip()
@@ -182,7 +195,6 @@ def generate_stream(
     system = _build_system(
         answer_format,
         None,
-        mixed=has_mixed_sources(blocks),
         has_history=bool(messages),
         graph_facts=has_graph_facts(blocks),
         plan_directive=plan_directive,
@@ -191,7 +203,7 @@ def generate_stream(
         [
             ("system", system),
             MessagesPlaceholder("history"),
-            ("human", "Numbered context:\n{context}\n\nQuestion: {question}"),
+            ("human", _HUMAN_TURN),
         ]
     )
     chain = prompt | get_llm(temperature=0.2, streaming=True) | StrOutputParser()
@@ -199,6 +211,7 @@ def generate_stream(
         {
             "history": messages,
             "context": format_context_blocks(blocks),
+            "dates": _dates(blocks),
             "question": question,
         }
     )

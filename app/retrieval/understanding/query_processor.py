@@ -17,7 +17,7 @@ from app.retrieval.understanding.annual_report_editions import (
     SeriesRequest,
     series_request,
 )
-from app.retrieval.understanding import clarify
+from app.retrieval.understanding import clarify, content_scope
 from app.retrieval.understanding.catalog_prompt import (
     catalog_coverage_directive,
     catalog_inventory_directive,
@@ -660,6 +660,43 @@ def _corrected_intent(question: str, intent: Intent) -> Intent:
     return "qa"
 
 
+# Operations a content predicate does not disturb. A theme listing is about the
+# vocabulary, not about documents ("what topics are discussed?"), and a
+# distribution is about the facets; neither has a type word to widen.
+_FACET_OPERATIONS = frozenset({"list_themes", "distribution"})
+
+
+def _widen_content_question(question: str, analysis: QueryAnalysis) -> None:
+    """Span every content type when the question conditions on the text.
+
+    A type word the model turned into ``bundle`` is a filter only in a
+    catalog-shaped question. When the wording asks for documents by what they
+    say (see :mod:`content_scope`), the word is descriptive: the bundle is
+    cleared — whichever bundle it was — and a ``structured`` route becomes
+    ``qa``, because the catalog cannot read inside a document and a list or
+    count it produced would be about something else.
+
+    The bundle is cleared on every route, not only ``structured``: the qa
+    path's catalog fallback and the scoped summary both plan from the same
+    slots, and a type filter is as wrong for them as for the catalog answer.
+    Runs after `_corrected_intent`, so a counting question rescued from
+    chitchat onto ``structured`` is still widened when it conditions on text.
+    """
+    if analysis.operation in _FACET_OPERATIONS:
+        return
+    if not content_scope.conditions_on_text(question):
+        return
+    if analysis.bundle:
+        logger.info(
+            "Content question: %r is descriptive here; spanning every content type.",
+            analysis.bundle,
+        )
+        analysis.bundle = None
+    if analysis.intent == "structured":
+        logger.info("Content question labelled structured; routing to qa.")
+        analysis.intent = "qa"
+
+
 def _edition(question: str) -> "EditionResolution | None":
     """The annual-report edition this question resolves to, or None.
 
@@ -770,6 +807,9 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
     # A chitchat draw on a real question is unrecoverable downstream, so it is
     # checked against the corpus here rather than trusted. See `_corrected_intent`.
     analysis.intent = _corrected_intent(effective, analysis.intent)
+    # A type word is a filter only in a catalog-shaped question; one that
+    # conditions on what the documents say spans every type. See `content_scope`.
+    _widen_content_question(effective, analysis)
     # Read from the understanding, not from `analysis.intent`: by this line the
     # terminal label has already been collapsed onto chitchat and possibly
     # rescued back to qa, and neither still says the user was unclear.

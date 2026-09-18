@@ -103,14 +103,15 @@ not describe is never the honest option.
 ## Admission: dedup, budget, ordering
 
 `_admit` walks candidates in ranked order and, for each, either adds a block or
-skips it — mutating `blocks`, `block_vectors` and `seen_parents` as it goes so
-later calls (segregated mode, attachment supplementation) can continue from
-where an earlier call left off:
+skips it — mutating `blocks`, `block_vectors` and `seen_parents` as it goes so a
+later call (attachment supplementation) can continue from where an earlier one
+left off:
 
 1. **Stop conditions** — `limit` total blocks reached, or `max_add` added by
    this call.
-2. **Floor** — if set, skip candidates below `semantic_score` (used for the
-   website slots; see below).
+2. **Floor** — if set, skip candidates below `semantic_score`. Nothing sets it
+   today; it is the surviving parameter of the per-source admission floors
+   described under "One ranked pass" below.
 3. **Parent-level dedup** — `seen_parents` is keyed by `parent_id or id`. A
    second child from a parent already represented contributes nothing new.
 4. **Near-duplicate dedup** — cosine similarity against every already-kept
@@ -127,26 +128,44 @@ where an earlier call left off:
    exceeds the budget — the check is `if blocks and spent + cost > budget`, so
    an empty context is never handed back purely on token size.
 
-### Segregated admission: website vs PDF slots
+### One ranked pass
 
-When `segregate=True` (the dual-retrieval mode — see
-[04](04-search-and-fusion.md)), `_admit` is called three times
-against the *same* mutable state, in this order:
+`_admit` is called **once**, over every candidate, in the reranker's order.
+Source kind gets no budget, no floor and no reserved position: it is already
+represented in that order as one term of the authority band, which sits below
+relevance, temporal fit and — on a question about the present — recency. A newer
+PDF can therefore lead an older web page.
+
+It used to be called three times against the same mutable state:
 
 | Call | Pool | `max_add` | Floor |
 | --- | --- | --- | --- |
-| 1 | Website candidates | `website_max_slots` (default `2`) | `website_chunk_floor` (default `0.30`) |
-| 2 | Non-website candidates | `pdf_max_slots` (default `2`) | none — admitted unconditionally |
-| 3 | Non-website candidates (again) | `1` | `pdf_high_confidence_floor` (default `0.5`) |
+| 1 | Website candidates | `website_max_slots` (`2`) | `website_chunk_floor` (`0.30`) |
+| 2 | Non-website candidates | `pdf_max_slots` (`2`) | none |
+| 3 | Non-website candidates (again) | `1` | `pdf_high_confidence_floor` (`0.5`) |
 
 Website first, unconditionally-admitted PDFs second, one extra high-confidence
-PDF slot last, and nothing past that. Walking website first is deliberate for
-two reasons: the final order comes out website-first with no extra sort step,
-and a website candidate wins any near-duplicate tie against a PDF describing
-the same thing — the PDF then lands in the website block's `also_available`
-rather than occupying its own slot.
+PDF slot last, and nothing past that — and the emitted order was website-first
+whatever the ranking said. Two consequences retired it. The ordering was
+categorical rather than evidential, so a 2020 announcement led the 2023 brief
+that corrected it (the "who is the director general" failure — see
+[05](05-ranking-and-temporal-gating.md)); and the graph's facts block carries no
+`source_type` by design, so it fell into the "not website" pool and competed
+with PDF attachments for those two slots.
 
-### Non-segregated ordering: the attention trick
+One thing was genuinely lost with it: a website candidate used to win any
+near-duplicate tie against a PDF describing the same thing, so the PDF landed in
+the website block's `also_available` rather than taking a slot. The
+higher-ranked candidate now wins that tie instead — which is the same preference
+expressed through the ranking rather than over it.
+
+### Ordering: ranked, and numbered from 1
+
+`_numbered` numbers the blocks in the order the reranker returned them. Block
+`[2]` is the second-best piece of evidence, and the ordering degrades
+monotonically from there.
+
+It used to be `_order_for_attention`:
 
 ```python
 def _order_for_attention(blocks):
@@ -156,17 +175,31 @@ def _order_for_attention(blocks):
     return head + tail[::-1]
 ```
 
-For more than two blocks, this interleaves: odd-ranked blocks (1st, 3rd, 5th, …)
-keep their order at the front, even-ranked blocks (2nd, 4th, 6th, …) are
-appended in **reverse**. For five ranked blocks `[1,2,3,4,5]` the result is
-`[1,3,5,4,2]` — the two top-ranked blocks land at the two ends of the context,
-and the weaker ones are pushed toward the middle. No comment in this module
-states the reason, but the shape matches the well-documented "lost in the
-middle" effect in long-context LLM prompts, where content at the very start and
-very end of a prompt gets more attention than content buried in the centre;
-placing the strongest evidence at both extremes is the natural response to
-that. Treat this as inferred from the code's shape, not as a claim backed by an
-in-repo comment.
+For three or more blocks this interleaved — odd-ranked blocks kept their order
+at the front, even-ranked ones were appended **reversed**, so `[1,2,3,4,5]` came
+out `[1,3,5,4,2]`. The two best blocks landed at the two ends of the context and
+the weaker ones were pushed toward the middle, matching the "lost in the middle"
+effect. Nothing in the repo ever claimed more than a resemblance; this document
+previously described it as "inferred from the code's shape, not a claim backed
+by an in-repo comment".
+
+Two things retired it:
+
+- **It only ever ran on the minority path.** `prefer_website_enabled` is on in
+  production, so an ordinary question took the segregated build, which emitted
+  its own website-first order and never called this. Unifying that build put
+  every question through a reordering production had not been using.
+- **The ranked order now carries meaning.** For a question about the present,
+  rank encodes how recent the evidence is (see
+  [05](05-ranking-and-temporal-gating.md)); scrambling it discards the signal
+  the ranking exists to express. Measured on the reported query: the block
+  ranked **2nd** — a 2023 brief saying the subject "was earlier ... at TERI as
+  its Director General" — was moved to display position **6**, below a 2020 page
+  ranked 6th that called him TERI's Director General in the present tense. The
+  answer led with the 2020 page.
+
+The strongest block is still first. The difference is that the second strongest
+is now second.
 
 ---
 
@@ -287,7 +320,6 @@ block list produced here, is covered in
 | Parent fetch (`client.retrieve`) fails | `except Exception` in `_fetch_parents` | Logged exception, empty parent map returned | Every candidate falls back to its own child text |
 | A candidate's parent id names a point that no longer exists | Missing from `_fetch_parents`'s result dict | `parents.get(...)` returns `None` → child text used | None needed — same as no parent |
 | A candidate carries no vector | `_admit`'s cosine check is skipped (`if cand.vector and kvec`) | The candidate is never deduplicated against, only ever a dedup target | — |
-| Website floor excludes every website candidate | `_admit` with `floor=website_chunk_floor` admits nothing | That call simply adds zero blocks; PDFs still fill their own slots | No error — segregated mode tolerates an empty group |
 | Token budget too small for even one block | First block's cost exceeds `token_budget` | Admitted anyway (the `if blocks and ...` guard exempts the first) | Context may exceed the nominal budget by one block's worth |
 | tiktoken unavailable | `_encoder()` catches the import failure | Falls back to the 4-chars/token heuristic | Token counts are approximate; budget behaviour is unaffected in kind |
 
@@ -295,13 +327,47 @@ block list produced here, is covered in
 
 | Setting | Default | Effect |
 | --- | --- | --- |
-| `retrieval_top_k` | `6` | `limit` — maximum blocks in a non-segregated context. |
+| `retrieval_top_k` | `6` | `limit` — maximum blocks in a context. |
 | `context_token_budget` | `9000` | Token ceiling across all admitted block text. |
 | `dedup_cosine_threshold` | `0.92` | Cosine similarity above which two blocks count as the same content. |
-| `website_max_slots` | `2` | Website blocks admitted unconditionally (segregated mode). |
-| `website_chunk_floor` | `0.30` | Semantic-score floor for those website slots. |
-| `pdf_max_slots` | `2` | PDF blocks admitted unconditionally (segregated mode). |
-| `pdf_high_confidence_floor` | `0.5` | Semantic-score floor for the one extra PDF slot. |
+
+## Supersession
+
+After the conflict flags, `flag_supersession` compares blocks pairwise, subject
+to four conditions — all required:
+
+1. the question is **CURRENT** (for any other question the older statement may
+   be exactly what was asked for);
+2. both blocks mention everything the question named. The subject comes from
+   `strategies.extract_key_terms`, the same helper the keyword leg uses;
+3. they are at least **180 days** apart;
+4. the newer one puts a role or affiliation in the past ("was earlier at",
+   "until 2021", "former", "stepped down") **within 400 characters of a mention
+   of the subject**.
+
+The older block is marked `superseded`, the newer `supersedes`. Both markers
+reach the prompt in the block header, and rule 9 tells the model to date the
+older block's claims rather than state them as current fact.
+
+Conditions 2 and 4 are precision, and they were learned the hard way. The first
+version compared the blocks to *each other* — two or more shared capitalised
+words — and searched the whole of the newer block for past framing. Replayed
+against the reported query it marked a 2019 building-retrofit PDF as superseded
+by a 2021 announcement about a person it never mentions. Blocks run to thousands
+of characters and this corpus is all one organisation, so pairwise name overlap
+is nearly free and an unanchored "formerly" turns up almost every time.
+
+It is advisory, never a filter: the older block stays in the context and stays
+citable, because it is still the evidence for what was true at its own date.
+
+Deliberately conservative, and deliberately modest about what it claims. It does
+not read *which* role, or *whose* — establishing that the past-framed role in
+the newer block is the same role the older one asserts needs relation
+extraction, and regular expressions would produce a confident wrong answer more
+often than a useful one. The authoritative version of this comparison is the
+claim graph's `valid_from` / `valid_until` ladder
+([08](08-knowledge-graph-retrieval.md)); this is the document-evidence fallback
+for the common case where the graph holds no claim.
 
 ## Hand-off
 

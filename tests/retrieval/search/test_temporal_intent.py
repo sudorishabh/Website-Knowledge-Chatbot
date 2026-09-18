@@ -76,6 +76,12 @@ def test_upcoming_does_not_rank_because_it_already_gates():
     # An open-ended project started long ago IS current; a 2026 news item is not.
     ({"bundle": "ongoing_projects", "effective_start_date": "2005-04-01"}, tg.FIT_MATCH),
     ({"bundle": "news", "effective_start_date": "2026-01-05"}, tg.FIT_MISS),
+    # The project's page runs to the present. A PDF attached to it does not: it
+    # inherited the bundle, but it was written once, on the date it states.
+    ({"bundle": "ongoing_projects", "source_type": "website",
+      "effective_start_date": "2019-01-01"}, tg.FIT_MATCH),
+    ({"bundle": "ongoing_projects", "source_type": "pdf_attachment",
+      "effective_start_date": "2019-01-01", "start_precision": "year"}, tg.FIT_MISS),
     # A closed period covering today.
     ({"effective_start_date": "2024-01-01", "effective_end_date": "2027-01-01"}, tg.FIT_MATCH),
     # Not in force yet.

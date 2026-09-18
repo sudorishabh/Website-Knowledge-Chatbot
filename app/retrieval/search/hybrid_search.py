@@ -42,16 +42,17 @@ class Candidate:
                        scorer works in (Qdrant cosine, or the reranker
                        provider's own 0-1 score). Set once at search time and
                        preserved through fusion, because every configured
-                       threshold — ``website_chunk_floor``,
-                       ``pdf_high_confidence_floor``, ``corrective_min_score``,
+                       threshold — ``corrective_min_score``,
                        ``rerank_score_threshold`` — is calibrated against it.
     ``fusion_score``   the reciprocal-rank value from ``fusion.rrf``, on its own
                        ~0.016-0.033 scale; 0.0 when no fusion ran.
 
     Keeping these apart is the fix for a real defect: ``rrf`` used to overwrite
-    ``score`` and the floors read it, so enabling the keyword or multi-query leg
-    put every candidate an order of magnitude below ``website_chunk_floor`` and
-    silently emptied the website group (see tests/test_fusion_score_integrity.py).
+    ``score`` and the cosine-scaled thresholds read it, so merely enabling the
+    keyword or multi-query leg put every candidate an order of magnitude below
+    them — emptying the website group through an admission floor since retired,
+    and pinning the corrective loop open through one that has not
+    (see tests/retrieval/search/test_fusion_score_integrity.py).
     """
 
     id: str

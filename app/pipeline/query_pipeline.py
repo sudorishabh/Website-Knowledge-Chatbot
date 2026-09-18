@@ -963,6 +963,8 @@ def _search_blocks(
                 "n": b.n,
                 "score": round(b.score, 4),
                 "conflict": b.conflict,
+                "superseded": b.superseded,
+                "supersedes": b.supersedes,
                 "text": b.text,
                 "document_id": b.payload.get("document_id"),
                 "source_type": b.payload.get("source_type"),

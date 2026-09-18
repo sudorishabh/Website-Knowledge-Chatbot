@@ -283,7 +283,7 @@ def test_a_passage_only_a_perspective_finds_survives_fusion(monkeypatch):
     monkeypatch.setattr(retriever, "rerank", lambda q, cands, **kw: list(cands))
     monkeypatch.setattr(
         retriever, "build_context",
-        lambda ranked, *, limit, segregate: list(ranked),
+        lambda ranked, *, limit, temporal=None, question="": list(ranked),
     )
     monkeypatch.setattr(
         retriever, "perspectives",
@@ -317,7 +317,7 @@ def test_without_the_perspective_that_passage_is_not_retrieved(monkeypatch):
     monkeypatch.setattr(retriever, "rerank", lambda q, cands, **kw: list(cands))
     monkeypatch.setattr(
         retriever, "build_context",
-        lambda ranked, *, limit, segregate: list(ranked),
+        lambda ranked, *, limit, temporal=None, question="": list(ranked),
     )
     monkeypatch.setattr(retriever, "perspectives", lambda q, n, **kw: [])
     monkeypatch.setattr(

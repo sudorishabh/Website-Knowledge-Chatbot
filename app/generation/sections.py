@@ -1,17 +1,19 @@
-"""The two-block answer structure.
+"""A reader for the retired two-block answer structure.
 
-Answers grounded in a mixed context come back wrapped in the ``<website_answer>``
-/ ``<pdf_answer>`` tags that :mod:`app.generation.prompts` demands, so the
-frontend can style website-sourced and PDF-sourced content as distinct blocks.
-A single-kind context is prompted for one untagged answer instead, and any block
-the model emits against that is demoted here — the split only means something
-when there are two kinds of source to divide.
+Answers used to come back wrapped in ``<website_answer>`` / ``<pdf_answer>``
+tags, so the frontend could style website-sourced content as the answer and
+PDF-sourced content as a captioned supplement below it. Nothing asks a model for
+that shape any more: website, PDF and graph evidence is ranked as one set and
+answered once, so a live answer arrives untagged and every function here falls
+through to its plain-text branch.
 
-This module is the only reader of that structure: the pipeline strips the tags
-before the verification passes (which reason about claims, not presentation),
-and the frontend parses the same sections out of the answer it renders.
+It is kept because the semantic cache holds answers generated under the old
+contract, and one served from there still arrives wrapped — unparsed, it would
+render its tags as literal text. The frontend keeps a mirror of these rules for
+the same reason (``ui/script.js``); retire the two together once the cache has
+turned over.
 
-Parsing stays tolerant. The tags come from a model, not from code, and a stream
+Parsing stays tolerant. The tags came from a model, not from code, and a stream
 can be cut mid-tag — so a malformed or absent wrapper degrades to plain text
 rather than losing the answer.
 """

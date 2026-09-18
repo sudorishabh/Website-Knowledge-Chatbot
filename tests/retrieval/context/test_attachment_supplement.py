@@ -45,7 +45,7 @@ def _attachment(file_uuid="f1"):
 
 
 def _supplement(blocks, ranked, **overrides):
-    kw = dict(search_query="q", query_vector=[0.1], n=5, segregate=False)
+    kw = dict(search_query="q", query_vector=[0.1], n=5)
     kw.update(overrides)
     return retriever._supplement_attachments(blocks, ranked, **kw)
 
@@ -111,7 +111,7 @@ def test_unrepresented_attachment_triggers_one_pull(monkeypatch):
         retriever, "rerank", lambda q, cands, **kw: reranked_input.extend(cands) or cands
     )
     rebuilt = [_block(), _block(n=2, doc_id="f1", source_type="pdf_attachment")]
-    monkeypatch.setattr(retriever, "build_context", lambda ranked, *, limit, segregate: rebuilt)
+    monkeypatch.setattr(retriever, "build_context", lambda ranked, *, limit, temporal=None, question="": rebuilt)
 
     out = _supplement([_block()], [_cand("c1")])
 
@@ -155,7 +155,7 @@ def test_retrieve_supplements_only_detailed(monkeypatch):
     monkeypatch.setattr(retriever, "get_settings", _plain_settings)
     monkeypatch.setattr(retriever, "search", lambda *a, **k: [_cand()])
     monkeypatch.setattr(retriever, "rerank", lambda q, cands, **kw: cands)
-    monkeypatch.setattr(retriever, "build_context", lambda ranked, *, limit, segregate: blocks)
+    monkeypatch.setattr(retriever, "build_context", lambda ranked, *, limit, temporal=None, question="": blocks)
     calls: list = []
     monkeypatch.setattr(
         retriever, "_supplement_attachments",

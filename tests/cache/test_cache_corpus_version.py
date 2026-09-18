@@ -122,14 +122,19 @@ def test_document_deletion_misses(monkeypatch):
 # --------------------------------------------------------------------------- #
 
 def test_retrieval_setting_change_still_invalidates(monkeypatch):
+    """`website_chunk_floor` used to be the knob turned here. It was one of the
+    per-source admission budgets, and it went when website and PDF candidates
+    stopped being admitted as separate groups; `website_candidate_k` — the size
+    of the website recall pull, which is what the preference still means — is
+    the surviving member of the same fingerprint."""
     monkeypatch.setattr(cache_keys, "corpus_revision", lambda: "rev-1")
     settings = cache_keys.get_settings()
     before = cache_keys.semantic_partition(6, "default")
 
-    monkeypatch.setattr(settings, "website_chunk_floor", 0.55)
+    monkeypatch.setattr(settings, "website_candidate_k", 35)
     assert cache_keys.semantic_partition(6, "default") != before
 
-    monkeypatch.setattr(settings, "website_chunk_floor", 0.30)
+    monkeypatch.setattr(settings, "website_candidate_k", 20)
     assert cache_keys.semantic_partition(6, "default") == before
     # top_k and answer_format remain part of the partition too.
     assert cache_keys.semantic_partition(8, "default") != before
@@ -141,6 +146,17 @@ def test_corpus_revision_changes_the_partition(monkeypatch):
     first = cache_keys.semantic_partition(6, "default")
     monkeypatch.setattr(cache_keys, "corpus_revision", lambda: "rev-2")
     assert cache_keys.semantic_partition(6, "default") != first
+
+
+def test_a_behaviour_revision_changes_the_partition(monkeypatch):
+    """A ranking or prompt change has no setting to hash. `PIPELINE_REVISION` is
+    the hand-bumped stand-in, so an answer generated under the old behaviour is
+    not served for the rest of its day-long TTL once the fix is running — which
+    is how one fix was reported as not working three times over."""
+    monkeypatch.setattr(cache_keys, "corpus_revision", lambda: "rev-1")
+    before = cache_keys.semantic_partition(6, "default")
+    monkeypatch.setattr(cache_keys, "PIPELINE_REVISION", "the next change")
+    assert cache_keys.semantic_partition(6, "default") != before
 
 
 def test_unknown_revision_disables_the_cache(monkeypatch):

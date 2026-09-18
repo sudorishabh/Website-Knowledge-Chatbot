@@ -165,8 +165,7 @@ def answer(
     from app.retrieval.context.builder import build_context
 
     evidence = (
-        build_context(ranked, limit=top_k or settings.retrieval_top_k,
-                      segregate=False)
+        build_context(ranked, limit=top_k or settings.retrieval_top_k)
         if ranked else []
     )
 
