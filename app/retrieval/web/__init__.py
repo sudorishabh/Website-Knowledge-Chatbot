@@ -33,4 +33,7 @@ Modules
 :mod:`.providers` the search vendor behind one interface (Brave, Tavily), and
                 the single ``search`` entry point that caches, retries, applies
                 the domain policy, de-duplicates and traces.
+:mod:`.fetch`   one search-result URL fetched safely: checked redirect hops,
+                robots.txt and Crawl-delay, per-site pacing, retries, size and
+                type caps, one fetch per page. Never follows a page's links.
 """

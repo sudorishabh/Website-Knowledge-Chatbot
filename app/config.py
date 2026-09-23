@@ -336,6 +336,28 @@ class Settings(BaseSettings):
     # Connections the web client may hold open at once, across all hosts. Bounds
     # how hard one busy minute can hit the sites being read.
     web_max_connections: int = 8
+    # Whether a PDF found by web search may be fetched and read. Only ever for a
+    # PDF the corpus does not already hold: one that ingestion has is answered
+    # from its ingested chunks (OCR, tables and resolved dates included) instead.
+    web_fetch_pdfs: bool = True
+    # Largest response read, per kind. A page or PDF over its cap is skipped
+    # rather than truncated — half a PDF does not parse, and a multi-megabyte
+    # HTML page is not an article.
+    web_fetch_max_bytes: int = 3_000_000
+    web_pdf_max_bytes: int = 15_000_000
+    # Redirect hops followed for one URL; every hop is re-checked for safety and
+    # against the destination site's robots.txt.
+    web_max_redirects: int = 3
+    # Retries for a transient fetch failure (a timeout, a 429, a 5xx).
+    web_fetch_retries: int = 1
+    # Obey each site's robots.txt, including its Crawl-delay. Off only for a
+    # deployment reading sites that have explicitly permitted it.
+    web_respect_robots: bool = True
+    # Minimum seconds between two requests to the same site, and the longest a
+    # request will wait for its turn. A site asking for a longer Crawl-delay
+    # than the wait allows is skipped for this question rather than waited on.
+    web_per_host_interval_seconds: float = 1.0
+    web_max_host_wait_seconds: float = 3.0
     # Lifetimes of the three web caches, in seconds; 0 disables that cache.
     # Search results go stale fastest, so they are kept for hours; an extracted
     # page and a site's robots.txt change rarely and are kept for a day. None of
