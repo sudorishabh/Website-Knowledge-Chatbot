@@ -63,6 +63,7 @@ from typing import Any, NamedTuple, Sequence
 from pydantic import BaseModel, Field
 
 from app.config import get_settings
+from app.core.models.context import WEB_SOURCE_TYPE
 from app.retrieval.search.hybrid_search import Candidate
 from app.retrieval.search.volatility import is_volatile
 
@@ -146,13 +147,24 @@ _AUTHORITY_PRIMARY = 0.75
 _AUTHORITY_PROJECT = 0.60
 _AUTHORITY_SECONDARY = 0.45
 _AUTHORITY_ATTACHMENT = 0.35
+# Pages fetched from the web at query time (see app.retrieval.web). The
+# organisation's own site is its own statement, but one ingestion never checked,
+# dated or classified — so it sits with the project tier, under the corpus's
+# canonical and primary content. A third-party page is someone else's account of
+# the organisation and sits below everything the corpus holds. Like every tier,
+# these only order candidates the relevance band already called equivalent.
+_AUTHORITY_WEB_PRIMARY = 0.60
+_AUTHORITY_WEB_THIRD_PARTY = 0.20
 
 
 def derived_authority(payload: dict) -> float:
     """Editorial authority in [0,1] inferred from metadata already in the payload.
 
     Reads ``source_type`` and ``bundle`` only — both are stamped on every chunk at
-    ingest, so this needs no new field, no reprojection and no ingest change.
+    ingest, so this needs no new field, no reprojection and no ingest change. A
+    web passage has no bundle; for it the one thing that matters is whether the
+    page is on the organisation's own site, which its payload states as
+    ``is_primary_source``.
 
     A note on the attachment tier: ``source_type == "pdf_attachment"`` is scored
     below its own bundle because the attachment is a *derived* artefact of the
@@ -170,6 +182,9 @@ def derived_authority(payload: dict) -> float:
     bundle = str(payload.get("bundle") or "").strip().lower()
     source_type = str(payload.get("source_type") or "").strip().lower()
 
+    if source_type == WEB_SOURCE_TYPE:
+        return (_AUTHORITY_WEB_PRIMARY if payload.get("is_primary_source")
+                else _AUTHORITY_WEB_THIRD_PARTY)
     if source_type == "website":
         if bundle in _CANONICAL_BUNDLES:
             return _AUTHORITY_CANONICAL
@@ -666,6 +681,7 @@ def rerank(
     top_n: int | None = None,
     table_boost: float = 0.0,
     temporal: Any | None = None,
+    rescore: bool = True,
 ) -> list[Candidate]:
     """Candidates in ranked order, best first, capped at `top_n`.
 
@@ -676,12 +692,17 @@ def rerank(
     scoring marginally higher.
 
     Under the cross_encoder provider only the first `rerank_max_candidates` are
-    scored; the rest keep their incoming order behind them."""
+    scored; the rest keep their incoming order behind them.
+
+    ``rescore=False`` bands the candidates on the `semantic_score` they already
+    carry instead of asking the provider again — for candidates that have each
+    been through this function once, whose scores are therefore already on the
+    provider's scale (see :func:`merge_ranked`)."""
     candidates = list(candidates)
     if not candidates:
         return []
     settings = get_settings()
-    provider = (settings.reranker_provider or "embedding").lower()
+    provider = (settings.reranker_provider or "embedding").lower() if rescore else "embedding"
 
     # A cross-encoder costs one model pass per candidate, so the fused set is
     # capped before it is scored (see `rerank_max_candidates`). The tail is not
@@ -771,3 +792,42 @@ def rerank(
     ]
     out.extend(tail)
     return out[:top_n] if top_n else out
+
+
+def merge_ranked(
+    query: str,
+    ranked: Sequence[Candidate],
+    extra: Sequence[Candidate],
+    *,
+    table_boost: float = 0.0,
+    temporal: Any | None = None,
+) -> list[Candidate]:
+    """One ranking of candidates already reranked and new ones that were not.
+
+    The case it exists for is web retrieval: the corpus's candidates have been
+    ranked, and web passages (or corpus chunks web search pointed at) arrive
+    afterwards. Scoring everything again would repeat the most expensive step
+    of ranking for no change — the corpus's candidates already carry their
+    provider score — so only the new candidates are scored, and then the whole
+    set is banded once on scores that are now all on the provider's scale.
+
+    A candidate already in ``ranked`` is not scored twice: the same chunk
+    reached two ways is one candidate. Under the cross_encoder cap, the
+    unscored tail of ``ranked`` stays behind everything scored, as
+    :func:`rerank` leaves it — its score is still a cosine, and ranking it
+    against probabilities is the scale-mixing this module avoids.
+    """
+    ranked = list(ranked)
+    seen = {c.id for c in ranked}
+    fresh = [c for c in extra if c.id not in seen]
+    if not fresh:
+        return ranked
+    scored = rerank(query, fresh, table_boost=table_boost, temporal=temporal)
+    settings = get_settings()
+    provider = (settings.reranker_provider or "embedding").lower()
+    cap = settings.rerank_max_candidates
+    head_size = cap if provider == "cross_encoder" and cap else len(ranked)
+    head, tail = ranked[:head_size], ranked[head_size:]
+    merged = rerank(query, head + scored, table_boost=table_boost, temporal=temporal,
+                    rescore=False)
+    return merged + tail
