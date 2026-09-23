@@ -40,6 +40,11 @@ _COMPONENTS = {
     "ingest.embed": "embedding",
     "rag.rerank": "rerank",
     "ingest.extract": "extraction",
+    # Web retrieval: the search API and the page fetches are time spent on the
+    # web; embedding the fetched passages is embedding time like any other.
+    "rag.web_search": "web",
+    "rag.web_fetch": "web",
+    "rag.web_passages": "embedding",
 }
 
 

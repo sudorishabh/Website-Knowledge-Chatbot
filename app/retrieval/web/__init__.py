@@ -54,4 +54,7 @@ Modules
                 subjects mentioned, a profile for a person, the passage for a
                 passage hunt, the period covered — and the one web decision,
                 with every reason for it either way.
+:mod:`.service` the one entry point, ``gather``: search, sort against the
+                corpus, fetch what is missing within a time budget, read it
+                into passages, and record all of it in one trace entry.
 """

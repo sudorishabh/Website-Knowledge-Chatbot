@@ -374,6 +374,14 @@ class Settings(BaseSettings):
     # Pages of a fetched PDF that are read. Enough for a report's summary and
     # findings; the remainder is recorded as not read, never guessed at.
     web_pdf_max_pages: int = 40
+    # Pages fetched per question, from the search results the corpus does not
+    # already hold — the organisation's own pages first. Search results beyond
+    # these are listed in the trace but not read.
+    web_max_fetches: int = 4
+    # Wall-clock allowance for searching and fetching, per question. A page still
+    # loading when it runs out is dropped from this answer (the trace says so),
+    # and the answer is built from what arrived.
+    web_budget_seconds: float = 12.0
     # Passages each fetched document may contribute, and the most web passages
     # handed to ranking in total. Ranking decides which (if any) reach the
     # answer; these only bound how many it has to consider.
