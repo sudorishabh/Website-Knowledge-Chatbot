@@ -313,6 +313,80 @@ def _observe_in_shadow(search_query: str, blocks: list[ContextBlock]) -> None:
         logger.warning("Graph shadow hook failed.", exc_info=True)
 
 
+def _start_web(plan: Any | None, query_vector: list[float]) -> Any | None:
+    """Start web retrieval now, beside the corpus pulls, when the question forces
+    it — or return None to leave the decision for after ranking.
+
+    An explicit "search the web" or a freshness question consults the web
+    whatever the corpus holds, so there is nothing to wait for: starting it here
+    overlaps its latency with the corpus legs instead of adding to it. Every
+    other question waits for the sufficiency check in :func:`_with_web`.
+
+    The import is local so that with web retrieval off — ``plan`` is None — the
+    package is never loaded.
+    """
+    if plan is None:
+        return None
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        from contextvars import copy_context
+
+        from app.retrieval.web import service, sufficiency
+
+        if not sufficiency.decide(plan, None).search:
+            return None
+        pool = ThreadPoolExecutor(max_workers=1)
+        future = pool.submit(copy_context().run, service.gather, plan, query_vector)
+        pool.shutdown(wait=False)
+        return future
+    except Exception:  # pragma: no cover - defence in depth
+        logger.warning("Could not start web retrieval early.", exc_info=True)
+        return None
+
+
+def _with_web(
+    search_query: str,
+    ranked: list[Any],
+    plan: Any,
+    *,
+    query_vector: list[float],
+    early: Any | None,
+    table_boost: float,
+    temporal: Any | None,
+) -> list[Any]:
+    """``ranked``, with the web's evidence merged in when the question needs it.
+
+    The decision is recorded on the trace either way — including when the
+    internal evidence was judged sufficient and the web was not consulted, which
+    is the answer to "why did it not search the web?". Web candidates join the
+    same banded ranking as the corpus's (`reranker.merge_ranked`), so relevance
+    decides and authority only settles ties. Fails open: any problem leaves the
+    corpus ranking exactly as it was.
+    """
+    try:
+        from app.retrieval.search.reranker import merge_ranked
+        from app.retrieval.web import service, sufficiency
+
+        decision = sufficiency.decide(plan, sufficiency.assess(plan, ranked))
+        retrieval_log.note(web_decision=decision.to_trace())
+        if early is not None:
+            outcome = early.result()
+        elif decision.search:
+            outcome = service.gather(plan, query_vector)
+        else:
+            return ranked
+        if not outcome.candidates:
+            return ranked
+        merged = merge_ranked(search_query, ranked, outcome.candidates,
+                              table_boost=table_boost, temporal=temporal)
+        logger.info("Web retrieval added %d candidate(s) (%s).",
+                    len(outcome.candidates), ", ".join(decision.reasons))
+        return merged
+    except Exception:
+        logger.warning("Web retrieval failed; using the corpus ranking.", exc_info=True)
+        return ranked
+
+
 def retrieve(
     search_query: str,
     *,
@@ -324,6 +398,7 @@ def retrieve(
     capabilities: set[str] | None = None,
     temporal: Any | None = None,
     subqueries: Sequence[Any] | None = None,
+    web: Any | None = None,
 ) -> list[ContextBlock]:
     """``temporal`` is the question's `TemporalIntent`, or None to behave exactly
     as before it existed: no temporal ranking, and the UPCOMING gate detecting
@@ -336,7 +411,14 @@ def retrieve(
     to the same RRF every other leg goes through, and may nominate itself to the
     graph; neither can remove a candidate the base pull found. Planned in
     `app.pipeline` rather than here because the requirements it is built from
-    come from `app.generation.answer_plan`, which retrieval may not import."""
+    come from `app.generation.answer_plan`, which retrieval may not import.
+
+    ``web`` is the question's `WebPlan` (see :mod:`app.retrieval.web.planner`),
+    or None — the default, and what the caller passes whenever
+    `web_search_enabled` is off — to retrieve from the corpus alone exactly as
+    before web retrieval existed. With a plan, the web is consulted when the
+    question forces it or the corpus's evidence is judged insufficient, and its
+    candidates join the same ranking before the context is built."""
     settings = get_settings()
     n = n or settings.retrieval_top_k
 
@@ -389,6 +471,8 @@ def retrieve(
     if query_vector is None:
         with span("rag.embed_query"):
             query_vector = embed_query(search_query)
+    # A question that forces the web starts it now, overlapping the corpus legs.
+    early_web = _start_web(web, query_vector)
 
     def _base_search(active_filters: list[Any] | None, *, use_dual: bool) -> list[Any]:
         if use_dual:
@@ -632,6 +716,13 @@ def retrieve(
                 score_before, score_after,
                 "improved" if score_after > score_before else "no gain",
             )
+    # The web leg, after the corpus has been ranked and before its emptiness is
+    # final: a question the corpus cannot answer at all is the web's clearest case.
+    if web is not None:
+        ranked = _with_web(
+            search_query, ranked, web, query_vector=query_vector, early=early_web,
+            table_boost=table_boost, temporal=temporal,
+        )
     if not ranked:
         # Nothing from the corpus. A graph answer still stands on its own, which
         # is the behaviour this leg has always had when retrieval came up empty.

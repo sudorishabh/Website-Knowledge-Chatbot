@@ -147,7 +147,7 @@ _AUTHORITY_PRIMARY = 0.75
 _AUTHORITY_PROJECT = 0.60
 _AUTHORITY_SECONDARY = 0.45
 _AUTHORITY_ATTACHMENT = 0.35
-# Pages fetched from the web at query time (see app.retrieval.web). The
+# Pages fetched from the web at query time (the web subpackage). The
 # organisation's own site is its own statement, but one ingestion never checked,
 # dated or classified — so it sits with the project tier, under the corpus's
 # canonical and primary content. A third-party page is someone else's account of
