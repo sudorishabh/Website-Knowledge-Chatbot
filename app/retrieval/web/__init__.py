@@ -28,4 +28,6 @@ Modules
 :mod:`.safety`  whether a URL may be fetched at all (scheme, credentials, port,
                 public addresses only), the domain policy (primary, blocked),
                 and the canonical form two URLs are compared by.
+:mod:`.cache`   time-limited caches for search results, extracted pages and
+                robots.txt — Redis when configured, in-process otherwise.
 """

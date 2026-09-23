@@ -319,6 +319,26 @@ class Settings(BaseSettings):
     web_allow_third_party: bool = True
     # Domains never searched or fetched, comma-separated, subdomains included.
     web_blocked_domains: str = ""
+    # How requests identify themselves. A named agent with a contact URL is what
+    # robots.txt rules and site operators key on; a browser disguise is not.
+    web_user_agent: str = "TERI-Knowledge-Assistant/1.0 (+https://www.teriin.org)"
+    # Per-request ceiling for fetching one page (connect + read). A slow site
+    # costs this much at most; the answer is built from whatever arrived.
+    web_fetch_timeout_seconds: float = 8.0
+    # Connections the web client may hold open at once, across all hosts. Bounds
+    # how hard one busy minute can hit the sites being read.
+    web_max_connections: int = 8
+    # Lifetimes of the three web caches, in seconds; 0 disables that cache.
+    # Search results go stale fastest, so they are kept for hours; an extracted
+    # page and a site's robots.txt change rarely and are kept for a day. None of
+    # these is ever written to the corpus.
+    web_search_cache_ttl: int = 21600
+    web_page_cache_ttl: int = 86400
+    web_robots_cache_ttl: int = 86400
+    # Entries each in-process cache holds before evicting the least recently
+    # used. Only applies without Redis; with `redis_url` set, Redis holds them
+    # and expires them itself.
+    web_cache_max_entries: int = 512
     metrics_log_enabled: bool = True
     # --- Retrieval logging (debugging / evaluation / analysis) ---------------
     # One switch for the whole per-query retrieval trace: what Qdrant, the graph
