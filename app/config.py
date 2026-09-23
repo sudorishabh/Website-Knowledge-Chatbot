@@ -321,6 +321,23 @@ class Settings(BaseSettings):
     # of these is treated as a primary source rather than third-party coverage.
     # Subdomains are included: "teriin.org" covers "www.teriin.org".
     web_primary_domains: str = "teriin.org"
+    # When the web is consulted. `web_on_freshness`: a question wanting the
+    # present state ("latest", "this year") always checks the web, since the
+    # corpus lags the site by up to a sweep. `web_fallback_enabled`: any other
+    # question checks it only when the internal evidence is judged insufficient
+    # (app/retrieval/web/sufficiency.py). An explicit "search the web" always
+    # does, whatever these say.
+    web_on_freshness: bool = True
+    web_fallback_enabled: bool = True
+    # Evidence thresholds for that judgement. Coverage is the share of the
+    # question's named subjects the top internal passages mention, and the share
+    # of a passage hunt's words one passage contains. The relevance floor is on
+    # the active reranker's scale — cosine for "embedding", a probability for
+    # "cross_encoder" — so it is off (0) until calibrated for the deployment's
+    # provider; the coverage signals do not depend on it.
+    web_subject_min_coverage: float = 0.5
+    web_passage_min_coverage: float = 0.8
+    web_min_internal_relevance: float = 0.0
     # The names the organisation goes by, comma-separated. A question naming one
     # is about the organisation, so its web search runs on the primary domains
     # first and reaches the open web only if they come back short.

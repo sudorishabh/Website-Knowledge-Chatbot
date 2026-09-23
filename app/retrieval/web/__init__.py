@@ -47,4 +47,8 @@ Modules
                 passage hunt, person, organisation scope, comparison,
                 consolidation, period, entities) and the queries to send.
                 Deterministic; no model call.
+:mod:`.sufficiency` whether the internal evidence already answers it —
+                subjects mentioned, a profile for a person, the passage for a
+                passage hunt, the period covered — and the one web decision,
+                with every reason for it either way.
 """
