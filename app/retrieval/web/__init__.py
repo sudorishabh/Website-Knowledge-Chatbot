@@ -30,4 +30,7 @@ Modules
                 and the canonical form two URLs are compared by.
 :mod:`.cache`   time-limited caches for search results, extracted pages and
                 robots.txt — Redis when configured, in-process otherwise.
+:mod:`.providers` the search vendor behind one interface (Brave, Tavily), and
+                the single ``search`` entry point that caches, retries, applies
+                the domain policy, de-duplicates and traces.
 """

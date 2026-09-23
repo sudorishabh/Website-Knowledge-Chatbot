@@ -308,6 +308,14 @@ class Settings(BaseSettings):
     # Base URL override for the provider's API (a proxy or a regional endpoint).
     # Empty uses the provider's public endpoint.
     web_search_endpoint: str = ""
+    # Results requested per search query. A handful is enough: only the best few
+    # are ever fetched, and the rest cost provider quota for nothing.
+    web_search_max_results: int = 8
+    # Per-call ceiling for the search API, and how many times a transient
+    # failure (a timeout, a 429, a 5xx) is retried before the web is skipped for
+    # this question. The answer then comes from the corpus alone.
+    web_search_timeout_seconds: float = 6.0
+    web_search_retries: int = 1
     # The organisation's own domains, comma-separated. Questions about the
     # organisation are searched here first (site-restricted), and a page on one
     # of these is treated as a primary source rather than third-party coverage.
