@@ -36,6 +36,11 @@ def _pref_fingerprint() -> str:
         str(s.retrieval_top_k),
         str(s.retrieval_candidate_k),
         str(s.context_token_budget),
+        # Whether the web may supplement the corpus changes what a question is
+        # answered from, so switching it on or off — or changing who searches —
+        # must not serve answers built under the other setting.
+        str(getattr(s, "web_search_enabled", False)),
+        str(getattr(s, "web_search_provider", "")),
     )
 
 

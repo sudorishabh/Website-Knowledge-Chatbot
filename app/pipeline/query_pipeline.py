@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Iterator
 
 from app.config import get_settings
-from app.core.models.context import ContextBlock
+from app.core.models.context import ContextBlock, is_web
 from app.generation.answerer import chitchat, generate_answer, generate_stream
 from app.generation.prompts import REFUSAL
 from app.observability import retrieval_log
@@ -147,6 +147,47 @@ def _temporal_intent(pq: ProcessedQuery) -> Any | None:
     if not getattr(get_settings(), "temporal_intent_enabled", False):
         return None
     return pq.temporal_intent
+
+
+def _web_plan(
+    pq: ProcessedQuery, history: list[dict[str, str]] | None = None
+) -> Any | None:
+    """The question's web plan, or None to retrieve from the corpus alone.
+
+    The single place `web_search_enabled` is read. Off — the default — hands
+    retrieval None, which is byte-identical to retrieval before web retrieval
+    existed, and the web package is never imported.
+
+    Planned on the user's own words, except in a conversation, where the words of
+    this turn alone may not name what it is about ("and who is he?"); there the
+    standalone rewrite is the question. Fails to None: a planning problem costs
+    the web, never the answer.
+    """
+    if not getattr(get_settings(), "web_search_enabled", False):
+        return None
+    from app.retrieval.retriever import web_plan_for
+
+    analysis = pq.analysis
+    try:
+        plan = web_plan_for(
+            pq.search_query if history else pq.original,
+            pq.search_query,
+            capabilities=_capabilities(pq),
+            answer_format=pq.answer_format,
+            date_from=getattr(analysis, "date_from", None),
+            date_to=getattr(analysis, "date_to", None),
+        )
+    except Exception:
+        logger.warning("Web planning failed; retrieving from the corpus alone.",
+                       exc_info=True)
+        return None
+    retrieval_log.note(web_plan=plan.to_trace())
+    return plan
+
+
+def _web_backed(blocks: list[ContextBlock]) -> bool:
+    """Whether any evidence came from the web rather than the corpus."""
+    return any(is_web(block.payload) for block in blocks)
 
 
 def _subquery_plan(pq: ProcessedQuery, requirements_future: Any) -> list[Any]:
@@ -550,14 +591,20 @@ def _prepare(
             return summary, None
         # Empty/unresolvable scope: fall through to plain semantic QA.
 
+    web_plan = _web_plan(pq, history)
     with span("rag.embed_query"):
         query_vector = embed_query(pq.search_query)
     with span("rag.semantic_cache") as s:
-        semantic = semantic_cache.lookup(
+        # A question that forces the web — "search online", "the latest" — is
+        # not answered from a stored answer up to a day old: being current is
+        # the point of asking it that way.
+        forced_web = web_plan is not None and web_plan.forced
+        semantic = None if forced_web else semantic_cache.lookup(
             query_vector, top_k=n, answer_format=pq.answer_format,
             fingerprint=semantic_cache.facet_fingerprint(pq),
         )
         s.set("hit", semantic is not None)
+        s.set("bypassed", forced_web)
     if semantic is not None:
         # A cached combined answer already carries its catalog section, so the
         # short-circuit here also skips rebuilding it.
@@ -574,6 +621,7 @@ def _prepare(
             capabilities=caps,
             temporal=_temporal_intent(pq),
             subqueries=subqueries,
+            web=web_plan,
         )
 
     # The deterministic catalog section (combined queries only), the answer
@@ -701,6 +749,11 @@ def _assemble(answer: str, gen: _Generation) -> dict[str, Any]:
 def _persist(gen: _Generation, result: dict[str, Any]) -> None:
     from app.cache import semantic_cache
 
+    if _web_backed(gen.blocks):
+        # Web evidence is read for one answer and kept nowhere else — not in the
+        # corpus, and not here, where it would be served as current for a day.
+        retrieval_log.note(semantic_cache_store="skipped: web evidence")
+        return
     with span("rag.semantic_cache_store"):
         semantic_cache.store(
             gen.query_vector, result, top_k=gen.top_k,
@@ -942,7 +995,7 @@ def _search_blocks(
         pq.search_query,
         filters=pq.filters, n=top_k, answer_format=pq.answer_format,
         source_type=pq.source_type, capabilities=_capabilities(pq),
-        temporal=_temporal_intent(pq),
+        temporal=_temporal_intent(pq), web=_web_plan(pq, history),
     )
     retrieval_log.note_context(blocks)
     retrieval_log.note_outcome(

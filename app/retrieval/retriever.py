@@ -48,7 +48,12 @@ logger = logging.getLogger(__name__)
 # `retrieve`, and a relational question that lands there would otherwise never
 # see the graph at all. Exposing the leg is what keeps that call site running the
 # same code with the same fallback contract, rather than a second copy of it.
-__all__ = ["retrieve", "graph_blocks_for"]
+#
+# `web_plan_for` is exported for the same kind of reason: the pipeline decides
+# whether web retrieval is on (it owns the flag, as it owns the others) and needs
+# the question's plan to pass back into `retrieve`. Building it here keeps this
+# module the only production doorway into the web package.
+__all__ = ["retrieve", "graph_blocks_for", "web_plan_for"]
 
 # Content capabilities (from query understanding) whose open-ended search
 # benefits from multi-query recall expansion; a pure `database` lookup does not.
@@ -311,6 +316,29 @@ def _observe_in_shadow(search_query: str, blocks: list[ContextBlock]) -> None:
         shadow.observe(search_query, blocks)
     except Exception:  # pragma: no cover - defence in depth
         logger.warning("Graph shadow hook failed.", exc_info=True)
+
+
+def web_plan_for(
+    question: str,
+    search_query: str,
+    *,
+    capabilities: set[str],
+    answer_format: str | None,
+    date_from: str | None,
+    date_to: str | None,
+) -> Any:
+    """The question's web plan, to hand back to :func:`retrieve` as ``web``.
+
+    Deterministic and free — see :mod:`app.retrieval.web.planner`. The caller
+    decides whether web retrieval is on; this only builds the plan, and imports
+    the web package only when asked to.
+    """
+    from app.retrieval.web.planner import plan
+
+    return plan(
+        question, search_query, capabilities=capabilities, answer_format=answer_format,
+        date_from=date_from, date_to=date_to,
+    )
 
 
 def _start_web(plan: Any | None, query_vector: list[float]) -> Any | None:
