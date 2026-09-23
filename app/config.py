@@ -292,6 +292,33 @@ class Settings(BaseSettings):
     # Prefill cost/latency rises only on content-rich queries.
     context_token_budget: int = 9000
     faithfulness_check: bool = False
+    # --- Web retrieval (app/retrieval/web) -----------------------------------
+    # The master switch and kill switch. With this false the web package is
+    # never imported on the request path and every answer comes from the
+    # internal corpus exactly as before. With it true, the web is consulted only
+    # when a question asks for it (an explicit "search the web", a freshness
+    # request) or when the internal evidence is judged insufficient — never on
+    # every query.
+    web_search_enabled: bool = False
+    # Which search API answers web queries: "brave" or "tavily". Empty means no
+    # provider, which makes web retrieval a no-op even with the switch on — a
+    # deployment cannot reach the web by accident of one flag.
+    web_search_provider: str = ""
+    web_search_api_key: str = ""
+    # Base URL override for the provider's API (a proxy or a regional endpoint).
+    # Empty uses the provider's public endpoint.
+    web_search_endpoint: str = ""
+    # The organisation's own domains, comma-separated. Questions about the
+    # organisation are searched here first (site-restricted), and a page on one
+    # of these is treated as a primary source rather than third-party coverage.
+    # Subdomains are included: "teriin.org" covers "www.teriin.org".
+    web_primary_domains: str = "teriin.org"
+    # Whether results from outside the primary domains may be used at all. On,
+    # but ranked below primary sources and attributed to their site in the
+    # answer; off restricts web retrieval to the organisation's own pages.
+    web_allow_third_party: bool = True
+    # Domains never searched or fetched, comma-separated, subdomains included.
+    web_blocked_domains: str = ""
     metrics_log_enabled: bool = True
     # --- Retrieval logging (debugging / evaluation / analysis) ---------------
     # One switch for the whole per-query retrieval trace: what Qdrant, the graph
