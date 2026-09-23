@@ -348,6 +348,11 @@ class Settings(BaseSettings):
     web_allow_third_party: bool = True
     # Domains never searched or fetched, comma-separated, subdomains included.
     web_blocked_domains: str = ""
+    # Optional JSONL file recording the organisation's own pages that web search
+    # found and the corpus does not hold (an expert's profile, a report newer
+    # than the last sweep): the list to review for ingestion. Unset, the gaps
+    # still reach the application log, the retrieval trace and the metrics.
+    web_gap_log_path: str = ""
     # How requests identify themselves. A named agent with a contact URL is what
     # robots.txt rules and site operators key on; a browser disguise is not.
     web_user_agent: str = "TERI-Knowledge-Assistant/1.0 (+https://www.teriin.org)"
