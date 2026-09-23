@@ -321,6 +321,10 @@ class Settings(BaseSettings):
     # of these is treated as a primary source rather than third-party coverage.
     # Subdomains are included: "teriin.org" covers "www.teriin.org".
     web_primary_domains: str = "teriin.org"
+    # The names the organisation goes by, comma-separated. A question naming one
+    # is about the organisation, so its web search runs on the primary domains
+    # first and reaches the open web only if they come back short.
+    web_organisation_names: str = "TERI, The Energy and Resources Institute"
     # Whether results from outside the primary domains may be used at all. On,
     # but ranked below primary sources and attributed to their site in the
     # answer; off restricts web retrieval to the organisation's own pages.

@@ -1,9 +1,9 @@
 """Web retrieval: evidence from the public web, for what the corpus cannot answer.
 
-Isolated by construction, like ``app.retrieval.graph``. Nothing on the default
-retrieval path imports this package, and ``web_search_enabled`` is off — so with
-the switch down the internal pipeline behaves exactly as it did before the web
-existed.
+Isolated by construction, like the graph subpackage beside it. Nothing on the
+default retrieval path imports this package, and ``web_search_enabled`` is off —
+so with the switch down the internal pipeline behaves exactly as it did before
+the web existed.
 
 What it is for
 --------------
@@ -43,4 +43,8 @@ Modules
 :mod:`.passages` a document as ranked ``Candidate`` passages: paragraph-sized
                 children with their section as context, embedded like corpus
                 chunks, each carrying its full provenance payload.
+:mod:`.planner` the question's web signals (explicit request, freshness,
+                passage hunt, person, organisation scope, comparison,
+                consolidation, period, entities) and the queries to send.
+                Deterministic; no model call.
 """
