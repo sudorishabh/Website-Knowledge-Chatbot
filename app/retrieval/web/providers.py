@@ -22,14 +22,13 @@ import logging
 import re
 import time
 from dataclasses import asdict, dataclass
-from email.utils import parsedate_to_datetime
 from typing import Any, Protocol
 
 import httpx
 
 from app.config import get_settings
 from app.core.clients import get_web_http_client
-from app.core.dates import clean_iso_date
+from app.core.dates import stated_day
 from app.observability import retrieval_log
 from app.retrieval.web.cache import search_cache
 from app.retrieval.web.safety import UnsafeURL, check_url, policy, url_key
@@ -100,21 +99,6 @@ def _plain(text: Any) -> str:
     return " ".join(html.unescape(_TAG.sub("", str(text or ""))).split())
 
 
-def _iso_day(value: Any) -> str | None:
-    """A provider's date as ``YYYY-MM-DD``: ISO forms first, then the RFC 2822
-    form some APIs use ("Wed, 09 Apr 2025 10:22:00 GMT"). None when unreadable —
-    an unknown date is honest, a guessed one is not."""
-    cleaned = clean_iso_date(value)
-    if cleaned:
-        return cleaned[:10]
-    if isinstance(value, str) and value.strip():
-        try:
-            return parsedate_to_datetime(value).date().isoformat()
-        except (TypeError, ValueError):
-            return None
-    return None
-
-
 def _send(request: Any) -> httpx.Response:
     """Send with the configured timeout and a bounded retry on transient failure."""
     settings = get_settings()
@@ -163,7 +147,7 @@ class BraveSearchProvider:
                 title=_plain(item.get("title")),
                 snippet=_plain(item.get("description")),
                 provider=self.name, query=query, rank=rank, site=site,
-                published=_iso_day(item.get("page_age")),
+                published=stated_day(item.get("page_age")),
             )
             for rank, item in enumerate(results[:limit], start=1)
             if item.get("url")
@@ -203,7 +187,7 @@ class TavilySearchProvider:
                 title=_plain(item.get("title")),
                 snippet=_plain(item.get("content")),
                 provider=self.name, query=query, rank=rank, site=site,
-                published=_iso_day(item.get("published_date")),
+                published=stated_day(item.get("published_date")),
             )
             for rank, item in enumerate(results[:limit], start=1)
             if item.get("url")

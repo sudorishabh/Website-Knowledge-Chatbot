@@ -36,4 +36,8 @@ Modules
 :mod:`.fetch`   one search-result URL fetched safely: checked redirect hops,
                 robots.txt and Crawl-delay, per-site pacing, retries, size and
                 type caps, one fetch per page. Never follows a page's links.
+:mod:`.extract` a fetched page as a ``WebDocument``: metadata with the date's
+                source, content as headed paragraphs, tables and captions (PDF
+                blocks carry their page), hidden text and model-addressed
+                sentences removed.
 """

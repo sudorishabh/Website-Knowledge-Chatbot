@@ -345,6 +345,9 @@ class Settings(BaseSettings):
     # HTML page is not an article.
     web_fetch_max_bytes: int = 3_000_000
     web_pdf_max_bytes: int = 15_000_000
+    # Pages of a fetched PDF that are read. Enough for a report's summary and
+    # findings; the remainder is recorded as not read, never guessed at.
+    web_pdf_max_pages: int = 40
     # Redirect hops followed for one URL; every hop is re-checked for safety and
     # against the destination site's robots.txt.
     web_max_redirects: int = 3
