@@ -348,6 +348,11 @@ class Settings(BaseSettings):
     # Pages of a fetched PDF that are read. Enough for a report's summary and
     # findings; the remainder is recorded as not read, never guessed at.
     web_pdf_max_pages: int = 40
+    # Passages each fetched document may contribute, and the most web passages
+    # handed to ranking in total. Ranking decides which (if any) reach the
+    # answer; these only bound how many it has to consider.
+    web_passages_per_document: int = 3
+    web_max_candidates: int = 12
     # Redirect hops followed for one URL; every hop is re-checked for safety and
     # against the destination site's robots.txt.
     web_max_redirects: int = 3

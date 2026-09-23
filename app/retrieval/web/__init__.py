@@ -40,4 +40,7 @@ Modules
                 source, content as headed paragraphs, tables and captions (PDF
                 blocks carry their page), hidden text and model-addressed
                 sentences removed.
+:mod:`.passages` a document as ranked ``Candidate`` passages: paragraph-sized
+                children with their section as context, embedded like corpus
+                chunks, each carrying its full provenance payload.
 """
