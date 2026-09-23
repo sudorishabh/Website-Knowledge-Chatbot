@@ -38,6 +38,8 @@ READ_BY_RETRIEVAL = {
     "linked_article_uuid", "page_number", "page_range", "overlap_page_range",
     # scoped_retrieval neighbour expansion
     "chunk_index",
+    # context_builder inline section / reranker web authority tier
+    "context_text", "is_primary_source",
 }
 
 READ_BY_GENERATION = {
@@ -46,6 +48,9 @@ READ_BY_GENERATION = {
     "doc_version",
     # citations._source_from_payload / _primary_url
     "source_url", "file_url", "page_number", "page_range",
+    # citations._provenance
+    "authors", "chunk_id", "url", "domain", "published_date", "date_source",
+    "retrieved_at", "retrieval_method", "is_primary_source",
 }
 
 # Read but deliberately not written by ingestion, each with a default that makes
@@ -58,6 +63,18 @@ DOCUMENTED_OPTIONALS = {
     # block that never came from Qdrant at all.
     "kind", "mode", "claim_ids", "entity_ids", "document_ids", "template_id",
     "disputed", "source",
+    # A web passage's own markers, set by app.retrieval.web.passages on a
+    # candidate that is never written to Qdrant. Absent on every corpus point,
+    # which is correct: no inline section means expand to the stored parent (or
+    # the child's own text), and no primary flag is never read for a corpus
+    # source_type.
+    "context_text", "is_primary_source",
+    # The rest of a web passage's provenance, read by the citation builder: all
+    # absent on corpus points, which the builder reads as "a corpus source" —
+    # retrieval_method falls back to "corpus", the domain to the link's host,
+    # and the three dates are reported for web sources only.
+    "url", "domain", "published_date", "date_source", "retrieved_at",
+    "retrieval_method",
 }
 
 

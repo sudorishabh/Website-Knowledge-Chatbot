@@ -1,0 +1,86 @@
+{
+  "parents": 0,
+  "children": 1,
+  "chunks": [
+    {
+      "chunk_id": "66d87d47-c279-5e75-a48e-27ecfd645f62",
+      "text": "TERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.\n\nThe study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA.",
+      "is_parent": false,
+      "meta": {
+        "document_id": "74d106c0-968e-43dc-b873-83d2e7460af8",
+        "source_type": "website",
+        "title": "Establishing Resource and Knowledge Centre (RKC) for the Distribution Sector under the All-India Discoms Association (AIDA)",
+        "source_url": "https://teriin.org/project/establishing-resource-and-knowledge-centre-rkc-distribution-sector-under-all-india-discoms",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "74d106c0-968e-43dc-b873-83d2e7460af8",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [
+          "Energy services",
+          "Energy technology"
+        ],
+        "categories": [
+          "Energy"
+        ],
+        "authors": [],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2025-10-14T00:00:00+00:00",
+        "start_precision": "day",
+        "effective_end_date": "2026-03-31T00:00:00+00:00",
+        "end_precision": "day",
+        "extra": {
+          "bundle": "completed_projects",
+          "nid": 13384,
+          "changed": "2026-09-08T10:48:10+00:00"
+        }
+      },
+      "embed_text": "Establishing Resource and Knowledge Centre (RKC) for the Distribution Sector under the All-India Discoms Association (AIDA)\n\nTERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.\n\nThe study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA.",
+      "section_heading": null,
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 0,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 185,
+      "content_hash": "0bb4d0f259ee2e4cd77691600b2726c923520186e3fd84a4fb6f0cd1bbd4c126",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "66d87d47-c279-5e75-a48e-27ecfd645f62",
+        "document_id": "74d106c0-968e-43dc-b873-83d2e7460af8",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "completed_projects",
+        "title": "Establishing Resource and Knowledge Centre (RKC) for the Distribution Sector under the All-India Discoms Association (AIDA)",
+        "chunk_text": "TERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.\n\nThe study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA.",
+        "content_hash": "0bb4d0f259ee2e4cd77691600b2726c923520186e3fd84a4fb6f0cd1bbd4c126",
+        "token_count": 185,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Energy services",
+          "Energy technology"
+        ],
+        "categories": [
+          "Energy"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/project/establishing-resource-and-knowledge-centre-rkc-distribution-sector-under-all-india-discoms",
+        "effective_start_date": "2025-10-14T00:00:00+00:00",
+        "effective_end_date": "2026-03-31T00:00:00+00:00",
+        "article_uuid": "74d106c0-968e-43dc-b873-83d2e7460af8",
+        "embed_hash": "fd3df7089fce430caa2def063541ac9d8b0dd413846ab08861871a2127df4d68",
+        "chunk_index": 0,
+        "nid": 13384,
+        "changed": "2026-09-08T10:48:10+00:00"
+      },
+      "embed_hash": "fd3df7089fce430caa2def063541ac9d8b0dd413846ab08861871a2127df4d68"
+    }
+  ]
+}

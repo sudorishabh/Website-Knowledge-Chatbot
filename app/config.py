@@ -97,36 +97,44 @@ class Settings(BaseSettings):
     verify_corpus_after_sweep: bool = True
     retrieval_top_k: int = 6
     retrieval_candidate_k: int = 40
-    # Website-content preference (see docs/website-preference-retrieval.md).
-    # When enabled, retrieval runs two pulls — website (source_type == "website")
-    # and "not website" — merges them, and the context builder leads with a
-    # concise website section (capped) followed by PDF depth. Enabled by default;
-    # validate on representative queries before relying on it in production.
+    # Website-content preference (see docs/retrieval/04-search-and-fusion.md).
+    # A *recall* guarantee, and only that: retrieval runs two pulls — website
+    # (source_type == "website") and "not website" — and unions them, so the
+    # website's best chunks are fetched even though PDFs dominate the corpus by
+    # volume and would otherwise fill a single pull. What happens next is the
+    # same for every candidate: one ranking, one admission pass, one answer.
+    #
+    # It used to mean more than that. The context builder admitted website
+    # blocks first under their own cap and relevance floor, gave PDFs two
+    # remaining slots plus a conditional third, and emitted them in that order
+    # whatever the ranking said; the generation prompt then told the model that
+    # "website sources are authoritative" and split the answer in two. Asked who
+    # the director general is, that chain led with a three-year-old announcement
+    # and filed the document correcting it in a captioned aside underneath.
+    # Source kind is now one term of the authority band in the reranker — a
+    # tie-break between passages already judged comparably relevant, comparably
+    # current and comparably well-matched to the period — and nothing more.
     prefer_website_enabled: bool = True
     # Website-only candidates pulled alongside the (larger) not-website pull.
     website_candidate_k: int = 20
-    # Max website blocks admitted (the concise lead). PDFs then follow under
-    # their own budget (see pdf_max_slots). Users' website needs are typically
-    # met in ~2.
-    website_max_slots: int = 2
-    # Per-chunk raw-semantic relevance floor a website chunk must clear to take a
-    # website slot (prevents padding the answer with weak website text). Scale is
-    # reranker-provider specific (dense cosine here); tuned empirically in eval.
-    website_chunk_floor: float = 0.30
-    # PDF budget after the website lead (segregated/dual retrieval only). The top
-    # pdf_max_slots PDF chunks are admitted unconditionally; one extra ("3rd")
-    # slot opens only for a candidate whose raw semantic_score clears the
-    # high-confidence bar below, and nothing past that slot is ever admitted.
-    # Scale matches website_chunk_floor (raw semantic_score); tune in eval.
-    pdf_max_slots: int = 2
-    pdf_high_confidence_floor: float = 0.5
     hybrid_use_sparse: bool = False
     # Multi-query recall expansion: LLM paraphrases of the search query are
     # searched in parallel and RRF-fused with the base pull. Gated per query
     # (qa intent, no explicit filters, non-trivial length). Launches OFF; flip
     # after eval.
     multi_query_enabled: bool = False
+    # How many extra perspectives to ask for. Named `paraphrases` because that is
+    # what the generator produced before Phase D and the name is already in
+    # deployed .env files; it now counts genuinely different angles on the query
+    # (see `strategies.perspectives`), not rewordings of it.
     multi_query_paraphrases: int = 2
+    # Cosine above which a generated perspective is "the question again" — too
+    # close to the original, or to an angle already accepted, to earn its own
+    # retrieval leg. Rejecting everything is a valid outcome: the base query is
+    # always a leg, so the fallback is the retrieval this query would have had.
+    # Same value as `dedup_cosine_threshold` below, which draws the equivalent
+    # line between two chunks, for the same reason.
+    multi_query_distinct_threshold: float = 0.92
     # Self-consistency routing: number of concurrent query-analysis samples,
     # majority-voted per field. 1 = single pinned-temperature call (today's
     # behavior); >1 samples at exploratory temperature. Flip to 3 only after
@@ -137,6 +145,45 @@ class Settings(BaseSettings):
     # self-reported score. Terminal intents (chitchat/out_of_scope/…) are gated
     # by the same bar.
     intent_confidence_threshold: float = 0.5
+    # Act on the `clarification_needed` intent instead of letting it collapse
+    # onto chitchat: ask the user one question back, with catalog-derived options
+    # where they exist, and merge their reply into the next turn's query. State
+    # rides on the client-echoed history, so no session store is involved. OFF
+    # reproduces today's behaviour exactly — the label is still detected and
+    # still discarded. Launches OFF; flip after eval.
+    clarification_enabled: bool = False
+    # The bar the `clarification_needed` label must clear to be *acted on*,
+    # separate from `intent_confidence_threshold` because the cost is not
+    # symmetric: a wrong content label still retrieves and can still answer,
+    # whereas a wrong clarification spends the user's whole turn asking about a
+    # question that had an answer. Observed at 0.74 on "director generak of
+    # teri" — the model's own rationale was "vague/typo", and TERI's Director
+    # General was in the 2022-23 annual report. The label stays on the trace
+    # below the bar, so the false-positive rate is still measurable.
+    clarification_min_confidence: float = 0.8
+    # Act on the temporal intent `temporal_gate.detect_mode` already classifies:
+    # rank by how well a document's period fits the time the question is about
+    # (a band cut INSIDE the relevance band, so relevance still decides), and
+    # gate past-tense questions about scheduled occurrences the way upcoming ones
+    # already are. Reads only payload fields that exist today; adds no date
+    # filtering — that stays `filters.date_conditions`. OFF leaves ranking and
+    # the pre-existing UPCOMING gate exactly as they are. Launches OFF; flip
+    # after eval.
+    temporal_intent_enabled: bool = False
+    # Sub-query planning: turn the requirements `answer_plan.extract_requirements`
+    # already extracts into separately retrieved parts — one dense pull each,
+    # fused by the existing RRF, plus a graph attempt for any part that names a
+    # relationship. Only fires when the extractor found two or more parts, so an
+    # ordinary question keeps the single-query path. Adds no decomposition of its
+    # own and no extra LLM call, but it does put the existing extraction on the
+    # critical path (retrieval has to wait for the plan), which is the cost to
+    # weigh. OFF reproduces today's behaviour exactly. Launches OFF; flip after
+    # eval.
+    subquery_planning_enabled: bool = False
+    # How many parts of a multi-part question are retrieved separately. Each one
+    # is an embedding plus a Qdrant pull; past a handful the extra rankings are
+    # noise against real latency.
+    subquery_max: int = 3
     # One-shot corrective retrieval: when the reranked top candidate's raw
     # semantic score is below corrective_min_score, reformulate the query once,
     # search again, RRF-fuse and rerank. Strictly one iteration. Launches OFF;
@@ -239,11 +286,131 @@ class Settings(BaseSettings):
     dedup_cosine_threshold: float = 0.92
     # Max tokens of retrieved context sent to the LLM. Blocks are parent chunks
     # (~1800 tokens each), so this gates roughly context_token_budget / 1800
-    # passages; 9000 keeps ~5 diverse sources — sized so the website-preference
-    # split (2 website + ~3 PDF depth) can fit. Prefill cost/latency rises only on
-    # content-rich queries (see docs/website-preference-retrieval.md §9, §13).
+    # passages; 9000 keeps ~5 diverse sources. Sized when that was 2 website
+    # blocks plus ~3 of PDF depth; the split is gone but the budget it implied
+    # is the right one, and the blocks are now whichever 5 rank highest.
+    # Prefill cost/latency rises only on content-rich queries.
     context_token_budget: int = 9000
     faithfulness_check: bool = False
+    # --- Web retrieval (app/retrieval/web) -----------------------------------
+    # The master switch and kill switch. With this false the web package is
+    # never imported on the request path and every answer comes from the
+    # internal corpus exactly as before. With it true, the web is consulted only
+    # when a question asks for it (an explicit "search the web", a freshness
+    # request) or when the internal evidence is judged insufficient — never on
+    # every query.
+    web_search_enabled: bool = False
+    # Which search API answers web queries: "brave" or "tavily". Empty means no
+    # provider, which makes web retrieval a no-op even with the switch on — a
+    # deployment cannot reach the web by accident of one flag.
+    web_search_provider: str = ""
+    web_search_api_key: str = ""
+    # Base URL override for the provider's API (a proxy or a regional endpoint).
+    # Empty uses the provider's public endpoint.
+    web_search_endpoint: str = ""
+    # Results requested per search query. A handful is enough: only the best few
+    # are ever fetched, and the rest cost provider quota for nothing.
+    web_search_max_results: int = 8
+    # Per-call ceiling for the search API, and how many times a transient
+    # failure (a timeout, a 429, a 5xx) is retried before the web is skipped for
+    # this question. The answer then comes from the corpus alone.
+    web_search_timeout_seconds: float = 6.0
+    web_search_retries: int = 1
+    # The organisation's own domains, comma-separated. Questions about the
+    # organisation are searched here first (site-restricted), and a page on one
+    # of these is treated as a primary source rather than third-party coverage.
+    # Subdomains are included: "teriin.org" covers "www.teriin.org".
+    web_primary_domains: str = "teriin.org"
+    # When the web is consulted. `web_on_freshness`: a question wanting the
+    # present state ("latest", "this year") always checks the web, since the
+    # corpus lags the site by up to a sweep. `web_fallback_enabled`: any other
+    # question checks it only when the internal evidence is judged insufficient
+    # (app/retrieval/web/sufficiency.py). An explicit "search the web" always
+    # does, whatever these say.
+    web_on_freshness: bool = True
+    web_fallback_enabled: bool = True
+    # Evidence thresholds for that judgement. Coverage is the share of the
+    # question's named subjects the top internal passages mention, and the share
+    # of a passage hunt's words one passage contains. The relevance floor is on
+    # the active reranker's scale — cosine for "embedding", a probability for
+    # "cross_encoder" — so it is off (0) until calibrated for the deployment's
+    # provider; the coverage signals do not depend on it.
+    web_subject_min_coverage: float = 0.5
+    web_passage_min_coverage: float = 0.8
+    web_min_internal_relevance: float = 0.0
+    # The names the organisation goes by, comma-separated. A question naming one
+    # is about the organisation, so its web search runs on the primary domains
+    # first and reaches the open web only if they come back short.
+    web_organisation_names: str = "TERI, The Energy and Resources Institute"
+    # Whether results from outside the primary domains may be used at all. On,
+    # but ranked below primary sources and attributed to their site in the
+    # answer; off restricts web retrieval to the organisation's own pages.
+    web_allow_third_party: bool = True
+    # Domains never searched or fetched, comma-separated, subdomains included.
+    web_blocked_domains: str = ""
+    # Optional JSONL file recording the organisation's own pages that web search
+    # found and the corpus does not hold (an expert's profile, a report newer
+    # than the last sweep): the list to review for ingestion. Unset, the gaps
+    # still reach the application log, the retrieval trace and the metrics.
+    web_gap_log_path: str = ""
+    # How requests identify themselves. A named agent with a contact URL is what
+    # robots.txt rules and site operators key on; a browser disguise is not.
+    web_user_agent: str = "TERI-Knowledge-Assistant/1.0 (+https://www.teriin.org)"
+    # Per-request ceiling for fetching one page (connect + read). A slow site
+    # costs this much at most; the answer is built from whatever arrived.
+    web_fetch_timeout_seconds: float = 8.0
+    # Connections the web client may hold open at once, across all hosts. Bounds
+    # how hard one busy minute can hit the sites being read.
+    web_max_connections: int = 8
+    # Whether a PDF found by web search may be fetched and read. Only ever for a
+    # PDF the corpus does not already hold: one that ingestion has is answered
+    # from its ingested chunks (OCR, tables and resolved dates included) instead.
+    web_fetch_pdfs: bool = True
+    # Largest response read, per kind. A page or PDF over its cap is skipped
+    # rather than truncated — half a PDF does not parse, and a multi-megabyte
+    # HTML page is not an article.
+    web_fetch_max_bytes: int = 3_000_000
+    web_pdf_max_bytes: int = 15_000_000
+    # Pages of a fetched PDF that are read. Enough for a report's summary and
+    # findings; the remainder is recorded as not read, never guessed at.
+    web_pdf_max_pages: int = 40
+    # Pages fetched per question, from the search results the corpus does not
+    # already hold — the organisation's own pages first. Search results beyond
+    # these are listed in the trace but not read.
+    web_max_fetches: int = 4
+    # Wall-clock allowance for searching and fetching, per question. A page still
+    # loading when it runs out is dropped from this answer (the trace says so),
+    # and the answer is built from what arrived.
+    web_budget_seconds: float = 12.0
+    # Passages each fetched document may contribute, and the most web passages
+    # handed to ranking in total. Ranking decides which (if any) reach the
+    # answer; these only bound how many it has to consider.
+    web_passages_per_document: int = 3
+    web_max_candidates: int = 12
+    # Redirect hops followed for one URL; every hop is re-checked for safety and
+    # against the destination site's robots.txt.
+    web_max_redirects: int = 3
+    # Retries for a transient fetch failure (a timeout, a 429, a 5xx).
+    web_fetch_retries: int = 1
+    # Obey each site's robots.txt, including its Crawl-delay. Off only for a
+    # deployment reading sites that have explicitly permitted it.
+    web_respect_robots: bool = True
+    # Minimum seconds between two requests to the same site, and the longest a
+    # request will wait for its turn. A site asking for a longer Crawl-delay
+    # than the wait allows is skipped for this question rather than waited on.
+    web_per_host_interval_seconds: float = 1.0
+    web_max_host_wait_seconds: float = 3.0
+    # Lifetimes of the three web caches, in seconds; 0 disables that cache.
+    # Search results go stale fastest, so they are kept for hours; an extracted
+    # page and a site's robots.txt change rarely and are kept for a day. None of
+    # these is ever written to the corpus.
+    web_search_cache_ttl: int = 21600
+    web_page_cache_ttl: int = 86400
+    web_robots_cache_ttl: int = 86400
+    # Entries each in-process cache holds before evicting the least recently
+    # used. Only applies without Redis; with `redis_url` set, Redis holds them
+    # and expires them itself.
+    web_cache_max_entries: int = 512
     metrics_log_enabled: bool = True
     # --- Retrieval logging (debugging / evaluation / analysis) ---------------
     # One switch for the whole per-query retrieval trace: what Qdrant, the graph

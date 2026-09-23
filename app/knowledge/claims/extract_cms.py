@@ -33,7 +33,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field as dataclass_field
 from typing import Any
 
 from app.knowledge.claims import temporal, types as t
@@ -154,6 +154,11 @@ class CmsClaimContext:
     # A project node's CMS uuid *is* its document id, so this maps a document to
     # the PROJECT entity that document is about — the claim's subject.
     projects_by_uuid: dict[str, str]
+    # entity_type -> normalized *alias* -> entity_id. Consulted only when the
+    # canonical lookup misses, and only where the alias is unambiguous; see
+    # :func:`_alias_lookup`. Defaults to empty so an index without alias support
+    # simply behaves as it did before.
+    alias_lookup: dict[str, dict[str, str]] = dataclass_field(default_factory=dict)
 
     @classmethod
     def from_index(cls, index: Any) -> "CmsClaimContext":
@@ -165,7 +170,11 @@ class CmsClaimContext:
                 lookup[entity_type][row["normalized_name"]] = entity_id
             elif entity_type == "PROJECT" and row.get("cms_uuid"):
                 projects_by_uuid[row["cms_uuid"]] = entity_id
-        return cls(lookup=lookup, projects_by_uuid=projects_by_uuid)
+        return cls(
+            lookup=lookup,
+            projects_by_uuid=projects_by_uuid,
+            alias_lookup=_alias_lookup(index, set(lookup)),
+        )
 
     def subject_for(self, document_id: str) -> str | None:
         """The PROJECT entity this document is about, or None.
@@ -177,10 +186,58 @@ class CmsClaimContext:
         return self.projects_by_uuid.get(document_id)
 
     def object_for(self, object_type: str, value: str) -> str | None:
+        """The entity a CMS field value names, by canonical name then by alias.
+
+        The CMS writes whichever form the editor had to hand — "ONGC" in a
+        partner field, "Oil and Natural Gas Corporation Limited" as the seeded
+        canonical name — so an exact-canonical-only lookup silently drops a
+        relationship the CMS stated outright. The alias store already holds the
+        other form; this consults it.
+
+        Still exact, on both passes: the value is normalized and looked up. No
+        fuzzy or partial matching is introduced, so a value that names nothing
+        the store knows continues to resolve to nothing.
+        """
         normalizer = _NORMALIZERS.get(object_type)
         if normalizer is None:
             return None
-        return self.lookup.get(object_type, {}).get(normalizer(value))
+        normalized = normalizer(value)
+        canonical = self.lookup.get(object_type, {}).get(normalized)
+        if canonical is not None:
+            return canonical
+        return self.alias_lookup.get(object_type, {}).get(normalized)
+
+
+def _alias_lookup(index: Any, types: set[str]) -> dict[str, dict[str, str]]:
+    """Unambiguous aliases only, as ``entity_type -> normalized -> entity_id``.
+
+    Three protections, all of them the ones the resolver already applies, so
+    this path cannot link something per-mention resolution would refuse:
+
+    * ``is_ambiguous`` — the seeder saw this surface form denote more than one
+      entity in the corpus, so it identifies nothing on its own.
+    * ``autolink=0`` — the alias is recorded but explicitly not safe to link.
+    * more than one surviving entity — a collision the ambiguity marker has not
+      been applied to yet. Refused rather than arbitrarily picked.
+
+    An index that cannot enumerate aliases yields an empty lookup, which leaves
+    :meth:`CmsClaimContext.object_for` exactly as it was.
+    """
+    groups = getattr(index, "alias_groups", None)
+    if groups is None:
+        return {}
+    out: dict[str, dict[str, str]] = {name: {} for name in types}
+    for (entity_type, normalized), candidates in groups():
+        if entity_type not in out:
+            continue
+        safe = {
+            c.entity_id
+            for c in candidates
+            if getattr(c, "autolink", True) and not getattr(c, "is_ambiguous", False)
+        }
+        if len(safe) == 1:
+            out[entity_type][normalized] = safe.pop()
+    return out
 
 
 _NORMALIZERS = {"ORGANIZATION": normalize_org, "PERSON": normalize_person}

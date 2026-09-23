@@ -1,0 +1,152 @@
+{
+  "document_id": "c78a7fde-a2f5-4b5c-9926-8f4f5ee240b1",
+  "source_type": "website",
+  "title": "WCEF2026 Accelerator Session: Circular Public Procurement for Sustainable Consumption and Production",
+  "sections": [
+    {
+      "text": "Leveraging Public Demand and Information Instruments to Accelerate Resource Efficiency\n\nPublic demand is one of the most potent levers available to foster early markets for circular products and services. By shifting purchasing patterns toward resource-efficient solutions, governments can significantly reduce reliance on virgin materials, extend product lifecycles, strengthen secondary-resource markets, and accelerate progress toward Sustainable Development Goal 12 (Responsible Consumption and Production).\n\nIn India, public procurement accounts for an estimated 20–22 per cent of GDP. This substantial purchasing power represents a critical demand-side instrument to incentivize sustainable manufacturing, drive low-carbon innovation, and mainstream circular business models.\n\nAligning Policy & Procurement\n\nIndia's Ecomark framework has evolved under the Ecomark Rules, 2024, with recent 2026 regulatory updates embedding stronger circularity principles—such as minimum recycled content thresholds, Extended Producer Responsibility (EPR) alignment, comprehensive lifecycle assessments (LCA), and supply-chain traceability.\n\nTo maximize manufacturer uptake, these information instruments must be systematically paired with market-creation tools like public procurement. Existing provisions within India’s General Financial Rules (GFR), 2017—including lifecycle costing, recognized standards, and environmental technical specifications—provide foundational entry points to scale implementation.\n\nSession Objectives\n\nThis accelerator session convenes senior policymakers, public procurement officials, industry leaders, researchers, and civil society experts to translate circular economy ambitions into procurement practice.\n\nThrough an evidence-based framing presentation, high-level panel dialogue, and a targeted interactive exercise, the session will:\n\nEvaluate Policy Alignment: Identify necessary institutional, legal, and market mechanisms to formally link ecolabeling schemes (information instruments) with public tendering frameworks (market promotion instruments).\n\nPrioritize High-Impact Sectors: Map priority product categories and industries best positioned for immediate, scalable adoption of Circular Public Procurement (CPP).\n\nOperationalize Standards: Detail actionable pathways for embedding ecolabels, digital product passports, and recognized environmental benchmarks into e-procurement portals (e.g., GeM).\n\nBridge Policy to Practice: Surface pragmatic case studies and actionable next steps to move CPP from high-level ambition to everyday purchasing decisions.\n\nKey Questions Addressed\n\nInstitutional Frameworks: What policy, institutional, and market conditions are essential to link ecolabels with public procurement mechanisms?\n\nSector Readiness: Which sectors and product categories possess the supply-chain maturity and standards readiness for early CPP deployment?\n\nImplementation Systems: How can verification standards, ecolabels, and visual identifiers be seamlessly integrated into digital public procurement systems?\n\nTarget Audience\n\nCentral and State Government Policymakers\n\nPublic Procurers and Tender Authorities\n\nIndustry Representatives and Circular Innovators\n\nStandardization, Conformity Assessment, and Verification Bodies\n\nAcademic, Research, and Multilateral Policy Organizations",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/event/wcef2026-accelerator-session-circular-public-procurement-and-ecolabels",
+  "file_url": "https://teriin.org/sites/default/files/2026-09/Concept%20Note_WCEF_CPP_Ecolabel_virtual.pdf",
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "c78a7fde-a2f5-4b5c-9926-8f4f5ee240b1",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Environmental governance",
+    "Government policy/regulations",
+    "Government schemes",
+    "Sustainable development",
+    "Sustainable Development Goals",
+    "Sustainable public procurement"
+  ],
+  "categories": [
+    "Resources & Sustainable Development"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-09-18T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": "2026-09-18T00:00:00+00:00",
+  "end_precision": "day",
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "7e696dba9705aeac74c947df232fd242d5b579c42562a401a45144e88b9bce14",
+  "extra": {
+    "bundle": "events",
+    "nid": 13332,
+    "changed": "2026-09-08T06:49:49+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Academicians"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Civil society/Grassroots"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Policy Makers"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "b005a095-c75e-4e10-a554-23eef3b33a25",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Researchers/Post graduates"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "e485fc9b-b495-4a83-848f-d90ac7041f52",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Environmental governance"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "ce8a4e64-84d1-48a3-b959-a8bcd904ef41",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Government policy/regulations"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "544578d3-b63e-4b0d-a48e-97e93475f522",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Government schemes"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "bb477ab4-9efd-4c18-9355-5e5022a50023",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable development"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "e32d3938-98ec-4b36-8577-9b9d2795ac21",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable Development Goals"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "edce039a-70a4-49f8-b838-6e4861336a74",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable public procurement"
+    },
+    {
+      "field_name": "field_event_theme",
+      "uuid": "7a26e06f-40be-4fa6-9ad2-7586d7f8ecd2",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Resources & Sustainable Development"
+    }
+  ],
+  "file_links": [
+    {
+      "uuid": "6658c489-9aad-483b-9004-27b62225425d",
+      "origin": "attachment",
+      "url": "https://teriin.org/sites/default/files/2026-09/Concept%20Note_WCEF_CPP_Ecolabel_virtual.pdf",
+      "filename": "Concept Note_WCEF_CPP_Ecolabel_virtual.pdf"
+    }
+  ],
+  "raw_meta": {
+    "field_event_stakeholders": [
+      "Academicians",
+      "Businesses",
+      "Civil society/Grassroots",
+      "Policy Makers",
+      "Researchers/Post graduates"
+    ],
+    "field_event_tags": [
+      "Environmental governance",
+      "Government policy/regulations",
+      "Government schemes",
+      "Sustainable development",
+      "Sustainable Development Goals",
+      "Sustainable public procurement"
+    ],
+    "field_event_theme": [
+      "Resources & Sustainable Development"
+    ],
+    "field_enddate_forlatestfirst": "2026-09-18T15:30:00+05:30",
+    "field_event_end_date": "2026-09-18T10:00:00+00:00",
+    "field_event_start_date": "2026-09-18T08:30:00+00:00"
+  }
+}

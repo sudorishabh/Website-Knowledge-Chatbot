@@ -20,6 +20,19 @@ class ContextBlock:
     score: float = 0.0
     conflict: bool = False
     also_available: list[dict[str, Any]] = field(default_factory=list)
+    #: Set when a *newer* block in the same context describes this block's
+    #: subject in the past tense — a role that has since changed hands, an
+    #: affiliation since left. ``superseded`` marks the older statement,
+    #: ``supersedes`` the newer one that dates it. Both are only ever set for a
+    #: question about the present; see
+    #: ``app.retrieval.context.builder.flag_supersession``.
+    #:
+    #: Advisory, not a filter. The older block stays in the context and stays
+    #: citable — it is still the evidence for what was true then — and the flags
+    #: reach the prompt so the answer can say "was" where it would otherwise
+    #: have said "is".
+    superseded: bool = False
+    supersedes: bool = False
 
 
 # The marker `app.retrieval.graph.facts` puts on its block, and the predicate
@@ -42,6 +55,20 @@ def is_graph_facts(payload: dict[str, Any]) -> bool:
 # here so retrieval and generation share one list — a copy that forgets the alias
 # reads a legacy point as a different kind of source than its neighbours do.
 WEBSITE_SOURCE_TYPES: tuple[str, ...] = ("website", "article")
+
+
+# The ``source_type`` of evidence fetched from the public web at query time
+# (see ``app.retrieval.web``), and the predicate that recognises it. Defined in
+# the neutral core for the same reason as ``GRAPH_FACTS_KIND``: retrieval builds
+# these payloads, generation labels them as untrusted in the prompt, the
+# citation builder describes them, and the pipeline keeps them out of the answer
+# cache. A web payload is never written to Qdrant, so ingestion never sees one.
+WEB_SOURCE_TYPE = "web"
+
+
+def is_web(payload: dict[str, Any]) -> bool:
+    """Whether this payload is evidence fetched from the web, not the corpus."""
+    return payload.get("source_type") == WEB_SOURCE_TYPE
 
 
 def source_kind(payload: dict[str, Any]) -> str | None:

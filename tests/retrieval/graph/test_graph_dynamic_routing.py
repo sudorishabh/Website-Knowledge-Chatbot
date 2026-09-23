@@ -1013,14 +1013,18 @@ def test_the_validity_rule_reaches_the_prompt_only_when_graph_facts_are_present(
     prose = ContextBlock(n=1, text="some passage", payload={"source_type": "pdf"})
 
     with_graph = answerer._build_system(
-        None, None, mixed=False, graph_facts=True
+        None, None, graph_facts=True
     )
-    without = answerer._build_system(None, None, mixed=False, graph_facts=False)
+    without = answerer._build_system(None, None, graph_facts=False)
 
     assert "knowledge graph" in with_graph
     assert "has **ended**" in with_graph
     assert "never state a date that does not appear" in with_graph.replace("\n", " ")
-    assert "knowledge graph" not in without
+    # Keyed to the validity rule itself rather than to the words "knowledge
+    # graph": rule 6 now names the graph among the source kinds one answer may
+    # cite from, which is true whether or not a facts block is present. What
+    # has to stay conditional is the rule about reading validity windows.
+    assert "has **ended**" not in without
     # And the flag is derived from the blocks, not passed by hand at each site.
     from app.generation.prompts import has_graph_facts
 
@@ -1032,39 +1036,36 @@ def test_the_extra_rules_are_numbered_without_a_gap():
     """A rule 11 with no rule 10 reads as a truncated instruction."""
     from app.generation import answerer
 
-    only_graph = answerer._build_system(None, None, mixed=False, graph_facts=True)
+    only_graph = answerer._build_system(None, None, graph_facts=True)
     assert "\n10. One block is headed" in only_graph
 
     both = answerer._build_system(
-        None, None, mixed=False, has_history=True, graph_facts=True
+        None, None, has_history=True, graph_facts=True
     )
     assert "\n10. Earlier conversation turns" in both
     assert "\n11. One block is headed" in both
 
 
 def test_the_graph_block_is_not_counted_as_a_pdf():
-    """It carried no `source_type`, so it read as "not website", i.e. as a PDF.
+    """It carries no `source_type`, so it used to read as "not website" — a PDF.
 
-    Two visible consequences: a context of one graph block plus website
-    passages looked *mixed* and got the two-block answer structure it had no
-    use for, and the graph's own facts were then printed under the heading
-    "From our documents". They did not come from a document.
+    Two visible consequences: a context of one graph block plus website passages
+    looked *mixed* and got a two-block answer structure it had no use for, and
+    the graph's own facts were printed under the heading "From our documents".
+    They did not come from a document.
+
+    Both readers are gone — there is one answer structure now, and no group
+    headings — so what is left to pin is the block's own description of itself.
     """
-    from app.core.models.context import ContextBlock
-    from app.generation.prompts import has_mixed_sources, _is_website_led
+    from app.generation.prompts import format_context_blocks
 
     graph = _facts_block([
         {"subject_name": "P", "predicate": "LED_BY", "object_name": "A",
          "claim_id": "c"},
     ])
-    website = ContextBlock(n=2, text="w", payload={"source_type": "website"})
-    pdf = ContextBlock(n=3, text="p", payload={"source_type": "pdf"})
-
-    assert has_mixed_sources([graph, website]) is False
-    assert has_mixed_sources([graph, pdf]) is False
-    assert has_mixed_sources([graph, website, pdf]) is True
-    # And the graph block leading does not break the website-led grouping.
-    assert _is_website_led([graph, website, pdf]) is True
+    rendered = format_context_blocks([graph])
+    assert "knowledge graph" in rendered
+    assert "pdf" not in rendered.lower().split("\n")[0]
 
 
 # --------------------------------------------------------------------------- #
@@ -1076,13 +1077,19 @@ def test_the_graph_block_is_not_counted_as_a_pdf():
 # --------------------------------------------------------------------------- #
 
 
-def test_the_graph_block_gets_no_pdf_group_header_in_the_prompt():
-    """It used to be announced to the model as the contents of a PDF.
+def test_the_context_is_not_grouped_by_source_kind():
+    """The graph block used to be announced to the model as PDF contents.
 
-    `format_context_blocks` decided a block's group with
-    `"website" if source_type == "website" else "pdf"`. The graph block carries
+    `format_context_blocks` prefixed groups with "— TERI website —" and
+    "— PDF documents —", deciding a block's group with
+    `"website" if source_type == "website" else "pdf"`; the graph block carries
     no `source_type` by design, so it fell to the else branch and the context
-    opened with "— PDF documents —" directly above verified graph relationships.
+    opened with "— PDF documents —" directly above verified relationships.
+
+    The headings are gone with the segregated context that produced them — the
+    blocks arrive in one evidential order and are presented in it — so the bug
+    has no branch left to take. Each block still names its own kind in its own
+    header, which is what weighing the evidence actually needs.
     """
     from app.core.models.context import ContextBlock
     from app.generation.prompts import format_context_blocks
@@ -1095,14 +1102,12 @@ def test_the_graph_block_gets_no_pdf_group_header_in_the_prompt():
     pdf = ContextBlock(n=3, text="p", payload={"source_type": "pdf_attachment"})
 
     rendered = format_context_blocks([graph, website, pdf])
-    # The graph's own block must not be introduced as a document of any kind.
-    before_graph = rendered.split("[1]")[0]
-    assert "PDF documents" not in before_graph
-    assert "TERI website" not in before_graph
-    # The real document blocks still get their headings.
-    assert "— TERI website —" in rendered
-    assert "— PDF documents —" in rendered
-    assert rendered.index("— TERI website —") < rendered.index("— PDF documents —")
+    assert "— TERI website —" not in rendered
+    assert "— PDF documents —" not in rendered
+    # Each block still says what it is, in its own header and nowhere else.
+    assert "knowledge graph" in rendered
+    assert "[2] (website)" in rendered
+    assert "[3] (pdf_attachment)" in rendered
 
 
 def test_the_graph_block_is_cited_as_the_graph_not_as_a_pdf():

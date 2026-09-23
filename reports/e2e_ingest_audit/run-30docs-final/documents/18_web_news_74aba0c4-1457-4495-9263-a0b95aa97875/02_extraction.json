@@ -1,0 +1,55 @@
+{
+  "rich_text_fields": [
+    {
+      "field": "body",
+      "kind": "formatted_text",
+      "html_chars": 281,
+      "html": "<p>The International Solar Alliance (ISA), through its SIDS Platform, and the GRIHA Council have launched the ISA-iSUN Design Challenge to promote the integration of solar energy and climate-resilient design into tourism infrastructure in Small Island Developing States (SIDS).</p>",
+      "text": "The International Solar Alliance (ISA), through its SIDS Platform, and the GRIHA Council have launched the ISA-iSUN Design Challenge to promote the integration of solar energy and climate-resilient design into tourism infrastructure in Small Island Developing States (SIDS)."
+    }
+  ],
+  "record_body": "The International Solar Alliance (ISA), through its SIDS Platform, and the GRIHA Council have launched the ISA-iSUN Design Challenge to promote the integration of solar energy and climate-resilient design into tourism infrastructure in Small Island Developing States (SIDS).",
+  "record_body_chars": 274,
+  "files_discovered": [],
+  "entity_refs": [
+    {
+      "field_name": "field_news_tags",
+      "uuid": "109d1917-4dbd-435a-944b-7a9c9d804068",
+      "entity_type": "taxonomy_term--tags",
+      "label": "GRIHA Council"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "00575411-7e0b-4a54-8fb5-e836075d7e72",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Solar energy"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "a88d9489-d81b-43af-a76a-8c90d2a143e5",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Climate resilience"
+    },
+    {
+      "field_name": "field_news_themes",
+      "uuid": "06d2512c-f07c-468c-8489-4e20cf8aba83",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Sustainable Habitat"
+    }
+  ],
+  "scalar_metadata": {
+    "field_news_tags": [
+      "GRIHA Council",
+      "Solar energy",
+      "Climate resilience"
+    ],
+    "field_news_themes": [
+      "Sustainable Habitat"
+    ],
+    "field_news_date": "2026-09-04T11:30:03+00:00",
+    "field_news_source": "DigiTIMES",
+    "field_news_type": [
+      "electronic_media"
+    ]
+  }
+}

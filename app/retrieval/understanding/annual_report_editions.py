@@ -50,7 +50,11 @@ from app.core.editions import EDITION_RE, find_editions, normalise_edition
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["EditionResolution", "conditions_for", "reset_cache", "resolve"]
+__all__ = [
+    "COUNT", "LIST", "EditionResolution", "SeriesDocument", "SeriesRequest",
+    "conditions_for", "reset_cache", "resolve", "series_documents",
+    "series_request",
+]
 
 # The question has to name the series itself. "TERI's latest report" is not this,
 # and scoping it to an annual report would answer the wrong question.
@@ -135,8 +139,9 @@ def reset_cache() -> None:
     For tests. Production does not need it: the TTL is what picks up a newly
     ingested edition, so no ingestion path has to know this cache exists.
     """
-    global _cache
+    global _cache, _documents_cache
     _cache = None
+    _documents_cache = None
 
 
 def _read_series_rows() -> list[dict[str, Any]]:
@@ -324,3 +329,195 @@ def conditions_for(resolution: EditionResolution | None) -> list[Any]:
             key="document_id", match=MatchAny(any=list(resolution.document_ids))
         )
     ]
+
+
+# --------------------------------------------------------------------------- #
+# The series as a whole: listing it, and counting it
+# --------------------------------------------------------------------------- #
+# `resolve` above answers "which edition?" and deliberately returns None when the
+# question is about the series rather than one of its editions — narrowing
+# "list the annual reports" to the newest one would answer a different question.
+#
+# That None was the whole answer, and it threw away the fact that produced it.
+# "list of annual reports" therefore fell through to semantic search, which is
+# unfiltered for exactly this reason, and the model was asked to find a list of
+# editions in two pages of report prose. It refused, correctly, and the citation
+# fallback attached whatever chunks the unfiltered pull had found.
+#
+# So the verdict is reported instead of discarded. It is kept apart from
+# `EditionResolution` on purpose: a series request must NOT become a Qdrant
+# filter, and giving it document ids in the same shape as an edition resolution
+# is the one mistake that would make that happen by accident.
+
+
+@dataclass(frozen=True)
+class SeriesDocument:
+    """One edition, with what a source card needs to describe it."""
+
+    edition: str
+    document_id: str
+    title: str
+    url: str | None = None
+
+
+@dataclass(frozen=True)
+class SeriesRequest:
+    """A question about the series itself: list it, or count it."""
+
+    #: ``list`` or ``count``.
+    kind: str
+    documents: tuple[SeriesDocument, ...] = ()
+
+    @property
+    def editions(self) -> tuple[str, ...]:
+        return tuple(d.edition for d in self.documents)
+
+    def describe(self) -> str:
+        return f"{self.kind} -> {len(self.documents)} edition(s)"
+
+
+LIST = "list"
+COUNT = "count"
+
+# Asking how many there are. Kept apart from the list cues because the answer
+# shape differs, not because the detection does.
+_SERIES_COUNT = re.compile(
+    r"\bhow\s+many\b|\bnumber\s+of\b|\bcount\s+of\b", re.IGNORECASE
+)
+
+# Asking to see them enumerated. Deliberately *narrower* than `_WHOLE_SERIES`:
+# that pattern also catches "trends", "over the years", "compare" and "history",
+# which are analytical questions about the series' contents and must stay on the
+# content path. Its job is to stop a question being narrowed to one edition; it
+# is not a claim that the question wants a list.
+_SERIES_ENUMERATE = re.compile(
+    r"\ball\b|\bevery\b|\beach\b|\blist\b|\blisting\b|\benumerate\b"
+    r"|\bwhich\s+ones\b|\bavailable\b",
+    re.IGNORECASE,
+)
+
+# Analytical readings that name the series in the plural but want its substance.
+# "compare the annual reports" is a content question wearing a plural noun.
+_SERIES_ANALYSIS = re.compile(
+    r"\bcompare\b|\bcomparison\b|\btrends?\b|\bevolution\b|\btimeline\b"
+    r"|\bhistor(?:y|ical)\b|\bover\s+the\s+years\b|\bover\s+time\b"
+    r"|\bacross\b|\bthroughout\b|\bchanged?\b|\bchanges\b"
+    r"|\byear[-\s]on[-\s]year\b|\byear[-\s]over[-\s]year\b",
+    re.IGNORECASE,
+)
+
+# The plural form. "the annual reports" names the series; "the annual report"
+# names one of them, which is what keeps "show me the latest annual report" on
+# the single-document path.
+_SERIES_PLURAL = re.compile(r"\bannual\s+reports\b", re.IGNORECASE)
+
+_documents_cache: "tuple[float, tuple[SeriesDocument, ...]] | None" = None
+
+
+def series_documents() -> tuple[SeriesDocument, ...]:
+    """Every edition of the series, newest first, with title and URL.
+
+    An accessor over rows :func:`_read_series_rows` already reads — it selects
+    ``document_id, title, url`` and :func:`_series` keeps only the ids, so the
+    card metadata was being fetched and dropped on every call.
+
+    Which page's editions count is not re-decided here: :func:`_series` owns
+    that (the page holding the most editions wins, and only outright), and this
+    filters the rows down to the ids it returned. One reader of that rule, not
+    two.
+
+    Returns ``()`` on any failure, which leaves every caller on the path it
+    would have taken before this existed.
+    """
+    global _documents_cache
+    if (
+        _documents_cache is not None
+        and (time.monotonic() - _documents_cache[0]) < _CACHE_TTL_SECONDS
+    ):
+        return _documents_cache[1]
+
+    series = _series()
+    if not series:
+        return ()
+    edition_of = {doc_id: edition for edition, ids in series.items() for doc_id in ids}
+    try:
+        rows = _read_series_rows()
+    except Exception:
+        logger.warning("Could not read the annual-report series documents.",
+                       exc_info=True)
+        return ()
+
+    documents = tuple(sorted(
+        (
+            SeriesDocument(
+                edition=edition_of[str(row["document_id"])],
+                document_id=str(row["document_id"]),
+                title=str(row.get("title") or "").strip(),
+                url=(str(row["url"]).strip() or None) if row.get("url") else None,
+            )
+            for row in rows
+            if str(row.get("document_id") or "") in edition_of
+        ),
+        key=lambda d: d.edition,
+        reverse=True,
+    ))
+    _documents_cache = (time.monotonic(), documents)
+    return documents
+
+
+def series_request(question: str) -> SeriesRequest | None:
+    """Whether this question asks for the series itself, and in what shape.
+
+    ``None`` for everything else, which is every question that reaches this
+    today — so a miss leaves behaviour exactly as it is.
+
+    Four conditions, and all of them have to hold:
+
+    1. the question names the series **in the plural** ("the annual reports"),
+       which is what separates it from "the latest annual report";
+    2. it does not point at a particular edition (:func:`_requested`), so
+       "annual reports 2019 and 2020" stays a two-edition question;
+    3. it asks to enumerate or to count — a bare plural is not enough on its
+       own, because "annual reports on water" is a topic, not a request for the
+       index. ``show me the annual reports`` qualifies through the locate cues
+       :mod:`app.retrieval.understanding.document_request` already defines;
+    4. it is not asking about the *contents* of the reports, or about how they
+       changed. "how many annual reports discuss solar" counts documents by
+       what is inside them and belongs on the content path, not here.
+    """
+    from app.retrieval.understanding.document_request import (
+        _ABOUT_CONTENT,
+        _LOCATE,
+    )
+
+    text = question or ""
+    if not _SERIES_PLURAL.search(text):
+        return None
+
+    counting = bool(_SERIES_COUNT.search(text))
+    # The counting phrase is the *operation*, so it is removed before the
+    # question is read for content cues. Without this "what is the number of
+    # annual reports" is rejected by `_ABOUT_CONTENT`'s own "numbers?" — which
+    # is there to catch "the key numbers in the report", a different thing.
+    # Removing only the matched phrase keeps the rest of the sentence readable:
+    # "how many annual reports discuss solar" still has "discuss", and is still
+    # a content question.
+    subject = _SERIES_COUNT.sub(" ", text)
+    if _ABOUT_CONTENT.search(subject) or _SERIES_ANALYSIS.search(subject):
+        return None
+
+    if not (counting or _SERIES_ENUMERATE.search(text) or _LOCATE.search(text)):
+        return None
+
+    series = _series()
+    if not series:
+        return None
+    if _requested(text, series)[1]:
+        return None
+
+    documents = series_documents()
+    if not documents:
+        return None
+    request = SeriesRequest(kind=COUNT if counting else LIST, documents=documents)
+    logger.info("annual-report series: %s", request.describe())
+    return request

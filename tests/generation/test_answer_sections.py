@@ -1,9 +1,18 @@
-"""The two-block answer structure.
+"""The answer structure: one answer, and the reader for the one that came before.
 
-Covers the prompt contract, the parsing the frontend and the verification passes
-share, and the sources footer that has to agree with the blocks above it. The
-tags come from a model, so the malformed cases matter as much as the happy path.
-No network.
+Two things live here, and they no longer describe the same era.
+
+`split_sections` and `strip_tags` parse the retired ``<website_answer>`` /
+``<pdf_answer>`` contract. Nothing asks a model for those tags any more, but the
+parser is not dead code: answers generated under the old contract are still in
+the semantic cache, and one served from there arrives wrapped. Its tests are
+unchanged — a malformed wrapper from a truncated stream still has to degrade to
+prose rather than lose the answer.
+
+The prompt contract below it is the current one, and it is the opposite shape:
+one continuous answer from one ranked evidence set, with source kind carrying no
+precedence at all. Also here: the sources footer, which has to agree with the
+citations above it. No network.
 """
 
 from __future__ import annotations
@@ -20,11 +29,11 @@ from app.generation.prompts import (
     PDF_LEAD,
     PDF_TAG,
     REFUSAL,
-    SINGLE_SOURCE_SYSTEM_PROMPT,
+    SUPERSEDED_MARKER,
+    SUPERSEDES_MARKER,
     WEBSITE_TAG,
     format_directive,
     grounded_system_prompt,
-    has_mixed_sources,
 )
 from app.generation.sections import (
     PDF,
@@ -252,142 +261,132 @@ def test_strip_tags_leaves_an_untagged_answer_alone():
 # --------------------------------------------------------------------------- #
 # The prompt contract. Asserted structurally rather than by prose match, so
 # rewording the rules stays free while the demonstrated shape stays pinned.
+#
+# Most of what stood here is gone, with the thing it pinned. The prompt came in
+# two variants: a mixed context was answered in a <website_answer> block followed
+# by a <pdf_answer> block captioned "From our documents", in that order "whatever
+# the relevance scores say", and a single-kind context got a second prompt with
+# the structure stripped out. The split was categorical rather than evidential.
+# Asked who the director general is, the model was handed a 2020 web page and a
+# 2023 document correcting it, and rule 5 — "Website sources are authoritative"
+# — told it to take the web page and file the correction in the aside below.
 
 
-def _demonstrated_blocks(text, start_at=0):
-    """The span from a website opening tag through the next PDF closing tag."""
-    start = text.index(f"<{WEBSITE_TAG}>", start_at)
-    close = f"</{PDF_TAG}>"
-    return text[start : text.index(close, start) + len(close)]
+def _rule(n: int, until: str) -> str:
+    return GROUNDED_SYSTEM_PROMPT[
+        GROUNDED_SYSTEM_PROMPT.index(f"\n{n}. ") : GROUNDED_SYSTEM_PROMPT.index(until)
+    ]
 
 
-def test_prompt_names_both_block_tags():
-    assert f"<{WEBSITE_TAG}>" in GROUNDED_SYSTEM_PROMPT
-    assert f"<{PDF_TAG}>" in GROUNDED_SYSTEM_PROMPT
+def _example() -> str:
+    return GROUNDED_SYSTEM_PROMPT[GROUNDED_SYSTEM_PROMPT.index("Example:") :]
 
 
-def test_prompt_states_the_structure_before_demonstrating_it():
+def test_the_prompt_asks_for_one_continuous_answer():
+    assert "one continuous answer" in GROUNDED_SYSTEM_PROMPT
+
+
+def test_the_prompt_never_mentions_the_retired_block_structure():
+    for token in (WEBSITE_TAG, PDF_TAG, PDF_LEAD):
+        assert token not in GROUNDED_SYSTEM_PROMPT, token
+
+
+def test_the_prompt_forbids_ranking_evidence_by_source_kind():
+    """Rule 5, which used to be the reason the older page won."""
+    rule = _rule(5, "\n7. ")
+    assert "never on what kind of source" in rule
+    assert "does not outrank" in rule
+    assert "authoritative" not in rule
+
+
+def test_citations_may_come_from_any_source_kind_in_one_answer():
+    assert "whichever kind of source it came" in _rule(6, "\n7. ")
+
+
+def test_the_prompt_states_the_structure_before_demonstrating_it():
     assert GROUNDED_SYSTEM_PROMPT.index("Answer structure") < (
         GROUNDED_SYSTEM_PROMPT.index("Example:")
     )
 
 
-def test_prompt_template_parses_as_the_two_blocks():
-    # The shape the prompt specifies must be the shape the parser reads, or the
-    # prompt teaches a format the frontend cannot render.
-    sections = split_sections(_demonstrated_blocks(GROUNDED_SYSTEM_PROMPT))
-    assert [s.kind for s in sections] == [WEBSITE, PDF]
-    assert sections[1].text.startswith(PDF_LEAD)
+def test_the_worked_examples_parse_as_plain_text():
+    # The demonstrated answers are what the model copies, so they have to read
+    # as untagged wholes to the same parser the frontend mirrors.
+    assert _kinds(_example()) == [PLAIN]
 
 
-def test_prompt_worked_example_parses_as_the_two_blocks():
-    example_at = GROUNDED_SYSTEM_PROMPT.index("Example:")
-    demonstrated = _demonstrated_blocks(GROUNDED_SYSTEM_PROMPT, example_at)
-    assert [s.kind for s in split_sections(demonstrated)] == [WEBSITE, PDF]
+def test_a_worked_example_answers_a_mixed_context_as_one_passage():
+    # The case the model used to split. Demonstrating it answered whole is worth
+    # more than describing it, so the example context carries both kinds.
+    example = _example()
+    assert "(website ·" in example and "(pdf ·" in example
 
 
-_DEMO_RUN = re.compile(
-    rf"(?:<(?:{WEBSITE_TAG}|{PDF_TAG})>.*?</(?:{WEBSITE_TAG}|{PDF_TAG})>\s*)+",
-    re.DOTALL,
-)
+def test_a_worked_example_demonstrates_the_dated_title_rule():
+    # Rule 9's appositive clause is the one a model most readily ignores: a role
+    # beside a name reads as a standing label rather than a dated claim.
+    example = _example()
+    assert "Director General, Org One" in example
+    assert "was previously" in example
 
 
-def test_prompt_demonstrates_dropping_either_block():
-    # Omitting a block is the rule a model most readily ignores, so the prompt
-    # shows both removals rather than only describing them: first both blocks,
-    # then the PDF block dropped, then the website block dropped.
-    example = GROUNDED_SYSTEM_PROMPT[GROUNDED_SYSTEM_PROMPT.index("Example:") :]
-    demonstrated = [
-        (WEBSITE_TAG in demo, PDF_TAG in demo) for demo in _DEMO_RUN.findall(example)
-    ]
-    assert demonstrated == [(True, True), (True, False), (False, True)]
-
-
-def test_prompt_demonstrates_dropping_a_block_rather_than_refusing_in_it():
-    # The observed failure: an unhelpful category kept and filled with the
-    # refusal, which then reads as a denial of the answer beside it.
-    assert REFUSAL in GROUNDED_SYSTEM_PROMPT[
-        GROUNDED_SYSTEM_PROMPT.index("Example:") :
-    ]
-    assert "never the content of a block" in GROUNDED_SYSTEM_PROMPT
-
-
-def test_format_directives_are_scoped_inside_the_blocks():
+def test_format_directives_name_no_wrappers():
     for fmt in ("list", "table", "summary", "detailed", "timeline"):
-        assert WEBSITE_TAG in format_directive(fmt), fmt
+        directive = format_directive(fmt)
+        assert WEBSITE_TAG not in directive, fmt
+        assert PDF_TAG not in directive, fmt
+        assert "this shape wins" in directive, fmt
     # The default path stays lean: no directive, so no scope note either.
     assert format_directive("default") == ""
 
 
+def test_grounded_system_prompt_is_the_only_prompt():
+    assert grounded_system_prompt() == GROUNDED_SYSTEM_PROMPT
+
+
+def test_the_prompt_keeps_the_rule_numbering():
+    # app.generation.answerer appends the history rule as "10.".
+    for n in range(1, 10):
+        assert f"\n{n}. " in f"\n{GROUNDED_SYSTEM_PROMPT}", n
+    assert "\n10. " not in GROUNDED_SYSTEM_PROMPT
+
+
 # --------------------------------------------------------------------------- #
-# The single-source prompt. A context of one source kind has nothing to split
-# along, so the structure the mixed prompt teaches must be absent entirely —
-# left in, it makes the model manufacture a block and restate the answer in it.
+# Rule 9: which of two blocks describes the present.
 
 
-def test_single_source_prompt_never_mentions_the_block_structure():
-    for token in (WEBSITE_TAG, PDF_TAG, PDF_LEAD):
-        assert token not in SINGLE_SOURCE_SYSTEM_PROMPT, token
-
-
-def test_single_source_prompt_asks_for_one_continuous_answer():
-    assert "one continuous answer" in SINGLE_SOURCE_SYSTEM_PROMPT
-
-
-def test_single_source_worked_example_parses_as_plain_text():
-    # The demonstrated answer is what the model copies, so it has to read as an
-    # untagged whole to the same parser the frontend mirrors.
-    example = SINGLE_SOURCE_SYSTEM_PROMPT[
-        SINGLE_SOURCE_SYSTEM_PROMPT.index("Example:") :
-    ]
-    assert _kinds(example) == [PLAIN]
-
-
-def test_grounded_system_prompt_selects_by_context_composition():
-    assert grounded_system_prompt(mixed=True) == GROUNDED_SYSTEM_PROMPT
-    assert grounded_system_prompt(mixed=False) == SINGLE_SOURCE_SYSTEM_PROMPT
-
-
-def test_both_prompt_variants_share_the_rule_numbering():
-    # app.generation.answerer appends the history rule as "10.", so neither
-    # variant may add or drop a numbered rule.
-    for prompt in (GROUNDED_SYSTEM_PROMPT, SINGLE_SOURCE_SYSTEM_PROMPT):
-        for n in range(1, 10):
-            assert f"\n{n}. " in f"\n{prompt}", (n, prompt[:40])
-        assert "\n10. " not in prompt
-
-
-def test_both_prompt_variants_settle_a_conflict_on_the_publication_date():
+def test_the_conflict_rule_settles_on_the_publication_date():
     # The date reaches the model only through the block header (_source_hint),
     # so the rule has to point at it rather than at the payload field name.
-    for prompt in (GROUNDED_SYSTEM_PROMPT, SINGLE_SOURCE_SYSTEM_PROMPT):
-        rule = prompt[prompt.index("\n9. ") : prompt.index("\nAnswer structure")]
-        assert "published" in rule
-        assert "later" in rule
-        # Recency must not quietly overrule the website precedence in rule 5.
-        assert "rule 5" in rule
+    rule = _rule(9, "\nAnswer structure")
+    assert "published" in rule and "later" in rule
 
 
 def test_the_conflict_rule_forbids_inventing_a_missing_date():
-    # Most PDFs carry no effective_start_date, so an undated block is the common case,
-    # not the exception — reading one as "the current version" is the failure.
-    for prompt in (GROUNDED_SYSTEM_PROMPT, SINGLE_SOURCE_SYSTEM_PROMPT):
-        rule = prompt[prompt.index("\n9. ") : prompt.index("\nAnswer structure")]
-        assert "no date shown" in rule
+    # Most PDFs carry no effective_start_date, so an undated block is the common
+    # case, not the exception — reading one as "the current version" is the
+    # failure.
+    assert "no date shown" in _rule(9, "\nAnswer structure")
 
 
-def test_single_source_format_directives_name_no_wrappers():
-    for fmt in ("list", "table", "summary", "detailed", "timeline"):
-        directive = format_directive(fmt, mixed=False)
-        assert WEBSITE_TAG not in directive, fmt
-        assert PDF_TAG not in directive, fmt
-        assert "this shape wins" in directive, fmt
+def test_the_conflict_rule_covers_a_title_written_beside_a_name():
+    """The reported failure. "Statement by Dr X, Director General, TERI" on a
+    2020 page carries no verb and no time word, so the time-bound-wording clause
+    above had nothing to catch and the model rendered a three-year-old role as a
+    present-tense fact."""
+    rule = _rule(9, "\nAnswer structure")
+    assert "beside a name" in rule
+    assert "past tense" in rule
 
 
-def test_format_directives_outrank_the_general_style_guidance():
-    # A detected shape reads this user's explicit intent, so "summarize briefly"
-    # must not lose to the always-on instruction to answer thoroughly.
-    assert "this shape wins" in format_directive("summary")
+def test_the_conflict_rule_reads_the_supersession_markers():
+    rule = _rule(9, "\nAnswer structure")
+    assert SUPERSEDED_MARKER in rule
+    assert SUPERSEDES_MARKER in rule
+
+
+# --------------------------------------------------------------------------- #
+# Style, and the depth the examples demonstrate.
 
 
 def test_prompt_states_the_style_between_the_structure_and_the_example():
@@ -412,31 +411,24 @@ def test_prompt_states_a_length_floor_and_not_only_a_ceiling():
 
 
 def _demonstrated_answers(prompt: str) -> list[str]:
-    """Each answer body the worked example demonstrates, tags and the PDF
-    caption stripped. Falls back to the untagged passage after "Answer:" for the
-    single-source prompt, which demonstrates no blocks."""
+    """Each answer body the worked examples demonstrate.
+
+    Every example is untagged now, so this is the passage after each "Answer:"
+    — where it used to have to unwrap block runs first.
+    """
     example = prompt[prompt.index("Example:") :]
-    runs = _DEMO_RUN.findall(example)
-    if not runs:
-        _, _, passage = example.partition("Answer:\n")
-        return [passage.strip()]
     return [
-        section.text.replace(PDF_LEAD, "").strip()
-        for run in runs
-        for section in split_sections(run)
+        part.split("\n\nExample")[0].strip()
+        for part in example.split("Answer:\n")[1:]
     ]
 
 
-@pytest.mark.parametrize(
-    "prompt", [GROUNDED_SYSTEM_PROMPT, SINGLE_SOURCE_SYSTEM_PROMPT]
-)
-def test_worked_examples_demonstrate_the_depth_the_style_asks_for(prompt):
+def test_worked_examples_demonstrate_the_depth_the_style_asks_for():
     # The exemplar outweighs the described style for 4o-mini, so a one-sentence
     # demonstration teaches one-sentence answers however thorough the style
-    # section above it reads — including in the follow-ups, where a dropped block
-    # must not also mean a stripped-down answer. Cited sentences specifically:
-    # the depth being taught has to be the grounded kind.
-    bodies = _demonstrated_answers(prompt)
+    # section above it reads. Cited sentences specifically: the depth being
+    # taught has to be the grounded kind.
+    bodies = _demonstrated_answers(GROUNDED_SYSTEM_PROMPT)
     assert bodies
     for body in bodies:
         cited = [
@@ -448,69 +440,40 @@ def test_worked_examples_demonstrate_the_depth_the_style_asks_for(prompt):
 
 
 # --------------------------------------------------------------------------- #
-# Which structure a given context asks for. The retrieved blocks decide it —
-# the model is never asked to infer the composition and suppress the split
-# itself, which is what produced a duplicated PDF section on PDF-only pulls.
+# The context's composition no longer selects anything.
+#
+# `has_mixed_sources` read the blocks and handed a mixed context the two-block
+# prompt; `_build_system` took the verdict as `mixed`. Both are gone, and the
+# signature is the first half of the proof — there is nothing left to pass. The
+# second half is that no combination of the arguments it still takes can put the
+# retired structure back into the prompt.
 
 
-def _blocks(*source_types):
-    return [
-        ContextBlock(n=i, text=f"Passage {i}.", payload={"source_type": st})
-        for i, st in enumerate(source_types, start=1)
-    ]
+def test_no_argument_combination_reintroduces_the_block_structure():
+    notes = (None, FaithfulnessReport(faithful=False, unsupported=["1.2 GW"])
+             .correction_note())
+    for fmt in (None, "default", "table", "list", "summary", "detailed", "timeline"):
+        for note in notes:
+            for history in (False, True):
+                system = answerer._build_system(
+                    fmt, note, has_history=history, graph_facts=True,
+                )
+                for token in (WEBSITE_TAG, PDF_TAG, PDF_LEAD):
+                    assert token not in system, (fmt, bool(note), history, token)
 
 
-def test_mixed_sources_needs_both_kinds_present():
-    assert has_mixed_sources(_blocks("website", "pdf"))
-    assert has_mixed_sources(_blocks("pdf", "website", "pdf_attachment"))
-    assert not has_mixed_sources(_blocks("pdf", "pdf"))
-    assert not has_mixed_sources(_blocks("website", "website"))
-    # Every non-website kind counts as PDF, so these are single-source.
-    assert not has_mixed_sources(_blocks("pdf", "pdf_attachment"))
-    assert not has_mixed_sources([])
-
-
-def test_pdf_only_context_is_answered_without_the_block_structure():
-    system = answerer._build_system(
-        None, None, mixed=has_mixed_sources(_blocks("pdf", "pdf_attachment"))
-    )
-    assert WEBSITE_TAG not in system
-    assert PDF_TAG not in system
-    assert PDF_LEAD not in system
-
-
-def test_mixed_context_keeps_the_block_structure():
-    system = answerer._build_system(
-        None, None, mixed=has_mixed_sources(_blocks("website", "pdf"))
-    )
-    assert f"<{WEBSITE_TAG}>" in system
-    assert f"<{PDF_TAG}>" in system
-
-
-def test_correction_note_defers_to_the_structure_already_in_force():
+def test_correction_note_names_no_structure():
     # A retry runs through the same prompt as the draft it replaces, so a note
-    # that named the blocks itself would push a single-source rewrite back into
-    # the split the prompt just forbade.
+    # naming blocks would push a rewrite back into a shape nothing else asks for.
     note = FaithfulnessReport(faithful=False, unsupported=["1.2 GW"]).correction_note()
     for token in (WEBSITE_TAG, PDF_TAG, PDF_LEAD, "answer-block"):
         assert token not in note, token
 
 
-def test_corrected_pdf_only_answer_is_still_asked_for_one_block():
-    system = answerer._build_system(
-        "table",
-        FaithfulnessReport(faithful=False).correction_note(),
-        mixed=has_mixed_sources(_blocks("pdf", "pdf")),
-    )
-    for token in (WEBSITE_TAG, PDF_TAG, PDF_LEAD):
-        assert token not in system, token
-
-
-def test_history_rule_continues_the_numbering_of_either_variant():
-    for mixed in (True, False):
-        system = answerer._build_system(None, None, mixed=mixed, has_history=True)
-        assert "\n10. " in system
-        assert "\n11. " not in system
+def test_history_rule_continues_the_numbering():
+    system = answerer._build_system(None, None, has_history=True)
+    assert "\n10. " in system
+    assert "\n11. " not in system
 
 
 # --------------------------------------------------------------------------- #

@@ -1,0 +1,105 @@
+{
+  "document_id": "3c24d94b-f8bb-4475-b147-56dd0c35318f",
+  "source_type": "website",
+  "title": "Darbari Seth Memorial Lecture 2026",
+  "sections": [
+    {
+      "text": "[embedded: https://www.youtube.com/embed/Bcli9YVuuCg?si=KDQsvDafWbgwwTmb]\n\nInitiated in 2002 by TERI, the annual Darbari Seth Memorial Lecture commemorates the legacy and vision of the institute’s founder, the visionary technocrat and industrialist, Mr Darbari S Seth. In 1974, driven by a commitment to energy conservation and environmental stewardship, he established TERI, laying the ground for its rise as a globally pre-eminent think tank in energy, climate change, and sustainability.\n\nOver the last two and a half decades, the lecture series has served as a high-level platform for dialogue on global and national development pathways, addressed by distinguished leaders including António Guterres, NR Narayana Murthy, Mukesh D Ambani, Anand G Mahindra, and Kiran Mazumdar-Shaw. The previous edition featured a Presidential Address by Shri Nitin Gadkari, Union Cabinet Minister for Road Transport & Highways, alongside a memorial address by Mr Ashish Khanna, Director General of the International Solar Alliance.\n\nMarking its Silver Jubilee on Friday, 21 August 2026, the 25th edition of the Darbari Seth Memorial Lecture will be held at the Stein Auditorium, India Habitat Centre, New Delhi. The gathering will convene policymakers, industry leaders, and researchers to deliberate on strategic priorities and collaborative mechanisms essential for India's clean energy transition.\n\nThe 2026 edition will feature a Special Address by Shri Pabitra Margherita, Hon’ble Minister of State for External Affairs and Textiles, Government of India.\n\n[image: Shri Pabitra Margherita]\n\nShri Pabitra Margherita\n\nMinister of State for External Affairs\n\nShri Pabitra Margherita is an Indian politician, cultural producer, and Member of Parliament representing Assam in the Rajya Sabha. He currently serves as the Union Minister of State for External Affairs and Minister of State for Textiles, portfolios he assumed in June 2024. He attended the Textile Institute in Guwahati. He entered active politics in 2014, previously holding administrative posts such as Political Secretary to the Chief Minister of Assam and Member Secretary for the Assam Advisory Committee for Students and Youth Welfare. Beyond politics, Margherita has contributed extensively to Assamese media as Chief Editor of Maya and Sa Re Ga Ma (1998–2005), Chairperson of the Jyoti Chitraban Film Studio (2017–2021), and producer of more than 20 short films and documentaries alongside over 100 songs.\n\n[image: Nitin Desai]\n\nNitin Desai\n\nChairman, TERI\nFormer Under Secretary General for Economic and Social Affairs, UN\n\nMr Nitin Desai is a distinguished economist and a well-known voice in public policy for a nationally and internationally, especially in the sustainable development sector. He was in the Planning Commission (1973-88) and later served as the Chief Economic Adviser and Secretary, Department of Economic Affairs, in the Ministry of Finance (1988-90). He also served as Senior Economic Adviser for the World Commission on Environment and Development (the Brundtland Commission) where he introduced the concept of sustainable development. He was the Under Secretary General for Economic and Social Affairs in the UN, where his major contributions included the organization of a series of global summits, notably the Rio Earth Summit (1992), the Copenhagen Social Development Summit (1995), the Monterrey Finance and Development Summit (2002) and the Johannesburg Sustainable Development Summit (2002). He oversaw the creation of the Commission on Sustainable Development in the UN, and was the first Under Secretary General for Policy Coordination",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/event/darbari-seth-memorial-lecture-2026",
+  "file_url": "https://teriin.org/sites/default/files/2026-08/DSML2026_%20AGENDA.pdf",
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "3c24d94b-f8bb-4475-b147-56dd0c35318f",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Energy access",
+    "Green growth"
+  ],
+  "categories": [],
+  "language": "en",
+  "effective_start_date": "2026-08-21T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": "2026-08-21T00:00:00+00:00",
+  "end_precision": "day",
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "b611c1133e0bfd7c6bd1720cf08c86e3bb453a557d5ff913f496fc4aaa6ff56a",
+  "extra": {
+    "bundle": "events",
+    "nid": 13334,
+    "changed": "2026-08-31T09:52:29+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Academicians"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Civil society/Grassroots"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "62f88197-f851-49a6-9434-8f085e2cb8de",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Energy access"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "afea3364-db5a-4426-9496-8edca08f40a0",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Green growth"
+    },
+    {
+      "field_name": "field_related_terms",
+      "uuid": "4b29ab8e-87eb-4527-81d1-a98e8dbe7aee",
+      "entity_type": "taxonomy_term--related_terms",
+      "label": "25th Darbari Seth"
+    }
+  ],
+  "file_links": [
+    {
+      "uuid": "33c32e72-2a50-4547-86a1-269699dade92",
+      "origin": "attachment",
+      "url": "https://teriin.org/sites/default/files/2026-08/DSML2026_%20AGENDA.pdf",
+      "filename": "DSML2026_ AGENDA.pdf"
+    }
+  ],
+  "raw_meta": {
+    "field_event_stakeholders": [
+      "Academicians",
+      "Businesses",
+      "Civil society/Grassroots"
+    ],
+    "field_event_tags": [
+      "Energy access",
+      "Green growth"
+    ],
+    "field_related_terms": [
+      "25th Darbari Seth"
+    ],
+    "field_enddate_forlatestfirst": "2026-08-21T17:00:00+05:30",
+    "field_event_end_date": "2026-08-21T11:30:00+00:00",
+    "field_event_start_date": "2026-08-20T22:00:00+00:00",
+    "field_event_venue": "Stein Auditorium, India Habitat Centre, New Delhi"
+  }
+}

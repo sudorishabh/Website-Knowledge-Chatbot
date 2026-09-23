@@ -58,6 +58,7 @@ def _save_state(
     version: int,
     *,
     indexed: bool,
+    content_state: str | None = None,
 ) -> None:
     state.upsert(
         StateRecord(
@@ -71,7 +72,15 @@ def _save_state(
             # current pipeline version. A fingerprint refresh leaves the stored
             # one alone (the upsert COALESCEs None), so a document that has not
             # been rebuilt keeps reading as stale until it is.
-            pipeline_version=PIPELINE_VERSION if indexed else None,
+            # A metadata-only document is *settled*, not half-done: there will
+            # never be chunks for it, so leaving it unstamped would make the
+            # corpus reprocessor rebuild it forever to reach the same answer.
+            pipeline_version=(PIPELINE_VERSION
+                              if indexed or content_state == METADATA_ONLY
+                              else None),
+            # `indexed_at` deliberately stays NULL — it means "has points in the
+            # collection", and this document has none by design.
+            content_state=content_state,
             bundle=record.bundle,
             entity_type=record.entity_type,
             changed_mark=record.changed_mark,
@@ -132,6 +141,7 @@ def _persist(
     *,
     indexed: bool,
     run_id: str | None = None,
+    content_state: str | None = None,
 ) -> None:
     """Persist the content record and the facet rows derived from it.
 
@@ -150,7 +160,8 @@ def _persist(
     it would still find the old link and conclude the attachment is spoken for.
     """
     previously_linked = _linked_attachments(record)
-    _save_state(record, doc, content_hash, version, indexed=indexed)
+    _save_state(record, doc, content_hash, version, indexed=indexed,
+                content_state=content_state)
 
     still_claimed = {link.uuid for link in doc.file_links}
     released = [f for f in previously_linked if f not in still_claimed]
@@ -308,6 +319,65 @@ def _extraction_is_empty(chunks: Sequence[Chunk]) -> bool:
     return not any(chunk.text.strip() for chunk in chunks)
 
 
+#: ``content_state`` for a document the source describes fully without a body.
+METADATA_ONLY = "metadata_only"
+
+#: The bundles whose pages may be catalogued without body text.
+#:
+#: Deliberately one entry. A ``completed_projects`` page is, by design, a title,
+#: a start and end date and a link to the project's executive summary — the
+#: document *is* the PDF, and the page is its record card. 96 of them extract to
+#: nothing, and 83 of those have a PDF we already hold and cannot connect to
+#: anything, because the page they hang off was never catalogued.
+#:
+#: The other 21 pages that extract to nothing (13 ``events``, 4 ``news``, 2
+#: ``page``, 2 ``research_papers``) carry no attachments at all, so admitting
+#: them would buy nothing and would widen an exception to bundles whose empty
+#: body has not been shown to be intentional. They stay out until someone looks.
+METADATA_ONLY_BUNDLES: frozenset[str] = frozenset({"completed_projects"})
+
+
+def _metadata_only_is_warranted(
+    record: ChangeRecord, doc: CanonicalDocument
+) -> bool:
+    """May this empty extraction be catalogued as a metadata-only document?
+
+    Every condition has to hold, and each one is doing work:
+
+    * **A Drupal page.** An attachment or a local PDF that extracts to nothing
+      is a failed download or a scanned text layer, never a design.
+    * **A bundle whose pages are known to be record cards** — see
+      :data:`METADATA_ONLY_BUNDLES`.
+    * **At least one attachment.** This is what makes the page worth having: it
+      is the parent that lets a PDF we already hold be reachable. A page with an
+      empty body *and* nothing attached is exactly the broken extraction the
+      gate exists for, and still fails.
+    * **Identity.** A uuid, a title and a URL. Without them the row is a
+      placeholder rather than a document, and
+      ``reconcile.date_checks.metadata_only_without_identity`` would be right to
+      complain about it.
+    * **Nothing indexable to lose.** The gate's real purpose is that a document
+      which *had* content must never be replaced by an empty one — a blanked
+      body at source, an extractor regression. So this applies only where there
+      is no prior version, or where the prior version was itself metadata-only.
+      A page that used to have prose and now extracts to nothing still errors,
+      still keeps its old version, and still comes back on the retry.
+
+    Returns False for anything else, which leaves the original behaviour exactly
+    as it was.
+    """
+    if record.source_type != "website":
+        return False
+    if (record.bundle or "") not in METADATA_ONLY_BUNDLES:
+        return False
+    if not getattr(doc, "file_links", None):
+        return False
+    if not (record.document_id and (doc.title or "").strip() and doc.source_url):
+        return False
+    prior = record.prior
+    return prior is None or prior.content_state == METADATA_ONLY
+
+
 def _record_source_date_decision(record: ChangeRecord, doc: CanonicalDocument) -> None:
     """Record why a *website* document carries the date it does.
 
@@ -447,6 +517,23 @@ def _handle(
     # version keeps its vectors, its catalog row and its indexed_at, and the
     # retry marker written from the outcome brings the document back next run.
     if _extraction_is_empty(new_chunks):
+        # The one sanctioned exception: a source that describes the document
+        # fully without a body, and whose attachments would otherwise have no
+        # parent. Nothing is fabricated to get here — no chunk, no vector, no
+        # invented prose. The row exists so the PDF hanging off it can.
+        if _metadata_only_is_warranted(record, doc):
+            _persist(record, doc, content_hash, prior_version or version,
+                     indexed=False, run_id=run_id, content_state=METADATA_ONLY)
+            logger.info(
+                "%s (%s/%s) has no body but carries %d attachment(s); "
+                "catalogued as metadata-only.",
+                record.document_id, record.source_type, record.bundle,
+                len(doc.file_links),
+            )
+            _log(run_id, record, "metadata_only", doc=doc,
+                 version=prior_version or version, chunks=0)
+            return "metadata_only"
+
         reason = failed(
             f"extraction produced no indexable content ({len(new_chunks)} chunks); "
             f"keeping version {prior_version or 0}"
@@ -516,7 +603,12 @@ def _handle(
 # neither: it never reached a build, and a document that is unchanged already
 # has the catalog row that positions the cursor.
 _UNRESOLVED_OUTCOMES = frozenset({"error", "skipped"})
-_RESOLVED_OUTCOMES = frozenset({"indexed", "unchanged_content", "deleted"})
+_RESOLVED_OUTCOMES = frozenset(
+    # "metadata_only" is settled, not pending: the source has been read in
+    # full and there is nothing further to extract, so the crawl cursor must
+    # stop treating it as work outstanding.
+    {"indexed", "unchanged_content", "deleted", "metadata_only"}
+)
 
 
 def _track_retry(

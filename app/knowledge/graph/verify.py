@@ -6,11 +6,19 @@ and it is always available because nothing in the graph is a system of record.
 
 What is checked
 ---------------
-* every claim-eligible entity is present, and no ineligible one is;
+* every projectable entity is present, and nothing else is. "Projectable" is
+  broad eligibility *or* a predicate-scoped trust level, matching
+  ``project._projectable_clause`` — an ``author_attested`` person is projected
+  while remaining ineligible for anything but its one predicate;
 * **every graph entity's trust, eligibility and status match the MySQL row it
   was derived from** — the check that a count comparison cannot make, and the
-  one that catches a demotion the projector failed to retire;
-* every projectable claim is present;
+  one that catches a demotion the projector failed to retire. Eligibility is
+  *compared*, never assumed true, because projection and eligibility are no
+  longer the same question;
+* every projectable claim is present, in the correct one of the graph's two
+  claim shapes: an entity-valued predicate has an ``OBJECT`` edge, a
+  literal-valued one (``AUTHORED``, ``HAS_ROLE``) keeps its object as a property
+  and has none. There is no ``Literal`` node;
 * current-state edges exist only for claims that are still eligible for one —
   in particular **no disputed claim has a current edge**, which is the safety
   property the whole conflict layer exists to produce;
@@ -72,15 +80,43 @@ RETURN r.claim_id AS claim_id LIMIT 25
 
 # No provisional identity may exist in the graph at all.
 #
+# "Ineligible" is not the same as "not projectable". A predicate-scoped trust
+# level — `author_attested` — is deliberately NOT `claim_eligible`, because that
+# flag means "eligible for anything", yet its entities are projected so their
+# scoped claims have a subject. Those are excluded by `$scoped` rather than
+# reported: see `app.knowledge.graph.project._projectable_clause`.
+#
 # Necessary but not sufficient, and the insufficiency mattered: this reads the
 # graph's *own* copy of `claim_eligible`, so it can only catch an entity the
-# projector wrote as ineligible — which the projector never does. A demoted
-# entity keeps a stale `claim_eligible: true` and sails past. `ENTITY_STATE`
-# below is the check that compares the two stores.
+# projector wrote as ineligible. A demoted entity keeps a stale
+# `claim_eligible: true` and sails past. `ENTITY_STATE` below is the check that
+# compares the two stores.
 INELIGIBLE_ENTITIES = """
 MATCH (e:Entity)
-WHERE e.claim_eligible <> true
+WHERE e.claim_eligible <> true AND NOT e.trust IN $scoped
 RETURN e.entity_id AS entity_id, e.trust AS trust LIMIT 25
+"""
+
+# An entity-valued predicate must have an OBJECT edge; a literal-valued one must
+# not. The graph has two legitimate claim shapes and conflating them reports
+# every AUTHORED and HAS_ROLE claim as broken:
+#
+#   entity-valued   Claim-[:OBJECT]->(Entity)
+#   literal-valued  the object is a property on the Claim, and there is no
+#                   Literal node by design
+#
+# Both lists come from the vocabulary's own `entity_valued`, so adding a
+# predicate cannot leave this check behind.
+CLAIMS_MISSING_OBJECT = """
+MATCH (c:Claim)
+WHERE NOT c.predicate IN $literal_valued AND NOT (c)-[:OBJECT]->()
+RETURN c.claim_id AS claim_id, c.predicate AS predicate LIMIT 25
+"""
+
+LITERAL_CLAIMS_WITH_OBJECT = """
+MATCH (c:Claim)-[:OBJECT]->()
+WHERE c.predicate IN $literal_valued
+RETURN c.claim_id AS claim_id, c.predicate AS predicate LIMIT 25
 """
 
 # Every graph entity's trust and eligibility, to compare against MySQL. The
@@ -164,13 +200,37 @@ def projection_freshness(*, session: Any = None) -> ProjectionFreshness:
     )
 
 
+def literal_valued_predicates() -> list[str]:
+    """Predicate names whose object is a literal, so they carry no OBJECT edge.
+
+    Read from the vocabulary rather than listed, so a predicate added as
+    literal-valued is exempt here without a second edit — and one added as
+    entity-valued is required to have an edge without one either.
+    """
+    from app.knowledge.claims import predicates as vocab
+
+    return sorted(
+        name for name, predicate in vocab.PREDICATES.items()
+        if not predicate.entity_valued
+    )
+
+
+def scoped_trust_levels() -> list[str]:
+    """Trust levels that are projected without being broadly claim-eligible."""
+    from app.knowledge.seed import PREDICATE_SCOPED_TRUST
+
+    return sorted(PREDICATE_SCOPED_TRUST)
+
+
 def verify(*, session: Any = None, as_of: str | None = None) -> VerificationReport:
     """Diff MySQL against the graph. Never writes."""
     from app.catalog import assertions as store
     from app.catalog.db import state_table
     from app.core.clients import mysql_connection
     from app.core.clients.graph import read_session
-    from app.knowledge.graph.project import _current_state_rows, _load_entities
+    from app.knowledge.graph.project import (
+        _current_state_rows, _load_entities, _projectable_clause,
+    )
 
     report = VerificationReport()
 
@@ -186,11 +246,17 @@ def verify(*, session: Any = None, as_of: str | None = None) -> VerificationRepo
     current = _current_state_rows(projectable, as_of=as_of)
 
     table = state_table()
+    # The alias expectation has to use the *same* projectability rule the
+    # projector does. Filtering on `claim_eligible=1` alone under-counted by
+    # every alias belonging to a predicate-scoped entity, which read as a graph
+    # that had invented 258 aliases.
+    projectable_clause, projectable_params = _projectable_clause()
     with mysql_connection() as conn, conn.cursor() as cur:
         cur.execute(
             f"SELECT COUNT(*) AS n FROM `{table}_entity_alias` a "
             f"JOIN `{table}_entity` e ON e.entity_id = a.entity_id "
-            "WHERE e.status='active' AND e.claim_eligible=1"
+            f"WHERE e.status='active' AND {projectable_clause}",
+            projectable_params,
         )
         alias_count = int(cur.fetchone()["n"])
 
@@ -223,9 +289,25 @@ def verify(*, session: Any = None, as_of: str | None = None) -> VerificationRepo
             report.problems.append(
                 f"current-state edge cites missing claim {row['claim_id']}"
             )
-        for row in open_session.run(INELIGIBLE_ENTITIES):
+        for row in open_session.run(INELIGIBLE_ENTITIES, scoped=scoped_trust_levels()):
             report.problems.append(
                 f"ineligible entity {row['entity_id']} ({row['trust']}) is in the graph"
+            )
+        # The two legitimate claim shapes, each checked against the other's rule.
+        literal_valued = literal_valued_predicates()
+        for row in open_session.run(
+            CLAIMS_MISSING_OBJECT, literal_valued=literal_valued
+        ):
+            report.problems.append(
+                f"entity-valued claim {row['claim_id']} ({row['predicate']}) "
+                "has no OBJECT edge"
+            )
+        for row in open_session.run(
+            LITERAL_CLAIMS_WITH_OBJECT, literal_valued=literal_valued
+        ):
+            report.problems.append(
+                f"literal-valued claim {row['claim_id']} ({row['predicate']}) "
+                "has an OBJECT edge, but its object is a property"
             )
         # The authoritative comparison: every graph entity against the MySQL row
         # it was derived from. A count match is not enough — two entities could
@@ -247,10 +329,17 @@ def verify(*, session: Any = None, as_of: str | None = None) -> VerificationRepo
                     f"entity {entity_id} trust: MySQL says "
                     f"{authoritative['trust']!r}, graph says {row['trust']!r}"
                 )
-            if row["claim_eligible"] is not True:
+            # Compared against MySQL, not asserted to be true. Projection is no
+            # longer the same thing as broad eligibility: a predicate-scoped
+            # entity is projected carrying `claim_eligible: false`, and that is
+            # the value the graph is *supposed* to advertise. Demanding true
+            # here reported all 258 of them as corrupt.
+            expected_eligible = bool(authoritative.get("claim_eligible", 1))
+            if bool(row["claim_eligible"]) != expected_eligible:
                 report.problems.append(
-                    f"entity {entity_id} claim_eligible: graph says "
-                    f"{row['claim_eligible']!r}, must be true to be projected"
+                    f"entity {entity_id} claim_eligible: MySQL says "
+                    f"{expected_eligible!r}, graph says "
+                    f"{row['claim_eligible']!r}"
                 )
             if row["status"] != authoritative["status"]:
                 report.problems.append(

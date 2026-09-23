@@ -66,7 +66,7 @@ def test_q002_the_generation_prompt_carries_a_real_current_date():
     no fixed point to be measured against."""
     from app.core.dates import today_utc
 
-    system = answerer._build_system(None, None, mixed=False)
+    system = answerer._build_system(None, None)
     assert today_utc().isoformat() in system
     assert "as of that source's date" in system  # rule 9's pre-existing guidance
 
@@ -123,7 +123,7 @@ def test_q097_adjacent_evidence_rule_covers_the_upcoming_shape():
     explicitly as a supported negative rather than grounds for a bare refusal.
     This does not touch temporal retrieval — it only tells generation what to
     do with whatever was retrieved."""
-    prompt = prompts.grounded_system_prompt(mixed=False)
+    prompt = prompts.grounded_system_prompt()
     assert "different time" in prompt
     assert "different specific type" in prompt
     assert "supported negative answer" in prompt
@@ -152,7 +152,7 @@ def test_q111_the_where_can_i_download_rule_is_present():
     blocks) and the model still refused on some runs. Rule 3 now says
     explicitly that being the right source page IS the answer, even without
     prose narrating download steps."""
-    prompt = prompts.grounded_system_prompt(mixed=False)
+    prompt = prompts.grounded_system_prompt()
     assert "name it, cite it, and give its url" in prompt.lower()
     assert "lacking a how-to sentence" in prompt
 

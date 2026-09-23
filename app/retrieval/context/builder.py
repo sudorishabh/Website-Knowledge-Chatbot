@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import math
+import re
+from datetime import date
 from functools import lru_cache
 from typing import Any, Sequence
 
@@ -94,15 +96,35 @@ def _fetch_parents(parent_ids: Sequence[str]) -> dict[str, dict[str, Any]]:
     return {str(r.id): (r.payload or {}) for r in records}
 
 
-def _order_for_attention(blocks: list[ContextBlock]) -> list[ContextBlock]:
-    if len(blocks) <= 2:
-        ordered = list(blocks)
-    else:
-        head, tail = blocks[0::2], blocks[1::2]
-        ordered = head + tail[::-1]
-    for i, block in enumerate(ordered, start=1):
+def _numbered(blocks: list[ContextBlock]) -> list[ContextBlock]:
+    """The blocks in ranked order, numbered from 1.
+
+    This used to be `_order_for_attention`, which for three or more blocks put
+    the odd-ranked ones first and appended the even-ranked ones reversed —
+    `[1,2,3,4,5]` came out `[1,3,5,4,2]`, landing the two best blocks at the two
+    ends of the prompt. The shape matches the "lost in the middle" effect and
+    nothing in the repo ever claimed more than that; the reference doc called it
+    "inferred from the code's shape, not a claim backed by an in-repo comment".
+
+    It is gone because it was speculative and the cost turned out to be
+    measurable. It only ever ran on the minority path: `prefer_website_enabled`
+    is on in production, so an ordinary question took the segregated build,
+    which emitted its own order and never called this. Unifying that build put
+    every question through it — and on "who is Ajay mathur?" the block ranked
+    **2nd**, a 2023 brief saying the subject "was earlier ... at TERI as its
+    Director General", was moved to display position 6, below a 2020 page
+    ranked 6th that called him TERI's Director General in the present tense.
+    The answer led with the 2020 page.
+
+    Position is not neutral to a model reading a numbered list, and the ranked
+    order now carries meaning it did not before: for a question about the
+    present, rank encodes how recent the evidence is. Scrambling it discards
+    exactly the signal the ranking was built to express. The strongest block is
+    still first; the difference is that the second strongest is now second.
+    """
+    for i, block in enumerate(blocks, start=1):
         block.n = i
-    return ordered
+    return blocks
 
 
 def _is_website(payload: dict[str, Any]) -> bool:
@@ -141,7 +163,10 @@ def _admissible_text(
     1. the parent's text, when there is a parent and it is substantive;
     2. the child's own text, when *it* is substantive — this is both the orphan
        case and the excluded-parent case, where the child is the largest
-       admissible passage available;
+       admissible passage available. A candidate with no stored parent that
+       carries its section inline (``context_text``: a web passage, whose page
+       has no parent chunk in Qdrant) is admitted with that section instead, the
+       same expansion done where the text came from;
     3. nothing: neither is substantive, so the candidate contributes no context.
 
     An excluded child under a substantive parent still expands (case 1). The
@@ -155,7 +180,8 @@ def _admissible_text(
         return parent_text, parent
     if _is_excluded(cand.payload):
         return None
-    return cand.text, None
+    inline = cand.payload.get("context_text") if not cand.parent_id else None
+    return (inline or cand.text), None
 
 
 def _block_payload(
@@ -303,12 +329,28 @@ def build_context(
     *,
     limit: int | None = None,
     token_budget: int | None = None,
-    segregate: bool = False,
-    website_max_slots: int | None = None,
-    website_chunk_floor: float | None = None,
-    pdf_max_slots: int | None = None,
-    pdf_high_confidence_floor: float | None = None,
+    temporal: Any | None = None,
+    question: str = "",
 ) -> list[ContextBlock]:
+    """The evidence for one answer: one ranked set, whatever it is made of.
+
+    Website pages, PDF attachments and the graph's facts block are admitted from
+    a single ordered walk of `candidates`, which arrive in the reranker's order.
+    Source kind gets no budget, no floor and no reserved position here; it is
+    already represented in that order, as one term of the authority band, which
+    sits below relevance, temporal fit and — on a question about the present —
+    recency. A newer PDF can therefore lead an older web page, which is the
+    point.
+
+    What this replaced, and why. Until now a "segregated" build admitted website
+    candidates first under their own cap and relevance floor, then let PDFs
+    compete for two remaining slots plus a third gated on a high-confidence bar,
+    and emitted them in that order regardless of rank. Two consequences made it
+    untenable. The ordering was categorical rather than evidential, so a 2020
+    announcement led a 2023 brief that corrected it; and the graph's facts block
+    carries no ``source_type``, so it fell into the "not website" bucket and
+    competed with PDF attachments for those two slots.
+    """
     settings = get_settings()
     limit = limit or settings.retrieval_top_k
     token_budget = token_budget or settings.context_token_budget
@@ -323,55 +365,15 @@ def build_context(
     seen_parents: set[str] = set()
     spent = 0
 
-    if segregate:
-        # Website leads (capped + floor-gated); PDFs follow under a hard budget:
-        # the top `pmax` PDF chunks unconditionally, then a single extra slot that
-        # opens only for a high-confidence candidate — nothing past that is ever
-        # admitted. Walking website first makes the final order website-first and
-        # lets a website block win a website/PDF near-dup tie (the PDF then lands
-        # in its also_available).
-        wmax = website_max_slots if website_max_slots is not None else settings.website_max_slots
-        floor = website_chunk_floor if website_chunk_floor is not None else settings.website_chunk_floor
-        pmax = pdf_max_slots if pdf_max_slots is not None else settings.pdf_max_slots
-        pfloor = (
-            pdf_high_confidence_floor
-            if pdf_high_confidence_floor is not None
-            else settings.pdf_high_confidence_floor
-        )
-        website = [c for c in candidates if _is_website(c.payload)]
-        others = [c for c in candidates if not _is_website(c.payload)]
-        spent = _admit(
-            website, blocks=blocks, block_vectors=block_vectors,
-            seen_parents=seen_parents, parents=parents, spent=spent, limit=limit,
-            token_budget=token_budget, sim_threshold=sim_threshold,
-            max_add=wmax, floor=floor,
-        )
-        # Top PDFs, admitted unconditionally.
-        spent = _admit(
-            others, blocks=blocks, block_vectors=block_vectors,
-            seen_parents=seen_parents, parents=parents, spent=spent, limit=limit,
-            token_budget=token_budget, sim_threshold=sim_threshold,
-            max_add=pmax,
-        )
-        # One extra PDF slot, gated on the high-confidence bar; never a further one.
-        _admit(
-            others, blocks=blocks, block_vectors=block_vectors,
-            seen_parents=seen_parents, parents=parents, spent=spent, limit=limit,
-            token_budget=token_budget, sim_threshold=sim_threshold,
-            max_add=1, floor=pfloor,
-        )
-        ordered = blocks  # already website-first
-        for i, block in enumerate(ordered, start=1):
-            block.n = i
-    else:
-        _admit(
-            candidates, blocks=blocks, block_vectors=block_vectors,
-            seen_parents=seen_parents, parents=parents, spent=spent, limit=limit,
-            token_budget=token_budget, sim_threshold=sim_threshold,
-        )
-        ordered = _order_for_attention(blocks)
+    _admit(
+        candidates, blocks=blocks, block_vectors=block_vectors,
+        seen_parents=seen_parents, parents=parents, spent=spent, limit=limit,
+        token_budget=token_budget, sim_threshold=sim_threshold,
+    )
+    ordered = _numbered(blocks)
 
     _flag_conflicts(ordered)
+    flag_supersession(ordered, temporal, question)
     return ordered
 
 
@@ -380,3 +382,172 @@ def _flag_conflicts(blocks: list[ContextBlock]) -> None:
         for b in blocks[i + 1 :]:
             if _conflicting(a.payload, b.payload):
                 a.conflict = b.conflict = True
+
+
+# --------------------------------------------------------------------------- #
+# Supersession: the same fact, stated at two times
+# --------------------------------------------------------------------------- #
+# `_conflicting` above asks whether two blocks are the kind of sources that
+# might disagree — a question about provenance, answered from the payload. This
+# asks a narrower and more useful one: does a newer block say, in so many words,
+# that what an older block states is no longer the case?
+#
+# The case it was built for: a 2020 page headed "Statement by Dr Ajay Mathur,
+# Director General, TERI" and a 2023 brief saying he "was earlier ... at TERI as
+# its Director General". Those are not two independent facts. They are one
+# relationship — person, role, organisation — recorded at two times, and only the
+# newer one describes the present. Nothing compared them, so an answer to "who is
+# the director general" could be assembled from the older.
+#
+# Deliberately conservative, because a false positive tells the model to discount
+# good evidence. Three conditions, all required:
+#
+#   1. the question is about the present. For any other question the older
+#      statement may be exactly what was asked for, and this does not run;
+#   2. the newer block is newer by a wide margin — a year, the same span the
+#      reranker's recency band uses, so two write-ups of one season never
+#      qualify;
+#   3. the newer block frames a role or affiliation in the *past*, and the two
+#      blocks are about the same named subject.
+#
+# What it does not do: it does not read *which* role, or *whose*. Establishing
+# that the past-framed role in the newer block is the same role the older block
+# asserts needs relation extraction, and doing it with regular expressions would
+# produce a confident wrong answer more often than a useful one. So the flag
+# claims only what it can support — "a newer source describes this subject's
+# affiliations in the past tense" — and the prompt is worded to match. The
+# authoritative version of this comparison is the claim graph's `valid_from` /
+# `valid_until` ladder; this is the document-evidence fallback for the very
+# common case where the graph holds no claim.
+
+#: Wording that puts a role, post or affiliation in the past.
+_PAST_ROLE_FRAMING = re.compile(
+    r"\bwas\s+(?:earlier|previously|formerly|then|the|a|an)\b"
+    r"|\bhad\s+(?:been|previously)\b|\bused\s+to\s+be\b"
+    r"|\bformer(?:ly)?\b|\bpreviously\b|\bearlier\s+(?:at|in|with|served|worked)\b"
+    r"|\bbefore\s+joining\b|\bprior\s+to\s+joining\b"
+    r"|\bstepped\s+down\b|\bsucceeded\s+(?:by|him|her|them)\b"
+    r"|\bserved\s+as\b|\buntil\s+(?:19|20)\d{2}\b|\bex-[A-Za-z]",
+    re.IGNORECASE,
+)
+
+#: How far from a subject mention the past-framing phrase has to sit. A block
+#: runs to a few thousand characters and says many things; "previously" three
+#: paragraphs away from the only mention of the subject is about something else.
+#: Generous enough for the sentence that motivated it — "Dr X is the Director
+#: General of the ISA. He was earlier in BEE and at TERI as its Director
+#: General" — and no more.
+_FRAMING_WINDOW = 400
+
+#: How much newer the correcting source must be.
+#:
+#: Six months, not the year the reranker's recency band uses. The two are
+#: guarding different things and were briefly given the same number for a
+#: symmetry that does not hold. The band asks "is this materially newer
+#: evidence about the present", where a year is a reasonable floor for a fact
+#: that might have changed. This asks only "are these two write-ups of the same
+#: moment", because the *substance* of the claim is already carried by the past
+#: framing and the shared subject — a newer source that says in so many words
+#: that a role has ended is not made less credible by being nine months newer
+#: rather than thirteen.
+#:
+#: The case that forced the distinction: a 2020-07-06 webinar page and a
+#: 2021-03-05 announcement that the subject had been elected elsewhere and that
+#: a transition plan was in place, 242 days apart.
+_SUPERSESSION_MIN_GAP_DAYS = 180
+
+def _subject_terms(question: str) -> list[str]:
+    """What the question is about, lowercased; ``[]`` when it names nothing.
+
+    `strategies.extract_key_terms` already answers this for the keyword leg —
+    quoted phrases, proper-noun bigrams, acronyms, codes and years, falling back
+    to content words — so this is an accessor over it rather than a second
+    opinion about what a question names.
+    """
+    from app.retrieval.search.strategies import extract_key_terms
+
+    return [t.lower() for t in (extract_key_terms(question) or []) if t.strip()]
+
+
+def _about(text: str, terms: list[str]) -> bool:
+    """Whether this passage mentions everything the question named."""
+    lowered = (text or "").lower()
+    return all(term in lowered for term in terms)
+
+
+def _frames_the_subject_as_past(text: str, terms: list[str]) -> bool:
+    """Whether a past-role phrase sits near a mention of the question's subject.
+
+    Proximity is the whole of the precision here. Asked to find "was earlier" or
+    "formerly" anywhere in a multi-page block, a corpus of institutional prose
+    obliges almost every time; asked to find one within a few hundred characters
+    of the person being asked about, it does not.
+    """
+    lowered = (text or "").lower()
+    positions = [
+        m.start() for term in terms for m in re.finditer(re.escape(term), lowered)
+    ]
+    if not positions:
+        return False
+    return any(
+        any(abs(m.start() - p) <= _FRAMING_WINDOW for p in positions)
+        for m in _PAST_ROLE_FRAMING.finditer(text or "")
+    )
+
+
+def _block_date(payload: dict[str, Any]) -> date | None:
+    from app.retrieval.search.temporal_gate import _as_date
+
+    return _as_date(payload.get("effective_start_date"))
+
+
+def flag_supersession(
+    blocks: list[ContextBlock], temporal: Any | None, question: str = ""
+) -> None:
+    """Mark older blocks a newer one dates, for questions about the present.
+
+    A no-op for every question that is not CURRENT, for every question that names
+    no subject, and for every context where no pair clears the conditions above —
+    which is almost all of them. Never raises: a comparison problem must cost the
+    flag, never the answer.
+
+    The subject comes from the *question*, not from what the two blocks happen to
+    have in common. Pairwise overlap was the first attempt and it was far too
+    loose: a block runs to thousands of characters, so any two of them on a
+    single-organisation corpus share several capitalised words, and replaying the
+    reported query flagged a 2019 building-retrofit PDF as superseded by a 2021
+    announcement about a person it never mentions. Anchoring on what was asked
+    about is both tighter and closer to the point — supersession only matters for
+    the thing the question is about.
+    """
+    try:
+        from app.retrieval.search.temporal_gate import CURRENT
+
+        if temporal is None or getattr(temporal, "mode", None) != CURRENT:
+            return
+        terms = _subject_terms(question)
+        if not terms:
+            return
+        dated = [
+            (b, d) for b, d in ((b, _block_date(b.payload)) for b in blocks)
+            if d is not None and _about(b.text, terms)
+        ]
+        if len(dated) < 2:
+            return
+        for older, older_date in dated:
+            for newer, newer_date in dated:
+                if newer is older:
+                    continue
+                if (newer_date - older_date).days < _SUPERSESSION_MIN_GAP_DAYS:
+                    continue
+                if not _frames_the_subject_as_past(newer.text, terms):
+                    continue
+                older.superseded = True
+                newer.supersedes = True
+                logger.info(
+                    "Block %d (%s) is dated by the newer block %d (%s); subject %s.",
+                    older.n, older_date, newer.n, newer_date, terms,
+                )
+    except Exception:  # pragma: no cover - defence in depth
+        logger.warning("Supersession comparison failed; context unflagged.",
+                       exc_info=True)

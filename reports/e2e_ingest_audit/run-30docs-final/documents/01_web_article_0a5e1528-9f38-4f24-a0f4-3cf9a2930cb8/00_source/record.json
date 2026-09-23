@@ -1,0 +1,963 @@
+{
+  "raw": {
+    "fetched_at": "2026-09-10T15:54:18+05:30",
+    "jsonapi_resource": {
+      "type": "node--article",
+      "id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+      "links": {
+        "self": {
+          "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8?resourceVersion=id%3A17809"
+        }
+      },
+      "attributes": {
+        "drupal_internal__nid": 13363,
+        "drupal_internal__vid": 17809,
+        "langcode": "en",
+        "revision_timestamp": "2026-08-31T09:19:24+00:00",
+        "revision_log": null,
+        "status": true,
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "created": "2026-08-31T09:18:16+00:00",
+        "changed": "2026-08-31T09:19:47+00:00",
+        "promote": false,
+        "sticky": false,
+        "default_langcode": true,
+        "revision_translation_affected": true,
+        "metatag": null,
+        "path": {
+          "alias": "/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+          "pid": 12673,
+          "langcode": "en"
+        },
+        "body": {
+          "value": "<p><em>The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather.</em></p><p><img src=\"/sites/default/files/inline-images/Nepal-Floods.jpg\" data-entity-uuid=\"c60374d7-f1c9-44f6-ba4a-20fd0f75982b\" data-entity-type=\"file\"></p><p>The devastating floods in Nepal on 26 August are still unfolding. Hundreds of lives have been lost, many more people remain missing and entire stretches of the Rasuwa-Bhote Koshi-Trishuli corridor have been transformed. Roads, bridges and hydropower infrastructure have been destroyed, while some of the very monitoring stations intended to warn us of flooding were themselves swept away.</p><p>What makes the disaster particularly unsettling, however, is not simply its scale. It is the nature of the event itself.</p><p>The current scientific assessment points to a glacial collapse at Langtang Lirung, which then developed into a debris flow and flood that travelled almost 100 kilometres downstream. It was not a conventional flood with a single, easily identifiable cause. A disturbance in one part of a mountain system interacted with ice, rock, water, sediment, slopes and rivers, producing consequences far beyond the location where it began.</p><p>And this was not even the first time this corridor had experienced such a shock. Just fourteen months earlier, in July 2025, the same broad Lhende-Bhote Koshi system was hit by a devastating flood, although the initiating mechanism was different: the drainage of a supraglacial lake in Tibet. The trigger changed; the downstream vulnerability did not.</p><p>We tend to organise risk into categories: glacial lake outburst floods, landslides, floods, avalanches, earthquakes, extreme rainfall. We build monitoring systems around these categories and develop response protocols for each. But mountains do not experience risk in categories.</p><p>An ice collapse can become a debris flow; a debris flow can alter a river; a temporary blockage can create a new lake and another flood. By the time the disturbance reaches people and infrastructure downstream, it may bear little to no resemblance to the event that initiated it.</p><p>Perhaps, we are looking at the problem through the wrong statistical lens.</p><p><strong>Designing Around the Mean</strong></p><p>For much of modern planning, we have designed around <strong>the mean</strong>. We calculate average rainfall, river discharge, temperature, and traffic. We then design infrastructure to perform reliably around those expected conditions, with some allowance for an extreme event.</p><p>There was a logic to this.</p><p>The assumption was that the underlying system was sufficiently stable for the mean to be a useful representation of what we could expect. Deviations were exceptions. <strong>But what happens when deviations stop behaving like exceptions?</strong></p><p>This is where <strong>ecological overshoot</strong> becomes important. We have progressively increased our demands on ecological systems while reducing their capacity to absorb disturbance. In doing so, we are losing the buffers that once made variability manageable. Glaciers, forests, wetlands, watersheds and diverse ecosystems perform functions that absorb shocks and prevent disturbances from becoming catastrophes. When those buffers weaken, the same hazard can produce a very different outcome. <strong>Risk begins to look like danger.</strong></p><p><strong>Danger of Aggressive Optimisation</strong></p><p>As a planner, one of the first things we are taught is that urban planning is fundamentally about optimising resources and using them in the most efficient way possible. The problem begins when optimisation becomes the dominant objective.</p><p>Modern infrastructure and urban systems are designed to minimise waste and maximise performance under expected conditions. But aggressive optimisation often removes what appears unnecessary: spare capacity, redundant routes or undeveloped land. These are precisely the things that provide resilience when conditions move beyond normal.</p><p><strong>A system optimised for average conditions can become extremely fragile when conditions become more variable. </strong>What looks like inefficiency from the perspective of optimisation can, in fact, be resilience from the perspective of a system exposed to uncertainty. This is the paradox of efficiency.</p><p>Let us return to Nepal. The question is not simply whether we could have predicted the exact glacial collapse at Langtang Lirung. It is: <strong>why was a disturbance in one part of the mountain system capable of producing such catastrophic consequences nearly 100 kilometres downstream?</strong></p><p>Part of the answer lies in the buffers between the initiating hazard and the people and infrastructure downstream.</p><p><strong>Designing for Deviation</strong></p><p>The Nepal experience also challenges another assumption: that once we have mapped a hazard, we have understood the risk. We haven't. The same corridor experienced two major events in fourteen months, triggered by different mechanisms. The unit of analysis therefore cannot simply be the hazard; it has to be the <strong>system</strong>.</p><p>Risk cannot be treated as static. A changing glacier, expanding lake, destabilising slope or new development downstream can alter the risk landscape. And after a major event, the landscape itself may have changed. In Rasuwa, debris from the collapse has already created new barrier lakes, introducing another potential source of flooding.</p><p><strong>Risk assessment needs to become a living understanding of a changing system.</strong></p><p>This also changes how we think about early warning.</p><p>The Nepal disaster showed that information can reach a forecasting system within minutes and still be of limited value to communities closest to the source. The automatic monitoring stations in the upper Bhote Koshi were themselves destroyed, while downstream warnings may nevertheless have helped people farther south reach safety.</p><p>So the measure of an early-warning system should not simply be whether it detected an event.</p><p>It should be whether it created <strong>actionable decision time</strong>.</p><p>Could someone evacuate? Could a road be closed? Could critical infrastructure be protected? Could emergency teams be moved before access was lost?</p><p>The goal is enough understanding, early enough, to change the outcome.</p><p>The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather. But observation alone cannot make a system resilient if the ecological and spatial buffers around it have already been eroded.</p><p>The deeper challenge, therefore, is not simply climate change. It is the erosion of the buffers that once made climatic and ecological variability manageable.</p><p>This is why I think we need to move from designing for the <strong>mean</strong> to designing for the <strong>deviation</strong>. Not by trying to predict every extreme event, but by asking whether our systems have enough room to absorb what we cannot predict.</p><p><strong>Because perhaps the most dangerous system is not the one that cannot predict the future. It is the one that has been so perfectly optimised for the expected future that it has no room left for anything else.</strong></p>",
+          "format": "full_html",
+          "processed": "<p><em>The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather.</em></p><p><img src=\"/sites/default/files/inline-images/Nepal-Floods.jpg\" data-entity-uuid=\"c60374d7-f1c9-44f6-ba4a-20fd0f75982b\" data-entity-type=\"file\" width=\"1200\" height=\"781\" loading=\"lazy\" /></p><p>The devastating floods in Nepal on 26 August are still unfolding. Hundreds of lives have been lost, many more people remain missing and entire stretches of the Rasuwa-Bhote Koshi-Trishuli corridor have been transformed. Roads, bridges and hydropower infrastructure have been destroyed, while some of the very monitoring stations intended to warn us of flooding were themselves swept away.</p><p>What makes the disaster particularly unsettling, however, is not simply its scale. It is the nature of the event itself.</p><p>The current scientific assessment points to a glacial collapse at Langtang Lirung, which then developed into a debris flow and flood that travelled almost 100 kilometres downstream. It was not a conventional flood with a single, easily identifiable cause. A disturbance in one part of a mountain system interacted with ice, rock, water, sediment, slopes and rivers, producing consequences far beyond the location where it began.</p><p>And this was not even the first time this corridor had experienced such a shock. Just fourteen months earlier, in July 2025, the same broad Lhende-Bhote Koshi system was hit by a devastating flood, although the initiating mechanism was different: the drainage of a supraglacial lake in Tibet. The trigger changed; the downstream vulnerability did not.</p><p>We tend to organise risk into categories: glacial lake outburst floods, landslides, floods, avalanches, earthquakes, extreme rainfall. We build monitoring systems around these categories and develop response protocols for each. But mountains do not experience risk in categories.</p><p>An ice collapse can become a debris flow; a debris flow can alter a river; a temporary blockage can create a new lake and another flood. By the time the disturbance reaches people and infrastructure downstream, it may bear little to no resemblance to the event that initiated it.</p><p>Perhaps, we are looking at the problem through the wrong statistical lens.</p><p><strong>Designing Around the Mean</strong></p><p>For much of modern planning, we have designed around <strong>the mean</strong>. We calculate average rainfall, river discharge, temperature, and traffic. We then design infrastructure to perform reliably around those expected conditions, with some allowance for an extreme event.</p><p>There was a logic to this.</p><p>The assumption was that the underlying system was sufficiently stable for the mean to be a useful representation of what we could expect. Deviations were exceptions. <strong>But what happens when deviations stop behaving like exceptions?</strong></p><p>This is where <strong>ecological overshoot</strong> becomes important. We have progressively increased our demands on ecological systems while reducing their capacity to absorb disturbance. In doing so, we are losing the buffers that once made variability manageable. Glaciers, forests, wetlands, watersheds and diverse ecosystems perform functions that absorb shocks and prevent disturbances from becoming catastrophes. When those buffers weaken, the same hazard can produce a very different outcome. <strong>Risk begins to look like danger.</strong></p><p><strong>Danger of Aggressive Optimisation</strong></p><p>As a planner, one of the first things we are taught is that urban planning is fundamentally about optimising resources and using them in the most efficient way possible. The problem begins when optimisation becomes the dominant objective.</p><p>Modern infrastructure and urban systems are designed to minimise waste and maximise performance under expected conditions. But aggressive optimisation often removes what appears unnecessary: spare capacity, redundant routes or undeveloped land. These are precisely the things that provide resilience when conditions move beyond normal.</p><p><strong>A system optimised for average conditions can become extremely fragile when conditions become more variable. </strong>What looks like inefficiency from the perspective of optimisation can, in fact, be resilience from the perspective of a system exposed to uncertainty. This is the paradox of efficiency.</p><p>Let us return to Nepal. The question is not simply whether we could have predicted the exact glacial collapse at Langtang Lirung. It is: <strong>why was a disturbance in one part of the mountain system capable of producing such catastrophic consequences nearly 100 kilometres downstream?</strong></p><p>Part of the answer lies in the buffers between the initiating hazard and the people and infrastructure downstream.</p><p><strong>Designing for Deviation</strong></p><p>The Nepal experience also challenges another assumption: that once we have mapped a hazard, we have understood the risk. We haven't. The same corridor experienced two major events in fourteen months, triggered by different mechanisms. The unit of analysis therefore cannot simply be the hazard; it has to be the <strong>system</strong>.</p><p>Risk cannot be treated as static. A changing glacier, expanding lake, destabilising slope or new development downstream can alter the risk landscape. And after a major event, the landscape itself may have changed. In Rasuwa, debris from the collapse has already created new barrier lakes, introducing another potential source of flooding.</p><p><strong>Risk assessment needs to become a living understanding of a changing system.</strong></p><p>This also changes how we think about early warning.</p><p>The Nepal disaster showed that information can reach a forecasting system within minutes and still be of limited value to communities closest to the source. The automatic monitoring stations in the upper Bhote Koshi were themselves destroyed, while downstream warnings may nevertheless have helped people farther south reach safety.</p><p>So the measure of an early-warning system should not simply be whether it detected an event.</p><p>It should be whether it created <strong>actionable decision time</strong>.</p><p>Could someone evacuate? Could a road be closed? Could critical infrastructure be protected? Could emergency teams be moved before access was lost?</p><p>The goal is enough understanding, early enough, to change the outcome.</p><p>The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather. But observation alone cannot make a system resilient if the ecological and spatial buffers around it have already been eroded.</p><p>The deeper challenge, therefore, is not simply climate change. It is the erosion of the buffers that once made climatic and ecological variability manageable.</p><p>This is why I think we need to move from designing for the <strong>mean</strong> to designing for the <strong>deviation</strong>. Not by trying to predict every extreme event, but by asking whether our systems have enough room to absorb what we cannot predict.</p><p><strong>Because perhaps the most dangerous system is not the one that cannot predict the future. It is the one that has been so perfectly optimised for the expected future that it has no room left for anything else.</strong></p>",
+          "summary": ""
+        },
+        "comment": {
+          "status": 2,
+          "cid": 0,
+          "last_comment_timestamp": 1788167987,
+          "last_comment_name": null,
+          "last_comment_uid": 4942,
+          "comment_count": 0
+        },
+        "field_article_type": "article",
+        "field_external_authors": []
+      },
+      "relationships": {
+        "node_type": {
+          "data": {
+            "type": "node_type--node_type",
+            "id": "f8c0ae1c-7ba2-400f-82e2-0f4807942484",
+            "meta": {
+              "drupal_internal__target_id": "article"
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/node_type?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/node_type?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "revision_uid": {
+          "data": {
+            "type": "user--user",
+            "id": "768b9750-4d7d-4f1e-9e29-46f6cb08d645",
+            "meta": {
+              "drupal_internal__target_id": 4942
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/revision_uid?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/revision_uid?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "768b9750-4d7d-4f1e-9e29-46f6cb08d645",
+            "meta": {
+              "drupal_internal__target_id": 4942
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/uid?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/uid?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_article_authors": {
+          "data": [
+            {
+              "type": "user--user",
+              "id": "854ff440-4285-41c5-80e1-bbc90e7b8abf",
+              "meta": {
+                "drupal_internal__target_id": 15671
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_article_authors?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_article_authors?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_article_division": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_article_division?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_article_division?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_article_report_snapshot": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_article_report_snapshot?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_article_report_snapshot?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_article_stakeholder": {
+          "data": [
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+              "meta": {
+                "drupal_internal__target_id": 11
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+              "meta": {
+                "drupal_internal__target_id": 3618
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+              "meta": {
+                "drupal_internal__target_id": 15
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+              "meta": {
+                "drupal_internal__target_id": 13
+              }
+            },
+            {
+              "type": "taxonomy_term--stakeholders",
+              "id": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+              "meta": {
+                "drupal_internal__target_id": 10
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_article_stakeholder?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_article_stakeholder?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_division": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_division?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_division?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_extra_pages": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_extra_pages?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_extra_pages?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_full_text": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_full_text?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_full_text?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_image": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_image?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_image?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_language": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_language?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_language?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_meta_image": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_meta_image?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_meta_image?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_partners": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_partners?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_partners?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_program_unit": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_program_unit?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_program_unit?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_regions": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_regions?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_regions?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_related_terms": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_related_terms?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_related_terms?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_tags": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_tags?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_tags?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_target_audience": {
+          "data": [],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_target_audience?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_target_audience?resourceVersion=id%3A17809"
+            }
+          }
+        },
+        "field_theme": {
+          "data": [
+            {
+              "type": "taxonomy_term--themes",
+              "id": "06d2512c-f07c-468c-8489-4e20cf8aba83",
+              "meta": {
+                "drupal_internal__target_id": 38
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/field_theme?resourceVersion=id%3A17809"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/article/0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8/relationships/field_theme?resourceVersion=id%3A17809"
+            }
+          }
+        }
+      }
+    },
+    "included": [
+      {
+        "type": "user--user",
+        "id": "854ff440-4285-41c5-80e1-bbc90e7b8abf",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/user/user/854ff440-4285-41c5-80e1-bbc90e7b8abf"
+          }
+        },
+        "attributes": {
+          "display_name": "Ms Shiren Pandita"
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/cac4b63b-7db7-491b-a703-d44af5bd4446?resourceVersion=id%3A11"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 11,
+          "drupal_internal__revision_id": 11,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Academicians",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:16+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/cac4b63b-7db7-491b-a703-d44af5bd4446/vid?resourceVersion=id%3A11"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/cac4b63b-7db7-491b-a703-d44af5bd4446/relationships/vid?resourceVersion=id%3A11"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/cac4b63b-7db7-491b-a703-d44af5bd4446/revision_user?resourceVersion=id%3A11"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/cac4b63b-7db7-491b-a703-d44af5bd4446/relationships/revision_user?resourceVersion=id%3A11"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/cac4b63b-7db7-491b-a703-d44af5bd4446/parent?resourceVersion=id%3A11"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/cac4b63b-7db7-491b-a703-d44af5bd4446/relationships/parent?resourceVersion=id%3A11"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5?resourceVersion=id%3A3618"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 3618,
+          "drupal_internal__revision_id": 3618,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Businesses",
+          "description": null,
+          "weight": 0,
+          "changed": "2019-11-13T11:59:58+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/vid?resourceVersion=id%3A3618"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/relationships/vid?resourceVersion=id%3A3618"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/revision_user?resourceVersion=id%3A3618"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/relationships/revision_user?resourceVersion=id%3A3618"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/parent?resourceVersion=id%3A3618"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/1cbc0c9d-479e-4862-9c23-f1f0637552a5/relationships/parent?resourceVersion=id%3A3618"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9?resourceVersion=id%3A15"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 15,
+          "drupal_internal__revision_id": 15,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Civil society/Grassroots",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:45+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/vid?resourceVersion=id%3A15"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/relationships/vid?resourceVersion=id%3A15"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/revision_user?resourceVersion=id%3A15"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/relationships/revision_user?resourceVersion=id%3A15"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/parent?resourceVersion=id%3A15"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/c3e4c219-bfe2-4864-8fc6-eb585cb042c9/relationships/parent?resourceVersion=id%3A15"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088?resourceVersion=id%3A13"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 13,
+          "drupal_internal__revision_id": 13,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Consultants",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:33+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/vid?resourceVersion=id%3A13"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/relationships/vid?resourceVersion=id%3A13"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/revision_user?resourceVersion=id%3A13"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/relationships/revision_user?resourceVersion=id%3A13"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/parent?resourceVersion=id%3A13"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/fed1993b-a1cb-4fe0-9c3b-36e6fe641088/relationships/parent?resourceVersion=id%3A13"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--stakeholders",
+        "id": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454?resourceVersion=id%3A10"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 10,
+          "drupal_internal__revision_id": 10,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Policy Makers",
+          "description": null,
+          "weight": 0,
+          "changed": "2017-10-26T10:23:08+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "b2c72e1c-8997-4f83-9dbe-a02e54cfff25",
+              "meta": {
+                "drupal_internal__target_id": "stakeholders"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/vid?resourceVersion=id%3A10"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/relationships/vid?resourceVersion=id%3A10"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/revision_user?resourceVersion=id%3A10"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/relationships/revision_user?resourceVersion=id%3A10"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--stakeholders",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/parent?resourceVersion=id%3A10"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/stakeholders/62b7fbd7-4b34-49ee-93c1-2b516cc9d454/relationships/parent?resourceVersion=id%3A10"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--themes",
+        "id": "06d2512c-f07c-468c-8489-4e20cf8aba83",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83?resourceVersion=id%3A38"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 38,
+          "drupal_internal__revision_id": 38,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Sustainable Habitat",
+          "description": {
+            "value": "<p>The speed of rapid urbanization poses unprecedented challenges and opportunities for India. We promote sustainability in the urban context through developing a wide range of solutions for green buildings, sustainable mobility and planning and governance of low-carbon, resilient cities.</p>",
+            "format": "full_html",
+            "processed": "<p>The speed of rapid urbanization poses unprecedented challenges and opportunities for India. We promote sustainability in the urban context through developing a wide range of solutions for green buildings, sustainable mobility and planning and governance of low-carbon, resilient cities.</p>"
+          },
+          "weight": 23,
+          "changed": "2026-08-31T08:32:15+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": "/habitat",
+            "pid": 6,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "d1a67c2b-18e2-4952-9a41-d042ccc56014",
+              "meta": {
+                "drupal_internal__target_id": "themes"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/vid?resourceVersion=id%3A38"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/relationships/vid?resourceVersion=id%3A38"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/revision_user?resourceVersion=id%3A38"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/relationships/revision_user?resourceVersion=id%3A38"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--themes",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/parent?resourceVersion=id%3A38"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/relationships/parent?resourceVersion=id%3A38"
+              }
+            }
+          },
+          "field_theme_image": {
+            "data": {
+              "type": "file--file",
+              "id": "b9132baa-2fda-4dc6-965e-0741b1f894fa",
+              "meta": {
+                "alt": "habitat",
+                "title": "",
+                "width": 1600,
+                "height": 430,
+                "drupal_internal__target_id": 2996
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/field_theme_image?resourceVersion=id%3A38"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/06d2512c-f07c-468c-8489-4e20cf8aba83/relationships/field_theme_image?resourceVersion=id%3A38"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "parsed_drupal_record": {
+    "uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+    "bundle": "article",
+    "nid": 13363,
+    "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+    "url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+    "body": "The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather.\n\nThe devastating floods in Nepal on 26 August are still unfolding. Hundreds of lives have been lost, many more people remain missing and entire stretches of the Rasuwa-Bhote Koshi-Trishuli corridor have been transformed. Roads, bridges and hydropower infrastructure have been destroyed, while some of the very monitoring stations intended to warn us of flooding were themselves swept away.\n\nWhat makes the disaster particularly unsettling, however, is not simply its scale. It is the nature of the event itself.\n\nThe current scientific assessment points to a glacial collapse at Langtang Lirung, which then developed into a debris flow and flood that travelled almost 100 kilometres downstream. It was not a conventional flood with a single, easily identifiable cause. A disturbance in one part of a mountain system interacted with ice, rock, water, sediment, slopes and rivers, producing consequences far beyond the location where it began.\n\nAnd this was not even the first time this corridor had experienced such a shock. Just fourteen months earlier, in July 2025, the same broad Lhende-Bhote Koshi system was hit by a devastating flood, although the initiating mechanism was different: the drainage of a supraglacial lake in Tibet. The trigger changed; the downstream vulnerability did not.\n\nWe tend to organise risk into categories: glacial lake outburst floods, landslides, floods, avalanches, earthquakes, extreme rainfall. We build monitoring systems around these categories and develop response protocols for each. But mountains do not experience risk in categories.\n\nAn ice collapse can become a debris flow; a debris flow can alter a river; a temporary blockage can create a new lake and another flood. By the time the disturbance reaches people and infrastructure downstream, it may bear little to no resemblance to the event that initiated it.\n\nPerhaps, we are looking at the problem through the wrong statistical lens.\n\nDesigning Around the Mean\n\nFor much of modern planning, we have designed around the mean. We calculate average rainfall, river discharge, temperature, and traffic. We then design infrastructure to perform reliably around those expected conditions, with some allowance for an extreme event.\n\nThere was a logic to this.\n\nThe assumption was that the underlying system was sufficiently stable for the mean to be a useful representation of what we could expect. Deviations were exceptions. But what happens when deviations stop behaving like exceptions?\n\nThis is where ecological overshoot becomes important. We have progressively increased our demands on ecological systems while reducing their capacity to absorb disturbance. In doing so, we are losing the buffers that once made variability manageable. Glaciers, forests, wetlands, watersheds and diverse ecosystems perform functions that absorb shocks and prevent disturbances from becoming catastrophes. When those buffers weaken, the same hazard can produce a very different outcome. Risk begins to look like danger.\n\nDanger of Aggressive Optimisation\n\nAs a planner, one of the first things we are taught is that urban planning is fundamentally about optimising resources and using them in the most efficient way possible. The problem begins when optimisation becomes the dominant objective.\n\nModern infrastructure and urban systems are designed to minimise waste and maximise performance under expected conditions. But aggressive optimisation often removes what appears unnecessary: spare capacity, redundant routes or undeveloped land. These are precisely the things that provide resilience when conditions move beyond normal.\n\nA system optimised for average conditions can become extremely fragile when conditions become more variable. What looks like inefficiency from the perspective of optimisation can, in fact, be resilience from the perspective of a system exposed to uncertainty. This is the paradox of efficiency.\n\nLet us return to Nepal. The question is not simply whether we could have predicted the exact glacial collapse at Langtang Lirung. It is: why was a disturbance in one part of the mountain system capable of producing such catastrophic consequences nearly 100 kilometres downstream?\n\nPart of the answer lies in the buffers between the initiating hazard and the people and infrastructure downstream.\n\nDesigning for Deviation\n\nThe Nepal experience also challenges another assumption: that once we have mapped a hazard, we have understood the risk. We haven't. The same corridor experienced two major events in fourteen months, triggered by different mechanisms. The unit of analysis therefore cannot simply be the hazard; it has to be the system.\n\nRisk cannot be treated as static. A changing glacier, expanding lake, destabilising slope or new development downstream can alter the risk landscape. And after a major event, the landscape itself may have changed. In Rasuwa, debris from the collapse has already created new barrier lakes, introducing another potential source of flooding.\n\nRisk assessment needs to become a living understanding of a changing system.\n\nThis also changes how we think about early warning.\n\nThe Nepal disaster showed that information can reach a forecasting system within minutes and still be of limited value to communities closest to the source. The automatic monitoring stations in the upper Bhote Koshi were themselves destroyed, while downstream warnings may nevertheless have helped people farther south reach safety.\n\nSo the measure of an early-warning system should not simply be whether it detected an event.\n\nIt should be whether it created actionable decision time.\n\nCould someone evacuate? Could a road be closed? Could critical infrastructure be protected? Could emergency teams be moved before access was lost?\n\nThe goal is enough understanding, early enough, to change the outcome.\n\nThe Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather. But observation alone cannot make a system resilient if the ecological and spatial buffers around it have already been eroded.\n\nThe deeper challenge, therefore, is not simply climate change. It is the erosion of the buffers that once made climatic and ecological variability manageable.\n\nThis is why I think we need to move from designing for the mean to designing for the deviation. Not by trying to predict every extreme event, but by asking whether our systems have enough room to absorb what we cannot predict.\n\nBecause perhaps the most dangerous system is not the one that cannot predict the future. It is the one that has been so perfectly optimised for the expected future that it has no room left for anything else.",
+    "created": "2026-08-31T09:18:16+00:00",
+    "changed": "2026-08-31T09:19:47+00:00",
+    "metadata": {
+      "field_article_authors": [
+        "Ms Shiren Pandita"
+      ],
+      "field_article_stakeholder": [
+        "Academicians",
+        "Businesses",
+        "Civil society/Grassroots",
+        "Consultants",
+        "Policy Makers"
+      ],
+      "field_theme": [
+        "Sustainable Habitat"
+      ],
+      "field_article_type": "article"
+    },
+    "files": [],
+    "refs": [
+      {
+        "field_name": "field_article_authors",
+        "uuid": "854ff440-4285-41c5-80e1-bbc90e7b8abf",
+        "entity_type": "user--user",
+        "label": "Ms Shiren Pandita"
+      },
+      {
+        "field_name": "field_article_stakeholder",
+        "uuid": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Academicians"
+      },
+      {
+        "field_name": "field_article_stakeholder",
+        "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Businesses"
+      },
+      {
+        "field_name": "field_article_stakeholder",
+        "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Civil society/Grassroots"
+      },
+      {
+        "field_name": "field_article_stakeholder",
+        "uuid": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Consultants"
+      },
+      {
+        "field_name": "field_article_stakeholder",
+        "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+        "entity_type": "taxonomy_term--stakeholders",
+        "label": "Policy Makers"
+      },
+      {
+        "field_name": "field_theme",
+        "uuid": "06d2512c-f07c-468c-8489-4e20cf8aba83",
+        "entity_type": "taxonomy_term--themes",
+        "label": "Sustainable Habitat"
+      }
+    ]
+  }
+}

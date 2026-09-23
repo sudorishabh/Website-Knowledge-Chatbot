@@ -1,0 +1,207 @@
+{
+  "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+  "source_type": "website",
+  "title": "Adoption of green fuels in Indian Maritime sector.",
+  "sections": [
+    {
+      "text": "India’s maritime sector is at a critical juncture, where decarbonisation imperatives must be pursued in a manner that is technically robust, operationally safe and economically viable. In this context, the present study provides a comprehensive and evidence-based assessment of a spectrum of low-carbon and alternative fuel pathways relevant to Indian maritime operations, examined through lifecycle and Greenhouse Gas Fuel Intensity (GFI)-based analytical parameters.\n\nThe report adopts a systematic and data-driven framework and goes beyond conceptual discussions by analysing demand - supply dynamics, fuel mix scenarios, retrofitting and engine replacement pathways, as well as blend-fuel options that can be implemented without major engine modifications. The immediate priority going forward is the development of Phase II, encompassing a comprehensive implementation plan with defined short-, medium- and long-term action points for coastal vessels and foreign-going vessels. This phase will require close coordination among the Directorate General of Shipping, the NCoEGPS Green Fuel team and relevant technical and classification institutions, with due consideration of vessel typologies, size categories, fuel standards, certification frameworks and data-driven compliance mechanisms.\n\nExecutive summary\n\nThis report presents the estimates of the alternative and ZNZ fuel demand supply gap for India till 2035. Subsequently, the green Hydrogen and Renewable Energy (RE) based power to produce the alternative fuel is quantified. To align with GFI based trajectory large investment is needed both for ZNZ fuel production scale up and ZNZ fuel capable vessel manufacturing including alternative-fuel engines. To attract investment. sustained demand of these fuels and sound economical parameters is crucial. While the universal definition of ZNZ fuels and the clarity on reward distribution is still awaited from IMO, to comply with the IMO’s GFI based emission target generating Surplus Units (SU) and ensuing qualification for receiving financial rewards the short-, medium- and long-term strategies are developed. The role of alternative fuel engines, scope for Onboard Carbon Capture (OCC) and Fuel Cell integration too is critically analysed and assessed for adoption by Indian ships towards long term decarbonization. Finally, policy gaps are identified towards effective green fuel transition in Indian maritime sector.\n\nFigure Caption : Alternative Fuel Vessels Global (In-Service): Fuel Types v/s Total Number of Vessel(as on August 2024) Number with Percentage (as on August 2024) (a): Relative Share of All Alternative Fuels b): Relative Share of only Hydrogen Derived Fuels\n\nTowards meeting short to medium term GFI based emission targets at least up to 2035, blend fuel (dual -fuel and multifuel) strategy offers the most practical and economically viable pathway to India. It is found that, under the IMO proposed GFI regime, use of B30 (30% Biodiesel blend in Diesel) can meet direct compliance target only till 2031 where as B40 is needed to remain compliant until 2033. B50 covers direct compliance target till 2035. Although B40 and B50 are sufficient enough to meet Direct compliance emission targets till 2033 and 2035 respectively, multi-fuel blends such as Bio/E Alcohol (Methanol/2GEthanol 10 v/v %)-Biodiesel- Diesel blends can fetch much higher degree of Surplus Unit and Rewards thus making the transition economically attractive. The advantage of blend fuel is continued use of existing engines without investing to alternate fuel engines. Additionally, although Coastal Vessels <5000GT are not presently subjected to IMO compliance, however, emission guidelines for vessels between 400-5000 GT range is under consideration by IMO. Hence, in the present study the fuel-blend Scenarios are also built for Indian Coastal vessels.\n\nAs a long term decarbonization strategy, adoption of dual-fuel engines for fuels only E/Bio (in the order Methanol> LBG/LNG> Ammonia) appears most preferred based on 8 sustainability parameters. However, considering two critical aspects i.e. supply readiness and cost of alternative engines, dual fuel engines are highly recommended for adoption only by new builds or vessels <5-7 years of age.\n\nFuel Cell should be considered as promising option for Inland water and shortsea/coastal shipping. Direct Methanol Fuel Cell (DMFC) could be worth investing for India in very small vessel <100eKW (Inland water) category. India should also develop small to mid-sized (100-500ekW) LTMFC Fuel Cell ships (PSV, Ferries, RO-RO & Cargo) till storage and safety challenges of compressed or liquified hydrogen (LH2) as fuel persist. In long term once LH2 overcome the become viable technological and safety challenges, larger inland water ships can be integrated too. SOFC technology should leverage its high fuel flexibility especially Ammonia & Methanol. For cruise, and long-haul vessels, pilot projects need to be initiated with SOFC –Battery hybrid (immediate) and SOFC/ICE hybrid with alternative fuel options like Methanol and Ammonia (medium to long term) especially for auxiliary power units (AMUs).\n\nThere is a heightened need to increasingly implement CO2 capture on-board and switching over to bio/ synthetic e-fuels from HFO with the advancement of alternate fuel engines. Immediate implementation strategy needs to be developed to pilot dual-fuel and multifuel blend in existing engines with OCC in few pilots for generating data to assess energy and economic viability. Domestic green corridor can be set up for with pilot demonstration. There is an urgent need of larger number of pilot demonstration of CCUS projects through valorisation of adsorbed CO2 especially for India with lack of geological CO2 storage sites along with innovation in sustainable CO2 adsorption material production.\n\nIn order to facilitate early transition to ZNZ fuels, India urgently needs to develop standards for Hydrogen derived fuels Bio & E (Methanol, Ammonia, Methane) along with blend fuels, such as, dual-fuel (Alcohol-Diesel, Diesel-Biodiesel B30, B40 & B50) and mixed-fuels for Alcohol (Methanol/Ethanol), Diesel and Biodiesel for maritime application through BIS.\n\nFinally, this study highlights that along with ramping up domestic production of E& Bio Methanol, Ammonia and E LNG, India need to calibrate and undertake dynamic assessment of international shipping demand and target to create refueling/bunkering facilities in part of major ports along the coastal lines",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/project/adoption-green-fuels-indian-maritime-sector",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "a240619a-8365-429e-adde-9bf707c46882",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Carbon intensity",
+    "E-Fuels",
+    "Fuel cell/hydrogen energy safety",
+    "GFI",
+    "Green Ammonia",
+    "Green Methanol",
+    "Green Shipping",
+    "Greenhouse gases",
+    "Hydrogen energy storage",
+    "Renewable energy",
+    "Renewable natural resources",
+    "Sustainable Development Goals",
+    "ZNZ Fuels"
+  ],
+  "categories": [
+    "Pyrolytic Biofuels, Biochar & Green Chemicals"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-01-14T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": null,
+  "end_precision": null,
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "5ea5ef71872cfa0ef88b9348ef187e5cad6e806b43497f9a35adf6136986a61b",
+  "extra": {
+    "bundle": "ongoing_projects",
+    "nid": 13381,
+    "changed": "2026-09-08T10:28:15+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Civil society/Grassroots"
+    },
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Consultants"
+    },
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Policy Makers"
+    },
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "b005a095-c75e-4e10-a554-23eef3b33a25",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Researchers/Post graduates"
+    },
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "bfde8e8f-5c16-4aec-ab31-9821bc74dbf1",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Technocrats"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "0676f0bf-dea1-4844-b8c2-c001e49410fa",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Carbon intensity"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "0d9c8b50-0e60-4468-b3a9-d41e1e096dfb",
+      "entity_type": "taxonomy_term--tags",
+      "label": "E-Fuels"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "5d1430ce-a374-4d83-b55d-4dcd3b25a28c",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Fuel cell/hydrogen energy safety"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "4f5f6512-bd75-4d2b-a0a3-22853e687584",
+      "entity_type": "taxonomy_term--tags",
+      "label": "GFI"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "1a7f7f4f-3ce6-49ae-82bc-06ffcfc23707",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Green Ammonia"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "5c12c076-7064-4d3b-aad8-797d27cbc285",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Green Methanol"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "acb919b8-eb3c-4ecd-933e-2c044df499d5",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Green Shipping"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "33d6877b-43e4-46ff-a0fa-4d6ee0432bb5",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Greenhouse gases"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "deefd6c0-f333-42d5-a80b-6be8353819d1",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Hydrogen energy storage"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "f09a3dc3-1737-4f70-9f1a-ccfe4f4ec418",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Renewable energy"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "98269035-fe7b-4567-bd4c-15af8c59e1b6",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Renewable natural resources"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "e32d3938-98ec-4b36-8577-9b9d2795ac21",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable Development Goals"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "dfcc465f-43fe-45a2-8c45-3207e344a81c",
+      "entity_type": "taxonomy_term--tags",
+      "label": "ZNZ Fuels"
+    },
+    {
+      "field_name": "field_ongoing_theme",
+      "uuid": "779e546f-1b61-43b1-b416-3e8510972407",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Pyrolytic Biofuels, Biochar & Green Chemicals"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_ongoing_stakeholders": [
+      "Businesses",
+      "Civil society/Grassroots",
+      "Consultants",
+      "Policy Makers",
+      "Researchers/Post graduates",
+      "Technocrats"
+    ],
+    "field_ongoing_tag": [
+      "Carbon intensity",
+      "E-Fuels",
+      "Fuel cell/hydrogen energy safety",
+      "GFI",
+      "Green Ammonia",
+      "Green Methanol",
+      "Green Shipping",
+      "Greenhouse gases",
+      "Hydrogen energy storage",
+      "Renewable energy",
+      "Renewable natural resources",
+      "Sustainable Development Goals",
+      "ZNZ Fuels"
+    ],
+    "field_ongoing_theme": [
+      "Pyrolytic Biofuels, Biochar & Green Chemicals"
+    ],
+    "field_ongoing_start_date": "2026-01-14T04:30:00+00:00",
+    "field_show_on_theme_page": false
+  }
+}

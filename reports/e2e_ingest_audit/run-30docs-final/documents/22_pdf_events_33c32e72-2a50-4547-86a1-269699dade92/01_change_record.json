@@ -1,0 +1,25 @@
+{
+  "status": "new",
+  "document_id": "33c32e72-2a50-4547-86a1-269699dade92",
+  "source_type": "pdf_attachment",
+  "source_key": "https://teriin.org/sites/default/files/2026-08/DSML2026_%20AGENDA.pdf",
+  "fingerprint": "2026-08-31T09:52:29+00:00",
+  "bundle": "events",
+  "entity_type": null,
+  "changed_mark": 1788169949,
+  "filename": "DSML2026_ AGENDA.pdf",
+  "prior": null,
+  "outcome": "indexed",
+  "error": null,
+  "traceback": null,
+  "started_at": "2026-09-10T10:30:41.922738+00:00",
+  "finished_at": "2026-09-10T10:30:44.375567+00:00",
+  "elapsed_seconds": 2.453,
+  "stage_seconds": {
+    "build_doc": 2.016,
+    "pdf_extraction": 1.535,
+    "chunk": 0.005,
+    "embed_and_upsert": 0.377,
+    "knowledge": 0.028
+  }
+}

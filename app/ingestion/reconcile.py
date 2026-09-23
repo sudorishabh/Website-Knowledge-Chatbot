@@ -274,6 +274,98 @@ def _graph_check() -> Check:
 _DATE_LIKE_FIELD = re.compile(r"date|year|publish|issued|period", re.I)
 
 
+def metadata_only_checks() -> list[Check]:
+    """The invariant for a document the source describes without a body.
+
+    A ``metadata_only`` row is a **supported state**, not an anomaly. A
+    ``completed_projects`` page is a title, a start and end date and a link to
+    the project's executive summary; the document is the PDF and the page is its
+    record card. Catalogued that way it gives the PDF a parent, which is the
+    whole reason it exists. So none of these is an error:
+
+    * the row has no chunks and no points;
+    * the row has no ``indexed_at``;
+    * the row's only content is metadata.
+
+    What *is* an error is a metadata-only row that does not earn its exemption.
+    Stated as an invariant:
+
+        **a metadata-only document must have identity and at least one
+        attachment.**
+
+    Without attachments it is a broken extraction wearing a label — exactly what
+    the empty-extraction gate exists to catch, let through by mistake. Without a
+    title or a URL it is a placeholder rather than a document, and every reader
+    that shows it to a person would show a blank.
+
+    The third check is the reverse direction: a row claiming to be metadata-only
+    while carrying points is a contradiction, and means an indexing write and
+    this marker raced.
+    """
+    from app.catalog.db import state_table
+    from app.core.clients import mysql_connection
+
+    table = state_table()
+    try:
+        with mysql_connection() as conn, conn.cursor() as cur:
+            cur.execute(
+                f"SELECT document_id FROM `{table}` "
+                f"WHERE content_state = 'metadata_only' "
+                f"  AND NOT EXISTS (SELECT 1 FROM `{table}_attachment` a "
+                f"                  WHERE a.document_id = `{table}`.document_id) "
+                f"LIMIT 200"
+            )
+            without_attachments = [r["document_id"] for r in cur.fetchall()]
+            cur.execute(
+                f"SELECT document_id FROM `{table}` "
+                f"WHERE content_state = 'metadata_only' "
+                f"  AND (title IS NULL OR title = '' OR url IS NULL OR url = '') "
+                f"LIMIT 200"
+            )
+            without_identity = [r["document_id"] for r in cur.fetchall()]
+            cur.execute(
+                f"SELECT document_id FROM `{table}` "
+                f"WHERE content_state = 'metadata_only' AND indexed_at IS NOT NULL "
+                f"LIMIT 200"
+            )
+            claiming_points = [r["document_id"] for r in cur.fetchall()]
+    except Exception as exc:  # noqa: BLE001
+        # A deployment that has not yet run `ensure_state_table` has no
+        # `content_state` column, which means it also has no metadata-only rows
+        # to check. Skipped, not failed: a missing column here cannot make a
+        # healthy corpus look broken, and a skipped check is never counted as a
+        # passing one.
+        missing_column = "content_state" in str(exc)
+        if not missing_column:
+            logger.exception("Metadata-only checks could not read the catalog.")
+        return [Check(
+            name="metadata_only_checks_unavailable",
+            count=0,
+            skipped=True,
+            detail=("the content_state column does not exist yet; it is added by "
+                    "app.catalog.schema.ensure_state_table on the next ingestion"
+                    if missing_column else f"{type(exc).__name__}: {exc}"),
+        )]
+
+    return [
+        _check("metadata_only_without_attachments", without_attachments,
+               "A document catalogued as metadata-only that has no attachments. "
+               "The exemption exists so an attachment can have a parent; with "
+               "nothing attached this is an empty extraction that should have "
+               "been refused. Re-ingest it — the gate in "
+               "app.ingestion.pipeline will now reject it correctly."),
+        _check("metadata_only_without_identity", without_identity,
+               "A metadata-only document with no title or no URL. It has "
+               "nothing to show a reader and nothing to identify it by; the "
+               "pipeline requires both, so this row predates that rule or was "
+               "written by something else."),
+        _check("metadata_only_with_points", claiming_points,
+               "A document marked metadata-only that also reports being "
+               "indexed. The marker and an indexing write disagree; re-ingest "
+               "it so one of them wins."),
+    ]
+
+
 def date_checks() -> list[Check]:
     """Invariants over ``effective_start_date`` and where it came from.
 
@@ -351,16 +443,21 @@ def date_checks() -> list[Check]:
             # because it is a join, not a rule: the link table says which files
             # hang off which page, and inheritance means the two dates agree.
             # A date the document itself stated is the sanctioned exception, in
-            # either of its two forms: a quoted publication statement
-            # (`document_text`) or a corroborated copyright year
-            # (`document_copyright`).
+            # each of its three forms: a quoted publication statement
+            # (`document_text`), a corroborated copyright year
+            # (`document_copyright`) or a date the file's own name states
+            # (`document_title`). So is the deliberate absence of a date
+            # (`no_evidence`) — several PDFs on a page dated only by its Drupal
+            # creation stamp, which is a date about the page and not about any
+            # file on it. See `date_rules.page_date_is_usable`.
             cur.execute(
                 f"SELECT d.document_id FROM `{table}_attachment` a "
                 f"JOIN `{table}` d ON d.document_id = a.file_uuid "
                 f"JOIN `{table}` p ON p.document_id = a.document_id "
                 f"WHERE d.source_type = 'pdf_attachment' "
                 f"  AND COALESCE(d.date_source, '') NOT IN "
-                f"      ('document_text', 'document_copyright') "
+                f"      ('document_text', 'document_copyright', 'document_title', "
+                f"       'no_evidence') "
                 f"  AND (DATE(d.effective_start_date) <> DATE(p.effective_start_date) "
                 f"       OR (d.effective_start_date IS NULL) <> (p.effective_start_date IS NULL) "
                 f"       OR NOT (d.effective_end_date <=> p.effective_end_date)) "
@@ -423,9 +520,11 @@ def date_checks() -> list[Check]:
         _check("attachment_date_adrift", adrift,
                "An attached file whose date or period differs from the page it "
                "hangs on. A file inherits both ends of its page's resolved "
-               "range; only a publication statement verified inside the file's "
-               "own text (date_source='document_text' or 'document_copyright') "
-               "may differ. "
+               "range unless it stated something itself — a verified publication "
+               "statement ('document_text'), a corroborated copyright year "
+               "('document_copyright') or a date in its own name "
+               "('document_title') — or unless the page's date was not the "
+               "file's to borrow ('no_evidence'). "
                "Re-run scripts.backfill_bundle_dates."),
         _check("inverted_date_range", inverted,
                "A stored date range whose end falls before its start. "
@@ -552,6 +651,7 @@ def reconcile() -> ReconciliationReport:
     ))
 
     report.checks += date_checks()
+    report.checks += metadata_only_checks()
     report.checks.append(_graph_check())
     return report
 

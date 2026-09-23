@@ -1,0 +1,16 @@
+2026-09-10 16:00:32,800 INFO app.ingestion.pipeline: Ingesting website 1cd4a081-ba2e-433d-952f-804bb42c1b89 (https://teriin.org/opinion/green-wall-without-foundation-why-gujarat-needs-state-mangrove-policy)
+2026-09-10 16:00:32,819 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points "HTTP/1.1 200 OK"
+2026-09-10 16:00:33,148 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:33,168 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:33,169 INFO app.ingestion.indexer: Indexed 1 points (1 children: 1 embedded, 0 reused; 0 parents) into 'e2e_audit_documents'
+2026-09-10 16:00:33,181 INFO httpx: HTTP Request: GET http://localhost:6333/collections/e2e_audit_documents/exists "HTTP/1.1 200 OK"
+2026-09-10 16:00:33,187 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:33,192 INFO app.ingestion.pipeline: new 1cd4a081-ba2e-433d-952f-804bb42c1b89 -> v1
+2026-09-10 16:00:33,195 INFO app.knowledge.document_pipeline: prelude        entities=2451 chunks=1
+2026-09-10 16:00:33,200 INFO app.knowledge.document_pipeline: mentions       cached=0 mentions=8
+2026-09-10 16:00:33,205 INFO app.knowledge.document_pipeline: resolution     auto=4 provisional=0 ambiguous=0 unresolved=4 cache_recorded=1
+2026-09-10 16:00:34,581 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:34,583 INFO app.knowledge.document_pipeline: claims         llm_calls=1 llm_failures=0 run_calls_used=42 run_calls_remaining=149958 llm=0 unknown_predicates=0 built=0
+2026-09-10 16:00:34,584 INFO app.knowledge.document_pipeline: validate       -
+2026-09-10 16:00:34,584 INFO app.knowledge.document_pipeline: persist        accepted=0 pending_predicates=0
+2026-09-10 16:00:34,588 INFO app.knowledge.document_pipeline: knowledge_document id=1cd4a081-ba2e-433d-952f-804bb42c1b89 v=1 status=ok claims=0 pending=0 proj=skipped 1.39s

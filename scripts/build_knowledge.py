@@ -179,6 +179,33 @@ class Build:
             if self.writes:
                 stage.counts["raised"] = apply_promotions(decisions)
 
+    def author_promotion(self) -> None:
+        """Raise CMS author names to ``author_attested``.
+
+        A stage rather than a one-off script run, for the same reason
+        ``pi-promotion`` is one: seeding writes ``trust`` with
+        ``ON DUPLICATE KEY UPDATE``, so *every* promotion is reset to the level
+        the seeder computes each time this runs. A promotion applied out of band
+        survives exactly until the next build and then silently disappears,
+        taking its AUTHORED edges out of the graph with it.
+
+        Idempotent and ordered after seeding for that reason: it re-derives the
+        same decisions from the same evidence and re-applies them, so the store
+        converges whatever state it started in.
+        """
+        with self._stage("author-promotion", skip=self.o.skip_promotion) as stage:
+            if stage.skipped:
+                return
+            from app.knowledge.author_promotion import (
+                apply_promotions, evaluate_promotions,
+            )
+
+            decisions = evaluate_promotions()
+            stage.counts["considered"] = len(decisions)
+            stage.counts["passed"] = sum(1 for d in decisions if d.promote)
+            if self.writes:
+                stage.counts["raised"] = apply_promotions(decisions)
+
     # ------------------------------------------------------------------ #
     # 5-6. Mentions and resolution. Off by default: nothing reads these tables
     #      at query time (the router extracts from the *question* and resolves
@@ -528,6 +555,7 @@ class Build:
         self.acronyms()
         self.ambiguity()
         self.promotion()
+        self.author_promotion()
         # Everything below resolves against what seeding just wrote, including
         # the promotions — a PI raised above is claim-eligible from here on.
         self.index(refresh=True)

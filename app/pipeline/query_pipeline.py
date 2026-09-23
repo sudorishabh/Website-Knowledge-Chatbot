@@ -15,13 +15,15 @@ from dataclasses import dataclass
 from typing import Any, Iterator
 
 from app.config import get_settings
-from app.core.models.context import ContextBlock
+from app.core.models.context import ContextBlock, is_web
 from app.generation.answerer import chitchat, generate_answer, generate_stream
 from app.generation.prompts import REFUSAL
 from app.observability import retrieval_log
 from app.observability.metrics import collect_into, component_totals
 from app.observability.tracing import record_query_metrics, span
 from app.retrieval.context.citations import build_citations
+from app.retrieval.understanding.clarify import Clarification
+from app.retrieval.understanding.document_request import is_document_request
 from app.retrieval.understanding.query_processor import ProcessedQuery, process
 from app.retrieval.retriever import retrieve
 
@@ -83,6 +85,11 @@ def _trace_understanding(pq: ProcessedQuery, *, top_k: int) -> None:
         filters=pq.filters,
         top_k=top_k,
         is_ambiguous=pq.is_ambiguous,
+        # Whether this turn asked a question back, and whether it was itself the
+        # answer to one — without both, a trace for a clarified turn shows a
+        # search query holding words the user never typed and no reason why.
+        clarifying=pq.clarification is not None,
+        clarified_from=pq.clarified_from,
         capabilities=sorted(_capabilities(pq)),
         intents=[
             {"label": p.label, "confidence": p.confidence, "rationale": p.rationale}
@@ -90,6 +97,292 @@ def _trace_understanding(pq: ProcessedQuery, *, top_k: int) -> None:
         ],
         analysis=pq.analysis,
     )
+
+
+def _clarification_result(
+    clarification: Clarification, *, answer_format: str = "default"
+) -> dict[str, Any]:
+    """The turn that asks the user a question instead of answering.
+
+    Shaped as an ordinary result so every existing consumer — the buffered
+    return, the SSE driver, the metrics recorder — handles it without knowing
+    what it is. The rendered text carries the state (see
+    ``app.retrieval.understanding.clarify``): it ends with the marker the next
+    turn recognises, so a client that does nothing but echo the answer back in
+    ``history`` already implements the whole protocol.
+
+    ``intent`` is reported as ``clarification`` rather than the route the query
+    would have taken. By this point that route is chitchat-or-rescued-qa, which
+    describes what the classifier did and not what the user was sent, and the
+    metrics that matter here are "how often do we ask" and "does asking help".
+
+    ``clarification`` is an *additive* key. Nothing has to read it — the question
+    and its options are already in the answer text — but a client that wants to
+    render options as buttons has them structured rather than parsed back out of
+    prose.
+    """
+    retrieval_log.note(
+        clarification_kind=clarification.kind,
+        clarification_options=len(clarification.options),
+    )
+    return {
+        **_empty("clarification", clarification.render(), answer_format=answer_format),
+        "clarification": {
+            "question": clarification.question,
+            "options": list(clarification.options),
+            "kind": clarification.kind,
+        },
+    }
+
+
+def _temporal_intent(pq: ProcessedQuery) -> Any | None:
+    """The question's temporal intent, or None to retrieve as before.
+
+    The single place `temporal_intent_enabled` is read. `process` computes the
+    intent either way — it is a regex over a string the analysis produced anyway,
+    and having it on the trace is worth more than the microseconds — but nothing
+    downstream sees it unless the flag is set, so OFF leaves both ranking and the
+    pre-existing UPCOMING gate byte-identical.
+    """
+    if not getattr(get_settings(), "temporal_intent_enabled", False):
+        return None
+    return pq.temporal_intent
+
+
+def _web_plan(
+    pq: ProcessedQuery, history: list[dict[str, str]] | None = None
+) -> Any | None:
+    """The question's web plan, or None to retrieve from the corpus alone.
+
+    The single place `web_search_enabled` is read. Off — the default — hands
+    retrieval None, which is byte-identical to retrieval before web retrieval
+    existed, and the web package is never imported.
+
+    Planned on the user's own words, except in a conversation, where the words of
+    this turn alone may not name what it is about ("and who is he?"); there the
+    standalone rewrite is the question. Fails to None: a planning problem costs
+    the web, never the answer.
+    """
+    if not getattr(get_settings(), "web_search_enabled", False):
+        return None
+    from app.retrieval.retriever import web_plan_for
+
+    analysis = pq.analysis
+    try:
+        plan = web_plan_for(
+            pq.search_query if history else pq.original,
+            pq.search_query,
+            capabilities=_capabilities(pq),
+            answer_format=pq.answer_format,
+            date_from=getattr(analysis, "date_from", None),
+            date_to=getattr(analysis, "date_to", None),
+        )
+    except Exception:
+        logger.warning("Web planning failed; retrieving from the corpus alone.",
+                       exc_info=True)
+        return None
+    retrieval_log.note(web_plan=plan.to_trace())
+    return plan
+
+
+def _web_backed(blocks: list[ContextBlock]) -> bool:
+    """Whether any evidence came from the web rather than the corpus."""
+    return any(is_web(block.payload) for block in blocks)
+
+
+def _subquery_plan(pq: ProcessedQuery, requirements_future: Any) -> list[Any]:
+    """The multi-part plan for this query, or ``[]`` to retrieve as one query.
+
+    The single place `subquery_planning_enabled` is read. Off, the requirements
+    future is never joined here, so retrieval starts without waiting for it and
+    the empty plan is a no-op through every leg below.
+
+    Fails to ``[]``: a planning problem must cost the decomposition, never the
+    answer — the base pull runs regardless, so an empty plan is simply the
+    behaviour this query had before the feature existed.
+    """
+    settings = get_settings()
+    if not getattr(settings, "subquery_planning_enabled", False):
+        return []
+    from app.retrieval import subqueries as planning
+
+    try:
+        plan = planning.plan(
+            pq.search_query,
+            requirements_future.result(),
+            limit=getattr(settings, "subquery_max", 3),
+        )
+    except Exception:
+        logger.warning("Sub-query planning failed; retrieving as one query.",
+                       exc_info=True)
+        return []
+    if plan:
+        logger.info("Decomposed into %d parts: %s",
+                    len(plan), [s.text for s in plan])
+        retrieval_log.note(
+            subqueries=[
+                {"text": s.text, "requirement": s.requirement,
+                 "routes": list(s.routes)}
+                for s in plan
+            ]
+        )
+    return plan
+
+
+# How the answer opens, by how the edition was chosen. `default_latest` means
+# the user said "the annual report" and the resolver took the newest, so the
+# sentence says which one it picked rather than implying they asked for it.
+_EDITION_LEAD: dict[str, str] = {
+    "latest": "The latest annual report is",
+    "default_latest": "The most recent annual report is",
+    "earliest": "The earliest annual report is",
+    "named": "The annual report you asked for is",
+}
+
+
+def _document_name(block: ContextBlock, edition: str) -> str:
+    """What to call this document in the answer.
+
+    The catalogued title when the chunk carries one — it is the anchor text the
+    page uses for each edition ("Annual Report 2024-2025"), which is the only
+    place an edition's identity exists as prose. Falls back to the resolved
+    edition rather than inventing a title.
+    """
+    title = str(block.payload.get("title") or "").strip()
+    return title or f"the {edition} annual report"
+
+
+def _document_result(
+    pq: ProcessedQuery, blocks: list[ContextBlock]
+) -> dict[str, Any]:
+    """Answer a request for the document itself, from the document's identity.
+
+    The case this exists for: "give me the latest annual report" resolved
+    correctly to the 2024-25 edition and retrieved two chunks from deep inside
+    it, and generation then refused — rightly, because pages 148-150 do not say
+    which edition is the latest one. No report states that about itself, so no
+    amount of retrieval was ever going to ground it. The answer is the
+    document's *identity*, which `pq.edition` has held since query understanding.
+
+    Deterministic, and deliberately so: no model call, no new lookup, no second
+    source of truth about which document this is. The prose is assembled from
+    the resolved edition and the catalogued titles already on the retrieved
+    chunks, and the source cards come from `build_citations` — the same function
+    that describes every other answer's sources, so a card here is identical to
+    the card the same document gets anywhere else.
+
+    Citations cover every retrieved block rather than only the cited ones: they
+    are all chunks of the document being named, so each is a true source for the
+    claim, and this is also the set the user already sees today.
+    """
+    resolution = pq.edition
+    lead = _EDITION_LEAD.get(resolution.kind, "The annual report you asked for is")
+
+    named: list[str] = []
+    seen: set[str] = set()
+    for block in blocks:
+        key = str(block.payload.get("document_id") or block.payload.get("title") or "")
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        named.append(f"{_document_name(block, resolution.edition)} [{block.n}]")
+
+    citations = build_citations(blocks)
+    retrieval_log.note(
+        document_lookup=True,
+        edition=resolution.edition,
+        edition_kind=resolution.kind,
+        documents=len(seen) or len(blocks),
+    )
+    return {
+        "answer": f"{lead} {', '.join(named)}.",
+        "citations": [c.model_dump() for c in citations],
+        # Its own label rather than the route the classifier took: the metric
+        # worth having is how often a document request is answered as one.
+        "intent": "document_lookup",
+        "answer_format": pq.answer_format,
+        "used_chunks": len(blocks),
+        "conflict": any(b.conflict for b in blocks),
+        "cached": False,
+    }
+
+
+def _series_blocks(documents: Any) -> list[ContextBlock]:
+    """The series' editions as context blocks, so the real citation builder can
+    describe them.
+
+    Not a second card format: `build_citations` reads a payload, and these
+    payloads carry exactly the keys it reads for a PDF attachment. A card for the
+    2024-25 edition here is therefore the same card that edition gets on any
+    other answer, built by the same function.
+    """
+    return [
+        ContextBlock(
+            n=i,
+            text="",
+            payload={
+                "document_id": doc.document_id,
+                "chunk_id": doc.document_id,
+                "source_type": "pdf_attachment",
+                "bundle": "report",
+                "title": doc.title,
+                "edition_label": doc.edition,
+                "file_url": doc.url,
+            },
+        )
+        for i, doc in enumerate(documents, start=1)
+    ]
+
+
+def _series_result(pq: ProcessedQuery) -> dict[str, Any]:
+    """List or count the annual-report series, from the catalogue.
+
+    The second half of the document-discovery gap. `resolve` deliberately
+    returns no edition for "list of annual reports" — narrowing a series
+    question to its newest member would answer something else — and that None
+    used to end the matter, so the question fell through to an *unfiltered*
+    semantic search and the model was asked to find a list of editions inside
+    two pages of report prose. It refused, and the citation fallback attached
+    whatever the unfiltered pull had found, which is where the unrelated cards
+    came from.
+
+    Deterministic and terminal: the answer is assembled from catalogued titles
+    and the resolved editions, there is no model call, and it returns before
+    retrieval — so there are no stray blocks for citations to fall back onto.
+    """
+    series = pq.series
+    documents = series.documents
+    blocks = _series_blocks(documents)
+    from app.retrieval.understanding.annual_report_editions import COUNT
+
+    if series.kind == COUNT:
+        noun = "annual report" if len(documents) == 1 else "annual reports"
+        answer = f"There are {len(documents)} {noun} available."
+    else:
+        lines = "\n".join(
+            f"- {doc.title or f'Annual Report {doc.edition}'} [{block.n}]"
+            for doc, block in zip(documents, blocks)
+        )
+        answer = (
+            f"There are {len(documents)} annual reports available:\n{lines}"
+        )
+
+    retrieval_log.note(
+        series_lookup=series.kind,
+        editions=list(series.editions),
+    )
+    return {
+        "answer": answer,
+        "citations": [c.model_dump() for c in build_citations(blocks)],
+        # Its own labels, beside `document_lookup`, so the three discovery
+        # shapes stay separable in the metrics rather than blurring into one.
+        "intent": f"series_{series.kind}",
+        "answer_format": pq.answer_format,
+        "used_chunks": len(blocks),
+        "conflict": False,
+        "cached": False,
+    }
 
 
 def _capabilities(pq: ProcessedQuery) -> set[str]:
@@ -198,8 +491,37 @@ def _prepare(
     with span("rag.query_understanding"):
         pq: ProcessedQuery = process(question, history)
     _trace_understanding(pq, top_k=n)
+    # Ahead of the chitchat branch, because that is exactly where an unclear
+    # question used to end up: `clarification_needed` is terminal, so
+    # `_legacy_intent_and_format` collapses it onto chitchat and the small-talk
+    # prompt answers a question it was never given. `process` only sets this when
+    # the feature is on and no clarification is already open (see
+    # `app.retrieval.understanding.clarify.pending`), so with the flag off this
+    # is always None and the line below is unreachable.
+    if pq.clarification is not None:
+        return _clarification_result(
+            pq.clarification, answer_format=pq.answer_format
+        ), None
     if pq.intent == "chitchat":
         return _empty("chitchat", chitchat(question, history)), None
+
+    # A request for the annual-report series itself — list it, or count it.
+    # Terminal *before* retrieval, unlike the single-document lookup below:
+    # that one waits for retrieval because it needs the catalogued title on a
+    # retrieved chunk, whereas the series carries its own titles. Returning here
+    # is also what removes the unrelated source cards — retrieval never runs, so
+    # there is nothing for the citation fallback to pick up.
+    #
+    # Ahead of the structured branch on purpose. Which route the classifier chose
+    # does not change what "list of annual reports" is asking for, and the
+    # catalogue route cannot answer it anyway: `list_records` is scoped to
+    # website nodes and the editions are attachments.
+    if pq.series is not None:
+        with span("rag.series_lookup") as s:
+            result = _series_result(pq)
+            s.set("kind", pq.series.kind)
+            s.set("editions", len(pq.series.documents))
+        return result, None
 
     caps = _capabilities(pq)
     # A query that needs both catalog facts and document content: keep the
@@ -269,20 +591,26 @@ def _prepare(
             return summary, None
         # Empty/unresolvable scope: fall through to plain semantic QA.
 
+    web_plan = _web_plan(pq, history)
     with span("rag.embed_query"):
         query_vector = embed_query(pq.search_query)
     with span("rag.semantic_cache") as s:
-        semantic = semantic_cache.lookup(
+        # A question that forces the web — "search online", "the latest" — is
+        # not answered from a stored answer up to a day old: being current is
+        # the point of asking it that way.
+        forced_web = web_plan is not None and web_plan.forced
+        semantic = None if forced_web else semantic_cache.lookup(
             query_vector, top_k=n, answer_format=pq.answer_format,
             fingerprint=semantic_cache.facet_fingerprint(pq),
         )
         s.set("hit", semantic is not None)
+        s.set("bypassed", forced_web)
     if semantic is not None:
         # A cached combined answer already carries its catalog section, so the
         # short-circuit here also skips rebuilding it.
         return {**semantic, "cached": True}, None
 
-    def _run_retrieve() -> list[ContextBlock]:
+    def _run_retrieve(subqueries: list[Any]) -> list[ContextBlock]:
         return retrieve(
             pq.search_query,
             filters=pq.filters,
@@ -291,6 +619,9 @@ def _prepare(
             answer_format=pq.answer_format,
             source_type=pq.source_type,
             capabilities=caps,
+            temporal=_temporal_intent(pq),
+            subqueries=subqueries,
+            web=web_plan,
         )
 
     # The deterministic catalog section (combined queries only), the answer
@@ -309,15 +640,24 @@ def _prepare(
         requirements_future = pool.submit(
             copy_context().run, extract_requirements, pq.search_query
         )
+        # Sub-query planning is the one thing that needs the requirements
+        # *before* retrieval rather than after it, so with the feature on the
+        # extraction joins the critical path instead of overlapping it. Off — the
+        # default — nothing waits here and the two still run concurrently exactly
+        # as they did. `Future.result()` caches, so the join below is free either
+        # way. The plan is built here rather than inside `retrieve` because it is
+        # derived from `app.generation.answer_plan`, which retrieval may not
+        # import (see tests/test_architecture.py).
+        subqueries = _subquery_plan(pq, requirements_future)
         if combined and not chained:
             db_future = pool.submit(
                 copy_context().run, _db_section, pq, question, history
             )
-            blocks = _run_retrieve()
+            blocks = _run_retrieve(subqueries)
             db_prefix = db_future.result()
         else:
             db_prefix = ""
-            blocks = _run_retrieve()
+            blocks = _run_retrieve(subqueries)
         requirements = requirements_future.result()
 
     if not blocks:
@@ -333,6 +673,20 @@ def _prepare(
             if listing is not None:
                 return listing, None
         return _empty(pq.intent, REFUSAL, answer_format=pq.answer_format), None
+
+    # A request for the document itself, and the document is already resolved.
+    # Terminal here rather than in the structured branch above, because that is
+    # where the identity becomes answerable: retrieval has just supplied the
+    # catalogued title and the blocks the source cards are built from, so the
+    # answer and its citations describe the same document by construction and no
+    # second lookup is needed. Placed after the empty-retrieval paths, so an
+    # edition that resolved but matched no chunks keeps its existing behaviour.
+    if pq.edition is not None and is_document_request(question):
+        with span("rag.document_lookup") as s:
+            result = _document_result(pq, blocks)
+            s.set("edition", pq.edition.edition)
+            s.set("kind", pq.edition.kind)
+        return result, None
 
     with span("rag.answer_plan") as s:
         plan = build_plan(requirements, blocks)
@@ -395,6 +749,11 @@ def _assemble(answer: str, gen: _Generation) -> dict[str, Any]:
 def _persist(gen: _Generation, result: dict[str, Any]) -> None:
     from app.cache import semantic_cache
 
+    if _web_backed(gen.blocks):
+        # Web evidence is read for one answer and kept nowhere else — not in the
+        # corpus, and not here, where it would be served as current for a day.
+        retrieval_log.note(semantic_cache_store="skipped: web evidence")
+        return
     with span("rag.semantic_cache_store"):
         semantic_cache.store(
             gen.query_vector, result, top_k=gen.top_k,
@@ -444,7 +803,7 @@ def _stream_result(result: dict[str, Any]) -> Iterator[dict[str, Any]]:
     """Emit a ready-made result dict (cache hit, chit-chat, structured lookup, or
     refusal) as the standard token / sources / done SSE event sequence."""
     yield {"type": "token", "text": result.get("answer", "")}
-    yield {
+    sources = {
         "type": "sources",
         "citations": result.get("citations", []),
         "intent": result.get("intent", "qa"),
@@ -453,6 +812,14 @@ def _stream_result(result: dict[str, Any]) -> Iterator[dict[str, Any]]:
         "conflict": result.get("conflict", False),
         "numeric_mismatch": result.get("numeric_mismatch", False),
     }
+    # Additive and absent on every other path, so a client that has never heard
+    # of clarification sees the event it has always seen. The question and its
+    # options are already in the answer text above; this is the same thing
+    # structured, for a client that wants to render the options as buttons.
+    clarification = result.get("clarification")
+    if clarification:
+        sources["clarification"] = clarification
+    yield sources
     yield {"type": "done"}
 
 
@@ -628,6 +995,7 @@ def _search_blocks(
         pq.search_query,
         filters=pq.filters, n=top_k, answer_format=pq.answer_format,
         source_type=pq.source_type, capabilities=_capabilities(pq),
+        temporal=_temporal_intent(pq), web=_web_plan(pq, history),
     )
     retrieval_log.note_context(blocks)
     retrieval_log.note_outcome(
@@ -648,6 +1016,8 @@ def _search_blocks(
                 "n": b.n,
                 "score": round(b.score, 4),
                 "conflict": b.conflict,
+                "superseded": b.superseded,
+                "supersedes": b.supersedes,
                 "text": b.text,
                 "document_id": b.payload.get("document_id"),
                 "source_type": b.payload.get("source_type"),

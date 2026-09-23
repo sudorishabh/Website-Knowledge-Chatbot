@@ -1,0 +1,62 @@
+{
+  "collection": "e2e_audit_documents",
+  "exists": true,
+  "count": 1,
+  "points": [
+    {
+      "id": "973d3f6d-9e76-504d-ae2a-004bc3ec2b2b",
+      "payload": {
+        "chunk_id": "973d3f6d-9e76-504d-ae2a-004bc3ec2b2b",
+        "document_id": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "feature_articles",
+        "title": "Nepal: A wake-up call",
+        "chunk_text": "The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).\n\nThe Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).",
+        "content_hash": "6977bef29066fda0334e795f50aaf708c1b20bca7618b96f0b82423080d8ba65",
+        "token_count": 108,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Climate change",
+          "Climate resilience",
+          "Global warming",
+          "Net zero emission"
+        ],
+        "categories": [
+          "Electricity and Renewables",
+          "Climate Change"
+        ],
+        "authors": [
+          "Mr Ajay Shankar"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/opinion/nepal-wake-call",
+        "effective_start_date": "2026-09-07T08:58:40+00:00",
+        "article_uuid": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+        "embed_hash": "6812e6a02082e8377e864ee3f79627e3f8ff08b92c822bd8cc9b85fd489224f7",
+        "chunk_index": 0,
+        "nid": 13374,
+        "changed": "2026-09-08T09:04:12+00:00",
+        "created_at": "2026-09-10T10:30:28.019648+00:00",
+        "updated_at": "2026-09-10T10:30:28.019648+00:00",
+        "embed_model": "text-embedding-3-large:3072"
+      },
+      "vector": {
+        "dim": 3072,
+        "l2_norm": 1.0,
+        "is_zero": false,
+        "sha256_of_rounded": "cc1086f3830c547844763d8b338a160e34bd266d0808a39c33e620ff00c36d26",
+        "head": [
+          -0.018351,
+          -0.009816,
+          -0.010411,
+          -0.012653,
+          -0.00298,
+          0.014309
+        ]
+      }
+    }
+  ]
+}

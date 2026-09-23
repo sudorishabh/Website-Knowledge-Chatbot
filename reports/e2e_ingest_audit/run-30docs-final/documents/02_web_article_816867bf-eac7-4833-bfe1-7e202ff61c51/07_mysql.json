@@ -1,0 +1,345 @@
+{
+  "e2e_audit_documents": [
+    {
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "source_type": "website",
+      "source_key": "https://teriin.org/article/forest-pathshaala-adivasi-children-and-ecologies-knowledge",
+      "bundle": "article",
+      "entity_type": "node",
+      "fingerprint": "2026-09-02T04:16:58+00:00",
+      "content_hash": "6256ef4f650604ce8e3bbcad6a76870ae7e7c380e13b7ea77fc7c142ae842de4",
+      "doc_version": 1,
+      "pipeline_version": "c1.i1.p2.e1",
+      "changed_mark": 1788322618,
+      "effective_start_date": "2025-11-12T08:16:05",
+      "title": "Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge",
+      "url": "https://teriin.org/article/forest-pathshaala-adivasi-children-and-ecologies-knowledge",
+      "indexed_at": "2026-09-10T10:25:40",
+      "updated_at": "2026-09-10T10:25:40",
+      "date_source": "created",
+      "start_precision": "day",
+      "effective_end_date": null,
+      "end_precision": null,
+      "raw_meta": "{\"field_tags\": [\"Environment education\", \"Rural India\"], \"field_theme\": [\"Environment\"], \"field_article_type\": \"article\", \"field_external_authors\": [\"Aryaman Tewari\"], \"field_article_stakeholder\": [\"Academicians\", \"Civil society/Grassroots\", \"College student/Graduates\", \"Policy Makers\"]}"
+    }
+  ],
+  "e2e_audit_documents_author": [
+    {
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "author": "Aryaman Tewari",
+      "author_norm": "aryaman tewari"
+    }
+  ],
+  "e2e_audit_documents_tag": [
+    {
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "tag": "Environment education"
+    },
+    {
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "tag": "Rural India"
+    }
+  ],
+  "e2e_audit_documents_theme": [
+    {
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "theme": "Environment",
+      "theme_type": "primary",
+      "parent": null,
+      "theme_group": "main",
+      "theme_path": "Environment",
+      "depth": 1
+    }
+  ],
+  "e2e_audit_documents_retry": [],
+  "e2e_audit_documents_dead_link": [],
+  "e2e_audit_documents_date_decision": [],
+  "e2e_audit_documents_entity_mention": [
+    {
+      "id": 1,
+      "chunk_id": "482fe3a5-bd3c-572f-8775-bc04f4787f71",
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "doc_version": 1,
+      "start_offset": 281,
+      "end_offset": 298,
+      "surface_text": "Oxford University",
+      "normalized_text": "oxford university",
+      "entity_type": "ORGANIZATION",
+      "extraction_method": "pattern",
+      "extractor_version": "entity-extract-v1.1",
+      "confidence": 0.6,
+      "created_at": "2026-09-10T10:25:40"
+    },
+    {
+      "id": 2,
+      "chunk_id": "482fe3a5-bd3c-572f-8775-bc04f4787f71",
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "doc_version": 1,
+      "start_offset": 630,
+      "end_offset": 646,
+      "surface_text": "Indian Institute",
+      "normalized_text": "indian institute",
+      "entity_type": "ORGANIZATION",
+      "extraction_method": "pattern",
+      "extractor_version": "entity-extract-v1.1",
+      "confidence": 0.6,
+      "created_at": "2026-09-10T10:25:40"
+    },
+    {
+      "id": 3,
+      "chunk_id": "177173a0-ca5c-5a46-bfb1-82d646b5b355",
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "doc_version": 1,
+      "start_offset": 754,
+      "end_offset": 805,
+      "surface_text": "Juang Tribe- A Particularly Vulnerable Tribal Group",
+      "normalized_text": "juang tribe a particularly vulnerable tribal group",
+      "entity_type": "ORGANIZATION",
+      "extraction_method": "pattern",
+      "extractor_version": "entity-extract-v1.1",
+      "confidence": 0.6,
+      "created_at": "2026-09-10T10:25:40"
+    }
+  ],
+  "e2e_audit_documents_assertion": [],
+  "e2e_audit_documents_assertion_rejection": [
+    {
+      "id": 1,
+      "code": "subject_not_claim_eligible",
+      "detail": "person_66ce22e2514e",
+      "subject_entity_id": "person_66ce22e2514e",
+      "predicate": "AUTHORED",
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "chunk_id": null,
+      "extraction_method": "cms_field",
+      "created_at": "2026-09-10T10:25:40"
+    }
+  ],
+  "e2e_audit_documents_predicate_candidate": [],
+  "e2e_audit_documents_knowledge_run": [
+    {
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "doc_version": 1,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "status": "ok",
+      "attempts": 0,
+      "seconds": 0.0745818,
+      "chunks_seen": 12,
+      "chunks_cached": 0,
+      "mentions": 3,
+      "entities_auto": 0,
+      "entities_provisional": 0,
+      "entities_ambiguous": 0,
+      "entities_unresolved": 3,
+      "claims_built": 1,
+      "claims_staged": 0,
+      "claims_rejected": 1,
+      "claims_retracted": 0,
+      "pending_predicates": 0,
+      "conflicts_disputed": 0,
+      "conflicts_superseded": 0,
+      "projection_status": "skipped",
+      "projection_version": null,
+      "projection_edges": 0,
+      "rejection_counts": "{\"subject_not_claim_eligible\": 1}",
+      "errors": "[]",
+      "last_error": null,
+      "knowledge_version": "kv1:9f993bff646d51c0",
+      "created_at": "2026-09-10T10:25:40",
+      "updated_at": "2026-09-10T10:25:40"
+    }
+  ],
+  "e2e_audit_documents_attachment": [],
+  "e2e_audit_documents_attachment (as file)": [],
+  "e2e_audit_documents_entity_resolution_decision": [
+    {
+      "id": 3,
+      "chunk_id": "177173a0-ca5c-5a46-bfb1-82d646b5b355",
+      "start_offset": 754,
+      "end_offset": 805,
+      "surface_text": "Juang Tribe- A Particularly Vulnerable Tribal Group",
+      "normalized_text": "juang tribe a particularly vulnerable tribal group",
+      "entity_type": "ORGANIZATION",
+      "decision": "UNRESOLVED",
+      "entity_id": null,
+      "claim_eligible": 1,
+      "tier": "none",
+      "score": null,
+      "margin": null,
+      "reason": "no candidate entity",
+      "candidates": "[]",
+      "resolver_version": "entity-resolve-v1",
+      "created_at": "2026-09-10T10:25:40"
+    },
+    {
+      "id": 1,
+      "chunk_id": "482fe3a5-bd3c-572f-8775-bc04f4787f71",
+      "start_offset": 281,
+      "end_offset": 298,
+      "surface_text": "Oxford University",
+      "normalized_text": "oxford university",
+      "entity_type": "ORGANIZATION",
+      "decision": "UNRESOLVED",
+      "entity_id": null,
+      "claim_eligible": 1,
+      "tier": "none",
+      "score": null,
+      "margin": null,
+      "reason": "no candidate entity",
+      "candidates": "[]",
+      "resolver_version": "entity-resolve-v1",
+      "created_at": "2026-09-10T10:25:40"
+    },
+    {
+      "id": 2,
+      "chunk_id": "482fe3a5-bd3c-572f-8775-bc04f4787f71",
+      "start_offset": 630,
+      "end_offset": 646,
+      "surface_text": "Indian Institute",
+      "normalized_text": "indian institute",
+      "entity_type": "ORGANIZATION",
+      "decision": "UNRESOLVED",
+      "entity_id": null,
+      "claim_eligible": 1,
+      "tier": "none",
+      "score": null,
+      "margin": null,
+      "reason": "no candidate entity",
+      "candidates": "[]",
+      "resolver_version": "entity-resolve-v1",
+      "created_at": "2026-09-10T10:25:40"
+    }
+  ],
+  "e2e_audit_documents_entity_extraction": [
+    {
+      "content_hash": "3abc5e18cdfac9e8a7a13c49df8bc143aab9f380eb8583d2f253c1f5d349068c",
+      "extraction_key": "b32f248d3e2ace75c6b1ccd4d8e0bf15a5f05793a2f91f4966d369fe4186704f",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "49f295833b982870cf2fd871804b0bac2268563014a51a1a8362900d1fe8ae39",
+      "extraction_key": "2f3affcd9da6d68f3424df4f6516f51c47202c7cb1b24e44107f92bcaee7641e",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 1,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "58b03989002693c94b50f1c67711cd878078e126d9954aeb03c8b9f385a7b7d5",
+      "extraction_key": "de8a5bd1067bd7a0626c08fd423c7472c4cd41a5fc7a2b4c490ceec714049179",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "6585fb21ec71f3b97df0577c1ad8cc54874f4031d8697588257fd5727274261c",
+      "extraction_key": "abdd4060045189bc6901bac75969eceadc313554a6eb26d08e326935060ee896",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "68c131e92ff41f32de233be850fe1acaa33eaebf7d149b70eabc4f05f6a64cf9",
+      "extraction_key": "34c42f6fd654924fb228d6f0452a694bdaceadc676131b2a272c70f83951bcb9",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "7a351908b8389694726943da910e75dee9098d4bea9d3b2b568fb4c4154aabc1",
+      "extraction_key": "860df9af202596ff98906a4ac0c48debeb08438474c2e95df494cbed5234df01",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "826f30a3ff8accd9a8aa4d5affb23cebbdbae847358854e8792b67ebb08c584d",
+      "extraction_key": "62843f5d873c63f3b616db8af5a120d600eff19416f54eec086dc031aa858860",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "c23ce9d2ed51956ccdda4a3c3f04673056181964928b97c2be6175cdc212a81d",
+      "extraction_key": "87ecb3a96e3adf4641399e650b86cc590e4ccffc39a4ebe581342a3988689692",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "ca58d49e26d6def9d240c6c29684474ac86973d74bb87ac7eb5b626abf462a22",
+      "extraction_key": "1efede12bd11be3038d9350610909181be63aba2095d1dd1c1498d9fa09a9b54",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "ddb534d7442842b15daee34564835f238e890b7040baf371c1a1a061d47720f1",
+      "extraction_key": "425f5ae9af93757bd62782fb20929f549955bcb0d0d85a86e025d657ee32f979",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 2,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "edcb77c96f27976186d4db46dfd0990a7a78786a1ef8bf16f73d7afa92584387",
+      "extraction_key": "ee3e64f60449c28852afb3d2ed33a626c0086fbaac7332b8acc441aa3985446a",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    },
+    {
+      "content_hash": "edfd0d14ff3627888397e5d127b6b7a68aaa1ba31051c21bd475a52b8514f583",
+      "extraction_key": "c73e8f4bd5dfc599b9b84d8620cfa47488d7d5c3bfd05808c319847d8c6740be",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:40"
+    }
+  ],
+  "e2e_audit_documents_assertion_link": [],
+  "e2e_audit_ingest_log": [
+    {
+      "id": 2,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "source_type": "website",
+      "source_path": null,
+      "source_url": "https://teriin.org/article/forest-pathshaala-adivasi-children-and-ecologies-knowledge",
+      "bundle": "article",
+      "tags": "Environment education, Rural India",
+      "title": "Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge",
+      "status": "indexed",
+      "doc_version": 1,
+      "chunks_indexed": 16,
+      "fingerprint": "2026-09-02T04:16:58+00:00",
+      "content_hash": "6256ef4f650604ce8e3bbcad6a76870ae7e7c380e13b7ea77fc7c142ae842de4",
+      "error_message": null,
+      "event_time": "2026-09-10T10:25:40"
+    }
+  ],
+  "e2e_audit_documents_entity (referenced)": []
+}

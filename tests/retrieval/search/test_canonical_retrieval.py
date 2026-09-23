@@ -199,3 +199,88 @@ def test_a_common_word_cannot_name_a_page_on_its_own():
 def test_every_term_is_rare_in_a_small_catalogue(titles):
     """Same floor as the 10% rule: 8 titles carry no frequency signal at all."""
     assert title_leg._rare_terms(["mission", "excellence"], _ROWS) == ["mission", "excellence"]
+
+
+# --------------------------------------------------------------------------- #
+# 3b. A word that names a kind of document is not a page name.
+# --------------------------------------------------------------------------- #
+_KIND_ROWS = [
+    ("index", "Articles & Publications", "page"),
+    ("annual", "Annual Reports", "page"),
+    ("past", "Past Events", "basic"),
+    ("wq", "Water Quality Report 2012-13", "completed_projects"),
+    ("art6", "Discussion Paper on Article 6", "policy_brief"),
+] + [(f"n{i}", f"Assorted item {i}", "news") for i in range(4000)]
+
+
+@pytest.fixture
+def kind_titles(monkeypatch):
+    monkeypatch.setattr(title_leg, "_titles_cache", None)
+    monkeypatch.setattr(title_leg, "_titles_loaded_at", 0.0)
+    import app.catalog.state as state
+
+    monkeypatch.setattr(state, "website_titles", lambda: _KIND_ROWS)
+    return _KIND_ROWS
+
+
+def test_a_kind_word_cannot_name_a_page_on_its_own(kind_titles):
+    """The 2026-09-18 regression, pinned. "articles" is in one title of 8,631
+    — the "Articles & Publications" index — so by frequency it identified that
+    page exactly, and "list the articles where IPCC is mentioned" retrieved
+    link labels in place of anything about IPCC. The word says what kind of
+    thing is wanted, not which page."""
+    assert title_leg._rare_terms(["articles", "ipcc"], kind_titles) == ["ipcc"]
+    assert title_leg.title_candidates("list the articles where IPCC is mentioned") == []
+
+
+@pytest.mark.parametrize("question", [
+    "reports where IPCC is mentioned",
+    "upcoming events on green hydrogen",
+    "papers discussing green finance",   # "paper" hits alone; a kind word
+    "projects mentioning solar rooftops",
+])
+def test_the_rule_holds_for_every_kind_word(kind_titles, question):
+    assert title_leg.title_candidates(question) == []
+
+
+def test_two_kind_words_still_name_their_page(kind_titles):
+    """Agreement between two words is evidence a single word cannot supply:
+    "articles and publications" is the index page's own name, "annual reports"
+    resolves exactly as before, and a paper *on Article 6* is a fair match for
+    "papers discussing Article 6" even though both hits are kind words."""
+    assert title_leg.title_candidates("articles and publications")[0] == "index"
+    assert title_leg.title_candidates("TERI annual reports")[0] == "annual"
+    assert title_leg.title_candidates("papers discussing Article 6") == ["art6"]
+
+
+@pytest.mark.parametrize("word", [
+    "articles", "article", "reports", "report", "news", "events", "event",
+    "papers", "paper", "projects", "project", "briefs", "brief",
+    "publications", "documents", "releases",
+])
+def test_kind_words_come_from_the_registry(word):
+    assert title_leg._names_a_kind(word)
+
+
+@pytest.mark.parametrize("word", [
+    "contact", "mission", "excellence", "ipcc", "hydrogen", "annual", "centres",
+])
+def test_a_page_word_is_not_a_kind(word):
+    assert not title_leg._names_a_kind(word)
+
+
+def test_every_described_type_is_covered():
+    """Drift guard: a type added to the glossary is a kind word here without
+    this module being told, and the two layers cannot disagree."""
+    from app.retrieval.structured.entities import entity_label
+    from app.retrieval.understanding.catalog_prompt import BUNDLE_MEANINGS
+
+    kinds = title_leg._kind_words()
+    for bundle, _ in BUNDLE_MEANINGS:
+        for word in entity_label(bundle, 2).split():
+            assert word in kinds, (bundle, word)
+
+
+def test_the_vocabulary_failing_open_restores_frequency_alone(monkeypatch):
+    monkeypatch.setattr(title_leg, "_kind_words", lambda: frozenset())
+    assert title_leg._rare_terms(["articles"], []) == ["articles"]

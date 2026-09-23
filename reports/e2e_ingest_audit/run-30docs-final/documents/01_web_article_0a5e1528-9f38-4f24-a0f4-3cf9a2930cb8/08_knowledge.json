@@ -1,0 +1,209 @@
+{
+  "stage_report": {
+    "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+    "doc_version": 1,
+    "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+    "status": "ok",
+    "seconds": 0.2,
+    "knowledge_version": "kv1:9f993bff646d51c0",
+    "counts": {
+      "chunks_seen": 4,
+      "chunks_cached": 0,
+      "mentions": 0,
+      "entities_auto": 0,
+      "entities_provisional": 0,
+      "entities_ambiguous": 0,
+      "entities_unresolved": 0,
+      "claims_built": 0,
+      "claims_staged": 0,
+      "claims_rejected": 0,
+      "claims_retracted": 0,
+      "pending_predicates": 0,
+      "conflicts_disputed": 0,
+      "conflicts_superseded": 0
+    },
+    "rejection_counts": {},
+    "projection": {
+      "status": "skipped",
+      "version": null,
+      "edges": 0
+    },
+    "stages": [
+      {
+        "stage": "prelude",
+        "skipped": false,
+        "seconds": 0.16,
+        "counts": {
+          "entities": 2451,
+          "chunks": 4
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "supersede",
+        "skipped": true,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "mentions",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {
+          "cached": 0,
+          "mentions": 0
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "resolution",
+        "skipped": false,
+        "seconds": 0.02,
+        "counts": {
+          "auto": 0,
+          "provisional": 0,
+          "ambiguous": 0,
+          "unresolved": 0,
+          "cache_recorded": 4
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "claims",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {
+          "cms_authored": 0,
+          "llm_calls": 0,
+          "llm_failures": 0,
+          "run_calls_used": 0,
+          "run_calls_remaining": 150000,
+          "llm": 0,
+          "unknown_predicates": 0,
+          "built": 0
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "validate",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "persist",
+        "skipped": false,
+        "seconds": 0.0,
+        "counts": {
+          "accepted": 0,
+          "pending_predicates": 0
+        },
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "conflicts",
+        "skipped": true,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      },
+      {
+        "stage": "project",
+        "skipped": true,
+        "seconds": 0.0,
+        "counts": {},
+        "notes": [],
+        "errors": []
+      }
+    ],
+    "errors": []
+  },
+  "knowledge_run_rows": [
+    {
+      "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+      "doc_version": 1,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "status": "ok",
+      "attempts": 0,
+      "seconds": 0.199976,
+      "chunks_seen": 4,
+      "chunks_cached": 0,
+      "mentions": 0,
+      "entities_auto": 0,
+      "entities_provisional": 0,
+      "entities_ambiguous": 0,
+      "entities_unresolved": 0,
+      "claims_built": 0,
+      "claims_staged": 0,
+      "claims_rejected": 0,
+      "claims_retracted": 0,
+      "pending_predicates": 0,
+      "conflicts_disputed": 0,
+      "conflicts_superseded": 0,
+      "projection_status": "skipped",
+      "projection_version": null,
+      "projection_edges": 0,
+      "rejection_counts": "{}",
+      "errors": "[]",
+      "last_error": null,
+      "knowledge_version": "kv1:9f993bff646d51c0",
+      "created_at": "2026-09-10T10:25:39",
+      "updated_at": "2026-09-10T10:25:39"
+    }
+  ],
+  "mentions": [],
+  "resolution_decisions": [],
+  "extraction_cache": [
+    {
+      "content_hash": "26e1bc887d29aa61b48e133ec32bfb0253e8e4e4d2af837342e4ad4696b6f4d7",
+      "extraction_key": "3de68f7dbbe080fa2ed38b452a84172f977714676fa00044550f0ec1718b203b",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:39"
+    },
+    {
+      "content_hash": "c162198253e68fbe0eb1f826595f3640d717437e6399f4abc612221e7cb2d17b",
+      "extraction_key": "59923f22babcc7c6204c031a9729c8249af4d30e56231608725731d41578e38b",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:39"
+    },
+    {
+      "content_hash": "e2ca529ca08cd7bdbfd28b54dc4cae8ae2620f652a3be5d791054afcb75ac43d",
+      "extraction_key": "5eadbe3b64246ee8d213d8eb1a1f257052a0fc72c9e04a1c07201944b8dde287",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:39"
+    },
+    {
+      "content_hash": "f3c5152ad99e7f5e22c8e097c1b1c6b4c49df547409409fb54eafe767d83f626",
+      "extraction_key": "233feb5f26faf300c0aa373cae6ad314b9f78486498a49cba7a902e70f7ee908",
+      "extractor_version": "entity-extract-v1.1",
+      "mention_count": 0,
+      "attempts": 1,
+      "last_error": null,
+      "updated_at": "2026-09-10T10:25:39"
+    }
+  ],
+  "assertions": [],
+  "assertion_rejections": [],
+  "assertion_links": [],
+  "predicate_candidates": [],
+  "entities_referenced": []
+}

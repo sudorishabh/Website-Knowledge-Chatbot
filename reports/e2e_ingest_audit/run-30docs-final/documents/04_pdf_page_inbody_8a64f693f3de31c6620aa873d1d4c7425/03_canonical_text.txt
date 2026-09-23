@@ -1,0 +1,838 @@
+TERI ALUMNI ASSOCIATION
+INAUGURAL ISSUE, SEP TEMBER 2026
+TERIIN.ORG/ALUMNI
+C O N T E N T S
+Editorial
+1
+Energy Policy Imperatives
+Rakesh Kacker
+2
+R&D in Cleantech: Does it Align
+with India’s Net-Zero Ambitions?
+Amit Kumar
+3
+What the World’s Grey Economies
+Can Teach a Young India
+Arvindd Narayanan 
+5
+Adopting Circularity: Meeting
+India’s Solar Energy Feedstock
+Challenge
+Jaideep N. Malaviya 
+6
+Selective Solar Experiences:
+1990–2026
+Dr Suneel Deambi 
+8
+Mutability of Climate
+Sustainability
+Prof. Anandajit Goswami
+9
+A Legacy of Excellence: 8th TERI
+& Alumni Reunion
+TAA News · December 2025
+10
+The Concerned Citizen Series:
+Three New Titles
+Concerned Citizen Series · India
+Habitat Centre launch
+12
+The Concerned Citizen Series:
+Your City, Your Impact
+Concerned Citizen Series · Darbari
+Seth Lecture launch
+13
+Contributors & Call for
+Contributions
+14
+About TERI Alumni & About
+TERI
+15
+E D I T O R S
+Yateendra Joshi
+Ambika Shankar
+Rakesh Kacker
+Published quarterly by the TERI
+Alumni Association, established
+2007. Views expressed are those of
+the contributors.
+Editorial
+As I write this for the inaugural issue of the TERI Alumni Quarterly, I find myself
+reflecting on the remarkable journey of a community that has steadily grown
+since the TERI Alumni Association was established in 2007. Today, our alumni
+are spread across 28 countries, contributing to governments, academia,
+industry, research institutions, and civil society. While your paths may have
+diverged, you remain connected by a shared belief that knowledge must extend
+beyond ideas to create meaningful change in the world.
+What has always distinguished TERI alumni is not simply the time spent at
+the Institute, but a way of thinking — grounded in scientific rigour, guided by
+relevance, and driven by a commitment to addressing real-world challenges.
+These qualities are needed now more than ever, as India navigates a defining
+period in its climate, energy, and sustainability journey. It is heartening to see so
+many of you helping shape the policies, innovations, and institutions that will
+influence our collective future.
+I hope this publication becomes a space where ideas are exchanged,
+achievements celebrated, collaborations forged, and friendships renewed. I
+warmly invite you to make it your own by sharing your work, your experiences,
+and your stories. I look forward to staying connected with each of you through
+these pages.
+With warmth,
+Dr Vibha Dhawan
+Director General
+The Energy and Resources Institute
+
+Energy Policy Imperatives
+Rakesh Kacker
+Senior Consultant, Habitat Emprise
+India crossed 300 GW of non-fossil generating capacity in July. Fossil fuels, mainly coal, still account for over 60% of demand.
+International concerns over climate change have
+dominated discussions on India’s energy policy in recent
+years. This has led to a relative neglect of two important
+domestic concerns: first, the imperative of meeting India’s
+energy needs to fuel a rapidly growing economy and rising
+living standards; and second, the long-standing issue of
+domestic environmental impacts arising from greater
+energy use, which in the short term is largely based on
+fossil fuels that are far from clean.
+India has, to its credit, been a responsible member of the
+international community. The Nationally Determined
+Contribution revised in 2022 raised the target share of non-
+fossil fuel sources in installed electricity generation
+capacity from 40 to 50%, with a target date of 2030, a
+milestone achieved a year ahead of schedule. The revised
+target now stands at 60% by 2035. The energy intensity
+commitment was similarly revised upward, from a 35%
+reduction over 2005 levels to 45%, now further revised to
+47% by 2035.
+India has thus remained well on course to fulfil the
+commitments made through its NDC to the UNFCCC. But
+alongside this, the country must also have enough energy
+to meet domestic requirements and fuel growth.
+Notwithstanding the impressive expansion in renewable
+energy, coal-based capacity has continued to grow in
+absolute terms. Peak coal production is not expected before
+2040, and the share of coal in the electricity mix, while
+declining proportionally, remains dominant in volume.
+Three things at once
+For electricity policy, this points to three things that need
+to happen at once. The speed of renewable energy
+integration in the grid must be accelerated. Existing coal
+resources must be used as effectively as possible. And
+domestic environmental concerns — pollution in air, water,
+and soil from coal-based generation — must receive far
+greater attention than they have in recent years.
+India crossed the important milestone of 300 GW of non-
+fossil fuel-based power generation capacity in July. Yet
+fossil fuels, mainly coal, still account for over 60% of
+demand. With demand growing rapidly, coal will remain
+indispensable unless renewable capacity grows faster than
+demand. This makes the case for complementing new
+renewable capacity with adequate storage ever more
+compelling. Recent tenders combining renewable energy
+with storage reflect this recognition. The pace of
+installation has, however, also been constrained by the
+need for increased localisation, which caused a marked dip
+in rooftop solar installations this year.
+Cleaning up coal is part of the same transition
+For the next several years, the country will have no option
+but to continue depending on coal as the dominant fuel
+supply source. Cleaning up coal usage and minimising its
+adverse impacts, both in mining and utilisation, is
+therefore not a secondary concern — it is part of the same
+transition. The Economic Survey for 2023–24 stated this
+plainly: while phasing in renewables to the extent possible
+is imperative, in the short to medium term the focus should
+also be on actively adopting clean coal technologies.
+A related concern is the location of new coal-based
+plants. The recent trend of siting these at load centres
+means coal must be transported over long distances at
+considerable cost, with implications for railway
+infrastructure and ultimately for consumer tariffs. As
+renewable penetration grows and these plants operate at
+lower utilisation, fixed costs will be distributed over a
+diminishing generation base, pushing tariffs higher still.
+Approvals for such projects should be reconsidered, using
+the full range of powers available to the Government
+of India.
+Energy transition is a large and complex task. These
+observations are focused on the electricity sector and touch
+on only a few of the many dimensions involved.
+Considerable progress has already been made, and that
+should give us confidence to address what lies ahead.
+
+R&D in Cleantech: Does it Align
+with India’s Net-Zero Ambitions?
+Amit Kumar
+Former Senior Director, Social Transformation & Knowledge Management, TERI
+Outside electric vehicles and green hydrogen, most private research still runs in conventional, non-cleantech areas.
+Photograph: Sergej on Unsplash.
+The latest Research and Development Statistics at a Glance
+2025–26 report by the Department of Science and
+Technology justifiably highlights the growth in India’s
+Gross Expenditure on Research and Development (GERD)
+over the past decade. That India’s GERD as a percentage of
+GDP reached 0.84% in 2023–24, up from 0.64% in 2020–21, is
+a milestone worth acknowledging. The Global Innovation
+Index 2025 places India 38th, noting that it leads Central
+and Southern Asia and remains the top-performing lower-
+middle-income economy. While the progress is real, a
+closer look at international peers tempers this satisfaction.
+Among BRICS nations, China, Brazil, and Russia
+recorded GERD figures of 2.69, 1.19, and 0.94% of GDP
+respectively. In ASEAN, Malaysia spent 1.43%. The
+global average stands at approximately 1.8%. A
+further feature of India’s R&D landscape is the
+continuing dominance of the government sector,
+Central and State governments and public sector
+enterprises combined, which accounts for 48.2% of
+R&D expenditure. The private sector contributes
+45.2%, 
+in 
+contrast 
+to 
+developed 
+economies
+where 
+private 
+sector 
+investment 
+in 
+R&D 
+is
+substantially higher.
+Research intensity and researcher density
+Source: Figures as cited in the article, from R&D Statistics at a Glance 2025–26 and the Global
+Innovation Index 2025.
+
+R & D  I N  C LE A N T E C H    ·    A M I T KUM AR    ·    C ON T I NUE D
+Cleantech’s share of the research rupee
+Looking at this sectoral expenditure through the lens of
+clean technology, the picture is not encouraging. Among
+the 12 major Central Government scientific agencies, DRDO
+accounts for the largest share of R&D expenditure at 32.7%,
+followed by the Department of Space at 15.0%, the
+Department of Atomic Energy at 14.4%, ICAR at 13.1%,
+CSIR at 8.7%, DST at 5.0%, and MNRE at a mere 0.1%. On a
+conservative reading, only around 14% of the country’s
+research spend, through CSIR, DST, MNRE, and a
+portion of DBT, can be considered directed towards
+cleantech domains.
+The private sector picture is not much different. In
+industrial R&D, transportation commands the largest share
+at 32.6%, followed by drugs and pharmaceuticals at 21.4%,
+biotechnology at 8.6%, information technology at 7.9%,
+and electricals and electronics at 5.9%. Outside of electric
+vehicles and green hydrogen-based mobility research, the
+bulk of private sector activity continues in conventional,
+non-cleantech areas. Aggregate statistics, in this way,
+obscure the ground realities of India’s domestic energy
+transition and decarbonisation landscape.
+Innovation is today frequently conflated with the startup
+ecosystem. India is rightly proud of its growing startup
+numbers and its unicorns. Yet a review of the Startup India
+database reveals that enterprises engaged purely in the
+cleantech space remain comparatively sparse. On the
+human capital side, India has 354 full-time equivalent
+researchers per million population, against 2,415 in China,
+2,680 in Russia, 895 in Brazil, and 7,287 in Singapore, well
+below the global average of 1,486. Women researchers
+represent 29% of the total in India, compared to over 40%
+in Brazil, Russia, and South Africa.
+What has to change
+The limited focus on deep technological research in
+institutions of higher learning and in core industry
+deserves serious reflection. To operationalise India’s net-
+zero ambitions effectively, this trend must be turned
+around. While the National Education Policy encourages
+research-oriented advanced courses and projects, the
+ecosystem must move beyond publication-heavy academic
+outputs toward engineering R&D geared to direct
+technology development. That requires not only closer
+academia-industry collaboration but faculty equipped with
+genuine sectoral understanding.
+The National Manufacturing Mission, with its ecosystem
+approach, can put the country in a strong position in the
+cleantech space. India’s leadership in solar energy is
+undeniably impressive and hard-earned. But the next step
+is to become a cleantech hub serving the global
+community. True manufacturing leadership rests on a
+strong indigenous R&D base, and the vision of genuine
+atmanirbharta cannot be realised without substantial
+investment in R&D.
+India must urgently develop an R&D and Innovation
+Roadmap that aligns with the goals set out in its Long-Term
+Low-Carbon and Emission Development Strategy. That
+roadmap must carry well-defined milestones across short,
+medium, and long-term horizons. Research and innovation
+are precisely the areas that require an aggressive policy
+push, backed by adequate resources and greater research
+autonomy. Concurrently, the private sector must step up to
+the considerable commercial opportunities the energy
+transition presents. In a geopolitical environment marked
+by unilateralism, achieving comprehensive self-reliance is
+a vital necessity for realising the vision of a Viksit Bharat.
+
+What the World’s Grey Economies
+Can Teach a Young India
+Arvindd Narayanan
+Former Research Associate, TERI  ·  Founder-Secretary, Pratyusha Foundation
+This piece is written in response to NITI Aayog’s report Reimagining Care: Strategies for
+Empowering Caregivers in Viksit Bharat@2047, published in July 2026.
+India likes to think of itself as demographically young, and
+it still is. But the NITI Aayog report is a useful reminder
+that the countries currently wrestling with ageing
+populations were once exactly where India is now, young,
+confident, and unprepared. Japan, Germany, South Korea,
+and the Nordic nations did not start out with sophisticated
+care systems either. They built them, often under pressure,
+and sometimes only after the pressure had become a crisis.
+India has something those countries did not when they
+began: the benefit of hindsight.
+Who pays for care, and how?
+The report’s global chapter is essentially a tour of the
+different ways a country can answer one central question:
+who pays for care, and how? Germany, Japan, and South
+Korea have gone the route of mandatory social insurance,
+where citizens contribute regularly so that care is available
+on the basis of need rather than income. It is a model that
+guarantees dignity regardless of wealth, but it depends on a
+large, formalised workforce paying in, something India,
+with its vast informal economy, would need to adapt rather
+than copy wholesale. The Nordic countries and the
+Netherlands fund care through general taxation,
+prioritising equity over individual contribution. The United
+States leans on private insurance, offering choice but
+leaving affordability as an open wound. Southern Europe
+(Italy, Spain, Portugal) relies on a residual model in which
+the state steps in only after family resources are exhausted.
+That model covers barely 10% of the elderly population,
+and it is the closest thing to a cautionary tale in the report:
+relying almost entirely on family care, without institutional
+backup, simply does not scale once demographics turn.
+That is the part worth sitting with. India’s caregiving
+system today looks a great deal like Italy’s or Portugal’s,
+deeply reliant on family, thin on institutional support. The
+difference is that Italy and Portugal are already living with
+the consequences of that gap, while India still has a runway
+to close it before the elderly population triples by 2050.
+No single imported model will fit
+Where India is quietly getting things right is in recognising
+that no single imported model will fit. Japan and South
+Korea offer perhaps the most instructive parallel, because
+both are civilisationally attached to family-based care,
+much like India, and yet neither treated that as a reason to
+do nothing. Japan introduced long-term care insurance
+while simultaneously reforming its visa system to bring in
+trained caregivers from abroad, protecting the family
+model while building a professional one alongside it. South
+Korea did something similar, blending home-based,
+community, and institutional care into one coherent
+framework rather than treating them as competing options.
+That is precisely the posture NITI Aayog’s own
+recommendations are reaching for: not replacing the
+Indian family, but professionalising the ecosystem
+around it.
+Germany offers a second lesson, focused on the informal
+caregiver. German policy does not simply train formal
+caregivers; it extends financial and legal support to
+informal ones, essentially paying and protecting family
+members who provide care at home. India’s report gestures
+at this through proposals like caregiving leave and social
+security extensions, but the point is worth stating plainly:
+this is the single most transferable lesson in the whole
+report. India’s caregiving backbone is unpaid women. A
+model that formally values that labour, even partially,
+would do more for equity than almost any other single
+policy lever available.
+China is moving in a different direction, leaning heavily
+into artificial intelligence and robotics to offset a caregiver
+shortfall for its 310-million-strong elderly population, and
+setting the first international standard for elder-care robots
+in the process. India should not pursue this as a
+replacement for human caregivers, and the report is right
+not to frame technology that way. But as a force multiplier,
+it is hard to ignore. A digital caregiver registry, tele-
+monitoring for rural elderly, AI-assisted training modules:
+these are lower-cost, faster-to-deploy versions of what
+China is doing at scale, and they fit India’s resource
+constraints better than a wholesale robotics push would.
+Care as public infrastructure
+If there is a single thread connecting Japan’s insurance
+reform, Germany’s support for family caregivers, South
+Korea’s integrated model, and China’s technology bet, it is
+this: every one of these countries stopped treating
+caregiving as a private family matter and started treating it
+as public infrastructure. That is the real shift that NITI
+Aayog’s proposed National Caregiver Council represents.
+This is not a copy of any one country’s system, but India
+finally deciding to build its own before the demographic
+wave arrives rather than after. The world’s older economies
+spent decades, and considerable pain, arriving at that
+recognition. India has the rarer opportunity of choosing it
+on its own terms, ahead of time.
+
+Adopting Circularity:
+Meeting India’s Solar
+Energy Feedstock Challenge
+Jaideep N. Malaviya
+Former Research Scientist, TERI  ·  Managing Director, Malaviya Solar Energy Consultancy, Pune
+End-of-life crystalline silicon modules awaiting recovery. Photograph: Malaviya Solar Energy Consultancy.
+India has committed to 500 GW of renewable energy
+capacity by 2030, with solar photovoltaics (PV) accounting
+for 300 GW of that target. The scale of this ambition is well
+understood. What is less discussed is the waste stream it
+will generate, and the resource opportunity embedded
+within it.
+When those panels reach end-of-life, they will produce
+in excess of 20 million tonnes of material. Nearly all of
+India’s PV market, 98%, relies on crystalline silicon (c-Si)
+modules, which are composed largely of glass (70% by
+weight), aluminium frame (17%), polymer-based
+encapsulant (5.1%), silicon metal (3.56%), copper (1.14%),
+and smaller quantities of silver, tin, and lead. Every one of
+these materials is either classified as critical or sourced
+through net imports. India currently has no domestic
+surplus of any of them.
+Potential material recovery at 98%, from India’s 2030 solar capacity
+MATERIAL
+SHARE OF MODULE
+RECOVERABLE VOLUME
+Glass
+70%
+16.8 Mt
+Aluminium frame
+17%
+4.5 Mt
+Silicon metal
+3.56%
+855,000 t
+Copper
+1.14%
+514,000 t
+Silver
+0.05%
+12,700 t
+Source: Figures as cited in the article.
+
+AD OP T I NG  C I RCUL AR I T Y   ·    JAI DE E P  N.  M A L AV I YA    ·    C ON T I NUE D
+The recovery opportunity
+This is where circularity becomes not an environmental
+imperative alone but an economic and strategic one. At 98%
+recovery, a technically achievable benchmark, end-of-life
+panels from India’s 2030 solar capacity could yield
+approximately 16.8 million tonnes of glass, 4.5 million
+tonnes of aluminium, 855,000 tonnes of silicon metal,
+514,000 tonnes of copper, and 12,700 tonnes of silver. Each
+of these, barring the polymer layers, can re-enter supply
+chains as primary feedstock, reducing import dependence
+and the carbon cost of virgin mining.
+Silver makes the economics particularly clear. At just
+0.05% of a module by weight, the value of reclaimed silver
+at projected recovery volumes is enough to underwrite the
+capital cost of setting up a recycling facility. If panels are
+replaced earlier than their typical 25-year lifespan, which
+several studies suggest is likely given rapidly improving
+cell efficiencies and the economics of repowering, material
+volumes could rise by a further 30%, strengthening the
+business case further.
+Policy is in place; infrastructure is not
+The regulatory framework is in place. India’s E-Waste Rules
+2022 mandate Extended Producer Responsibility
+certificates for PV manufacturers, establishing
+accountability across the value chain. What remains to be
+built is the infrastructure and the green chemistry
+approaches that make recovery economically self-
+sustaining at scale.
+With solar capacity projected to cross 1,000 GW by 2070
+as part of India’s net-zero commitments, circular economy
+operations in the PV sector will grow into a significant
+industry in their own right. India has both the policy
+architecture and the scale to build a global model for near-
+complete, sustainable PV circularity — demonstrating that
+what looks like a future waste problem is, in fact, a critical
+materials opportunity.
+
+Selective Solar
+Experiences: 1990–2026
+Dr Suneel Deambi
+Solar energy expert and consultant
+My first engagement with solar photovoltaics came as a
+research student working under a DAE-funded project on
+gallium arsenide (GaAs) solar cells. Highly efficient,
+radiation-resistant, and temperature-tolerant, GaAs cells
+have yet to gain significant ground in terrestrial
+applications. A subsequent stint at NPL gave me further
+laboratory grounding before I joined TERI in 1990, where
+outdoor work opened up in ways that a laboratory
+environment simply could not.
+The verified concern
+I recall with fondness Dr Akanksha Chaurey leading the
+Solar PV team and giving me the opportunity to present my
+views on various project activities. One that remains
+particularly fresh in my memory was an MNRE-funded
+project on the performance evaluation of solar PV power
+plants (2–10 kWp) in Uttar Pradesh. It involved a
+preliminary study of seventeen sites across both plain and
+hilly regions, followed by a detailed technical study of two
+sites. The interim report drew appreciation from the
+Ministry, but a leading solar module manufacturer of the
+time raised serious concerns about our reported efficiency
+values. TERI stood its ground and was asked to demonstrate
+its field testing procedure at a 20 kWp solar power plant at
+the Motilal Nehru School of Sports, in the presence of
+Ministry officials and the manufacturer’s team. It showed
+just how seriously independent third-party evaluation of
+field-installed systems was taken then. Such rigour is less
+common today, even as installation capacities have grown
+beyond all recognition.
+Exceptionally low power solar and its appeal
+I left TERI in 1995 to join the Science and Technology
+Ministry, before finding my way back to solar through a
+new venture, a pilot-scale manufacturing initiative for
+polycrystalline thin-film cadmium telluride (CdTe)
+modules. Every piece of imported equipment that arrived
+at the plant, set up within an EHTP area, was received with
+genuine excitement by an enthusiastic team. I recall a solar
+products exhibition the company organised in Chandigarh,
+displaying items such as mosquito repellants, window
+ventilators, car ventilators, and a cap with an FM radio. The
+response was striking: visitors came in large numbers, not
+merely to appreciate these exceptionally low-power
+consumer products but to express readiness for on-the-spot
+purchases. Products like these could also have replaced
+expensive dry-cell batteries in many homes. That they have
+yet to reach households in any significant numbers remains
+a quiet missed opportunity for the sector.
+The newer dimensions
+Much has changed for the better in the solar PV space since
+those early years. Several flagship schemes have driven vast
+numbers of installations across diverse segments of the
+energy economy. Storage, once considered a weak link for
+solar, is now central to the mainstream — megawatt-scale
+solar and wind plants with battery energy storage systems
+are increasingly viewed as a market necessity for supplying
+firm and dispatchable renewable power. Some regions now
+have surplus solar grid power, sitting idle for want of
+sufficient transmission infrastructure — something that
+would have been unthinkable a decade ago. Floating solar
+is making quiet waves, as is the study of new crop patterns
+beneath solar panels under agrivoltaic schemes.
+The unwavering demand for subsidy
+One thing that has not changed across these decades is the
+expectation of subsidised solar products. The claim of
+economically needy consumers is understandable. But the
+same expectation persists among those of sufficient means.
+An acquaintance who purchased an unsubsidised 8 kWp
+rooftop solar system for Rs 4,00,000 in 2021 told me the
+system has performed well and is close to recovering its
+entire investment, yet he continues to regret not having
+received any subsidy at the time. The question is worth
+asking: is continued subsidy truly necessary to achieve
+decarbonisation at pace, or has it become an expectation
+that long outlasted the economic rationale that originally
+justified it?
+Solar seeking visibility
+Solar systems make no noise. They sit quietly on rooftops of
+housing societies, largely invisible to the everyday eye.
+There is a case for using solar more imaginatively — in
+garden lighting, fountains, signage, and landscaping — on a
+scale that increases its public visibility and reinforces its
+presence in urban life. Design innovation is also gaining
+ground, from changes to the basic geometry of panels to
+closer integration of solar with rooftop vegetation to reduce
+temperature-related losses. Invisible solar panels for
+building-integrated photovoltaic (BIPV) applications are
+attracting interest. And near-complete silver recovery from
+recyclable panels is becoming a practical reality, with
+further innovative processes in development.
+As I look back, TERI is where it all began for me — and
+from there, it has been an unbroken journey in solar, right
+through to consulting work that continues to this day.
+
+Mutability of
+Climate Sustainability
+Prof. Anandajit Goswami
+Research Lead, Ashoka Centre for People-Centric Energy Transition, Ashoka University; Director, Manav Rachna
+Centre for Peace and Sustainability; Founder, TOHRI Foundation
+The reflections expressed here are entirely personal.
+The last twenty-four years of my journey in policy research,
+covering energy, climate change, sustainability science,
+and action, have been a constant experience of mutability.
+Within that space, I have always found myself exploring a
+world where no single truth or untruth holds for long.
+Every aspect of sustainability has felt like a quantum
+reality, with as many possibilities for truth and falsity as
+one cares to count. Each research question I began
+exploring led to a moment of apparent clarity, which, at the
+next turn, revealed itself to be provisional, perhaps even
+illusory. Truth became mutable, shifting into multiple
+parallel worlds through which I have moved as a wanderer,
+confronting a deep existential uncertainty at every stage.
+That uncertainty has left what I can only describe as a
+void of quantum existence, no determinism, no settled
+micro- or macro-truth. Any question of climate action,
+adaptation, mitigation, energy transition, or sustainability
+science is, at its heart, about this very phenomenon: the
+epiphany of a moment of truth giving way to another
+mutation, opening onto a brave new world of possibility.
+The thesis and antithesis of this mutability can only be
+partially filled by creativity and expression, forms that
+attempt to hold the same moment of truth from a different
+angle. Like a wanderer or a mendicant, I have been unable
+to settle on any single hypothesis within sustainability
+science, energy, or climate change. The unsettled quality of
+this pursuit has instead given rise to multiple births,
+rebirths of creative multiverses, propelled by the very
+disturbance of not knowing. It is those mutable truths that I
+have sought to capture through art and through action.
+Characters, images, notes, and melodies have emerged
+from, and sometimes been consumed by, this existential
+dilemma about the multiple possibilities and outcomes of a
+single research question or hypothesis in climate change,
+energy, and sustainability. Each is, in some sense, a
+byproduct of that uncertainty, and occasionally a scapegoat
+for it.
+Yet the biggest realisation has been this: even the
+moment captured in the lens of one’s creative binoculars,
+however vivid and true it seems, will be preserved only in
+the fourth dimension of changing time and space. Over
+time, the truth will change. And with it, my own mutable
+understanding of sustainability science and its meaning
+will change too.
+
+TA A  N E W S
+A Legacy of Excellence: 8th
+TERI & Alumni Reunion
+TERI Headquarters, New Delhi  ·  20 December 2025
+On the chilly afternoon of 20 December 2025, the fifth-floor
+terrace of TERI’s New Delhi headquarters transformed into
+a vibrant hub of shared history and renewed connections
+during the 8th TERI & Alumni Association Reunion Lunch.
+The gathering commenced with a warm welcome from
+Ms Priyanka Kochhar, President of the Alumni Association,
+followed by an inspiring keynote address by Dr Vibha
+Dhawan, Director General and Patron, who reaffirmed the
+spirit of belonging with the words: “Once a TERIite, always
+a TERIite.”
+Despite the uncooperative weather, the atmosphere
+remained energetic with activities such as TERI Trivia,
+Music Jam Junction, and the Wall of Gratitude, where
+alumni shared stories of personal and professional growth.
+The reunion concluded with a ceremonial group
+photograph and shared lunch, reaffirming the enduring
+bonds of the TERI family.
+
+TA A  N E W S  ·  R E U N I O N  A L B U M
+Music Jam Junction, and an Afternoon of Reconnecting
+
+TA A  N E W S
+The Concerned Citizen
+Series: Three New Titles
+Book Launch Event  ·  Gulmohar Hall, India Habitat Centre, New Delhi
+TERI and the TERI Alumni Association recently hosted a
+special Book Launch Event at the Gulmohar Hall, India
+Habitat Centre, New Delhi, providing a vibrant platform for
+alumni, experts, and guests to reconnect and spark
+meaningful conversations around the defining issues of our
+time, including sustainability, climate change, energy, and
+public policy. The highlight of the evening was the
+successful launch of three thought-provoking publications
+in the Concerned Citizen Series, authored by distinguished
+experts, which aim to bridge the gap between complex
+global policies and daily human life.
+Dr Vibha Dhawan, Patron of the TERI Alumni
+Association, gave the opening address of the evening and
+emphasised the practical relevance of these new works for
+the general public. She noted that when people face
+massive challenges like climate change, waste
+management, or electricity tariffs, they often ask what they
+can personally do, which is exactly why this series was
+created for concerned citizens, to explore everything from
+how a changing climate impacts our ageing population to
+the real-world affordability of our growing energy needs.
+Dr Priyanka Kochhar, President of TAA and one of the
+evening’s featured authors, shared her insights and greeted
+the gathering through a special video address, celebrating
+the official release of the three titles.
+TITLE ONE
+The Grey Lens: Ageing,
+Sustainability, and
+Climate in Our Shared
+Tomorrow
+Arvindd Narayanan and Ambika
+Shankar
+Examines the intersection of a
+changing climate and its specific
+impacts on an ageing population.
+TITLE TWO
+People Power:
+Customers’ Perspective
+and Role in Determining
+Electricity Tariffs
+Gaurav Bhatiani
+Demystifies the real-world
+affordability of energy needs and
+empowers consumers in tariff
+discourse.
+TITLE THREE
+The Untold Story of
+Waste Treatment Plants
+Hina Zia and Priyanka Kochhar
+Unpacks the ground realities and
+challenges in waste management
+systems.
+
+TA A  N E W S
+The Concerned Citizen
+Series: Your City, Your Impact
+A TERI Alumni publication in the Concerned Citizen Series launched at TERI’s annual Darbari Seth Lecture 2025
+The launch of Your City, Your Impact at the Twenty-fourth Darbari Seth Memorial Lecture, New Delhi, 20 August 2025.
+Your City, Your Impact makes the case for greener,
+healthier and more resilient cities in India. As
+urbanisation accelerates, the choices made today in how
+cities are built and inhabited will define the collective
+future. The book translates the principles of green
+buildings into clear, actionable insights, equipping
+professionals, students, and citizens alike to
+drive change.
+It is an invitation to reimagine urban living, and to take
+part in building cities that work better for people and
+the planet.
+THE CONCERNED CITIZEN SERIES
+TAA’s knowledge-building initiatives,
+including the Concerned Citizen Series, have
+produced eight significant titles authored by
+TERI alumni. Alumni can access these books
+and TERI Press discounts through the
+Association.
+taacontributions@gmail.com
+
+Contributors to this Issue
+Dr Vibha Dhawan
+Patron, TAA
+Director General, The Energy and Resources Institute.
+Rakesh Kacker
+Batch 2000–2003
+Senior Consultant, Habitat Emprise; Vice Chairperson, TERI
+Alumni Association.
+Amit Kumar
+Batch 1987–2021
+Former Senior Director, Social Transformation & Knowledge
+Management, TERI.
+Arvindd Narayanan
+Batch 2006–2008
+Founder-Secretary, Pratyusha Foundation
+Jaideep N. Malaviya
+Batch 1992–1995
+Managing Director, Malaviya Solar Energy Consultancy, Pune
+Dr Suneel Deambi
+Batch 1990–1995
+Solar energy expert and consultant; formerly with the Solar
+PV team at TERI and the Ministry of Science and Technology.
+Prof. Anandajit Goswami
+Batch 2003–2019, incl. TERI SAS 2017–2019
+Research Lead, Ashoka Centre for People-Centric Energy
+Transition, Ashoka University; Director, Manav Rachna
+Centre for Peace and Sustainability; Founder, TOHRI
+Foundation.
+Call for Contributions
+We welcome short articles, opinion pieces, professional
+reflections, research summaries, case insights, and
+announcements of professional achievements. Contributions
+should reflect TERI’s values of rigour, relevance, and real-world
+impact.
+SUBM I SSION  GUI DE LI N E S
+Articles 400–800 words; short updates and
+achievements 80–120 words
+Professional, clear, non-promotional writing
+All submissions are subject to editorial review
+Contributors are credited with name, batch or
+years at TERI, and current role
+Write to taacontributions@gmail.com
+TAA Executive Committee
+PATRON
+Dr Vibha Dhawan
+CHAIRPERSON
+Ms Gauri Mathur
+VICE CHAIRPERSON
+Mr Rakesh Kacker
+PRESIDENT
+Dr Priyanka Kochhar
+VICE PRESIDENT
+Dr Sanjay Seth
+SECRETARY
+Ms Ambika Shankar
+JOINT SECRETARY
+Ms Sonali Mathur
+TREASURER
+Mr Sambathkumar Nagarajan
+Published quarterly by the TERI Alumni Association, established 2007.
+Alumni are spread across 28 countries, in government, academia,
+industry, research and civil society. Views expressed are those of the
+contributors and not necessarily of TERI or the Association.
+teriin.org/alumni
+taacontributions@gmail.com
+
+A B O U T
+About TERI Alumni
+Established in 2007, the TERI Alumni Association (TAA) is
+a dynamic network that brings together past and present
+members of TERI to continue the journey of
+sustainability beyond the institution. Our alumni remain
+leaders, innovators, and change-makers across sectors,
+and together they strengthen the legacy of TERI by
+building knowledge, nurturing talent, and driving
+solutions for the planet.
+M I SS ION
+To bring together TERI alumni as a
+community committed to sustainability:
+sharing knowledge, mentoring, and
+collaborating on initiatives that protect
+the environment and strengthen
+education.
+V I S ION
+A connected alumni community known
+for its active role in promoting
+sustainability, driving innovation, and
+supporting social and environmental
+progress.
+About TERI
+AI M S  A ND  OBJ E C T I V E S
+Promote the preservation of the environment through ideas and dissemination —
+renewable energy, conservation, sustainable urban development, biotechnology,
+water conservation.
+Conduct lectures, workshops and seminars, and undertake projects to further
+these objectives.
+Promote education by establishing scholarship funds for the needy and deserving.
+Raise awareness among youth about the importance of preserving the environment, with
+practical steps.
+Institute prizes and awards for outstanding research, project work, or professional
+activity in environmental fields.
+Organise civic and charitable activities to promote environmental awareness.
+
+A B O U T
+Why Stay Connected
+TAA has been steadily expanding its reach through
+reunions, book launches, and thought leadership sessions.
+Reunion events have brought together generations of
+alumni to reconnect and build collaborations. TAA’s
+knowledge-building initiatives, including the Concerned
+Citizen Series, have produced eight significant titles
+authored by TERI alumni. The Association also conducts
+engaging webinars and talks on pressing issues ranging
+from climate change and energy transitions to gender
+empowerment and sustainable urban systems.
+Alumni are at the heart of TERI’s legacy as well as its
+future. Guided by TERI’s mandate to promote sustainable
+development, our alumni serve as force multipliers,
+carrying forward its impact across diverse domains
+and regions.
+BY R E M A I NI NG  E NG AG E D,  ALUM NI  C A N
+Share knowledge and expertise
+Mentor young professionals
+Collaborate on projects and publications
+Strengthen a collective voice for sustainability
+Be part of a steadily growing alumni community
+Access alumni-authored books & TERI Press discounts
+Connect with alumni in government, industry, academia and civil society
+teriin.org/alumni  ·  taacontributions@gmail.com

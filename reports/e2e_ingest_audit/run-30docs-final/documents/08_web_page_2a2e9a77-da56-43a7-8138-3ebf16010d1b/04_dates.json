@@ -1,0 +1,30 @@
+{
+  "canonical": {
+    "effective_start_date": "2018-04-10T09:14:26+00:00",
+    "start_precision": "day",
+    "date_source": "created",
+    "effective_end_date": null,
+    "end_precision": null,
+    "edition_label": null
+  },
+  "website_evidence": {
+    "start_value": "2018-04-10T09:14:26+00:00",
+    "start_precision": "day",
+    "source": "created",
+    "rule": "bundle_created",
+    "end_value": null,
+    "end_precision": null,
+    "bundle": "page",
+    "fields": [
+      "created"
+    ],
+    "raw_values": [],
+    "field_role": "created_stamp",
+    "range_issue": null
+  },
+  "record_created": "2018-04-10T09:14:26+00:00",
+  "record_changed": "2026-09-03T11:37:35+00:00",
+  "parent_page_resolution": null,
+  "file_resolution": null,
+  "parent_page_canonical_date": null
+}

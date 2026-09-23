@@ -1,0 +1,317 @@
+{
+  "parents": 0,
+  "children": 4,
+  "chunks": [
+    {
+      "chunk_id": "26e9690e-73c1-51df-b291-f58a06bec105",
+      "text": "The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather.\n\nThe devastating floods in Nepal on 26 August are still unfolding. Hundreds of lives have been lost, many more people remain missing and entire stretches of the Rasuwa-Bhote Koshi-Trishuli corridor have been transformed. Roads, bridges and hydropower infrastructure have been destroyed, while some of the very monitoring stations intended to warn us of flooding were themselves swept away.\n\nWhat makes the disaster particularly unsettling, however, is not simply its scale. It is the nature of the event itself.\n\nThe current scientific assessment points to a glacial collapse at Langtang Lirung, which then developed into a debris flow and flood that travelled almost 100 kilometres downstream. It was not a conventional flood with a single, easily identifiable cause. A disturbance in one part of a mountain system interacted with ice, rock, water, sediment, slopes and rivers, producing consequences far beyond the location where it began.\n\nAnd this was not even the first time this corridor had experienced such a shock. Just fourteen months earlier, in July 2025, the same broad Lhende-Bhote Koshi system was hit by a devastating flood, although the initiating mechanism was different: the drainage of a supraglacial lake in Tibet. The trigger changed; the downstream vulnerability did not.\n\nWe tend to organise risk into categories: glacial lake outburst floods, landslides, floods, avalanches, earthquakes, extreme rainfall. We build monitoring systems around these categories and develop response protocols for each. But mountains do not experience risk in categories.\n\nAn ice collapse can become a debris flow; a debris flow can alter a river; a temporary blockage can create a new lake and another flood. By the time the disturbance reaches people and infrastructure downstream, it may bear little to no resemblance to the event that initiated it.\n\nPerhaps, we are looking at the problem through the wrong statistical lens.",
+      "is_parent": false,
+      "meta": {
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "source_type": "website",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [],
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "article",
+          "nid": 13363,
+          "changed": "2026-08-31T09:19:47+00:00"
+        }
+      },
+      "embed_text": "When Risk Stops Looking Normal: Lessons from the Nepal Floods\n\nThe Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather.\n\nThe devastating floods in Nepal on 26 August are still unfolding. Hundreds of lives have been lost, many more people remain missing and entire stretches of the Rasuwa-Bhote Koshi-Trishuli corridor have been transformed. Roads, bridges and hydropower infrastructure have been destroyed, while some of the very monitoring stations intended to warn us of flooding were themselves swept away.\n\nWhat makes the disaster particularly unsettling, however, is not simply its scale. It is the nature of the event itself.\n\nThe current scientific assessment points to a glacial collapse at Langtang Lirung, which then developed into a debris flow and flood that travelled almost 100 kilometres downstream. It was not a conventional flood with a single, easily identifiable cause. A disturbance in one part of a mountain system interacted with ice, rock, water, sediment, slopes and rivers, producing consequences far beyond the location where it began.\n\nAnd this was not even the first time this corridor had experienced such a shock. Just fourteen months earlier, in July 2025, the same broad Lhende-Bhote Koshi system was hit by a devastating flood, although the initiating mechanism was different: the drainage of a supraglacial lake in Tibet. The trigger changed; the downstream vulnerability did not.\n\nWe tend to organise risk into categories: glacial lake outburst floods, landslides, floods, avalanches, earthquakes, extreme rainfall. We build monitoring systems around these categories and develop response protocols for each. But mountains do not experience risk in categories.\n\nAn ice collapse can become a debris flow; a debris flow can alter a river; a temporary blockage can create a new lake and another flood. By the time the disturbance reaches people and infrastructure downstream, it may bear little to no resemblance to the event that initiated it.\n\nPerhaps, we are looking at the problem through the wrong statistical lens.",
+      "section_heading": null,
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 0,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 421,
+      "content_hash": "c162198253e68fbe0eb1f826595f3640d717437e6399f4abc612221e7cb2d17b",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "26e9690e-73c1-51df-b291-f58a06bec105",
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "article",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "chunk_text": "The Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather.\n\nThe devastating floods in Nepal on 26 August are still unfolding. Hundreds of lives have been lost, many more people remain missing and entire stretches of the Rasuwa-Bhote Koshi-Trishuli corridor have been transformed. Roads, bridges and hydropower infrastructure have been destroyed, while some of the very monitoring stations intended to warn us of flooding were themselves swept away.\n\nWhat makes the disaster particularly unsettling, however, is not simply its scale. It is the nature of the event itself.\n\nThe current scientific assessment points to a glacial collapse at Langtang Lirung, which then developed into a debris flow and flood that travelled almost 100 kilometres downstream. It was not a conventional flood with a single, easily identifiable cause. A disturbance in one part of a mountain system interacted with ice, rock, water, sediment, slopes and rivers, producing consequences far beyond the location where it began.\n\nAnd this was not even the first time this corridor had experienced such a shock. Just fourteen months earlier, in July 2025, the same broad Lhende-Bhote Koshi system was hit by a devastating flood, although the initiating mechanism was different: the drainage of a supraglacial lake in Tibet. The trigger changed; the downstream vulnerability did not.\n\nWe tend to organise risk into categories: glacial lake outburst floods, landslides, floods, avalanches, earthquakes, extreme rainfall. We build monitoring systems around these categories and develop response protocols for each. But mountains do not experience risk in categories.\n\nAn ice collapse can become a debris flow; a debris flow can alter a river; a temporary blockage can create a new lake and another flood. By the time the disturbance reaches people and infrastructure downstream, it may bear little to no resemblance to the event that initiated it.\n\nPerhaps, we are looking at the problem through the wrong statistical lens.",
+        "content_hash": "c162198253e68fbe0eb1f826595f3640d717437e6399f4abc612221e7cb2d17b",
+        "token_count": 421,
+        "doc_version": 1,
+        "is_current": true,
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "embed_hash": "23f1a37d4f7984f249523b09bc5178db0905a4250ecdc20f2ffe4a06a7c22e54",
+        "chunk_index": 0,
+        "nid": 13363,
+        "changed": "2026-08-31T09:19:47+00:00"
+      },
+      "embed_hash": "23f1a37d4f7984f249523b09bc5178db0905a4250ecdc20f2ffe4a06a7c22e54"
+    },
+    {
+      "chunk_id": "362ea230-b583-572f-bc3d-94cf5c9f4d19",
+      "text": "For much of modern planning, we have designed around the mean. We calculate average rainfall, river discharge, temperature, and traffic. We then design infrastructure to perform reliably around those expected conditions, with some allowance for an extreme event.\n\nThere was a logic to this.\n\nThe assumption was that the underlying system was sufficiently stable for the mean to be a useful representation of what we could expect. Deviations were exceptions. But what happens when deviations stop behaving like exceptions?\n\nThis is where ecological overshoot becomes important. We have progressively increased our demands on ecological systems while reducing their capacity to absorb disturbance. In doing so, we are losing the buffers that once made variability manageable. Glaciers, forests, wetlands, watersheds and diverse ecosystems perform functions that absorb shocks and prevent disturbances from becoming catastrophes. When those buffers weaken, the same hazard can produce a very different outcome. Risk begins to look like danger.",
+      "is_parent": false,
+      "meta": {
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "source_type": "website",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [],
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "article",
+          "nid": 13363,
+          "changed": "2026-08-31T09:19:47+00:00"
+        }
+      },
+      "embed_text": "When Risk Stops Looking Normal: Lessons from the Nepal Floods › Designing Around the Mean\n\nFor much of modern planning, we have designed around the mean. We calculate average rainfall, river discharge, temperature, and traffic. We then design infrastructure to perform reliably around those expected conditions, with some allowance for an extreme event.\n\nThere was a logic to this.\n\nThe assumption was that the underlying system was sufficiently stable for the mean to be a useful representation of what we could expect. Deviations were exceptions. But what happens when deviations stop behaving like exceptions?\n\nThis is where ecological overshoot becomes important. We have progressively increased our demands on ecological systems while reducing their capacity to absorb disturbance. In doing so, we are losing the buffers that once made variability manageable. Glaciers, forests, wetlands, watersheds and diverse ecosystems perform functions that absorb shocks and prevent disturbances from becoming catastrophes. When those buffers weaken, the same hazard can produce a very different outcome. Risk begins to look like danger.",
+      "section_heading": "Designing Around the Mean",
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 1,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 184,
+      "content_hash": "26e1bc887d29aa61b48e133ec32bfb0253e8e4e4d2af837342e4ad4696b6f4d7",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "362ea230-b583-572f-bc3d-94cf5c9f4d19",
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "article",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "section_heading": "Designing Around the Mean",
+        "chunk_text": "For much of modern planning, we have designed around the mean. We calculate average rainfall, river discharge, temperature, and traffic. We then design infrastructure to perform reliably around those expected conditions, with some allowance for an extreme event.\n\nThere was a logic to this.\n\nThe assumption was that the underlying system was sufficiently stable for the mean to be a useful representation of what we could expect. Deviations were exceptions. But what happens when deviations stop behaving like exceptions?\n\nThis is where ecological overshoot becomes important. We have progressively increased our demands on ecological systems while reducing their capacity to absorb disturbance. In doing so, we are losing the buffers that once made variability manageable. Glaciers, forests, wetlands, watersheds and diverse ecosystems perform functions that absorb shocks and prevent disturbances from becoming catastrophes. When those buffers weaken, the same hazard can produce a very different outcome. Risk begins to look like danger.",
+        "content_hash": "26e1bc887d29aa61b48e133ec32bfb0253e8e4e4d2af837342e4ad4696b6f4d7",
+        "token_count": 184,
+        "doc_version": 1,
+        "is_current": true,
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "embed_hash": "0460ad9fe15dbdd6b772feaec39207a42a0a80d9b6db2142645734a0f9f56714",
+        "chunk_index": 1,
+        "nid": 13363,
+        "changed": "2026-08-31T09:19:47+00:00"
+      },
+      "embed_hash": "0460ad9fe15dbdd6b772feaec39207a42a0a80d9b6db2142645734a0f9f56714"
+    },
+    {
+      "chunk_id": "c075f770-92e0-5934-9b3a-7bfc4e030c72",
+      "text": "As a planner, one of the first things we are taught is that urban planning is fundamentally about optimising resources and using them in the most efficient way possible. The problem begins when optimisation becomes the dominant objective.\n\nModern infrastructure and urban systems are designed to minimise waste and maximise performance under expected conditions. But aggressive optimisation often removes what appears unnecessary: spare capacity, redundant routes or undeveloped land. These are precisely the things that provide resilience when conditions move beyond normal.\n\nA system optimised for average conditions can become extremely fragile when conditions become more variable. What looks like inefficiency from the perspective of optimisation can, in fact, be resilience from the perspective of a system exposed to uncertainty. This is the paradox of efficiency.\n\nLet us return to Nepal. The question is not simply whether we could have predicted the exact glacial collapse at Langtang Lirung. It is: why was a disturbance in one part of the mountain system capable of producing such catastrophic consequences nearly 100 kilometres downstream?\n\nPart of the answer lies in the buffers between the initiating hazard and the people and infrastructure downstream.",
+      "is_parent": false,
+      "meta": {
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "source_type": "website",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [],
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "article",
+          "nid": 13363,
+          "changed": "2026-08-31T09:19:47+00:00"
+        }
+      },
+      "embed_text": "When Risk Stops Looking Normal: Lessons from the Nepal Floods › Danger of Aggressive Optimisation\n\nAs a planner, one of the first things we are taught is that urban planning is fundamentally about optimising resources and using them in the most efficient way possible. The problem begins when optimisation becomes the dominant objective.\n\nModern infrastructure and urban systems are designed to minimise waste and maximise performance under expected conditions. But aggressive optimisation often removes what appears unnecessary: spare capacity, redundant routes or undeveloped land. These are precisely the things that provide resilience when conditions move beyond normal.\n\nA system optimised for average conditions can become extremely fragile when conditions become more variable. What looks like inefficiency from the perspective of optimisation can, in fact, be resilience from the perspective of a system exposed to uncertainty. This is the paradox of efficiency.\n\nLet us return to Nepal. The question is not simply whether we could have predicted the exact glacial collapse at Langtang Lirung. It is: why was a disturbance in one part of the mountain system capable of producing such catastrophic consequences nearly 100 kilometres downstream?\n\nPart of the answer lies in the buffers between the initiating hazard and the people and infrastructure downstream.",
+      "section_heading": "Danger of Aggressive Optimisation",
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 2,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 222,
+      "content_hash": "f3c5152ad99e7f5e22c8e097c1b1c6b4c49df547409409fb54eafe767d83f626",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "c075f770-92e0-5934-9b3a-7bfc4e030c72",
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "article",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "section_heading": "Danger of Aggressive Optimisation",
+        "chunk_text": "As a planner, one of the first things we are taught is that urban planning is fundamentally about optimising resources and using them in the most efficient way possible. The problem begins when optimisation becomes the dominant objective.\n\nModern infrastructure and urban systems are designed to minimise waste and maximise performance under expected conditions. But aggressive optimisation often removes what appears unnecessary: spare capacity, redundant routes or undeveloped land. These are precisely the things that provide resilience when conditions move beyond normal.\n\nA system optimised for average conditions can become extremely fragile when conditions become more variable. What looks like inefficiency from the perspective of optimisation can, in fact, be resilience from the perspective of a system exposed to uncertainty. This is the paradox of efficiency.\n\nLet us return to Nepal. The question is not simply whether we could have predicted the exact glacial collapse at Langtang Lirung. It is: why was a disturbance in one part of the mountain system capable of producing such catastrophic consequences nearly 100 kilometres downstream?\n\nPart of the answer lies in the buffers between the initiating hazard and the people and infrastructure downstream.",
+        "content_hash": "f3c5152ad99e7f5e22c8e097c1b1c6b4c49df547409409fb54eafe767d83f626",
+        "token_count": 222,
+        "doc_version": 1,
+        "is_current": true,
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "embed_hash": "81c4499a44adea70d8d7c1bfff5091891c320c5ef0906db2330d503295e86169",
+        "chunk_index": 2,
+        "nid": 13363,
+        "changed": "2026-08-31T09:19:47+00:00"
+      },
+      "embed_hash": "81c4499a44adea70d8d7c1bfff5091891c320c5ef0906db2330d503295e86169"
+    },
+    {
+      "chunk_id": "af02736f-ad1d-5136-91af-a41e329a3b8d",
+      "text": "The Nepal experience also challenges another assumption: that once we have mapped a hazard, we have understood the risk. We haven't. The same corridor experienced two major events in fourteen months, triggered by different mechanisms. The unit of analysis therefore cannot simply be the hazard; it has to be the system.\n\nRisk cannot be treated as static. A changing glacier, expanding lake, destabilising slope or new development downstream can alter the risk landscape. And after a major event, the landscape itself may have changed. In Rasuwa, debris from the collapse has already created new barrier lakes, introducing another potential source of flooding.\n\nRisk assessment needs to become a living understanding of a changing system.\n\nThis also changes how we think about early warning.\n\nThe Nepal disaster showed that information can reach a forecasting system within minutes and still be of limited value to communities closest to the source. The automatic monitoring stations in the upper Bhote Koshi were themselves destroyed, while downstream warnings may nevertheless have helped people farther south reach safety.\n\nSo the measure of an early-warning system should not simply be whether it detected an event.\n\nIt should be whether it created actionable decision time.\n\nCould someone evacuate? Could a road be closed? Could critical infrastructure be protected? Could emergency teams be moved before access was lost?\n\nThe goal is enough understanding, early enough, to change the outcome.\n\nThe Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather. But observation alone cannot make a system resilient if the ecological and spatial buffers around it have already been eroded.\n\nThe deeper challenge, therefore, is not simply climate change. It is the erosion of the buffers that once made climatic and ecological variability manageable.\n\nThis is why I think we need to move from designing for the mean to designing for the deviation. Not by trying to predict every extreme event, but by asking whether our systems have enough room to absorb what we cannot predict.\n\nBecause perhaps the most dangerous system is not the one that cannot predict the future. It is the one that has been so perfectly optimised for the expected future that it has no room left for anything else.",
+      "is_parent": false,
+      "meta": {
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "source_type": "website",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [],
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "article",
+          "nid": 13363,
+          "changed": "2026-08-31T09:19:47+00:00"
+        }
+      },
+      "embed_text": "When Risk Stops Looking Normal: Lessons from the Nepal Floods › Designing for Deviation\n\nThe Nepal experience also challenges another assumption: that once we have mapped a hazard, we have understood the risk. We haven't. The same corridor experienced two major events in fourteen months, triggered by different mechanisms. The unit of analysis therefore cannot simply be the hazard; it has to be the system.\n\nRisk cannot be treated as static. A changing glacier, expanding lake, destabilising slope or new development downstream can alter the risk landscape. And after a major event, the landscape itself may have changed. In Rasuwa, debris from the collapse has already created new barrier lakes, introducing another potential source of flooding.\n\nRisk assessment needs to become a living understanding of a changing system.\n\nThis also changes how we think about early warning.\n\nThe Nepal disaster showed that information can reach a forecasting system within minutes and still be of limited value to communities closest to the source. The automatic monitoring stations in the upper Bhote Koshi were themselves destroyed, while downstream warnings may nevertheless have helped people farther south reach safety.\n\nSo the measure of an early-warning system should not simply be whether it detected an event.\n\nIt should be whether it created actionable decision time.\n\nCould someone evacuate? Could a road be closed? Could critical infrastructure be protected? Could emergency teams be moved before access was lost?\n\nThe goal is enough understanding, early enough, to change the outcome.\n\nThe Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather. But observation alone cannot make a system resilient if the ecological and spatial buffers around it have already been eroded.\n\nThe deeper challenge, therefore, is not simply climate change. It is the erosion of the buffers that once made climatic and ecological variability manageable.\n\nThis is why I think we need to move from designing for the mean to designing for the deviation. Not by trying to predict every extreme event, but by asking whether our systems have enough room to absorb what we cannot predict.\n\nBecause perhaps the most dangerous system is not the one that cannot predict the future. It is the one that has been so perfectly optimised for the expected future that it has no room left for anything else.",
+      "section_heading": "Designing for Deviation",
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 3,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 447,
+      "content_hash": "e2ca529ca08cd7bdbfd28b54dc4cae8ae2620f652a3be5d791054afcb75ac43d",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "af02736f-ad1d-5136-91af-a41e329a3b8d",
+        "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "article",
+        "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+        "section_heading": "Designing for Deviation",
+        "chunk_text": "The Nepal experience also challenges another assumption: that once we have mapped a hazard, we have understood the risk. We haven't. The same corridor experienced two major events in fourteen months, triggered by different mechanisms. The unit of analysis therefore cannot simply be the hazard; it has to be the system.\n\nRisk cannot be treated as static. A changing glacier, expanding lake, destabilising slope or new development downstream can alter the risk landscape. And after a major event, the landscape itself may have changed. In Rasuwa, debris from the collapse has already created new barrier lakes, introducing another potential source of flooding.\n\nRisk assessment needs to become a living understanding of a changing system.\n\nThis also changes how we think about early warning.\n\nThe Nepal disaster showed that information can reach a forecasting system within minutes and still be of limited value to communities closest to the source. The automatic monitoring stations in the upper Bhote Koshi were themselves destroyed, while downstream warnings may nevertheless have helped people farther south reach safety.\n\nSo the measure of an early-warning system should not simply be whether it detected an event.\n\nIt should be whether it created actionable decision time.\n\nCould someone evacuate? Could a road be closed? Could critical infrastructure be protected? Could emergency teams be moved before access was lost?\n\nThe goal is enough understanding, early enough, to change the outcome.\n\nThe Nepal floods are a reminder that the world we are designing for is becoming less comfortable with our assumptions of normality. We should continue improving our ability to observe and model glaciers, slopes, rivers and weather. But observation alone cannot make a system resilient if the ecological and spatial buffers around it have already been eroded.\n\nThe deeper challenge, therefore, is not simply climate change. It is the erosion of the buffers that once made climatic and ecological variability manageable.\n\nThis is why I think we need to move from designing for the mean to designing for the deviation. Not by trying to predict every extreme event, but by asking whether our systems have enough room to absorb what we cannot predict.\n\nBecause perhaps the most dangerous system is not the one that cannot predict the future. It is the one that has been so perfectly optimised for the expected future that it has no room left for anything else.",
+        "content_hash": "e2ca529ca08cd7bdbfd28b54dc4cae8ae2620f652a3be5d791054afcb75ac43d",
+        "token_count": 447,
+        "doc_version": 1,
+        "is_current": true,
+        "categories": [
+          "Sustainable Habitat"
+        ],
+        "authors": [
+          "Ms Shiren Pandita"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+        "effective_start_date": "2026-08-31T09:18:16+00:00",
+        "article_uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+        "embed_hash": "518c530e098fda7f39e293114b4c859056334f535b1e78d5ed4b5410f289c70e",
+        "chunk_index": 3,
+        "nid": 13363,
+        "changed": "2026-08-31T09:19:47+00:00"
+      },
+      "embed_hash": "518c530e098fda7f39e293114b4c859056334f535b1e78d5ed4b5410f289c70e"
+    }
+  ]
+}

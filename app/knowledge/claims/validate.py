@@ -137,7 +137,12 @@ def _validate_one(
     subject_type = entity_type_of(assertion.subject_entity_id, index)
     if subject_type is None:
         return Rejection("unknown_subject", assertion.subject_entity_id, assertion)
-    if not is_eligible_in_store(assertion.subject_entity_id, index):
+    # The predicate is passed so a predicate-scoped trust level can answer for
+    # itself. An author-attested person clears this for AUTHORED and for nothing
+    # else; every other predicate asks the same question it always did.
+    if not is_eligible_in_store(
+        assertion.subject_entity_id, index, assertion.predicate
+    ):
         # A provisional identity. This is the Phase 5.1 guarantee reaching the
         # claim layer: a name-level person may never be a claim subject.
         return Rejection(
@@ -154,6 +159,9 @@ def _validate_one(
             return Rejection(
                 "unknown_object", assertion.object_entity_id, assertion
             )
+        # No predicate here on purpose. The scoped grant is about being the
+        # *author*, not about being something an author-attested person is
+        # pointed at, so an object must still clear broad eligibility.
         if not is_eligible_in_store(assertion.object_entity_id, index):
             return Rejection(
                 "object_not_claim_eligible", assertion.object_entity_id, assertion

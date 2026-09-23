@@ -136,10 +136,6 @@ Security and ops are the same settings and are not repeated here).
 | --- | --- | --- |
 | `prefer_website_enabled` | `true` | Dual pull (website / not-website), merged with a concise website lead. |
 | `website_candidate_k` | `20` | Website-only candidates pulled alongside the larger not-website pull. |
-| `website_max_slots` | `2` | Max website blocks admitted. |
-| `website_chunk_floor` | `0.30` | Raw semantic-score floor a website chunk must clear. |
-| `pdf_max_slots` | `2` | PDF blocks admitted unconditionally after the website lead. |
-| `pdf_high_confidence_floor` | `0.5` | Score bar for one extra PDF slot. |
 
 ### Query understanding and structured answers
 
@@ -328,8 +324,9 @@ Expands on `app/README.md`'s "Where a bug lives" table. Start from the symptom.
 | Right documents, bad prose | Generation, not retrieval | Compare the retrieval log's `context` block against the answer | `generation/prompts.py`, `generation/answerer.py` |
 | Wrong citation or page number | A payload/citation mapping bug, not a ranking one | `retrieval/context/citations.py`; `core/models/context.py::page_span` | Usually a re-index fixes stale payload; a code bug needs `citations.py` itself |
 | Wrong count or list from a "how many" question | Structured planner picked the wrong scope, or fell through when it shouldn't have | `retrieval/structured/` trace, or `catalog/queries.py` directly | `structured/theme_scope.py` / `topic.py` for scope; `entity_resolution_enabled` if a name should have resolved |
+| "List the X where Y is mentioned" refuses, or cites an index page such as "Articles & Publications" | The type word or the subject became a filter: `analysis.bundle` set, `tags in [...]` on every search leg, or the title leg matched the type word alone | The trace's `query.analysis` (`bundle`, `tags`) and the `title_leg` event's `document_id in [...]` | `understanding/content_scope.py` (the predicates), `CONTENT_QUESTION_RULE` in `catalog_prompt.py`, `title_leg._kind_words`; see [03](03-query-understanding.md#type-words-and-tags-filters-only-when-the-question-is-about-the-catalog) |
 | Graph answers something implausible, or nothing | Routing missed, or the template's parameters don't match intent | `events.graph_routing` share; the graph's own trace entries | `graph/router.py`, `graph/templates.py`; check `graph_routing_classes` isn't unnecessarily narrowed |
-| Cache serving a stale answer | `corpus_revision()` hasn't advanced, or the question is a near-paraphrase above `semantic_cache_threshold` | Compare `documents.indexed_at` against the cached answer's timestamp | See [10, Caching](10-caching.md#the-partition-key-semantic_partition) — usually correct behavior, not a bug, until the next real ingestion change |
+| Cache serving a stale answer | `corpus_revision()` hasn't advanced, the question is a near-paraphrase above `semantic_cache_threshold`, or a ranking/prompt change shipped without bumping `PIPELINE_REVISION` | Compare `documents.indexed_at` against the cached answer's timestamp; the trace of a hit says `cached: true` and writes no retrieval events | See [10, Caching](10-caching.md#the-partition-key-semantic_partition). For an ingestion question this is usually correct behaviour, not a bug. For "I fixed the ranking and the answer did not change", bump `PIPELINE_REVISION` in `cache_keys.py` — the same question re-asked matches its own cached answer at cosine 1.0 |
 | Query is much slower than usual | A feature flag combination, an LLM deployment slowdown, or throttling | `/metrics/timings` component breakdown | `llm` dominant → check the deployment; `qdrant` dominant → check `retrieval_candidate_k` and how many legs are enabled |
 | Streamed (`/chat`) `rag_metrics` line missing `stages` | The SSE thread-hop compensation regressed | Compare a `/search` request's `rag_metrics` line (same question) — it should have `stages`, `/chat`'s should too | See [11, Surviving the SSE stream](11-observability-and-logging.md#surviving-the-sse-stream) |
 | `/metrics` or `/metrics/timings` returns 404 for an operator | Not ops-visible | `ops_detail_enabled` off and no matching `ops_admin_group` membership | Set one, or use a private deployment with `ops_detail_enabled=true` |

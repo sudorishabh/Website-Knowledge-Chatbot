@@ -36,7 +36,7 @@ def _wire(monkeypatch, *, settings, ranked):
     monkeypatch.setattr(retriever, "search", lambda *a, **k: list(ranked))
     monkeypatch.setattr(retriever, "rerank", lambda q, cands, **kw: list(ranked))
     monkeypatch.setattr(
-        retriever, "build_context", lambda cands, *, limit, segregate: list(cands)
+        retriever, "build_context", lambda cands, *, limit, temporal=None, question="": list(cands)
     )
 
 

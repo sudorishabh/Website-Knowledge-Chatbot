@@ -1,0 +1,25 @@
+{
+  "status": "new",
+  "document_id": "80d9bdc9-c159-493a-80e1-ca53cece85e3",
+  "source_type": "website",
+  "source_key": "https://teriin.org/newsletters",
+  "fingerprint": "2026-09-03T10:30:16+00:00",
+  "bundle": "page",
+  "entity_type": "node",
+  "changed_mark": 1788431416,
+  "filename": null,
+  "prior": null,
+  "outcome": "indexed",
+  "error": null,
+  "traceback": null,
+  "started_at": "2026-09-10T10:30:20.206331+00:00",
+  "finished_at": "2026-09-10T10:30:23.300161+00:00",
+  "elapsed_seconds": 3.094,
+  "stage_seconds": {
+    "build_doc": 0.0,
+    "pdf_extraction": null,
+    "chunk": 0.03,
+    "embed_and_upsert": 2.988,
+    "knowledge": 0.047
+  }
+}

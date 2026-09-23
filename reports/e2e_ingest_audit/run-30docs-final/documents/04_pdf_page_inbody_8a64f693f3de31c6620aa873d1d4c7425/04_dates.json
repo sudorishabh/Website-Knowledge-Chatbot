@@ -1,0 +1,65 @@
+{
+  "canonical": {
+    "effective_start_date": "2025-09-30T04:28:20+00:00",
+    "start_precision": "day",
+    "date_source": "parent_page",
+    "effective_end_date": null,
+    "end_precision": null,
+    "edition_label": null
+  },
+  "website_evidence": null,
+  "record_created": null,
+  "record_changed": null,
+  "parent_page_resolution": {
+    "start_value": "2025-09-30T04:28:20+00:00",
+    "start_precision": "day",
+    "source": "created",
+    "rule": "bundle_created",
+    "end_value": null,
+    "end_precision": null,
+    "bundle": "page",
+    "fields": [
+      "created"
+    ],
+    "raw_values": [],
+    "field_role": "created_stamp",
+    "range_issue": null
+  },
+  "file_resolution": {
+    "start_value": "2025-09-30T04:28:20+00:00",
+    "start_precision": "day",
+    "end_value": null,
+    "end_precision": null,
+    "edition_label": null,
+    "decision": {
+      "document_id": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+      "action": "keep_page_date",
+      "candidate_start_date": "2025-09-30T04:28:20+00:00",
+      "candidate_precision": "day",
+      "date_type": "publication",
+      "edition_label": null,
+      "source": "node_effective_date",
+      "confidence": 0.5,
+      "evidence": "No per-document evidence of any kind; the page date stands. One of 3 PDFs on this page, so it was read for a date of its own; it states none that could be verified, and the page's date stands as this file's fallback.",
+      "rule": "multi_pdf_no_evidence",
+      "decided_by": "deterministic",
+      "supporting_evidence": "No upload record for this file (in-body link).",
+      "used": [
+        "drupal",
+        "pdf_meta",
+        "pdf_text"
+      ]
+    },
+    "llm_raw": null,
+    "used": [
+      "drupal",
+      "pdf_meta",
+      "pdf_text"
+    ]
+  },
+  "parent_page_canonical_date": {
+    "effective_start_date": "2025-09-30T04:28:20+00:00",
+    "start_precision": "day",
+    "effective_end_date": null
+  }
+}

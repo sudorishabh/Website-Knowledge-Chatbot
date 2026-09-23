@@ -1,0 +1,87 @@
+{
+  "parents": 0,
+  "children": 1,
+  "chunks": [
+    {
+      "chunk_id": "1b5aac13-7cd2-522e-a6cc-35e7abec9c26",
+      "text": "Minister of Ports, Shipping and Waterways (MoPSW), Shri Sarbananda Sonowal, visited The Energy and Resources Institute’s (TERI) Gwal Pahari campus in Gurugram and reviewed a series of green shipping initiatives, positioning the sector's decarbonisation as a priority area for his ministry.",
+      "is_parent": false,
+      "meta": {
+        "document_id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+        "source_type": "website",
+        "title": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness",
+        "source_url": "https://teriin.org/news/sarbananda-sonowal-charts-course-zero-emission-shipping-corridors-pushes-ports-fast-track",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [
+          "Green Shipping",
+          "Zero emission",
+          "Green Fuels"
+        ],
+        "categories": [
+          "Resource Efficiency & Governance"
+        ],
+        "authors": [],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-09-03T00:00:00+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "news",
+          "nid": 13379,
+          "changed": "2026-09-08T10:12:22+00:00"
+        }
+      },
+      "embed_text": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness\n\nMinister of Ports, Shipping and Waterways (MoPSW), Shri Sarbananda Sonowal, visited The Energy and Resources Institute’s (TERI) Gwal Pahari campus in Gurugram and reviewed a series of green shipping initiatives, positioning the sector's decarbonisation as a priority area for his ministry.",
+      "section_heading": null,
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 0,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 68,
+      "content_hash": "c8301da5899fcaf7d07232bcea305d4cf4d0bc5f7835424ef075e8c26e17bbba",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "1b5aac13-7cd2-522e-a6cc-35e7abec9c26",
+        "document_id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "news",
+        "title": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness",
+        "chunk_text": "Minister of Ports, Shipping and Waterways (MoPSW), Shri Sarbananda Sonowal, visited The Energy and Resources Institute’s (TERI) Gwal Pahari campus in Gurugram and reviewed a series of green shipping initiatives, positioning the sector's decarbonisation as a priority area for his ministry.",
+        "content_hash": "c8301da5899fcaf7d07232bcea305d4cf4d0bc5f7835424ef075e8c26e17bbba",
+        "token_count": 68,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Green Shipping",
+          "Zero emission",
+          "Green Fuels"
+        ],
+        "categories": [
+          "Resource Efficiency & Governance"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/news/sarbananda-sonowal-charts-course-zero-emission-shipping-corridors-pushes-ports-fast-track",
+        "effective_start_date": "2026-09-03T00:00:00+00:00",
+        "article_uuid": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+        "embed_hash": "c034d35881bd5c4c8b0abc01d162159603d4a2b32962c37fc35958f2854849de",
+        "chunk_index": 0,
+        "nid": 13379,
+        "changed": "2026-09-08T10:12:22+00:00"
+      },
+      "embed_hash": "c034d35881bd5c4c8b0abc01d162159603d4a2b32962c37fc35958f2854849de"
+    }
+  ]
+}

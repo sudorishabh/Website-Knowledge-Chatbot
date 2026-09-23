@@ -68,6 +68,19 @@ class DecisionRow:
     prompt_version: str | None = None
     url: str | None = None
     filename: str | None = None
+    # ------------------------------------------------------------------ #
+    # Where a date read from the file's own naming came from. All three are
+    # NULL for every other path. `evidence` says the same thing in prose;
+    # these say it in a form a query can group by, which is what turns "why
+    # is this document dated 2018 when the filename says 2024?" from a
+    # one-row read into a corpus-wide answer.
+    # ------------------------------------------------------------------ #
+    #: ``filename`` | ``pdf_internal_title`` | ``link_text``.
+    title_source: str | None = None
+    #: ``full_date`` | ``month_year`` | ``edition`` | ``bare_year``.
+    title_kind: str | None = None
+    #: ``replaced`` | ``refined`` | ``corroborating`` | ``rejected``.
+    title_disposition: str | None = None
 
 
 def from_decision(
@@ -107,6 +120,9 @@ def from_decision(
         prompt_version=prompt_version,
         url=url,
         filename=filename,
+        title_source=decision.title_source,
+        title_kind=decision.title_kind,
+        title_disposition=decision.title_disposition,
     )
 
 
@@ -215,9 +231,10 @@ def record(row: DecisionRow) -> None:
             " current_start_date, candidate_start_date, candidate_end_date,"
             " range_issue, date_type, edition_label,"
             " date_source, confidence, action, rule, decided_by, evidence,"
-            " llm_raw, prompt_version, url, filename, updated_at) "
+            " llm_raw, prompt_version, url, filename,"
+            " title_source, title_kind, title_disposition, updated_at) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
-            " %s, %s, %s, %s, %s, %s, %s) "
+            " %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
             "ON DUPLICATE KEY UPDATE "
             "  origin = VALUES(origin), bundle = VALUES(bundle),"
             "  node_uuid = VALUES(node_uuid),"
@@ -233,7 +250,11 @@ def record(row: DecisionRow) -> None:
             "  rule = VALUES(rule), decided_by = VALUES(decided_by),"
             "  evidence = VALUES(evidence), llm_raw = VALUES(llm_raw),"
             "  prompt_version = VALUES(prompt_version), url = VALUES(url),"
-            "  filename = VALUES(filename), updated_at = VALUES(updated_at)",
+            "  filename = VALUES(filename),"
+            "  title_source = VALUES(title_source),"
+            "  title_kind = VALUES(title_kind),"
+            "  title_disposition = VALUES(title_disposition),"
+            "  updated_at = VALUES(updated_at)",
             (
                 row.document_id, row.origin, row.bundle, row.node_uuid,
                 int(row.page_pdf_count),
@@ -246,7 +267,8 @@ def record(row: DecisionRow) -> None:
                 round(float(row.confidence), 3), row.action, row.rule, row.decided_by,
                 row.evidence,
                 json.dumps(row.llm_raw, ensure_ascii=False) if row.llm_raw else None,
-                row.prompt_version, row.url, row.filename, _now(),
+                row.prompt_version, row.url, row.filename,
+                row.title_source, row.title_kind, row.title_disposition, _now(),
             ),
         )
         conn.commit()

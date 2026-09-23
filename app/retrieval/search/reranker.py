@@ -13,12 +13,21 @@ So candidates are *banded* instead, and ranked on the bands in priority order:
 1. **relevance** — scores within ``rerank_relevance_tolerance`` are "similarly
    relevant" and go on to compete on the keys below; a candidate a band lower
    never climbs past one above it, however new or full it is;
-2. **authority** — within a relevance band, a canonical source (an organisation's
+2. **temporal fit** — within a relevance band, a passage covering the time the
+   question is about leads one that does not (see
+   :mod:`app.retrieval.search.temporal_gate`). Inert unless the question named a
+   time: with no temporal intent every candidate scores alike and this band is a
+   constant, so it cannot reorder anything;
+3. **authority** — within a temporal band, a canonical source (an organisation's
    own service or hub page) leads a secondary retelling of the same material;
-3. **completeness** — within an authority band, a passage holding
+4. **completeness** — within an authority band, a passage holding
    ``rerank_substance_ratio`` times the text of another says substantially more
    and leads it;
-4. **recency** — comparable passages settle on the effective date, newest first.
+5. **recency** — comparable passages settle on the effective date, newest first.
+
+Note what is *not* here: a freshness term that applies to every query. Recency is
+the last key, and temporal fit only speaks when the question named a time — so a
+newer document never wins on being newer.
 
 Two editions of the same annual report land in one relevance band, and unless one
 is a fragment the newer leads. An older passage that actually answers the
@@ -54,6 +63,7 @@ from typing import Any, NamedTuple, Sequence
 from pydantic import BaseModel, Field
 
 from app.config import get_settings
+from app.core.models.context import WEB_SOURCE_TYPE
 from app.retrieval.search.hybrid_search import Candidate
 from app.retrieval.search.volatility import is_volatile
 
@@ -99,6 +109,13 @@ def _recency_scores(candidates: Sequence[Candidate]) -> list[float]:
 # separates every tier while keeping candidates inside one tier together.
 _AUTHORITY_TOLERANCE = 0.10
 
+# Temporal fit is emitted on a coarse, discrete scale (see `temporal_gate`:
+# 1.0 match / 0.75 partial / 0.5 unknown / 0.25 miss). A tolerance below the
+# smallest of those gaps separates every tier, and — the property that matters —
+# collapses to a single band when every candidate scores the same, which is what
+# a question with no temporal intent produces.
+_TEMPORAL_TOLERANCE = 0.10
+
 # Authority by the bundle a website node belongs to. The ordering is editorial
 # provenance, not topic: a page the organisation maintains *as its statement* on
 # something outranks a dated announcement about the same thing, which outranks a
@@ -130,13 +147,24 @@ _AUTHORITY_PRIMARY = 0.75
 _AUTHORITY_PROJECT = 0.60
 _AUTHORITY_SECONDARY = 0.45
 _AUTHORITY_ATTACHMENT = 0.35
+# Pages fetched from the web at query time (the web subpackage). The
+# organisation's own site is its own statement, but one ingestion never checked,
+# dated or classified — so it sits with the project tier, under the corpus's
+# canonical and primary content. A third-party page is someone else's account of
+# the organisation and sits below everything the corpus holds. Like every tier,
+# these only order candidates the relevance band already called equivalent.
+_AUTHORITY_WEB_PRIMARY = 0.60
+_AUTHORITY_WEB_THIRD_PARTY = 0.20
 
 
 def derived_authority(payload: dict) -> float:
     """Editorial authority in [0,1] inferred from metadata already in the payload.
 
     Reads ``source_type`` and ``bundle`` only — both are stamped on every chunk at
-    ingest, so this needs no new field, no reprojection and no ingest change.
+    ingest, so this needs no new field, no reprojection and no ingest change. A
+    web passage has no bundle; for it the one thing that matters is whether the
+    page is on the organisation's own site, which its payload states as
+    ``is_primary_source``.
 
     A note on the attachment tier: ``source_type == "pdf_attachment"`` is scored
     below its own bundle because the attachment is a *derived* artefact of the
@@ -154,6 +182,9 @@ def derived_authority(payload: dict) -> float:
     bundle = str(payload.get("bundle") or "").strip().lower()
     source_type = str(payload.get("source_type") or "").strip().lower()
 
+    if source_type == WEB_SOURCE_TYPE:
+        return (_AUTHORITY_WEB_PRIMARY if payload.get("is_primary_source")
+                else _AUTHORITY_WEB_THIRD_PARTY)
     if source_type == "website":
         if bundle in _CANONICAL_BUNDLES:
             return _AUTHORITY_CANONICAL
@@ -253,13 +284,19 @@ class _Scored(NamedTuple):
     substance: float
     recency: float
     authority: float
+    # How well the document's period matches the time the question is about.
+    # Constant (and therefore inert) whenever there is no temporal intent, which
+    # is why the default is the same neutral value every other unknown takes.
+    temporal: float = _UNKNOWN
 
 
 class _Ranked(NamedTuple):
     """A scored candidate placed in the ranking."""
 
     relevance_band: int   # 0 is the most relevant band
-    authority_band: int   # 0 is the most authoritative, cut within the relevance band
+    temporal_band: int    # 0 is the best temporal fit, cut within the relevance band
+    recency_band: int     # 0 is the newest; CURRENT questions only, else constant
+    authority_band: int   # 0 is the most authoritative, cut within the recency band
     substance_band: int   # 0 is the fullest band, cut within the authority band
     scored: _Scored
 
@@ -312,33 +349,149 @@ def _substance_bands(
     )
 
 
-def _authority_bands(
+def _temporal_bands(
     scored: Sequence[_Scored], relevance_bands: Sequence[int]
 ) -> list[int]:
-    """Authority band per candidate, cut *within* each relevance band.
+    """Temporal-fit band per candidate, cut *within* each relevance band.
 
-    Negated because :func:`_bands` numbers from the highest value down and
-    authority is better when higher, matching relevance and unlike substance
-    where the raw value is already "more text".
+    Inside, never above: a candidate a relevance band lower cannot climb past
+    one above it however perfectly it fits the period, which is the same
+    guarantee authority and completeness already have and the reason a newer
+    document cannot win on being newer. What this does change is the order of
+    candidates the relevance step has already called equivalent — and there,
+    covering the year the user asked about is a better reason to lead than being
+    a more canonical kind of page, which is why it sits above authority.
+
+    Inert by construction when there is no temporal intent: every candidate then
+    scores ``FIT_UNKNOWN``, one band holds all of them, and the key below it
+    decides exactly as before.
     """
     return _nested_bands(
-        [s.authority for s in scored], relevance_bands, tolerance=_AUTHORITY_TOLERANCE
+        [s.temporal for s in scored], relevance_bands, tolerance=_TEMPORAL_TOLERANCE
+    )
+
+
+#: How much newer one document must be than another to count as better evidence
+#: about the present. A year: shorter than the interval over which a post, a
+#: policy or a figure typically changes, and long enough that two write-ups of
+#: the same season are not separated by it.
+_CURRENT_RECENCY_TOLERANCE_DAYS = 365.0
+_SECONDS_PER_DAY = 86400.0
+
+
+def _recency_bands(
+    scored: Sequence[_Scored], enclosing: Sequence[Any], *, temporal: Any | None
+) -> list[int]:
+    """Recency band per candidate — for CURRENT questions only, else constant.
+
+    Why this exists, and why only here. :func:`temporal_fit` answers "does this
+    document's period cover the time asked about", which for CURRENT means "is it
+    still in force today". That is the right question for an ongoing project or a
+    standing page, and the wrong one for the far commoner case of a document that
+    *reports* something on a date: a 2020 announcement and a 2023 brief both
+    closed their period years ago, so both score ``FIT_MISS`` and the temporal
+    band cannot tell them apart. Authority then decided, and a website
+    announcement outranks a PDF attachment — which is how "who is the director
+    general" came back answered from the older of the two.
+
+    Between two documents that both merely *describe* the present, the newer one
+    is the better evidence about it. That is what this band says, and all it says.
+
+    Three properties keep it from becoming "the newest document wins":
+
+    * it is cut *inside* the relevance and temporal-fit bands, so it only ever
+      reorders candidates those two have already called equivalent;
+    * it only applies when the question is about the present. For every other
+      question the band is a constant, the key is inert, and the ordering is
+      byte-identical to what it was before this existed — the same guarantee
+      :func:`_temporal_bands` has;
+    * the tolerance is an *absolute* year. ``_recency_scores`` normalises dates
+      across the candidate set, so a fixed tolerance on that value would mean
+      two years in one query and nine days in the next. Converting a year into
+      the set's own scale keeps the claim the band makes ("materially newer")
+      the same claim every time, and collapses to a single band — inert again —
+      whenever every candidate was published within about a year of the others.
+    """
+    from app.retrieval.search.temporal_gate import CURRENT
+
+    if temporal is None or getattr(temporal, "mode", None) != CURRENT:
+        return [0] * len(scored)
+    span = _recency_span_days(s.candidate for s in scored)
+    if span <= 0:
+        return [0] * len(scored)
+    # `s.recency` is already [0,1] across the set with undated candidates at the
+    # neutral midpoint, which is exactly the treatment an unknown needs here too.
+    tolerance = _CURRENT_RECENCY_TOLERANCE_DAYS / span
+    if tolerance >= 1.0:
+        return [0] * len(scored)
+    return _nested_bands([s.recency for s in scored], enclosing, tolerance=tolerance)
+
+
+def _recency_span_days(candidates: Any) -> float:
+    """Days between the oldest and newest dated candidate; 0 when undecidable."""
+    epochs: list[float] = []
+    for c in candidates:
+        raw = c.payload.get("effective_start_date")
+        if isinstance(raw, str) and raw:
+            try:
+                epochs.append(
+                    datetime.fromisoformat(raw.replace("Z", "+00:00")).timestamp()
+                )
+            except ValueError:
+                continue
+    if len(epochs) < 2:
+        return 0.0
+    return (max(epochs) - min(epochs)) / _SECONDS_PER_DAY
+
+
+def _authority_bands(
+    scored: Sequence[_Scored], enclosing: Sequence[Any]
+) -> list[int]:
+    """Authority band per candidate, cut *within* each enclosing band.
+
+    The enclosing band is (relevance, temporal fit, recency): each key is only
+    ever a question between candidates that already tied above it, so authority
+    is asked only of candidates that are comparably relevant, comparably
+    well-matched to the period, and — on a question about the present — comparably
+    recent. Source kind therefore settles which of two equally good passages
+    leads; it cannot promote a passage that is years out of date.
+    """
+    return _nested_bands(
+        [s.authority for s in scored], enclosing, tolerance=_AUTHORITY_TOLERANCE
     )
 
 
 def _sort_key(r: _Ranked) -> tuple[float, ...]:
     """The ranking priority, most significant first: relevance band, then
-    authority band, then completeness band, then recency, then the fine-grained
-    relevance within the band — a deterministic last resort, and by construction
-    a sub-tolerance difference that the band already declared immaterial.
+    temporal-fit band, then authority band, then completeness band, then
+    recency, then the fine-grained relevance within the band — a deterministic
+    last resort, and by construction a sub-tolerance difference that the band
+    already declared immaterial.
 
     Authority moved above completeness because completeness is a length proxy and
     a canonical page is short: see the module docstring for the measurement that
     prompted it. It stays *below* relevance, so a canonical page that does not
     answer the question still cannot climb over a passage that does.
+
+    Temporal fit sits directly under relevance for the same kind of reason, in
+    the other direction: when a question names a time, a passage from that time
+    is a better answer than a more canonical passage from a different one — a
+    2019 hub page does not answer "what happened in 2023" better than a 2023
+    news item. It is still *under* relevance, so this remains a tie-break among
+    comparable passages and never "the newest document wins". And with no
+    temporal intent every candidate scores alike, so the band is a constant and
+    the order is exactly what it was before this key existed.
+
+    The recency band between them applies to questions about the present only
+    (see :func:`_recency_bands`), and is the one key that moves *above* authority:
+    asked who holds a post now, "this evidence is three years newer" is a better
+    reason to lead than "this is a more canonical kind of page". For every other
+    question it is a constant and the order below is unchanged.
     """
     return (
         r.relevance_band,
+        r.temporal_band,
+        r.recency_band,
         r.authority_band,
         r.substance_band,
         -r.scored.recency,
@@ -385,14 +538,14 @@ def _cross_encoder_semantic(query: str, candidates: Sequence[Candidate]) -> list
     A cross-encoder emits an unbounded logit — measured on this corpus, roughly
     +4 for a passage that answers the query and -11 for one that does not. Every
     consumer of this number is calibrated in cosine, i.e. 0..1: the relevance
-    band width (`rerank_relevance_tolerance`, 0.03) and the context builder's
-    admission floors (`website_chunk_floor` 0.30, `pdf_high_confidence_floor`
-    0.5, applied to `semantic_score` in `context.builder`). Handing those a
-    logit breaks both — 0.03 is below the gap between any two logits, so every
-    candidate takes its own band and the recency/authority keys stop being
-    reachable, while a moderately relevant passage scoring -2 falls under a floor
-    meant to reject the weakly related. This is the failure `fusion.rrf`
-    documents for its own scale, in the other direction.
+    band width (`rerank_relevance_tolerance`, 0.03), the drop threshold
+    (`rerank_score_threshold`) and the corrective loop's trigger
+    (`corrective_min_score`). Handing those a logit breaks all three — 0.03 is
+    below the gap between any two logits, so every candidate takes its own band
+    and the temporal/recency/authority keys stop being reachable, while a
+    moderately relevant passage scoring -2 falls under a floor meant to reject
+    the weakly related. This is the failure `fusion.rrf` documents for its own
+    scale, in the other direction.
 
     A sigmoid is the model's own calibration rather than an arbitrary rescale:
     these models are trained with BCE on that logit, so sigmoid(logit) is the
@@ -499,12 +652,36 @@ def _semantic_scores(query: str, candidates: Sequence[Candidate], provider: str)
     return dense
 
 
+def _temporal_scores(
+    candidates: Sequence[Candidate], temporal: Any | None
+) -> list[float]:
+    """Temporal fit per candidate, or a flat neutral list.
+
+    Flat — and therefore inert — whenever there is no intent, the intent cannot
+    rank (``NONE``/``UPCOMING``), or scoring raises. The last case is the reason
+    this is wrapped at all: a temporal signal is an improvement to an ordering
+    that already works, and it must never be able to cost a ranking. Same
+    posture as ``retriever._gate_temporal``.
+    """
+    from app.retrieval.search.temporal_gate import FIT_UNKNOWN, temporal_fit
+
+    if temporal is None or not getattr(temporal, "ranks", False):
+        return [FIT_UNKNOWN] * len(candidates)
+    try:
+        return [temporal_fit(c.payload, temporal) for c in candidates]
+    except Exception:
+        logger.warning("Temporal fit failed; ranking without it.", exc_info=True)
+        return [FIT_UNKNOWN] * len(candidates)
+
+
 def rerank(
     query: str,
     candidates: Sequence[Candidate],
     *,
     top_n: int | None = None,
     table_boost: float = 0.0,
+    temporal: Any | None = None,
+    rescore: bool = True,
 ) -> list[Candidate]:
     """Candidates in ranked order, best first, capped at `top_n`.
 
@@ -515,12 +692,17 @@ def rerank(
     scoring marginally higher.
 
     Under the cross_encoder provider only the first `rerank_max_candidates` are
-    scored; the rest keep their incoming order behind them."""
+    scored; the rest keep their incoming order behind them.
+
+    ``rescore=False`` bands the candidates on the `semantic_score` they already
+    carry instead of asking the provider again — for candidates that have each
+    been through this function once, whose scores are therefore already on the
+    provider's scale (see :func:`merge_ranked`)."""
     candidates = list(candidates)
     if not candidates:
         return []
     settings = get_settings()
-    provider = (settings.reranker_provider or "embedding").lower()
+    provider = (settings.reranker_provider or "embedding").lower() if rescore else "embedding"
 
     # A cross-encoder costs one model pass per candidate, so the fused set is
     # capped before it is scored (see `rerank_max_candidates`). The tail is not
@@ -539,10 +721,11 @@ def rerank(
     substance = _substance_scores(candidates)
     recency = _recency_scores(candidates)
     authority = _authority_scores(candidates)
+    temporal_fits = _temporal_scores(candidates, temporal)
 
     kept: list[_Scored] = []
-    for cand, sem, sub, rec, auth in zip(
-        candidates, semantic, substance, recency, authority
+    for cand, sem, sub, rec, auth, fit in zip(
+        candidates, semantic, substance, recency, authority, temporal_fits
     ):
         if threshold and sem < threshold:
             continue
@@ -553,28 +736,45 @@ def rerank(
         kept.append(
             _Scored(
                 candidate=cand, relevance=sem + boost, semantic=sem,
-                substance=sub, recency=rec, authority=auth,
+                substance=sub, recency=rec, authority=auth, temporal=fit,
             )
         )
 
     relevance_bands = _bands(
         [s.relevance for s in kept], tolerance=_relevance_tolerance(query, settings)
     )
-    authority_bands = _authority_bands(kept, relevance_bands)
+    temporal_bands = _temporal_bands(kept, relevance_bands)
+    recency_bands = _recency_bands(
+        kept,
+        [(rb, tb) for rb, tb in zip(relevance_bands, temporal_bands)],
+        temporal=temporal,
+    )
+    # Authority is cut inside the bands above for the same reason completeness
+    # is cut inside authority: each key is only ever a question between
+    # candidates that already tied above it, and banding across the whole set
+    # would let a candidate from a worse-fitting group place the boundary.
+    authority_bands = _authority_bands(
+        kept,
+        [(rb, tb, cb) for rb, tb, cb
+         in zip(relevance_bands, temporal_bands, recency_bands)],
+    )
     # Completeness is cut inside the authority band, not the relevance band: two
     # candidates only compete on length once they are the same *kind* of source,
     # otherwise a long attachment would still set the boundary that splits two
     # canonical pages.
     substance_bands = _substance_bands(
         kept,
-        [(rb, ab) for rb, ab in zip(relevance_bands, authority_bands)],
+        [(rb, tb, cb, ab) for rb, tb, cb, ab
+         in zip(relevance_bands, temporal_bands, recency_bands, authority_bands)],
         tolerance=_substance_tolerance(settings),
     )
     ranked = sorted(
         (
-            _Ranked(relevance_band=rb, authority_band=ab, substance_band=sb, scored=s)
-            for rb, ab, sb, s in zip(
-                relevance_bands, authority_bands, substance_bands, kept
+            _Ranked(relevance_band=rb, temporal_band=tb, recency_band=cb,
+                    authority_band=ab, substance_band=sb, scored=s)
+            for rb, tb, cb, ab, sb, s in zip(
+                relevance_bands, temporal_bands, recency_bands, authority_bands,
+                substance_bands, kept
             )
         ),
         key=_sort_key,
@@ -592,3 +792,42 @@ def rerank(
     ]
     out.extend(tail)
     return out[:top_n] if top_n else out
+
+
+def merge_ranked(
+    query: str,
+    ranked: Sequence[Candidate],
+    extra: Sequence[Candidate],
+    *,
+    table_boost: float = 0.0,
+    temporal: Any | None = None,
+) -> list[Candidate]:
+    """One ranking of candidates already reranked and new ones that were not.
+
+    The case it exists for is web retrieval: the corpus's candidates have been
+    ranked, and web passages (or corpus chunks web search pointed at) arrive
+    afterwards. Scoring everything again would repeat the most expensive step
+    of ranking for no change — the corpus's candidates already carry their
+    provider score — so only the new candidates are scored, and then the whole
+    set is banded once on scores that are now all on the provider's scale.
+
+    A candidate already in ``ranked`` is not scored twice: the same chunk
+    reached two ways is one candidate. Under the cross_encoder cap, the
+    unscored tail of ``ranked`` stays behind everything scored, as
+    :func:`rerank` leaves it — its score is still a cosine, and ranking it
+    against probabilities is the scale-mixing this module avoids.
+    """
+    ranked = list(ranked)
+    seen = {c.id for c in ranked}
+    fresh = [c for c in extra if c.id not in seen]
+    if not fresh:
+        return ranked
+    scored = rerank(query, fresh, table_boost=table_boost, temporal=temporal)
+    settings = get_settings()
+    provider = (settings.reranker_provider or "embedding").lower()
+    cap = settings.rerank_max_candidates
+    head_size = cap if provider == "cross_encoder" and cap else len(ranked)
+    head, tail = ranked[:head_size], ranked[head_size:]
+    merged = rerank(query, head + scored, table_boost=table_boost, temporal=temporal,
+                    rescore=False)
+    return merged + tail

@@ -81,7 +81,7 @@ rather than cached:
 
 | Input | Purpose |
 | --- | --- |
-| `_pref_fingerprint()` | Hash of the retrieval-preference knobs (`prefer_website_enabled`, `website_candidate_k`, `website_max_slots`, `website_chunk_floor`, `pdf_max_slots`, `pdf_high_confidence_floor`, `retrieval_top_k`, `retrieval_candidate_k`, `context_token_budget`) |
+| `_pref_fingerprint()` | Hash of `PIPELINE_REVISION` and the retrieval-preference knobs (`prefer_website_enabled`, `website_candidate_k`, `retrieval_top_k`, `retrieval_candidate_k`, `context_token_budget`) |
 | `top_k` | The requested result width |
 | `answer_format` | list/table/summary/detailed/timeline/default |
 | `corpus_revision()` | The indexed corpus's current state — see below |
@@ -206,6 +206,7 @@ is entirely Qdrant-backed, and an unset `redis_url` has no effect on it.
 | Semantic-cache collection missing on lookup | `collection_exists` check | Treated as a miss; collection is **not** created by `lookup` | Created lazily on the next `store` |
 | A near-duplicate question under a different facet scope | `facet_fingerprint` post-filter | Miss, even though the embeddings matched | — |
 | Retrieval-preference settings tuned | `_pref_fingerprint` changes | Old entries become unaddressable (different partition); no stale cross-mode serving | Old points age out via `expires_at` |
+| Ranking, context or prompt behaviour changed in code | `PIPELINE_REVISION` in `cache_keys.py`, bumped by hand as part of the change | Old entries become unaddressable; the fix is visible on the next question rather than after the TTL. A code change has no setting to hash, so without the bump the pre-fix answer is served for up to 24 hours and the fix looks like it did nothing — which is how one ranking fix was reported as not working three times | Old points age out via `expires_at` |
 | A sweep re-indexes or adds/deletes documents | `corpus_revision()` changes | Every previously-cached partition for that revision becomes unaddressable | New answers repopulate the cache under the new revision |
 | Cache grows unbounded | Qdrant has no native TTL | `_maybe_prune` every `semantic_cache_prune_every` stores; `expires_at` filtered at lookup regardless | Run `prune()` manually, or via a scheduled job, if opportunistic pruning is disabled |
 

@@ -1,0 +1,128 @@
+{
+  "document_id": "6658c489-9aad-483b-9004-27b62225425d",
+  "source_type": "pdf_attachment",
+  "title": "Concept Note WCEF",
+  "sections": [
+    {
+      "text": "Page 1 of 2 \n \n  \n  \n  \nCircular Public Procurement and Ecolabels \n– a WCEF2026 accelerator session \n  \nDate: 18 September 2026 | Friday | Time: 14:00-15:30 IST  \n  \n  \nCONCEPT NOTE  \n  \nThe accelerator session “Circular Public Procurement and Ecolabels” will take \nplace on 18 September 2026, virtually, during the World Circular Economy Forum  \n2026.This event is an accelerator session at the World Circular Economy Forum 2026.  \n \nFormat: Virtual   \nTarget audience: Policymakers, public procurers, businesses, research and civil society  \nRegistration: By link \n  \nDescription  \nPublic demand can create early markets for circular products and services, reduce \nreliance on newly extracted materials, extend product life, strengthen secondary \nresource markets and advance Sustainable Development Goal 12. Internationally and \nin India, information instruments, combined with market-promotion instruments, have \nhelped achieve environmental goals.  \n  \nCircular Public Procurement (CPP) enables governments to use their purchasing \npower to create demand for circular products and solutions. In India, where public \nprocurement represents approximately 20–22% of GDP, it can serve as a significant \ndemand-side instrument for encouraging sustainable production practices and the \nuptake of circular products.",
+      "heading": null,
+      "page_start": 1,
+      "page_end": 1,
+      "order": 0
+    },
+    {
+      "text": "Page 2 of 2 \n \n  \nIndia’s Ecomark programme has been restructured through the Ecomark Rules, 2024, \nwhile the draft amendments proposed in 2026 introduce stronger circularity \nconsiderations, including recycled content, Extended Producer Responsibility, \nlifecycle assessment and traceability. Information instruments, including ecolabels, \nneed to be complemented by market-promotion instruments such as public \nprocurement to encourage manufacturer uptake. Existing provisions under the \nGeneral Financial Rules, 2017, including those relating to lifecycle costing, recognised \nstandards and environmental characteristics, provide entry points for integrating these \nconsiderations into public procurement.  \n  \nObjectives  \nThe session will bring together stakeholders from government, industry and research \nto share perspectives and chart pathways for integrating environmental and \nsustainability criteria into public procurement.  \n  \nThrough a framing presentation, panel discussion and interactive exercise, \nparticipants will identify actions for moving CPP from policy ambition to \nimplementation.  \n  \nThe session asks  \n• \nWhat policy, institutional and market conditions are required to link information \ninstruments with public procurement (a market promotion instrument)?  \n• \nWhich sectors and product categories are most ready for Circular Public \nProcurement?  \n• \nHow can standards, ecolabel and visual identifiers be integrated into \nprocurement systems?  \n  \nParticipants can look forward to practical examples and perspectives through an \ninteractive discussion on translating circular-economy objectives into public \npurchasing decisions.  \n  \nDraft Programme  \nDuration  \nProgramme  \n5 minutes  \nOpening and welcome remarks  \n10 minutes  Framing presentation  \n30 minutes  Policy perspectives  \n30 minutes  Panel Discussion \n12 minutes  Q&A  \n2 minutes  \nVote of thanks   \nThe detailed programme and confirmed speaker names will be published on the TERI \nwebsite.\n\n| Duration | Programme |\n| --- | --- |\n| 5 minutes | Opening and welcome remarks |\n| 10 minutes | Framing presentation |\n| 30 minutes | Policy perspectives |\n| 30 minutes | Panel Discussion |\n| 12 minutes Q&A |  |\n| 2 minutes | Vote of thanks |",
+      "heading": null,
+      "page_start": 2,
+      "page_end": 2,
+      "order": 1
+    }
+  ],
+  "source_url": "https://teriin.org/event/wcef2026-accelerator-session-circular-public-procurement-and-ecolabels",
+  "file_url": "https://teriin.org/sites/default/files/2026-09/Concept%20Note_WCEF_CPP_Ecolabel_virtual.pdf",
+  "pdf_id": "6658c489-9aad-483b-9004-27b62225425d",
+  "pdf_path": "Concept Note_WCEF_CPP_Ecolabel_virtual.pdf",
+  "article_uuid": null,
+  "linked_pdf_id": null,
+  "linked_article_uuid": "c78a7fde-a2f5-4b5c-9926-8f4f5ee240b1",
+  "authors": [],
+  "tags": [
+    "Environmental governance",
+    "Government policy/regulations",
+    "Government schemes",
+    "Sustainable development",
+    "Sustainable Development Goals",
+    "Sustainable public procurement"
+  ],
+  "categories": [
+    "Resources & Sustainable Development"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-09-18T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "parent_page",
+  "effective_end_date": "2026-09-18T00:00:00+00:00",
+  "end_precision": "day",
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "2906b1d7628d9b151da8062e4db4fb8aa10cc500de6514187bb711fe69a62695",
+  "extra": {
+    "bundle": "events"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Academicians"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Civil society/Grassroots"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Policy Makers"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "b005a095-c75e-4e10-a554-23eef3b33a25",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Researchers/Post graduates"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "e485fc9b-b495-4a83-848f-d90ac7041f52",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Environmental governance"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "ce8a4e64-84d1-48a3-b959-a8bcd904ef41",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Government policy/regulations"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "544578d3-b63e-4b0d-a48e-97e93475f522",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Government schemes"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "bb477ab4-9efd-4c18-9355-5e5022a50023",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable development"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "e32d3938-98ec-4b36-8577-9b9d2795ac21",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable Development Goals"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "edce039a-70a4-49f8-b838-6e4861336a74",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Sustainable public procurement"
+    },
+    {
+      "field_name": "field_event_theme",
+      "uuid": "7a26e06f-40be-4fa6-9ad2-7586d7f8ecd2",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Resources & Sustainable Development"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {}
+}

@@ -212,6 +212,50 @@ pins.
 
 ---
 
+## Type words and tags: filters only when the question is about the catalog
+
+The glossary the classifier reads (`catalog_prompt.BUNDLE_MEANINGS`) tells it
+that a type word the user says — "articles", "reports", "news", "projects" —
+names that bundle. That is right for a question *about the catalog* ("how many
+articles in 2023" counts the `article` bundle) and wrong for a question about
+what documents *say*. Measured on 2026-09-18: *"list down all the articles
+where IPCC mentioned"* came back `database 0.78, bundle=article, tags=[IPCC]`.
+The catalog holds no text, so the plan matched nothing; the fall-through to
+semantic search then kept `tags in [IPCC]` on every leg, which held 2
+documents (both 2011–12 feature articles) while the 22 documents with IPCC in
+their title carry tags such as "Climate change" and "CoP28". The user meant
+"articles" as people say it — "things you have written".
+
+Two deterministic guards in `process()`, both built on
+`content_scope.py` and run straight after `_corrected_intent`, hold the rule
+the prompt states (`catalog_prompt.CONTENT_QUESTION_RULE`), because with one
+analysis vote a prompt can only move which questions the model gets wrong:
+
+1. **`_widen_content_question`** — when the wording asks for documents by
+   what they say (`content_scope.conditions_on_text`: *mentioned, discuss,
+   refer to, reference, talk about, contain, appear*), the type word is
+   descriptive. `bundle` is cleared — *whichever* bundle it was — and a
+   `structured` route becomes `qa`. The bundle is cleared on every route, not
+   only `structured`, because the catalog fallback and the scoped summary plan
+   from the same slots. `list_themes` and `distribution` are left alone ("what
+   topics are discussed?" is about the vocabulary). Topic words ("about X",
+   "on X") are deliberately *not* predicates: the structured layer accounts
+   for them through `topic.residual_topic`, and "news about COP28" is often
+   meant literally.
+2. **`_drop_implicit_tags`** — a tag the model extracted survives only when
+   the question names the facet (`content_scope.names_tag_facet`: *tag,
+   tags, tagged, tagging*). Otherwise it is dropped and the word is matched as
+   content by the keyword and content-term legs, which take their terms from
+   the question text. Decided once here because every consumer — the Qdrant
+   facet filter, the planner's tag join, the catalog fallback and the
+   semantic-cache fingerprint — reads the same `analysis`.
+
+The catalog-shaped reading is untouched: "how many articles were published in
+2023?" still counts 461 articles, and "how many posts are tagged 'policy'?"
+still filters by tag. Tests: `tests/retrieval/understanding/test_content_scope.py`.
+
+---
+
 ## Facets → Qdrant filter (`filters.py`)
 
 `_facet_filters(analysis)` builds the `FieldCondition` list:
@@ -220,7 +264,7 @@ pins.
 | --- | --- | --- |
 | `theme` | `categories` MatchAny, `{theme, theme.title(), theme.strip()}` | Payloads store whatever casing the CMS supplied; there is no MySQL term table to translate a name into ids here |
 | `author` | *(none — deliberately not filtered)* | See below |
-| `tags` | `tags` MatchAny | |
+| `tags` | `tags` MatchAny | Only reaches here when the question names the tag facet ("tagged X"); `_drop_implicit_tags` clears a subject word the model put in the slot — see above |
 | `source_type == "pdf"` | `source_type` MatchAny `["pdf", "pdf_attachment"]` | "PDFs" includes attachments |
 | `source_type in ("website", "article")` | `source_type` MatchAny `["website", "article"]` | `article` kept for points indexed before the bundle rename |
 | `language` | `language` MatchValue | |
@@ -502,6 +546,8 @@ of text that changes every day, which matters for prompt-prefix caching.
 | At least one vote survives | `_voted_understanding` / `process()` | Passthrough |
 | Merged intent set is non-empty on the content side | `_resolve_intents` | A content intent is manufactured (`qa`, confidence 0.5) rather than left empty |
 | A chitchat draw is really chitchat | `_corrected_intent` | Rescued to `qa` or `structured` on either probe |
+| A type word is a filter the user chose | `_widen_content_question` | On a question about what documents say: `bundle` cleared, `structured` → `qa` |
+| A tag is a filter the user chose | `_drop_implicit_tags` | Tags dropped unless the question names the facet |
 | Approved-alias acronym is acronym-shaped and derivable | `ApprovedAliasIndex.build` | Row excluded from the index |
 | Alias normalized form is unambiguous corpus-wide | `ApprovedAliasIndex.build` | Row excluded from the index (guard 3) |
 | Edition span names a series-held edition | `annual_report_editions._requested` | Resolves to `None`; retrieval stays unfiltered |
@@ -519,6 +565,7 @@ of text that changes every day, which matters for prompt-prefix caching.
 | MySQL unreachable for the alias index | `ApprovedAliasIndex.load` raises | Propagates to the caller's try/except (recognition, not understanding, degrades) | Next call after the connection recovers |
 | Annual-report series unreadable | `except` in `_series` | Logged warning; resolves to `{}` → unfiltered | Next call after the connection recovers |
 | A CMS field the classifier was never told about drives a wrong bundle guess | Not detected here | Wrong or null bundle in `QueryAnalysis` | Extend `BUNDLE_MEANINGS` / `catalog_inventory_directive` |
+| Model turns a type word or the subject into a filter on a content question | Measured: "articles where IPCC mentioned" → `bundle=article`, `tags=[IPCC]` | `_widen_content_question` / `_drop_implicit_tags` on the wording | Extend `content_scope`'s predicate or `CONTENT_QUESTION_RULE` |
 
 ## Observability
 

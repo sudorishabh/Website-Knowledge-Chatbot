@@ -23,13 +23,15 @@ that this stage is careful never to conflate:
 | Field | What it holds |
 | --- | --- |
 | `score` | The *current ranking* value — dense similarity out of Qdrant, then the RRF-fused value, then the banded relevance this stage produces. Ordering only. |
-| `semantic_score` | The *raw* semantic relevance, on the active scorer's own scale. Set once at search time and carried through fusion untouched, because every configured floor (`website_chunk_floor`, `pdf_high_confidence_floor`, `corrective_min_score`, `rerank_score_threshold`) is calibrated against it. |
+| `semantic_score` | The *raw* semantic relevance, on the active scorer's own scale. Set once at search time and carried through fusion untouched, because every configured floor (`corrective_min_score`, `rerank_score_threshold`) is calibrated against it. |
 | `fusion_score` | The reciprocal-rank value from `fusion.rrf`, `0.0` when no fusion ran. Carried through reranking unchanged, so a ranking can still be traced back to how it was fused. |
 
 Keeping these apart fixed a real defect: `rrf` used to overwrite `score`, and the
 floors read `score` — so turning on the keyword or multi-query leg put every
-candidate an order of magnitude below `website_chunk_floor` and silently emptied
-the website group. See [04](04-search-and-fusion.md) for how a
+candidate an order of magnitude below the cosine-scaled floors, emptying the
+website group through an admission floor since retired and pinning the
+corrective loop open through one that has not. See [04](04-search-and-fusion.md)
+for how a
 `Candidate` is built and fused; this document starts from the fused list.
 
 ---
@@ -80,26 +82,82 @@ boundary that splits two canonical pages apart.
 
 ---
 
-## The four-level priority
+## The priority
 
 ```python
 def _sort_key(r):
-    return (r.relevance_band, r.authority_band, r.substance_band,
+    return (r.relevance_band, r.temporal_band, r.recency_band,
+            r.authority_band, r.substance_band,
             -r.scored.recency, -r.scored.relevance)
 ```
 
 | Priority | Signal | Cut within | Tolerance |
 | --- | --- | --- | --- |
 | 1 | **Relevance** | the whole candidate set | `rerank_relevance_tolerance` (widened for volatile queries — see below) |
-| 2 | **Authority** | the relevance band | `_AUTHORITY_TOLERANCE = 0.10` (fixed) |
-| 3 | **Completeness** ("substance") | the authority band | `log(rerank_substance_ratio)` |
-| 4 | **Recency** | not banded — settles ties directly | — |
-| 5 | Exact relevance | final deterministic tiebreak | — |
+| 2 | **Temporal fit** | the relevance band | `_TEMPORAL_TOLERANCE = 0.10` (fixed) |
+| 3 | **Recency band** — CURRENT questions only | the temporal band | one year, converted to the set's own scale |
+| 4 | **Authority** | the recency band | `_AUTHORITY_TOLERANCE = 0.10` (fixed) |
+| 5 | **Completeness** ("substance") | the authority band | `log(rerank_substance_ratio)` |
+| 6 | **Recency** | not banded — settles ties directly | — |
+| 7 | Exact relevance | final deterministic tiebreak | — |
 
 Two editions of the same annual report land in one relevance band, and unless
 one is a fragment the newer leads. An older passage that actually answers the
-question still outranks a newer one that merely mentions it — recency is the
-*last* word, never the first.
+question still outranks a newer one that merely mentions it — recency is never
+the first word.
+
+Keys 2 and 3 are **inert unless the question has the matching temporal intent**:
+with none, every candidate scores alike, one band holds all of them, and the
+order is exactly what it was before either key existed.
+
+### Why a recency band, above authority, for CURRENT questions
+
+`temporal_fit` asks whether a document's period covers the time asked about,
+which for CURRENT means "is it still in force today". That is right for an
+ongoing project or a standing page and wrong for the far commoner case of a
+document that *reports* something on a date: a 2020 announcement and a 2023
+brief both closed their period years ago, so both score `FIT_MISS` and key 2
+cannot separate them.
+
+Authority then decided, and a website announcement outranks a PDF attachment.
+That is how "who is the director general" came back answered from a 2020 page
+headed "Statement by Dr X, Director General, TERI", with the 2023 document
+saying he "was earlier ... at TERI as its Director General" ranked below it.
+
+Between two documents that both merely *describe* the present, the newer is the
+better evidence about it — a better reason to lead than being a more canonical
+kind of page. That, and only that, is what key 3 says. It cannot become "the
+newest document wins": it is cut inside keys 1 and 2, it applies to no other
+kind of question, and its tolerance is an absolute year, so it collapses to a
+single band whenever every candidate was published within about a year of the
+others.
+
+### What "open-ended" covers, and what it does not
+
+Under CURRENT, `temporal_fit` gives `FIT_MATCH` to a document whose period has
+not closed. The only such documents are pages of the `OPEN_ENDED_BUNDLES`
+(`ongoing_projects`): a project declares a start and no end because it has not
+ended, and the page describing it is maintained. Every other document's period
+closes where its own precision says — a 2020 announcement in 2020, a report
+stated as "2019" on 31 December 2019.
+
+An attachment of an ongoing-project page inherits the page's bundle, and until
+this was measured `_is_open_ended` read the bundle alone and called the
+attachment open-ended too. That made every such PDF — a guideline, a brochure,
+a report, dated by its own copyright line — a perfect fit for any question about
+the present, one band above every dated document. The corpus holds about 24
+attachment chunks under this bundle for every page chunk, so this was not a
+corner case. On the reported "who is X", a 2019 building-retrofit guideline led
+the context above a 2023 brief on the strength of a foreword signed with the
+subject's then title, scoring lowest of the six blocks on relevance, and the
+answer gave that title in the present tense. Every dated block behind it stood
+in recency order; only the guideline was out of place.
+
+`_is_open_ended` now answers for the *page*: a `pdf_attachment` is a fixed
+artefact whatever bundle it carries, and its period closes on its own date. The
+project page itself is unchanged and still leads a CURRENT question. The recall
+side (`filters.date_conditions`) still treats the bundle as open-ended for date
+filters, which is the permissive direction and the right one there.
 
 ### Why authority sits above completeness
 
@@ -141,10 +199,10 @@ answers the query and ~-11 for one that does not), so
 `_cross_encoder_semantic` squashes it through a sigmoid. That is the model's own
 calibration — these models are trained with BCE on that logit — and it is what
 keeps `semantic_score` on the cosine footing every consumer is tuned for: the
-relevance band width (`rerank_relevance_tolerance`, 0.03), the context builder's
-`website_chunk_floor` (0.30) and `pdf_high_confidence_floor` (0.5), and the
-corrective loop's `corrective_min_score` (0.2). Passing the raw logit through
-would break all four at once, in the same way `fusion.rrf` would if it wrote its
+relevance band width (`rerank_relevance_tolerance`, 0.03), the drop threshold
+(`rerank_score_threshold`) and the corrective loop's `corrective_min_score`
+(0.2). Passing the raw logit through
+would break all three at once, in the same way `fusion.rrf` would if it wrote its
 reciprocal-rank value over the semantic score. Pinned by
 `tests/retrieval/search/test_fusion_score_integrity.py`.
 

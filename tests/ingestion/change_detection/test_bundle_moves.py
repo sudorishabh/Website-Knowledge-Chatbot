@@ -98,7 +98,7 @@ def world(monkeypatch):
     )
     monkeypatch.setattr(de, "iter_node_uuids", lambda s, b, **kw: iter(site.live_in(b)))
 
-    def save_state(record, doc, content_hash, version, indexed=True):
+    def save_state(record, doc, content_hash, version, indexed=True, **_kwargs):
         site.catalogue(record.document_id, record.bundle)
 
     monkeypatch.setattr(pipeline, "_save_state", save_state)

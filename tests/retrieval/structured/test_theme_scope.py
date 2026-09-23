@@ -195,10 +195,9 @@ def test_the_grounded_prompt_forbids_assembling_a_theme_list_from_context():
     """
     from app.generation.prompts import (
         GROUNDED_SYSTEM_PROMPT,
-        SINGLE_SOURCE_SYSTEM_PROMPT,
     )
 
-    for prompt in (GROUNDED_SYSTEM_PROMPT, SINGLE_SOURCE_SYSTEM_PROMPT):
+    for prompt in (GROUNDED_SYSTEM_PROMPT,):
         assert "thematic areas" in prompt
         assert "sample of pages" in prompt
         # The restriction is on generalising, not on mentioning a theme at all.

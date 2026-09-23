@@ -62,6 +62,17 @@ class StateRecord:
     # Free-text keyword tags (documents_tag). Separate from `categories`
     # (themes): tags are a flat, long-tail vocabulary with no hierarchy.
     tags: list[str] = field(default_factory=list)
+    #: Why this document has no chunks, when it has none. ``None`` is the
+    #: ordinary case: the document has indexed content. ``metadata_only`` says
+    #: the *source* provides identity and attachments but no body — a Drupal
+    #: project page that is a title, two date fields and a PDF link — and that
+    #: this is a complete representation of it rather than a failed extraction.
+    #:
+    #: It exists so that nothing downstream may assume "a row exists, therefore
+    #: it has chunks". Deliberately a column of its own rather than inferred
+    #: from an empty ``content_hash``: the two have been equal by accident
+    #: before, and an invariant that depends on an accident is not an invariant.
+    content_state: str | None = None
     # Attachment links and the lossless source metadata (JSON column).
     attachments: list[AttachmentLink] = field(default_factory=list)
     raw_meta: dict[str, Any] | None = None

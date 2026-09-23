@@ -1,0 +1,65 @@
+{
+  "canonical": {
+    "effective_start_date": "2020-01-01T00:00:00+00:00",
+    "start_precision": "year",
+    "date_source": "document_copyright",
+    "effective_end_date": null,
+    "end_precision": null,
+    "edition_label": null
+  },
+  "website_evidence": null,
+  "record_created": null,
+  "record_changed": null,
+  "parent_page_resolution": {
+    "start_value": "2025-09-30T04:28:20+00:00",
+    "start_precision": "day",
+    "source": "created",
+    "rule": "bundle_created",
+    "end_value": null,
+    "end_precision": null,
+    "bundle": "page",
+    "fields": [
+      "created"
+    ],
+    "raw_values": [],
+    "field_role": "created_stamp",
+    "range_issue": null
+  },
+  "file_resolution": {
+    "start_value": "2020-01-01T00:00:00+00:00",
+    "start_precision": "year",
+    "end_value": null,
+    "end_precision": null,
+    "edition_label": null,
+    "decision": {
+      "document_id": "inbody:019c7e59163edfbb3535b05744ff6949b04cef47",
+      "action": "propose_override",
+      "candidate_start_date": "2020-01-01T00:00:00+00:00",
+      "candidate_precision": "year",
+      "date_type": "publication",
+      "edition_label": null,
+      "source": "document_copyright",
+      "confidence": 0.9,
+      "evidence": "The document's front matter states 'Ⓒ \\ue064\\ue055\\ue062\\ue059 Alumni Association 2020' and its DocInfo creation date is 2020-09-21T17:51:50+00:00; both name 2020, which differs from the page's 2025-09-30. Year precision: 1 January is a marker, not a day.",
+      "rule": "copyright_statement_corroborated",
+      "decided_by": "deterministic",
+      "supporting_evidence": "In-body file with no Drupal upload record on a page dated by its creation stamp; the file itself was the only evidence available.",
+      "used": [
+        "drupal",
+        "pdf_meta",
+        "pdf_text"
+      ]
+    },
+    "llm_raw": null,
+    "used": [
+      "drupal",
+      "pdf_meta",
+      "pdf_text"
+    ]
+  },
+  "parent_page_canonical_date": {
+    "effective_start_date": "2025-09-30T04:28:20+00:00",
+    "start_precision": "day",
+    "effective_end_date": null
+  }
+}

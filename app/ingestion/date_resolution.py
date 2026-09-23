@@ -6,43 +6,57 @@ ingestion path that builds a PDF document calls :func:`resolve`; the rules
 themselves live in :mod:`app.ingestion.date_rules` and
 :mod:`app.ingestion.date_llm` and are not duplicated anywhere.
 
-The contract, unchanged from the validated design:
+The contract:
 
-**The page's date is the default and the fallback.** A PDF keeps its parent
-node's date unless the document itself states when it was published. Being
+**One PDF on a page is that page's document.** It inherits the page's date
+unopened, whatever the file is called and whatever its timestamps say. Being
 uploaded later, having a later ``file.created``, sitting under a later
-``/files/YYYY-MM/`` path, carrying a later PDF ``CreationDate`` or naming a year
-in its filename are all *supporting signals*: they decide whether a document is
-worth reading closely, and never set a date.
+``/files/YYYY-MM/`` path or carrying a later PDF ``CreationDate`` are all
+*supporting signals*: they decide whether a document is worth reading closely,
+and never set a date.
 
-**Sharing a page is different.** One PDF on a page is part of that page's
-publication and inherits its date unopened. Several PDFs on one page are several
-documents — a shelf accretes editions and reports published years apart — so
-each one is read and gets its own document-level decision, with the page's date
-as its fallback rather than its answer. That is the only thing the PDF count
-changes: it does not lower any bar for what may set a date.
+**Several PDFs on one page are several documents.** A shelf accretes editions
+and reports published years apart, so the page's date is a fact about the shelf.
+Two things follow, and together they are what fixed the reported failure —
+``TERI-Annual-Report-2024-25.pdf`` stored as 2022-02-09, 69 FCRA statements all
+sharing 2018-04-04:
 
-**An override needs the document to say so.** Two paths can propose one, and
-both require the document's own text. :mod:`app.ingestion.date_llm` proposes a
-*date at the precision its evidence supports* when the verdict survives every
-gate — a quoted publication statement, that statement present in the PDF's own
-text, the statement carrying the proposed date, publication linkage, and
-confidence at or above the threshold. A statement naming a day gives a day; one
-naming a month gives that month; one naming only a year gives that year. The
-value stored is the first day of the established period and the precision says
-how much is known, so nothing is invented in either direction. :func:`copyright_override`, the one deterministic override,
-proposes a *year* (stored as 1 January with ``candidate_precision="year"``)
-when the front matter carries a copyright statement **and** the PDF's own
-DocInfo creation date names the same year — two independent facts agreeing,
-and neither of them a Drupal timestamp. It runs only where the deterministic
-pass found nothing at all to go on (``multi_pdf_no_evidence``: an in-body file
-with no upload record, whose page is dated by its creation stamp), which is the
-shelf-page shape where a book published years earlier was inheriting the day
-someone typed the page. Anything short of that keeps the page date and, where
-a date was seen, leaves a review row.
+* **the file's own name decides** (:func:`title_override`), because on a shelf it
+  is the only thing telling one file from another; and
+* **where nothing states a date, the file gets none.** Not the shelf's creation
+  stamp. See :func:`app.ingestion.date_rules.page_date_is_usable` for the exact
+  condition, and for why a page whose *bundle* states a date — an event, a
+  project — still hands that date to every file on it.
 
-Cost follows the same routing that was measured: the deterministic pass settles
-the large majority for free, only the routed remainder has its text read, and
+**An override needs the document to say so** — in its name, or in its text.
+Three paths can propose one, and they are weighed in that order:
+
+:func:`title_override` reads the file's own naming — the filename, then the PDF's
+DocInfo title, then the Drupal link text, strongest first, because the first two
+belong to the *file* and the label belongs to the *page* that links it. A full
+date or a reporting period settles the file outright; a month or a bare year
+fixes the *period* and the document's text may sharpen it inside that period, but
+nothing may contradict it. See :func:`_reconcile_with_title`.
+
+:func:`copyright_override`, the deterministic text rule, proposes a *year*
+(stored as 1 January with ``candidate_precision="year"``) when the front matter
+carries a copyright statement **and** the PDF's own DocInfo creation date names
+the same year — two independent facts agreeing, and neither of them a Drupal
+timestamp.
+
+:mod:`app.ingestion.date_llm` proposes a *date at the precision its evidence
+supports* when the verdict survives every gate — a quoted publication statement,
+that statement present in the PDF's own text, the statement carrying the proposed
+date, publication linkage, and confidence at or above the threshold. A statement
+naming a day gives a day; one naming a month gives that month; one naming only a
+year gives that year. The value stored is the first day of the established period
+and the precision says how much is known, so nothing is invented in either
+direction. Anything short of that leaves the page's date where it may be
+inherited, no date where it may not, and a review row where a date was seen.
+
+Cost follows the same routing that was measured, with one path added in front of
+it: a name that answers settles the file for free. Otherwise the deterministic
+pass settles the large majority, only the routed remainder has its text read, and
 the model is called only for what survives that. Nothing here downloads
 anything — the caller already holds the PDF bytes — and Document Intelligence is
 unreachable, because this module does not import
@@ -52,20 +66,25 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field, replace
+from datetime import date
 from typing import Any
 
 from app.ingestion.date_evidence import (
     PageContext,
     PdfEvidence,
     copyright_statement,
+    parse_dt,
     read_pdf_front_matter,
     read_pdf_head,
 )
-from app.ingestion.date_rules import DateDecision, decide
+from app.ingestion.date_rules import DateDecision, decide, page_date_is_usable
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["ResolvedDate", "build_evidence", "copyright_override", "resolve"]
+__all__ = [
+    "ResolvedDate", "TitleFinding", "build_evidence", "copyright_override",
+    "read_title_evidence", "resolve", "title_override",
+]
 
 
 @dataclass
@@ -87,8 +106,11 @@ class ResolvedDate:
     #: file hanging off a research paper is year-precision too and no reader
     #: renders its 1 January as a day. For an override it is the decision's
     #: own: ``day`` from the LLM path, which quotes a stated day, ``year`` from
-    #: the copyright rule, which quotes a stated year.
-    start_precision: str = "day"
+    #: the copyright rule, which quotes a stated year, and whatever the file's
+    #: own name actually established for the title rule. None exactly when
+    #: :attr:`start_value` is None — there is no precision for a date that is
+    #: not there, and a leftover "day" would read as a claim.
+    start_precision: str | None = "day"
     #: The end of the period the parent page's content covers, inherited whole.
     #: None for a single-date page, and None for an override — a quoted
     #: statement gives a day, never a period.
@@ -121,13 +143,25 @@ class ResolvedDate:
         publication statement is ``document_text``. A corroborated copyright
         year is ``document_copyright`` — which used to be recorded as
         ``document_text``, claiming a verified publication statement for a
-        document that had only stated a year.
+        document that had only stated a year. A date the file's own name states
+        is ``document_title``. A file the system declined to date is
+        ``no_evidence``: there is no value, and the *reason* there is no value is
+        worth as much as a value would have been.
         """
+        if self.dropped:
+            return "no_evidence"
         if not self.overridden:
             return "parent_page"
-        if (self.decision.source or "") == "document_copyright":
-            return "document_copyright"
+        source = self.decision.source or ""
+        if source in ("document_copyright", "document_title"):
+            return source
         return "document_text"
+
+    @property
+    def dropped(self) -> bool:
+        """Was this file deliberately left undated? See
+        :func:`app.ingestion.date_rules.page_date_is_usable`."""
+        return bool(self.decision and self.decision.action == "drop_page_date")
 
     @property
     def needs_review(self) -> bool:
@@ -205,6 +239,169 @@ def _read_pdf_signals(evidence: PdfEvidence, content: bytes) -> None:
     evidence.front_text = read_pdf_front_matter(content)
 
 
+
+def _same_period(precision: str, title_value, page_value) -> bool:
+    """Do a title's date and a page's date name the same period, compared at
+    ``precision``? A year-precision comparison asks only about the year."""
+    if page_value is None:
+        return False
+    page_date = page_value.date() if hasattr(page_value, "date") else page_value
+    if precision == "year":
+        return page_date.year == title_value.year
+    if precision == "month":
+        return (page_date.year, page_date.month) == (title_value.year,
+                                                     title_value.month)
+    return page_date == title_value
+
+
+@dataclass(frozen=True)
+class TitleFinding:
+    """What the file's own naming said, and what became of it.
+
+    Both halves are needed downstream and for different reasons. ``decision`` is
+    the override to apply, when there is one. ``disposition`` is the audit
+    answer to "the filename clearly says 2024 — why is this document dated
+    2018?", which has to be answerable *especially* in the cases where the name
+    did not win.
+    """
+
+    #: What the naming stated, or None if it stated nothing usable.
+    found: object = None
+    #: The override it proposes, or None if it does not.
+    decision: DateDecision | None = None
+    #: ``replaced`` — the name set the date.
+    #: ``refined``  — the name set the period and the document's text sharpened
+    #:                it inside that period.
+    #: ``corroborating`` — the name agreed with a date the CMS states, so it
+    #:                changed nothing and nothing was lost by declining.
+    #: ``rejected`` — the name stated something and it was not used: a bare year
+    #:                against a stated CMS date, or a reading the document's own
+    #:                text contradicted.
+    #: ``none``     — the naming stated no date at all.
+    disposition: str = "none"
+
+
+def _reading(found) -> str:
+    """The clause that explains a reading a reader would otherwise have to infer.
+
+    Only editions need one, and they need it badly: nothing about the pair
+    ``'2024-25'`` and ``2025-01-01`` says on its face which end of the span was
+    taken, so "why is this 2025 and not 2024?" would be unanswerable from the
+    stored row. Everything else reads straight off its own statement.
+    """
+    if found.title_kind != "edition":
+        return ""
+    return (f" — the year the {found.raw_statement} period ends in, which is "
+            f"when an edition covering it is published")
+
+
+def read_title_evidence(evidence: PdfEvidence) -> TitleFinding:
+    """The date the file's own naming states, and whether it may be used.
+
+    The cheapest evidence in the system: three strings the crawl already holds —
+    the filename, the PDF's DocInfo title, the Drupal link text — read with no
+    download, no text extraction and no model call.
+
+    **It applies only where several PDFs share a page**, and that restriction is
+    the point rather than a caution. A page holding one file is that file's page:
+    its date is a claim about the document, and the document inherits it
+    unconditionally — no name is read, nothing is weighed. A page holding twelve
+    is a shelf, its date is a claim about the shelf, and the only thing that
+    tells one file on it from another is what the file is called. That is the
+    case this rule exists for: ``TERI-Annual-Report-2024-25.pdf`` and
+    ``Auditor-Report-2024-25.pdf`` both sat on shelves stamped years earlier.
+
+    Restricting it this way is also what keeps the edition/date distinction
+    intact where it matters. ``TEDDY-2015-16-press-release.pdf`` is the only file
+    on its page and really was released on 2016-03-22; ``2015-16`` is the edition
+    TEDDY covers, not a date, and this rule never sees it.
+
+    Two declines, and they mean different things:
+
+    *Corroborating.* A name agreeing with a date the **CMS states** changes
+    nothing: replacing a stated day with the period containing it makes the
+    record vaguer without making it truer, which is the guard
+    :func:`copyright_override` and the LLM year-check apply too.
+
+    *Rejected.* A **bare year** does not displace a date the CMS states.
+    ``c-2024.pdf`` on a research paper whose ``field_rpaper_year`` says 2016 is
+    not a 2024 paper — a four-digit number that happened to sit between two
+    delimiters is not a claim.
+
+    Agreement with a bare **creation stamp** is *not* a reason to stand down, and
+    the reason is not that the stamp is worthless — it is that standing down
+    there does not preserve it. On a shelf the page's date is not the file's to
+    borrow, so declining means the file ends up *undated*, not dated 2018-04-04.
+    ``April18-Jun18_new.pdf`` on a page typed on 2018-04-04 would lose the one
+    thing it actually states, because one of the 69 files sharing that stamp was
+    always going to land in its month.
+    """
+    from app.ingestion.source_dates import as_stored_date, is_plausible
+    from app.ingestion.title_dates import title_date
+
+    page = evidence.page
+    if not page.is_multi_pdf:
+        return TitleFinding()
+    found = title_date(link_text=evidence.anchor, filename=evidence.filename,
+                       pdf_title=evidence.pdf_title)
+    if found is None or not is_plausible(found.normalized_value):
+        return TitleFinding()
+    if page.date_from_bundle_field and _same_period(
+        found.precision, found.normalized_value, parse_dt(page.effective_date)
+    ):
+        return TitleFinding(found=found, disposition="corroborating")
+    if found.title_kind == "bare_year" and page.date_from_bundle_field:
+        return TitleFinding(found=found, disposition="rejected")
+
+    return TitleFinding(
+        found=found,
+        disposition="replaced",
+        decision=DateDecision(
+            document_id=evidence.document_id,
+            action="propose_override",
+            candidate_start_date=as_stored_date(found.normalized_value),
+            candidate_precision=found.precision,
+            date_type="publication",
+            edition_label=evidence.edition,
+            source="document_title",
+            confidence=0.95,
+            evidence=(
+                f"The file's {found.title_source.replace('_', ' ')} states "
+                f"{found.raw_statement!r}, read as "
+                f"{found.normalized_value.isoformat()} at {found.precision} "
+                f"precision{_reading(found)}. One of {page.pdf_count} PDFs on "
+                f"this page, so the page's {str(page.effective_date)[:10]} is a "
+                f"date about the page and not about this file."
+            ),
+            rule="title_states_date",
+            # Which of the file's strings answered, and what shape of statement
+            # it made. Both are carried so `_reconcile_with_title` can tell a
+            # deliberate edition or month from a four-digit number that merely
+            # sat in the filename, and so the audit row can name the exact
+            # metadata that produced the date.
+            title_source=found.title_source,
+            title_kind=found.title_kind,
+            title_disposition="replaced",
+            decided_by="deterministic",
+            supporting_evidence=(
+                "Read from the file's own naming only — no file timestamp, "
+                "upload month or PDF metadata date was consulted."
+            ),
+            used=["drupal"],
+        ),
+    )
+
+
+def title_override(evidence: PdfEvidence) -> DateDecision | None:
+    """The override the file's own naming proposes, or None.
+
+    Thin wrapper over :func:`read_title_evidence` for callers that only want the
+    verdict. The resolver uses the fuller form, because a name that did *not*
+    win is still something the audit row has to account for.
+    """
+    return read_title_evidence(evidence).decision
+
+
 def copyright_override(evidence: PdfEvidence) -> DateDecision | None:
     """A year-precision override from a corroborated copyright statement, or None.
 
@@ -233,7 +430,7 @@ def copyright_override(evidence: PdfEvidence) -> DateDecision | None:
     """
     from datetime import date
 
-    from app.ingestion.date_evidence import parse_dt
+
     from app.ingestion.source_dates import as_stored_date, is_plausible
 
     found = copyright_statement(evidence.front_text)
@@ -294,11 +491,20 @@ def _document_was_read(decision: DateDecision, evidence: PdfEvidence) -> DateDec
             *(tier for tier in ("pdf_meta", "pdf_text") if tier not in decision.used)]
     already = "read for a date of its own" in (decision.evidence or "")
     if (
-        decision.action != "keep_page_date"
+        decision.action not in ("keep_page_date", "drop_page_date")
         or already
         or not evidence.page.is_multi_pdf
     ):
         return replace(decision, used=used)
+    if decision.action == "drop_page_date":
+        return replace(
+            decision,
+            evidence=(
+                f"{decision.evidence} The file itself was read for a date and "
+                f"states none that could be verified."
+            ).strip(),
+            used=used,
+        )
     return replace(
         decision,
         evidence=(
@@ -333,13 +539,51 @@ def _wants_document_evidence(decision: DateDecision, evidence: PdfEvidence) -> b
 
 
 def resolve(evidence: PdfEvidence, content: bytes | None = None) -> ResolvedDate:
-    """Decide this PDF's ``effective_start_date``.
+    """Decide this PDF's ``effective_start_date``, implementing this table:
 
-    Fails closed: any unexpected error leaves the page date in place, because a
-    stale date is recoverable and a wrong one is not.
+    ===================================================  =========================
+    Situation                                            Result
+    ===================================================  =========================
+    Single PDF                                           parent effective date
+    Multi PDF + full file date                           file date
+    Multi PDF + edition/period                           file period
+    Multi PDF + month/year                               file month; text may
+                                                         sharpen it
+    Multi PDF + bare year + strong CMS parent            keep the CMS date
+    Multi PDF + bare year + weak creation parent         file year may win
+    Multi PDF + verified text date                       file text date
+    Multi PDF + no file evidence + strong CMS parent     parent date
+    Multi PDF + no file evidence + weak creation parent  undated
+    Resolver failure + strong CMS parent                 parent date
+    Resolver failure + weak multi-PDF parent             undated
+    ===================================================  =========================
+
+    "Strong" means the page's bundle states its date in a configured CMS field;
+    "weak" means the page has only its Drupal creation stamp. The single
+    predicate behind the last four rows is
+    :func:`app.ingestion.date_rules.page_date_is_usable`, asked on the success
+    path and on the failure path alike so a crash cannot reintroduce a date the
+    rules refused.
     """
-    page_date = evidence.page.effective_date
     try:
+        # Free, and the first thing asked: a file that names its own date.
+        #
+        # One kind of name settles it outright: a **full date** leaves nothing
+        # for anything else to establish, so nothing is read, asked or paid for.
+        #
+        # Everything else fixes a *period* the document's own text may sharpen
+        # within — "2024_December" in the name and "DATED 11-12-2024" in the
+        # first line are the same claim, stated twice, and the finer one wins.
+        # An edition is included in that: it names the year the period ends in,
+        # and a date inside that year is a sharpening rather than a contradiction.
+        # What no text may do is move the document *outside* the named period —
+        # see `_reconcile_with_title`.
+        finding = read_title_evidence(evidence)
+        titled = finding.decision
+        if titled is not None and titled.title_kind == "full_date":
+            return _outcome(titled, evidence, used=list(titled.used),
+                            finding=finding)
+
         decision = decide(evidence)
         used = list(decision.used)
 
@@ -350,9 +594,12 @@ def resolve(evidence: PdfEvidence, content: bytes | None = None) -> ResolvedDate
         if content and _wants_document_evidence(decision, evidence):
             _read_pdf_signals(evidence, content)
             read = True
-            # Deterministic before paid. The copyright rule costs nothing and
-            # its verdict is reproducible, so the interpreter is only ever asked
-            # about what the rules could not settle.
+            # The PDF's internal title only exists now, so the free rule gets a
+            # second look with the one source it could not see before.
+            reread = read_title_evidence(evidence)
+            if reread.decision is not None or finding.found is None:
+                finding = reread
+                titled = reread.decision or titled
             override = copyright_override(evidence)
             decision = override if override is not None else _document_was_read(
                 decision, evidence
@@ -376,35 +623,283 @@ def resolve(evidence: PdfEvidence, content: bytes | None = None) -> ResolvedDate
             decision, llm_raw = _interpret(evidence, decision)
             used.append("llm")
 
-        # Only an override may move the date. Every other outcome — including a
-        # review — keeps the page's own date on the document.
-        overridden = decision.action == "propose_override"
-        effective_start_date = decision.candidate_start_date if overridden else page_date
-        return ResolvedDate(
-            start_value=effective_start_date,
-            start_precision=(decision.candidate_precision if overridden
-                             else evidence.page.node_start_precision),
-            # An override replaces the page's date with a day the document
-            # itself states, which says nothing about a period — so the
-            # inherited end goes with the date it belonged to.
-            end_value=(None if overridden else evidence.page.effective_end),
-            end_precision=(None if overridden
-                                       else evidence.page.node_end_precision),
-            edition_label=decision.edition_label,
-            decision=decision,
-            llm_raw=llm_raw,
-            used=used,
-        )
+        return _outcome(decision, evidence, used=used, llm_raw=llm_raw,
+                        titled=titled, finding=finding)
     except Exception:
-        logger.warning(
-            "Date resolution failed for %s; keeping the page date.",
-            evidence.document_id, exc_info=True,
+        return _failed(evidence)
+
+
+def _failed(evidence: PdfEvidence) -> ResolvedDate:
+    """What a file gets when resolution raised. Fails **closed**, both ways.
+
+    "Fail closed" used to mean one thing here — keep the page's date, because a
+    stale date is recoverable and a wrong one is not. That is still right where
+    the page's date is a claim about the content. It is exactly backwards on a
+    shelf: a page holding twelve PDFs and dated only by its Drupal creation stamp
+    would hand every one of them the day somebody typed the node, which is the
+    original bug, silently reintroduced by an unrelated crash in a rule that
+    never ran.
+
+    So the same predicate the successful path uses decides this one too
+    (:func:`app.ingestion.date_rules.page_date_is_usable`), and a failure on a
+    weak multi-PDF page leaves the file undated. A missing date is preferable to
+    a confidently wrong one, and the decision row says which happened rather than
+    leaving a mystery value.
+    """
+    page = evidence.page
+    usable = page_date_is_usable(page)
+    logger.warning(
+        "Date resolution failed for %s; %s.", evidence.document_id,
+        "keeping the page date" if usable else
+        "the page's date is not this file's to borrow, so it is left undated",
+        exc_info=True,
+    )
+    decision = DateDecision(
+        document_id=evidence.document_id,
+        action="keep_page_date" if usable else "drop_page_date",
+        candidate_start_date=page.effective_date if usable else None,
+        candidate_precision=page.node_start_precision if usable else "day",
+        date_type="unknown",
+        edition_label=evidence.edition,
+        source="node_effective_date",
+        confidence=0.0,
+        rule="resolver_failed",
+        decided_by="deterministic",
+        evidence=(
+            "Date resolution raised an unexpected error. "
+            + ("The page states its own date, so this file keeps it."
+               if usable else
+               f"This is one of {page.pdf_count} PDFs on a {page.bundle} page "
+               f"dated only by its Drupal creation stamp, so that date is not "
+               f"this file's to borrow and it is left undated rather than given "
+               f"a date nothing established.")
+        ),
+        used=["drupal"],
+    )
+    if not usable:
+        return ResolvedDate(start_value=None, start_precision=None,
+                            end_value=None, end_precision=None,
+                            edition_label=evidence.edition, decision=decision)
+    return ResolvedDate(start_value=page.effective_date,
+                        start_precision=page.node_start_precision,
+                        end_value=page.effective_end,
+                        end_precision=page.node_end_precision,
+                        edition_label=evidence.edition, decision=decision)
+
+
+def _reconcile_with_title(
+    decision: DateDecision, titled: DateDecision
+) -> DateDecision:
+    """Settle a date the file's *name* states against one its *text* states.
+
+    Only three things can have happened by the time this runs.
+
+    A text-based override that falls **inside** the named period is a sharpening
+    and is kept — that is the tender bulletin whose filename says December 2024
+    and whose first line says the 11th. The same holds for an edition: a file
+    named ``…2024-25`` is dated to 2025, so a body date in March 2025 sharpens
+    it and a body date in March *2024* does not, because 2024 is the year the
+    period opened in and not the year the name resolved to.
+
+    A text-based override that falls **outside** it is a disagreement, and the
+    name wins: the name is what a person wrote about this file, the text is what
+    a model read out of it, and the corpus has the failure mode in both
+    directions (a masthead the model reconstructed, a citation year it mistook
+    for a publication).
+
+    **Unless the name only offered a bare year**, in which case the text wins.
+    ``Post_2015_bulletin_and_TEDDY_launch.pdf`` is about the post-2015
+    Development Agenda and was released on 9 July 2014, which its first line
+    says in full. A four-digit number that merely sat between two delimiters is
+    not a claim about a date, and it must not displace one that is.
+
+    Anything else — a kept page date, a review, a drop — means nothing in the
+    text established a date at all, so the named one stands.
+    """
+    if decision.action != "propose_override":
+        return titled
+    if titled.title_kind == "bare_year":
+        return replace(decision, title_source=titled.title_source,
+                       title_kind=titled.title_kind, title_disposition="rejected")
+    inside = _same_period(
+        titled.candidate_precision,
+        date.fromisoformat(str(titled.candidate_start_date)[:10]),
+        parse_dt(decision.candidate_start_date),
+    )
+    if not inside:
+        return replace(
+            titled,
+            evidence=(
+                f"{titled.evidence} The document's text proposed "
+                f"{str(decision.candidate_start_date)[:10]}, which falls outside "
+                f"that period; a disagreement is not a sharpening, so the name "
+                f"stands."
+            ).strip(),
         )
-        return ResolvedDate(start_value=page_date,
-                            start_precision=evidence.page.node_start_precision,
-                            end_value=evidence.page.effective_end,
-                            end_precision=evidence.page.node_end_precision,
-                            edition_label=evidence.edition)
+    return replace(
+        decision,
+        title_source=titled.title_source,
+        title_kind=titled.title_kind,
+        title_disposition="refined",
+        evidence=(
+            f"{decision.evidence} This agrees with the period the file's own name "
+            f"states ({titled.candidate_start_date[:10]}, "
+            f"{titled.candidate_precision} precision) and is more precise, so it "
+            f"stands."
+        ).strip(),
+    )
+
+
+def _stamp_title(decision: DateDecision, finding: "TitleFinding | None"):
+    """Record what the file's naming said on whatever decision was reached.
+
+    ``_reconcile_with_title`` already stamps the cases where the name competed
+    with the document's text. This covers the rest, which are the ones an
+    auditor actually asks about: the name was read, it stated something, and the
+    document is dated otherwise. Without this the row is silent about the very
+    string the question is about — "the filename clearly says 2024, so why is
+    this 2018?".
+    """
+    if finding is None or finding.found is None:
+        return decision
+    if decision.title_disposition is not None:
+        return decision           # already settled by the reconciler
+    found = finding.found
+    note = {
+        "corroborating": (
+            f"The file's {found.title_source.replace('_', ' ')} states "
+            f"{found.raw_statement!r}, which names the same period the page's "
+            f"own field does; it changes nothing and the page's finer date "
+            f"stands."
+        ),
+        "rejected": (
+            f"The file's {found.title_source.replace('_', ' ')} contains "
+            f"{found.raw_statement!r}, but a bare year is not a claim about a "
+            f"date and does not displace the one the page's field states."
+        ),
+    }.get(finding.disposition)
+    return replace(
+        decision,
+        title_source=found.title_source,
+        title_kind=found.title_kind,
+        title_disposition=finding.disposition,
+        evidence=" ".join(filter(None, (decision.evidence, note))),
+    )
+
+
+def _end_after_override(decision: DateDecision, page: PageContext):
+    """The end date a file keeps once its own evidence has set the start.
+
+    **Evidence replaces only the temporal information it actually establishes.**
+    Clearing the parent's end used to be unconditional, which destroyed real
+    information: a file on a 2020-2025 project named "Annual Report 2024" states
+    something about 2024 and nothing whatever about when the project ends.
+
+    So the question is whether the evidence is a *point* or a *period*:
+
+    * ``day`` or ``month`` precision is a point — a date the document was issued
+      on. A point-dated document does not cover its parent's five-year range, so
+      the inherited end goes with the date it belonged to.
+    * ``year`` precision — an edition, a bare year, a copyright line — establishes
+      a period and says nothing about an end. The parent's end is left alone.
+
+    With one bound: the result has to read forwards. An override landing after
+    the inherited end would store a backwards range, which
+    ``reconcile.date_checks.inverted_date_range`` would correctly report as
+    something else having written the column. There the end is dropped, because
+    the start is the better-evidenced of the two.
+    """
+    if page.effective_end is None:
+        return None, None
+    if decision.candidate_precision in ("day", "month"):
+        return None, None
+    start = str(decision.candidate_start_date or "")[:10]
+    if start and start > str(page.effective_end)[:10]:
+        logger.info(
+            "Document-stated date %s falls after the inherited end %s; the end "
+            "is dropped rather than stored backwards.",
+            start, str(page.effective_end)[:10],
+        )
+        return None, None
+    return page.effective_end, page.node_end_precision
+
+
+def _outcome(
+    decision: DateDecision,
+    evidence: PdfEvidence,
+    *,
+    used: list[str],
+    llm_raw: dict[str, Any] | None = None,
+    titled: DateDecision | None = None,
+    finding: "TitleFinding | None" = None,
+) -> ResolvedDate:
+    """Turn a settled decision into the dates the document will carry.
+
+    Three outcomes, and one of them is new. An **override** takes the date the
+    document stated about itself. A **drop** takes no date: several PDFs on a
+    page whose own date is only a creation stamp, and nothing said otherwise —
+    see :func:`app.ingestion.date_rules.page_date_is_usable`. Everything else,
+    including a review, inherits the page's date as before.
+
+    The drop is applied here as well as in :func:`app.ingestion.date_rules.decide`
+    because the interpreter can hand back ``keep_page_date`` or
+    ``needs_manual_review`` for a file on exactly such a page, and a date the
+    rules refused must not come back through the model's door. Both paths ask the
+    same predicate, so the decision row and the stored value cannot disagree.
+
+    ``titled`` is where the two kinds of self-statement are reconciled, and the
+    order between them is: **the file's name fixes the period, its text may
+    sharpen that period, and nothing may contradict it.** So a tender bulletin
+    named ``…_2024_December.pdf`` whose body reads "ISSUE NO. 22 DATED
+    11-12-2024" is dated to the 11th — the text is the same claim, stated more
+    precisely. A verdict landing outside the stated period is not a sharpening
+    but a disagreement, and there the name wins.
+
+    What an override does **not** do is discard the parent's end date wholesale —
+    see :func:`_end_after_override`.
+    """
+    page = evidence.page
+    if titled is not None and titled is not decision:
+        decision = _reconcile_with_title(decision, titled)
+    decision = _stamp_title(decision, finding)
+    if decision.action == "propose_override":
+        end_value, end_precision = _end_after_override(decision, page)
+        return ResolvedDate(
+            start_value=decision.candidate_start_date,
+            start_precision=decision.candidate_precision,
+            end_value=end_value,
+            end_precision=end_precision,
+            edition_label=decision.edition_label,
+            decision=decision, llm_raw=llm_raw, used=used,
+        )
+
+    if not page_date_is_usable(page):
+        if decision.action != "drop_page_date":
+            decision = replace(
+                decision, action="drop_page_date", candidate_start_date=None,
+                confidence=0.0,
+                evidence=(
+                    f"{decision.evidence} The page's date is not this file's to "
+                    f"borrow: it is one of {page.pdf_count} PDFs on a "
+                    f"{page.bundle} page dated only by its Drupal creation "
+                    f"stamp. Left undated."
+                ).strip(),
+            )
+        return ResolvedDate(
+            start_value=None, start_precision=None,
+            end_value=None, end_precision=None,
+            edition_label=decision.edition_label,
+            decision=decision, llm_raw=llm_raw, used=used,
+        )
+
+    return ResolvedDate(
+        start_value=page.effective_date,
+        start_precision=page.node_start_precision,
+        end_value=page.effective_end,
+        end_precision=page.node_end_precision,
+        edition_label=decision.edition_label,
+        decision=decision, llm_raw=llm_raw, used=used,
+    )
 
 
 def _interpret(

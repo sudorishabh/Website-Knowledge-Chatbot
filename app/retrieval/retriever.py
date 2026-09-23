@@ -12,7 +12,7 @@ by observability/metrics (see docs/operations.md), not import paths.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Sequence
 
 from app.config import get_settings
 from app.core.clients.embeddings import embed_query
@@ -29,8 +29,9 @@ from app.retrieval.search.strategies import (
     extract_content_terms,
     extract_key_terms,
     keyword_search,
-    paraphrase_search,
-    paraphrases,
+    perspective_search,
+    perspectives,
+    subquery_search,
 )
 from app.retrieval.search.title_leg import title_search
 from app.retrieval.understanding.filters import date_conditions
@@ -47,7 +48,12 @@ logger = logging.getLogger(__name__)
 # `retrieve`, and a relational question that lands there would otherwise never
 # see the graph at all. Exposing the leg is what keeps that call site running the
 # same code with the same fallback contract, rather than a second copy of it.
-__all__ = ["retrieve", "graph_blocks_for"]
+#
+# `web_plan_for` is exported for the same kind of reason: the pipeline decides
+# whether web retrieval is on (it owns the flag, as it owns the others) and needs
+# the question's plan to pass back into `retrieve`. Building it here keeps this
+# module the only production doorway into the web package.
+__all__ = ["retrieve", "graph_blocks_for", "web_plan_for"]
 
 # Content capabilities (from query understanding) whose open-ended search
 # benefits from multi-query recall expansion; a pure `database` lookup does not.
@@ -61,7 +67,7 @@ def _supplement_attachments(
     search_query: str,
     query_vector: list[float],
     n: int,
-    segregate: bool,
+    temporal: Any | None = None,
 ) -> list[ContextBlock]:
     """Detailed answers: when admitted website blocks have attached PDFs that
     contributed nothing to the context, pull those attachments' chunks once and
@@ -104,8 +110,9 @@ def _supplement_attachments(
         new = [c for c in extra if c.id not in seen]
         if not new:
             return blocks
-        reranked = rerank(search_query, list(ranked) + new)
-        return build_context(reranked, limit=n, segregate=segregate)
+        reranked = rerank(search_query, list(ranked) + new, temporal=temporal)
+        return build_context(reranked, limit=n, temporal=temporal,
+                             question=search_query)
     except Exception:
         logger.warning("Attachment supplementation failed; keeping original blocks.",
                        exc_info=True)
@@ -145,6 +152,43 @@ def graph_blocks_for(
     except Exception:  # pragma: no cover - defence in depth
         logger.warning("Graph routing hook failed; using retrieval.", exc_info=True)
         return []
+
+
+def _graph_subquery_blocks(
+    subqueries: Sequence[Any],
+    existing: list[ContextBlock],
+    *,
+    n: int,
+    filters: list[Any] | None,
+    source_type: str | None,
+) -> list[ContextBlock]:
+    """``existing`` plus whatever the graph can answer for the nominated parts.
+
+    Same contract as the whole-question leg it reuses: every part is offered to
+    `graph_blocks_for`, which returns blocks or nothing, so a part the graph
+    cannot serve costs one declined attempt and changes nothing. De-duplicated
+    against the blocks already held — the whole question and one of its parts
+    routinely resolve to the same rows — by the key the graph/semantic merge
+    already uses, so a row cannot be printed twice.
+    """
+    from app.retrieval.subqueries import GRAPH
+
+    merged = list(existing)
+    seen = {_block_key(b) for b in merged}
+    for sub in subqueries:
+        if not sub.goes_to(GRAPH):
+            continue
+        for block in graph_blocks_for(
+            sub.text, n=n, filters=filters, source_type=source_type
+        ):
+            key = _block_key(block)
+            if key not in seen:
+                seen.add(key)
+                merged.append(block)
+    if len(merged) != len(existing):
+        logger.info("Graph answered %d extra block(s) for question parts.",
+                    len(merged) - len(existing))
+    return merged
 
 
 # Context slots kept for ordinary retrieval whenever the graph has also
@@ -274,6 +318,103 @@ def _observe_in_shadow(search_query: str, blocks: list[ContextBlock]) -> None:
         logger.warning("Graph shadow hook failed.", exc_info=True)
 
 
+def web_plan_for(
+    question: str,
+    search_query: str,
+    *,
+    capabilities: set[str],
+    answer_format: str | None,
+    date_from: str | None,
+    date_to: str | None,
+) -> Any:
+    """The question's web plan, to hand back to :func:`retrieve` as ``web``.
+
+    Deterministic and free — see :mod:`app.retrieval.web.planner`. The caller
+    decides whether web retrieval is on; this only builds the plan, and imports
+    the web package only when asked to.
+    """
+    from app.retrieval.web.planner import plan
+
+    return plan(
+        question, search_query, capabilities=capabilities, answer_format=answer_format,
+        date_from=date_from, date_to=date_to,
+    )
+
+
+def _start_web(plan: Any | None, query_vector: list[float]) -> Any | None:
+    """Start web retrieval now, beside the corpus pulls, when the question forces
+    it — or return None to leave the decision for after ranking.
+
+    An explicit "search the web" or a freshness question consults the web
+    whatever the corpus holds, so there is nothing to wait for: starting it here
+    overlaps its latency with the corpus legs instead of adding to it. Every
+    other question waits for the sufficiency check in :func:`_with_web`.
+
+    The import is local so that with web retrieval off — ``plan`` is None — the
+    package is never loaded.
+    """
+    if plan is None:
+        return None
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        from contextvars import copy_context
+
+        from app.retrieval.web import service, sufficiency
+
+        if not sufficiency.decide(plan, None).search:
+            return None
+        pool = ThreadPoolExecutor(max_workers=1)
+        future = pool.submit(copy_context().run, service.gather, plan, query_vector)
+        pool.shutdown(wait=False)
+        return future
+    except Exception:  # pragma: no cover - defence in depth
+        logger.warning("Could not start web retrieval early.", exc_info=True)
+        return None
+
+
+def _with_web(
+    search_query: str,
+    ranked: list[Any],
+    plan: Any,
+    *,
+    query_vector: list[float],
+    early: Any | None,
+    table_boost: float,
+    temporal: Any | None,
+) -> list[Any]:
+    """``ranked``, with the web's evidence merged in when the question needs it.
+
+    The decision is recorded on the trace either way — including when the
+    internal evidence was judged sufficient and the web was not consulted, which
+    is the answer to "why did it not search the web?". Web candidates join the
+    same banded ranking as the corpus's (`reranker.merge_ranked`), so relevance
+    decides and authority only settles ties. Fails open: any problem leaves the
+    corpus ranking exactly as it was.
+    """
+    try:
+        from app.retrieval.search.reranker import merge_ranked
+        from app.retrieval.web import service, sufficiency
+
+        decision = sufficiency.decide(plan, sufficiency.assess(plan, ranked))
+        retrieval_log.note(web_decision=decision.to_trace())
+        if early is not None:
+            outcome = early.result()
+        elif decision.search:
+            outcome = service.gather(plan, query_vector)
+        else:
+            return ranked
+        if not outcome.candidates:
+            return ranked
+        merged = merge_ranked(search_query, ranked, outcome.candidates,
+                              table_boost=table_boost, temporal=temporal)
+        logger.info("Web retrieval added %d candidate(s) (%s).",
+                    len(outcome.candidates), ", ".join(decision.reasons))
+        return merged
+    except Exception:
+        logger.warning("Web retrieval failed; using the corpus ranking.", exc_info=True)
+        return ranked
+
+
 def retrieve(
     search_query: str,
     *,
@@ -283,7 +424,29 @@ def retrieve(
     answer_format: str | None = None,
     source_type: str | None = None,
     capabilities: set[str] | None = None,
+    temporal: Any | None = None,
+    subqueries: Sequence[Any] | None = None,
+    web: Any | None = None,
 ) -> list[ContextBlock]:
+    """``temporal`` is the question's `TemporalIntent`, or None to behave exactly
+    as before it existed: no temporal ranking, and the UPCOMING gate detecting
+    its own mode. The caller passes it only when `temporal_intent_enabled` is
+    set, so the flag is honoured in one place rather than three.
+
+    ``subqueries`` is the plan for a multi-part question (see
+    :mod:`app.retrieval.subqueries`), or empty for the single-query path every
+    ordinary question still takes. Each one contributes at most one more ranking
+    to the same RRF every other leg goes through, and may nominate itself to the
+    graph; neither can remove a candidate the base pull found. Planned in
+    `app.pipeline` rather than here because the requirements it is built from
+    come from `app.generation.answer_plan`, which retrieval may not import.
+
+    ``web`` is the question's `WebPlan` (see :mod:`app.retrieval.web.planner`),
+    or None — the default, and what the caller passes whenever
+    `web_search_enabled` is off — to retrieve from the corpus alone exactly as
+    before web retrieval existed. With a plan, the web is consulted when the
+    question forces it or the corpus's evidence is judged insufficient, and its
+    candidates join the same ranking before the context is built."""
     settings = get_settings()
     n = n or settings.retrieval_top_k
 
@@ -303,6 +466,16 @@ def retrieve(
     graph_blocks = graph_blocks_for(
         search_query, n=n, filters=filters, source_type=source_type
     )
+    # A part of the question may route to the graph even when the whole question
+    # does not: "which customers were affected by Project X and how much revenue
+    # did they lose?" blends a relationship lookup with a measurement, and the
+    # policy layer declines the blend. Each nominated part is offered separately,
+    # still through the same `graph_blocks_for` contract — blocks or nothing —
+    # and de-duplicated against what the whole question already returned.
+    if subqueries:
+        graph_blocks = _graph_subquery_blocks(
+            subqueries, graph_blocks, n=n, filters=filters, source_type=source_type
+        )
 
     # Prefer website content only when the feature is on, the user didn't pin a
     # source (explicit intent → honor their filter with a single pull, else the
@@ -311,7 +484,7 @@ def retrieve(
     dual = bool(settings.prefer_website_enabled) and not source_type and answer_format != "table"
     # Multi-query only where recall expansion helps: an open-ended content
     # search (not a pure structured lookup), no explicit scope already narrowing
-    # the pull, and enough words that paraphrases can actually diverge (short
+    # the pull, and enough words that perspectives can actually diverge (short
     # factoids are already unambiguous). The capabilities come from query
     # understanding; an empty set (the degraded passthrough) is treated as QA.
     content_search = not capabilities or bool(capabilities & _MULTI_QUERY_INTENTS)
@@ -326,6 +499,8 @@ def retrieve(
     if query_vector is None:
         with span("rag.embed_query"):
             query_vector = embed_query(search_query)
+    # A question that forces the web starts it now, overlapping the corpus legs.
+    early_web = _start_web(web, query_vector)
 
     def _base_search(active_filters: list[Any] | None, *, use_dual: bool) -> list[Any]:
         if use_dual:
@@ -368,13 +543,21 @@ def retrieve(
     # type, whose single filtered pull the caller has already narrowed.
     use_title_leg = not source_type
 
+    # The semantic half of decomposition: one dense pull per part, fused like
+    # every other leg. Deliberately not gated the way `multi` is — a multi-part
+    # question is multi-part whether or not it is long, scoped or filtered, and
+    # the planner has already decided there is more than one thing being asked.
+    from app.retrieval.subqueries import SEMANTIC, texts as subquery_texts
+
+    subquery_legs = subquery_texts(subqueries or [], SEMANTIC)
+
     with span("rag.search") as s:
-        if multi or keyword_terms or content_terms or use_title_leg:
+        if multi or keyword_terms or content_terms or use_title_leg or subquery_legs:
             from concurrent.futures import ThreadPoolExecutor
 
             rankings: list[list[Any]] = []
             # Paraphrase generation and the keyword pull overlap the base
-            # pull, so the added wall-clock is only the paraphrase searches
+            # pull, so the added wall-clock is only the perspective searches
             # that follow the generation step.
             with ThreadPoolExecutor(max_workers=4) as pool:
                 base_future = pool.submit(
@@ -412,22 +595,48 @@ def retrieve(
                 )
                 if multi:
                     with span("rag.multi_query") as mq:
-                        queries = pool.submit(
-                            paraphrases, search_query, settings.multi_query_paraphrases
+                        # The query vector goes in so the generator can measure
+                        # each angle against the question it came from, and the
+                        # accepted ones come back carrying their own vectors —
+                        # so a perspective is embedded once, not once to judge it
+                        # and again to search it.
+                        angles = pool.submit(
+                            perspectives, search_query,
+                            settings.multi_query_paraphrases,
+                            query_vector=query_vector,
                         ).result()
                         rankings.extend(
                             r
                             for r in pool.map(
                                 retrieval_log.bound(
-                                    lambda q: paraphrase_search(
-                                        q, limit=settings.retrieval_candidate_k,
+                                    lambda p: perspective_search(
+                                        p.text, limit=settings.retrieval_candidate_k,
+                                        query_vector=p.vector,
                                     )
                                 ),
-                                queries,
+                                angles,
                             )
                             if r
                         )
-                        mq.set("paraphrases", len(queries))
+                        mq.set("perspectives", len(angles))
+                        retrieval_log.note(
+                            perspectives=[p.text for p in angles]
+                        )
+                if subquery_legs:
+                    with span("rag.subquery_legs") as sq:
+                        rankings.extend(
+                            r
+                            for r in pool.map(
+                                retrieval_log.bound(
+                                    lambda q: subquery_search(
+                                        q, limit=settings.retrieval_candidate_k,
+                                    )
+                                ),
+                                subquery_legs,
+                            )
+                            if r
+                        )
+                        sq.set("legs", len(subquery_legs))
                 if keyword_future is not None:
                     with span("rag.keyword_leg") as kw:
                         keyword_hits = keyword_future.result()
@@ -464,6 +673,7 @@ def retrieve(
                 "keyword": bool(keyword_terms),
                 "content_terms": bool(content_terms),
                 "title": bool(use_title_leg),
+                "subqueries": len(subquery_legs),
             },
         )
 
@@ -504,7 +714,9 @@ def retrieve(
 
     with span("rag.rerank") as s:
         table_boost = settings.rerank_table_boost if answer_format == "table" else 0.0
-        ranked = rerank(search_query, candidates, table_boost=table_boost)
+        ranked = rerank(
+            search_query, candidates, table_boost=table_boost, temporal=temporal
+        )
         s.set("survivors", len(ranked))
         retrieval_log.note(rerank_survivors=len(ranked))
     if (
@@ -517,7 +729,7 @@ def retrieve(
             ranked = corrective_requery(
                 search_query, ranked,
                 filters=filters, limit=settings.retrieval_candidate_k,
-                table_boost=table_boost,
+                table_boost=table_boost, temporal=temporal,
             )
             score_after = ranked[0].semantic_score if ranked else 0.0
             # Did the retry actually lift the top result? Recorded so we can
@@ -532,18 +744,26 @@ def retrieve(
                 score_before, score_after,
                 "improved" if score_after > score_before else "no gain",
             )
+    # The web leg, after the corpus has been ranked and before its emptiness is
+    # final: a question the corpus cannot answer at all is the web's clearest case.
+    if web is not None:
+        ranked = _with_web(
+            search_query, ranked, web, query_vector=query_vector, early=early_web,
+            table_boost=table_boost, temporal=temporal,
+        )
     if not ranked:
         # Nothing from the corpus. A graph answer still stands on its own, which
         # is the behaviour this leg has always had when retrieval came up empty.
         _observe_in_shadow(search_query, [])
         return list(graph_blocks)
     with span("rag.context_build"):
-        blocks = build_context(ranked, limit=n, segregate=dual)
+        blocks = build_context(ranked, limit=n, temporal=temporal,
+                               question=search_query)
     if answer_format == "detailed" and blocks:
         with span("rag.attachment_pull"):
             blocks = _supplement_attachments(
                 blocks, ranked, search_query=search_query, query_vector=query_vector,
-                n=n, segregate=dual,
+                n=n, temporal=temporal,
             )
     if graph_blocks:
         # Merged last, so attachment supplementation above still operates on the
@@ -566,23 +786,50 @@ def retrieve(
     # a chunk is `effective_start_date`, which is when the page went up, not when the
     # event runs. Removal-only and it never empties the context, so the worst it
     # can do is leave the context exactly as it was.
-    blocks = _gate_temporal(search_query, blocks)
+    blocks = _gate_temporal(search_query, blocks, temporal=temporal)
     _observe_in_shadow(search_query, blocks)
     return blocks
 
 
-def _gate_temporal(search_query: str, blocks: list[ContextBlock]) -> list[ContextBlock]:
-    """Apply the question's temporal scope to the finished context."""
+def _gate_temporal(
+    search_query: str,
+    blocks: list[ContextBlock],
+    *,
+    temporal: Any | None = None,
+) -> list[ContextBlock]:
+    """Apply the question's temporal scope to the finished context.
+
+    ``temporal`` carries the mode query understanding already classified. It is
+    detected on the same string this function would have detected on, so passing
+    it changes nothing about which mode is chosen — it only saves the second
+    regex pass and makes the mode inspectable upstream. With it absent the
+    function detects for itself, exactly as it always did.
+
+    Only the two *scheduled-occurrence* modes gate. A point-in-time or
+    date-range question is already scoped by `filters.date_conditions` before the
+    search runs, and re-applying it here would be a second, weaker copy of that
+    logic; those modes reach ranking instead.
+    """
     if not blocks:
         return blocks
     try:
         from app.retrieval.search import temporal_gate
 
-        mode = temporal_gate.detect_mode(search_query)
-        if mode != temporal_gate.UPCOMING:
+        if temporal is None:
+            # Exactly the pre-Phase-B path: detect here, and only UPCOMING gates.
+            mode = temporal_gate.detect_mode(search_query)
+            gate = (temporal_gate.gate_upcoming
+                    if mode == temporal_gate.UPCOMING else None)
+        else:
+            mode = temporal.mode
+            gate = {
+                temporal_gate.UPCOMING: temporal_gate.gate_upcoming,
+                temporal_gate.PAST: temporal_gate.gate_past,
+            }.get(mode)
+        if gate is None:
             return blocks
         with span("rag.temporal_gate") as s:
-            gated = temporal_gate.gate_upcoming(blocks)
+            gated = gate(blocks)
             s.set("mode", mode)
             s.set("dropped", len(blocks) - len(gated))
         return gated

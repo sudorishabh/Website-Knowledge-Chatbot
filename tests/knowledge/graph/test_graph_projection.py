@@ -174,14 +174,22 @@ def _project(monkeypatch, entities, claims, links=(), documents=(), aliases=(),
     return session, report
 
 
-def test_only_claim_eligible_entities_are_projected(monkeypatch):
+def test_only_projectable_entities_are_projected(monkeypatch):
     """`_load_entities` filters at the source, so a provisional identity never
-    reaches the graph at all and no traversal can arrive at one."""
+    reaches the graph at all and no traversal can arrive at one.
+
+    "Projectable" is broad eligibility *or* a predicate-scoped trust level —
+    see `test_scoped_trust_projection` for why the second exists. Provisional is
+    neither, which is the part that must not drift.
+    """
     import inspect
 
-    source = inspect.getsource(gp._load_entities)
-    assert "claim_eligible = 1" in source
-    assert "status = 'active'" in source
+    from app.knowledge.seed import TRUST_PROVISIONAL
+
+    clause, params = gp._projectable_clause()
+    assert "claim_eligible = 1" in clause
+    assert TRUST_PROVISIONAL not in params
+    assert "status = 'active'" in inspect.getsource(gp._load_entities)
 
 
 def test_a_claim_naming_an_ineligible_entity_is_refused(monkeypatch):
@@ -771,8 +779,12 @@ def test_a_stale_status_is_reported(monkeypatch):
 
 
 def test_an_entity_projected_as_ineligible_is_reported(monkeypatch):
-    """Belt and braces: the projector only ever writes `claim_eligible: true`,
-    so a false one means something wrote the graph outside the projector."""
+    """A graph value that disagrees with MySQL is reported either way.
+
+    The projector writes the entity's real `claim_eligible`, so a predicate-scoped
+    entity legitimately carries `false`. What is never legitimate is the graph
+    disagreeing with the catalog -- here MySQL says eligible and the graph does
+    not."""
     report = _verify(
         monkeypatch,
         mysql_entities=[_mysql_entity("person_a", "pi_attested")],

@@ -1,0 +1,114 @@
+{
+  "document_id": "3807402a-fb95-4900-85ae-697403882e33",
+  "source_type": "website",
+  "title": "Peer Review of Carbon Credit Methodology for Jute-Based Net CO2 Emission Reduction",
+  "sections": [
+    {
+      "text": "TERI is undertaking an independent technical peer review of the “Methodology for Carbon Crediting in Jute Cultivation Systems” (MC-JCS: TJF0001, Version 1.1) developed for The Jute Foundation. The assignment assesses whether the proposed methodology provides a scientifically robust, transparent and practically applicable framework for quantifying greenhouse gas emission reductions and carbon removals associated with jute cultivation systems.\n\nThe review covers the methodology’s scope and applicability, project boundaries, baseline and additionality provisions, treatment of annual jute biomass and soil organic carbon, cultivation- and retting-related emissions, permanence, uncertainty, monitoring, digital traceability and safeguards against double counting. It also examines the supporting calculation coefficients, equations, emission factors and assumptions used to estimate net carbon benefits.\n\nThe project aims to identify technical and methodological gaps and provide recommendations for strengthening the methodology before pilot application or consideration under a carbon-crediting programme. The review will support the development of a more credible and verifiable framework for linking improved jute cultivation practices, sustainable agriculture and farmer livelihoods with carbon-finance opportunities.",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/project/peer-review-carbon-credit-methodology-jute-based-net-co2-emission-reduction",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "3807402a-fb95-4900-85ae-697403882e33",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Carbon market",
+    "Carbon sequestration",
+    "Smart agriculture",
+    "Croplands"
+  ],
+  "categories": [
+    "Land"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-05-22T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": null,
+  "end_precision": null,
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "2238c571ae7de05ab1c10c4a572068eba982b423cb6b5c77b2a3133f22249d0f",
+  "extra": {
+    "bundle": "ongoing_projects",
+    "nid": 13383,
+    "changed": "2026-09-08T10:35:59+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Consultants"
+    },
+    {
+      "field_name": "field_ongoing_stakeholders",
+      "uuid": "62b7fbd7-4b34-49ee-93c1-2b516cc9d454",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Policy Makers"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "171a5e37-261d-4f73-864b-b649e14b7f4d",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Carbon market"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "d63d8070-0393-4a1d-84a8-5bf0eeb823ea",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Carbon sequestration"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "53a7a29d-d073-4d39-974f-edf4d594e0ec",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Smart agriculture"
+    },
+    {
+      "field_name": "field_ongoing_tag",
+      "uuid": "1af3b60b-1741-4ce9-b4a0-5cf691e9a432",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Croplands"
+    },
+    {
+      "field_name": "field_ongoing_theme",
+      "uuid": "045bebbf-14e0-45e9-9713-29f83053a4cd",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Land"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_ongoing_stakeholders": [
+      "Businesses",
+      "Consultants",
+      "Policy Makers"
+    ],
+    "field_ongoing_tag": [
+      "Carbon market",
+      "Carbon sequestration",
+      "Smart agriculture",
+      "Croplands"
+    ],
+    "field_ongoing_theme": [
+      "Land"
+    ],
+    "field_ongoing_start_date": "2026-05-22T04:30:00+00:00",
+    "field_show_on_theme_page": false
+  }
+}

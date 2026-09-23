@@ -1,0 +1,96 @@
+{
+  "parents": 0,
+  "children": 1,
+  "chunks": [
+    {
+      "chunk_id": "973d3f6d-9e76-504d-ae2a-004bc3ec2b2b",
+      "text": "The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).\n\nThe Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).",
+      "is_parent": false,
+      "meta": {
+        "document_id": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+        "source_type": "website",
+        "title": "Nepal: A wake-up call",
+        "source_url": "https://teriin.org/opinion/nepal-wake-call",
+        "file_url": null,
+        "pdf_id": null,
+        "pdf_path": null,
+        "article_uuid": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+        "linked_pdf_id": null,
+        "linked_article_uuid": null,
+        "tags": [
+          "Climate change",
+          "Climate resilience",
+          "Global warming",
+          "Net zero emission"
+        ],
+        "categories": [
+          "Electricity and Renewables",
+          "Climate Change"
+        ],
+        "authors": [
+          "Mr Ajay Shankar"
+        ],
+        "language": "en",
+        "doc_version": 1,
+        "is_current": true,
+        "effective_start_date": "2026-09-07T08:58:40+00:00",
+        "start_precision": "day",
+        "effective_end_date": null,
+        "end_precision": null,
+        "extra": {
+          "bundle": "feature_articles",
+          "nid": 13374,
+          "changed": "2026-09-08T09:04:12+00:00"
+        }
+      },
+      "embed_text": "Nepal: A wake-up call\n\nThe Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).\n\nThe Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).",
+      "section_heading": null,
+      "section_type": null,
+      "parent_chunk_id": null,
+      "chunk_index": 0,
+      "page_number": null,
+      "page_range": null,
+      "overlap_page_range": null,
+      "token_count": 108,
+      "content_hash": "6977bef29066fda0334e795f50aaf708c1b20bca7618b96f0b82423080d8ba65",
+      "has_table": false,
+      "table_markdown": "",
+      "payload": {
+        "chunk_id": "973d3f6d-9e76-504d-ae2a-004bc3ec2b2b",
+        "document_id": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "feature_articles",
+        "title": "Nepal: A wake-up call",
+        "chunk_text": "The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).\n\nThe Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).",
+        "content_hash": "6977bef29066fda0334e795f50aaf708c1b20bca7618b96f0b82423080d8ba65",
+        "token_count": 108,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Climate change",
+          "Climate resilience",
+          "Global warming",
+          "Net zero emission"
+        ],
+        "categories": [
+          "Electricity and Renewables",
+          "Climate Change"
+        ],
+        "authors": [
+          "Mr Ajay Shankar"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/opinion/nepal-wake-call",
+        "effective_start_date": "2026-09-07T08:58:40+00:00",
+        "article_uuid": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+        "embed_hash": "6812e6a02082e8377e864ee3f79627e3f8ff08b92c822bd8cc9b85fd489224f7",
+        "chunk_index": 0,
+        "nid": 13374,
+        "changed": "2026-09-08T09:04:12+00:00"
+      },
+      "embed_hash": "6812e6a02082e8377e864ee3f79627e3f8ff08b92c822bd8cc9b85fd489224f7"
+    }
+  ]
+}

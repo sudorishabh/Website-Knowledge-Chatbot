@@ -1,0 +1,78 @@
+{
+  "document_id": "be196812-8ac5-4a4d-8329-80fc5623695f",
+  "source_type": "website",
+  "title": "Renewables 2.0 will hinge on storage, transmission and economics of dispatchable clean power: Industry experts",
+  "sections": [
+    {
+      "text": "At the 6th edition of ET Energy Leadership Summit 2026 leaders from NTPC Green Energy, MSEDCL, ReNew and TERI said the next phase of renewable growth will be defined by dispatchability rather than headline capacity additions.",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/news/renewables-20-will-hinge-storage-transmission-and-economics-dispatchable-clean-power-industry",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "be196812-8ac5-4a4d-8329-80fc5623695f",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Solar",
+    "Clean energy"
+  ],
+  "categories": [
+    "Electricity and Renewables"
+  ],
+  "language": "en",
+  "effective_start_date": "2026-09-09T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": null,
+  "end_precision": null,
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "fec8588c53c2f8af30bce89e4556390f6aefd10ea307d2ea843a7f02b9a0b93c",
+  "extra": {
+    "bundle": "news",
+    "nid": 13388,
+    "changed": "2026-09-10T07:19:35+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_news_tags",
+      "uuid": "527b75ee-f68a-43f2-ba24-75aafefdf0ab",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Solar"
+    },
+    {
+      "field_name": "field_news_tags",
+      "uuid": "e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Clean energy"
+    },
+    {
+      "field_name": "field_news_themes",
+      "uuid": "449b5d32-d2f2-4444-a708-0b6b85425c28",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Electricity and Renewables"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_news_tags": [
+      "Solar",
+      "Clean energy"
+    ],
+    "field_news_themes": [
+      "Electricity and Renewables"
+    ],
+    "field_news_date": "2026-09-09T11:30:03+00:00",
+    "field_news_source": "ET Energy World",
+    "field_news_type": [
+      "electronic_media"
+    ]
+  }
+}

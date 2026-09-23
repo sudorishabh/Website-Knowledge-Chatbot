@@ -5,10 +5,15 @@
 read a candidate's semantic relevance to compare it against a *cosine-scaled*
 threshold:
 
-- ``context_builder`` gates website slots on ``website_chunk_floor`` (0.30) and
-  the extra PDF slot on ``pdf_high_confidence_floor`` (0.5);
 - ``retriever`` opens the corrective loop below ``corrective_min_score`` (0.2);
 - ``reranker`` drops candidates below ``rerank_score_threshold``.
+
+There were two more, both in ``context_builder``: ``website_chunk_floor`` gated
+the website slots and ``pdf_high_confidence_floor`` gated the extra PDF slot.
+They went with the per-source admission budgets themselves — website and PDF
+candidates are now admitted from one ranked walk, so there are no group slots
+left to gate — and the tests below that used them as instruments have moved to
+the two that remain. The defect they were built to catch is unchanged.
 
 Before the fix these read the fused value, so merely enabling the keyword leg or
 multi-query silently starved the website group and pinned the corrective loop
@@ -32,15 +37,18 @@ from types import SimpleNamespace
 import pytest
 
 from app.retrieval import retriever
+from app.retrieval.search import strategies
 from app.retrieval.context.builder import build_context
 from app.retrieval.search.fusion import rrf
 from app.retrieval.search.hybrid_search import Candidate, _to_candidate
 from app.retrieval.search import reranker as reranker_module
 from app.retrieval.search.reranker import rerank
 
-# The two floors this whole file is about, at their production defaults.
-WEBSITE_FLOOR = 0.30
+# The floors this file is about, at their production defaults.
 CORRECTIVE_MIN = 0.2
+# The reranker's own drop threshold, raised above its 0.0 default where a test
+# needs a cosine-scaled floor to observe. This is the surviving instrument.
+DROP_THRESHOLD = 0.30
 
 # A rank-1/rank-2 RRF contribution, for asserting on the fused scale directly.
 RRF_RANK1 = 1 / 61
@@ -88,7 +96,7 @@ def test_dense_only_retrieval_preserves_semantic_score(monkeypatch):
 
     ranked = rerank("solar capacity", [cand])
     assert ranked[0].semantic_score == pytest.approx(0.72)
-    assert ranked[0].semantic_score >= WEBSITE_FLOOR
+    assert ranked[0].semantic_score >= DROP_THRESHOLD
 
 
 # --------------------------------------------------------------------------- #
@@ -109,7 +117,7 @@ def test_rrf_reorders_without_corrupting_semantic_scores():
     assert by_id["strong"].semantic_score == pytest.approx(0.72)
     assert by_id["consensus"].semantic_score == pytest.approx(0.55)
     # ...and both still clear a cosine-scaled floor.
-    assert min(c.semantic_score for c in fused) >= WEBSITE_FLOOR
+    assert min(c.semantic_score for c in fused) >= DROP_THRESHOLD
 
     # The fused value is on its own scale, in its own field.
     assert by_id["consensus"].fusion_score == pytest.approx(RRF_RANK2 + RRF_RANK1)
@@ -155,7 +163,8 @@ def _settings(**overrides):
     base = dict(
         retrieval_top_k=6, retrieval_candidate_k=40, website_candidate_k=20,
         prefer_website_enabled=True, multi_query_enabled=False,
-        multi_query_paraphrases=2, keyword_leg_enabled=False,
+        multi_query_paraphrases=2, multi_query_distinct_threshold=0.92,
+        keyword_leg_enabled=False,
         corrective_loop_enabled=False, corrective_min_score=CORRECTIVE_MIN,
         rerank_table_boost=0.15, graph_routing_enabled=False,
         # reranker
@@ -165,8 +174,6 @@ def _settings(**overrides):
         rerank_max_seq_length=0,
         # context builder
         context_token_budget=9000, dedup_cosine_threshold=0.92,
-        website_max_slots=2, website_chunk_floor=WEBSITE_FLOOR,
-        pdf_max_slots=2, pdf_high_confidence_floor=0.5,
     )
     base.update(overrides)
     return SimpleNamespace(**base)
@@ -184,8 +191,11 @@ def _wire(monkeypatch, settings, *, website, pdfs, extra_leg):
     monkeypatch.setattr(retriever, "search", lambda *a, **k: [website] + pdfs)
     monkeypatch.setattr(retriever, "_observe_in_shadow", lambda *a, **k: None)
     monkeypatch.setattr(retriever, "keyword_search", lambda *a, **k: extra_leg)
-    monkeypatch.setattr(retriever, "paraphrases", lambda q, n: ["p1"])
-    monkeypatch.setattr(retriever, "paraphrase_search", lambda q, **k: extra_leg)
+    monkeypatch.setattr(
+        retriever, "perspectives",
+        lambda q, n, **kw: [strategies.Perspective("p1")],
+    )
+    monkeypatch.setattr(retriever, "perspective_search", lambda q, **k: extra_leg)
 
 
 QUERY = "what are the impacts of biofuel adoption on rural incomes"
@@ -206,8 +216,11 @@ def test_recall_leg_does_not_starve_the_website_group(monkeypatch, leg):
     blocks = retriever.retrieve(QUERY, query_vector=[0.1, 0.2])
 
     sources = [b.payload.get("source_type") for b in blocks]
-    assert "website" in sources, f"website chunk lost to the floor ({leg} on)"
-    assert sources[0] == "website"  # segregated context leads with website
+    assert "website" in sources, f"website chunk lost ({leg} on)"
+    # It leads because it is the more relevant of the two (0.72 vs 0.61), not
+    # because it is a website block — that preference is a tie-break in the
+    # authority band now, and this pair never reaches it.
+    assert sources[0] == "website"
 
 
 def test_dense_only_and_fused_admit_the_same_website_block(monkeypatch):
@@ -226,9 +239,17 @@ def test_dense_only_and_fused_admit_the_same_website_block(monkeypatch):
            [b.payload["document_id"] for b in fused]
 
 
-def test_website_floor_still_rejects_a_genuinely_weak_chunk(monkeypatch):
-    """The fix must not defeat the floor: a 0.05-cosine website chunk stays out."""
-    settings = _settings(keyword_leg_enabled=True)
+def test_the_drop_threshold_still_rejects_a_genuinely_weak_chunk(monkeypatch):
+    """The fix must not defeat the surviving cosine floor: a 0.05-cosine chunk
+    stays out of the ranking whether or not a second leg was fused in.
+
+    This used to be asserted through ``website_chunk_floor``, which admitted
+    website blocks to their own group. With one admission pass there is no group
+    to keep it out of, and a weak chunk is simply ranked last — so the floor that
+    still reads ``semantic_score``, ``rerank_score_threshold``, is the instrument
+    now. Same defect, same scale, same evidence."""
+    settings = _settings(keyword_leg_enabled=True,
+                         rerank_score_threshold=DROP_THRESHOLD)
     website = _searched("w1", 0.05, source_type="website", vector=[1.0, 0.0])
     pdf = _searched("p1", 0.61, source_type="pdf_attachment", vector=[0.0, 1.0])
     _wire(monkeypatch, settings, website=website, pdfs=[pdf], extra_leg=[pdf])
@@ -277,18 +298,22 @@ def test_corrective_loop_still_fires_on_genuinely_weak_results(monkeypatch):
 # The floor itself, isolated from retrieval.
 # --------------------------------------------------------------------------- #
 
-def test_build_context_floor_reads_the_semantic_score(monkeypatch):
-    from app.retrieval.context import builder as context_builder
+def test_the_rerank_threshold_reads_the_semantic_score(monkeypatch):
+    """A candidate carrying a rank-1 RRF value (~0.016) in ``score`` and a real
+    0.72 cosine in ``semantic_score`` must survive a 0.30 drop threshold. Read
+    off the fused value it would not: that is the defect, isolated."""
+    settings = _settings(rerank_score_threshold=DROP_THRESHOLD)
+    monkeypatch.setattr(reranker_module, "get_settings", lambda: settings)
 
-    settings = _settings()
-    monkeypatch.setattr(context_builder, "get_settings", lambda: settings)
-
-    admitted = Candidate(
+    kept = Candidate(
         id="w", score=RRF_RANK1, semantic_score=0.72, vector=[1.0, 0.0],
         payload={"source_type": "website", "chunk_text": "text", "document_id": "w"},
     )
-    blocks = build_context([admitted], limit=6, segregate=True)
-    assert [b.payload["document_id"] for b in blocks] == ["w"]
+    dropped = Candidate(
+        id="x", score=RRF_RANK2, semantic_score=0.05, vector=[1.0, 0.0],
+        payload={"source_type": "website", "chunk_text": "weak", "document_id": "x"},
+    )
+    assert [c.id for c in rerank(QUERY, [kept, dropped])] == ["w"]
 
 
 # --------------------------------------------------------------------------- #
@@ -321,8 +346,8 @@ def test_cross_encoder_scores_are_squashed_onto_the_cosine_scale(monkeypatch):
     # Monotone: squashing must not reorder what the model ranked.
     assert scores == sorted(scores, reverse=True)
     # The strong pair clears a cosine-scaled floor; the irrelevant one does not.
-    assert scores[0] >= WEBSITE_FLOOR
-    assert scores[-1] < WEBSITE_FLOOR
+    assert scores[0] >= DROP_THRESHOLD
+    assert scores[-1] < DROP_THRESHOLD
     # A raw logit would have blown straight past a 0..1 threshold in both
     # directions, which is the regression being pinned.
     assert scores[0] != pytest.approx(4.17)

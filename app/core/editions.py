@@ -26,10 +26,30 @@ from __future__ import annotations
 
 import re
 
-__all__ = ["EDITION_RE", "find_editions", "normalise_edition"]
+__all__ = ["EDITION_RE", "edition_end_year", "find_editions", "normalise_edition"]
 
 # A fiscal/edition span: "2024-25", "2024-2025", "2024_25", "20-21", "2020/21".
 EDITION_RE = re.compile(r"(?<!\d)(20\d{2}|\d{2})\s*[-_/–]\s*(\d{2,4})(?!\d)")
+
+
+def edition_end_year(label: str) -> int:
+    """The year a canonical ``YYYY-YY`` edition *ends* in.
+
+    ``2024-25`` ends in 2025. This is arithmetic rather than parsing, and
+    exactly: :func:`find_editions` only produces a label for a **consecutive**
+    span, so the end is always the start plus one. A non-consecutive pair never
+    becomes a label in the first place.
+
+    It lives here, beside the spelling rule, because "what does 2024-25 mean" is
+    the same kind of question as "how is 2024-25 written", and the corpus has
+    already paid once for that knowledge being in four places.
+
+    >>> edition_end_year("2024-25")
+    2025
+    >>> edition_end_year("2019-20")
+    2020
+    """
+    return int(label[:4]) + 1
 
 
 def find_editions(value: str | None) -> list[str]:

@@ -49,7 +49,7 @@ class Candidate:
   after `reranker.rerank` (doc 05). Never compare it to a configured
   threshold.
 - **`semantic_score`** is the value every configured floor is actually
-  calibrated against (`website_chunk_floor`, `pdf_high_confidence_floor`,
+  calibrated against (`rerank_score_threshold`,
   `corrective_min_score`, `rerank_score_threshold`). Set once, in `_to_candidate`,
   the moment a candidate is born from a real Qdrant hit, and preserved through
   every later stage.
@@ -58,8 +58,9 @@ class Candidate:
 
 This three-way split exists to fix a real defect: `rrf` used to overwrite
 `score` and the floors read `score`, so enabling the keyword or multi-query leg
-put every fused candidate an order of magnitude below `website_chunk_floor`
-and silently emptied the website group. `tests/test_fusion_score_integrity.py`
+put every fused candidate an order of magnitude below the cosine-scaled
+floors, emptying the website group through an admission floor since retired.
+`tests/retrieval/search/test_fusion_score_integrity.py`
 pins the separation.
 
 ### The mandatory filter
@@ -126,7 +127,14 @@ dual = prefer_website_enabled and not source_type and answer_format != "table"
 concatenation (not yet fused; that happens later against the recall-expansion
 legs too). The reason is corpus composition: PDFs numerically dominate the
 collection, so an unweighted pull under-represents website pages even when
-they are the better answer. See `docs/website-preference-retrieval.md` for the
+they are the better answer.
+
+This is a **recall** guarantee and nothing more. Both halves land in one list,
+are ranked together, and are admitted together: source kind survives only as one
+term of the authority band (see [05](05-ranking-and-temporal-gating.md)), which
+sits below relevance, temporal fit and — on a question about the present —
+recency. It used to mean more, and [06](06-context-and-citations.md) records
+what. See the archived `redundant/docs/website-preference-retrieval.md` for the
 measurement behind it.
 
 Dual is skipped whenever the caller already pinned a `source_type` (honouring
@@ -246,8 +254,8 @@ a signal RRF is free to discount.
 
 A bare word-overlap match would let the organisation's own name in every
 title win, or let "research" — 1.5% of titles, but a whole genre, not a page
-— beat a genuinely rare title word. Three guards, all computed per-query
-against the live title table rather than configured once:
+— beat a genuinely rare title word. Four guards, the first three computed
+per-query against the live title table rather than configured once:
 
 1. **≥2 matched title words**, or exactly one — but only when that one word is
    long (`_DISTINCTIVE_MIN_LEN = 6`), the title itself is short (≤6 words), and
@@ -260,6 +268,19 @@ against the live title table rather than configured once:
    most" from being the effective ranking.
 3. **Word-level matching, not substring** — "vision" inside "Visionary"
    previously outranked "Mission and Goals" for a mission/vision question.
+4. **A word that names a kind of document never carries a match alone**
+   (`_names_a_kind`, applied in `_rare_terms`), however rare it is in the
+   titles. "articles" is in one title of 8,631 — the "Articles & Publications"
+   index — so by frequency it identified that page exactly, and *"list the
+   articles where IPCC is mentioned"* retrieved the index's link labels in
+   place of anything about IPCC; "reports" alone matched 37 short titles
+   carrying "Report", "projects" 39, "events" 8. The vocabulary
+   (`_kind_words`) is not a list kept here: it is the bundle names, display
+   labels and collective words of every type the glossary describes, through
+   the same `topic.bundle_words` the structured layer uses, imported lazily
+   and failing open to the frequency-only rule. Two-word agreement is
+   unaffected — "annual reports", "articles publications" and "papers
+   discussing Article 6" still resolve their pages.
 
 Singular/plural is the one inflection crossed deliberately (`centres` ↔
 `centre`, `reports` ↔ `report`), because pages are named one way and asked

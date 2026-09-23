@@ -1,0 +1,258 @@
+{
+  "collection": "e2e_audit_documents",
+  "exists": true,
+  "count": 5,
+  "points": [
+    {
+      "id": "da4da12f-d5c9-5dd9-bc86-1ebef2fcb0ba",
+      "payload": {
+        "chunk_id": "da4da12f-d5c9-5dd9-bc86-1ebef2fcb0ba",
+        "document_id": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "press_release",
+        "title": "Indigenous Knowledge, Grassroots Innovations Take Centre Stage at Guwahati Conference",
+        "chunk_text": "Guwahati, September 8:\n\nMore than 150 community farmers, grassroots practitioners, NGO representatives, resource persons and development professionals gathered at Gauhati University on Tuesday as a two-day national conference began with discussions on how Indigenous Traditional Knowledge, clean energy and grassroots innovations can contribute to biodiversity conservation, climate resilience and sustainable livelihoods in Assam and Meghalaya.\n\nThe conference, titled “Indigenous Traditional Knowledge, Clean Energy & Grassroots Innovation to Policy Solutions for Biodiversity, Climate Resilience and Land Restoration in Assam & Meghalaya,” organised under the GEF Small Grants Programme implemented by TERI as the National Host Institute under the guidance of MoEFCC and UNDP with TISS Guwahati as the Knowledge Partner, is being held at the Seminar Hall of the Department of Geography, Gauhati University, on September 8th and 9th. Twenty-two NGOs are participating in the event, with more than 60 representatives from these organisations.\n\nThe conference seeks to bridge the gap between field-level practices and formal policy by bringing together traditional knowledge, community-led clean-energy solutions, appropriate technologies and modern innovations. The focus is particularly significant for Assam and Meghalaya, where communities have historically relied on Indigenous Traditional Knowledge to manage forests, agriculture, water systems, land and other common resources.\n\nOpening the conference, Manish Kumar Pandey, National Coordinator, SGP-India, TERI, highlighted the outcomes of the first two-year intervention’s outcome in the Five-Year Project and stressed that community-led approaches should continue beyond the project period. “The project has successfully reached 11,000 beneficiaries. In this regard, the project should not be a source of fund for organisations, but a source to start working on community-driven approaches to keep the intervention going beyond the intervention period,” Pandey said.",
+        "content_hash": "09e8dba4219b067104a5f53d9fea2ed4553b1e166039bab789f0d74f466f0bcb",
+        "token_count": 373,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Corporate Sustainability",
+          "Biodiversity conservation",
+          "Environmental awareness"
+        ],
+        "categories": [
+          "Corporate Social Responsibility"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/press-release/indigenous-knowledge-grassroots-innovations-take-centre-stage-guwahati-conference",
+        "effective_start_date": "2026-09-08T00:00:00+00:00",
+        "article_uuid": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "embed_hash": "94552e741b6eaf03bc95af2a8b1107a8bf414134124a07e5124ccecefb089a85",
+        "parent_chunk_id": "736a3ed2-8d5c-5a5b-8364-8b6dfe79c7a6",
+        "chunk_index": 0,
+        "nid": 13385,
+        "changed": "2026-09-09T07:16:49+00:00",
+        "created_at": "2026-09-10T10:30:52.311967+00:00",
+        "updated_at": "2026-09-10T10:30:52.311967+00:00",
+        "embed_model": "text-embedding-3-large:3072"
+      },
+      "vector": {
+        "dim": 3072,
+        "l2_norm": 1.0,
+        "is_zero": false,
+        "sha256_of_rounded": "d8097c7a079be90ca6137f231f7e52f742c1ae8665f907b29cfc79f77faa41a5",
+        "head": [
+          0.010942,
+          0.012865,
+          -0.017153,
+          -0.010698,
+          0.015597,
+          0.001496
+        ]
+      }
+    },
+    {
+      "id": "33a2cf4b-fe3d-5197-b370-9aea6a67e301",
+      "payload": {
+        "chunk_id": "33a2cf4b-fe3d-5197-b370-9aea6a67e301",
+        "document_id": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "press_release",
+        "title": "Indigenous Knowledge, Grassroots Innovations Take Centre Stage at Guwahati Conference",
+        "chunk_text": "In this regard, the project should not be a source of fund for organisations, but a source to start working on community-driven approaches to keep the intervention going beyond the intervention period,” Pandey said. In the opening remarks, Dr Dipankar Saharia, Senior Director at The Energy and Resources Institute (TERI), reported significant achievements, with more than 17,000 hectares of land brought under improved management and 2,800 hectares restored. More than 11,000 lives have been impacted, with farmers accounting for 61 per cent of those reached. The interventions have outreached 250 villages across 11 districts of Assam and Meghalaya and added 182 kW of renewable solar capacity.\n\nSetting the context for the conference, Dr Abhinandan Saikia, Project Lead, SGP Project-TISS Guwahati, said, “The contextualisation of the Northeast is very different, and the high reach of the participating groups with women’s groups helps people to identify the greatness of such small-fund projects.”\n\nThe conference is being organised in the context of concerns that Indigenous Traditional Knowledge, despite its demonstrated value, remains under-documented and insufficiently integrated into formal government programmes. Experts noted that standardised schemes often fail to adequately accommodate local ecological knowledge and community-led innovations.\n\nDr Keshav Kumar, IPS (Retd.), Advisor to the Government of Assam (Home & Political Affairs), highlighted the role of indigenous knowledge in strengthening relationships between communities and wildlife. “The indigenous knowledge among the community in wildlife forensics helps people to have a better harmony with wildlife and people in the community,” he said, urging that similar approaches be considered in rhino conservation and anti-poaching measures in Assam while also calling for greater protection of frontline wildlife workers.",
+        "content_hash": "7d6c605803a89781e02fcd3c61239800fd648905050d7379edf7c28bb75a18ce",
+        "token_count": 358,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Corporate Sustainability",
+          "Biodiversity conservation",
+          "Environmental awareness"
+        ],
+        "categories": [
+          "Corporate Social Responsibility"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/press-release/indigenous-knowledge-grassroots-innovations-take-centre-stage-guwahati-conference",
+        "effective_start_date": "2026-09-08T00:00:00+00:00",
+        "article_uuid": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "embed_hash": "7e7c09a218331d478276ff2851f6e1981132128521003b5f623642eb6a07c569",
+        "parent_chunk_id": "736a3ed2-8d5c-5a5b-8364-8b6dfe79c7a6",
+        "chunk_index": 1,
+        "nid": 13385,
+        "changed": "2026-09-09T07:16:49+00:00",
+        "created_at": "2026-09-10T10:30:52.311967+00:00",
+        "updated_at": "2026-09-10T10:30:52.311967+00:00",
+        "embed_model": "text-embedding-3-large:3072"
+      },
+      "vector": {
+        "dim": 3072,
+        "l2_norm": 1.0,
+        "is_zero": false,
+        "sha256_of_rounded": "f6e13ad5e0099eb2cd9a4a98196501688cc1042f84f7959cfb2f436a7d5e9780",
+        "head": [
+          0.007741,
+          0.015337,
+          -0.022128,
+          -0.015482,
+          0.005654,
+          0.001726
+        ]
+      }
+    },
+    {
+      "id": "009e84a3-d50d-5c4d-9a9f-522a03413eb2",
+      "payload": {
+        "chunk_id": "009e84a3-d50d-5c4d-9a9f-522a03413eb2",
+        "document_id": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "press_release",
+        "title": "Indigenous Knowledge, Grassroots Innovations Take Centre Stage at Guwahati Conference",
+        "chunk_text": "with wildlife and people in the community,” he said, urging that similar approaches be considered in rhino conservation and anti-poaching measures in Assam while also calling for greater protection of frontline wildlife workers. The importance of bringing grassroots knowledge into academic institutions was also emphasised by Prof Jagannath Ambagudia, Campus Director, TISS Guwahati. “The current curriculum of TISS has tried to accommodate ITK into the framework, and the work of local NGOs has to be placed in academic studies and classrooms of various academic institutions,” Ambagudia said.\n\nIn his inaugural address, Prof Ratul Mahanta, HoD Department of Economics, Gauhati University, pointed to a shift in economic thinking towards recognising nature's carrying capacity. “The core idea of economic study to extract natural resources to attain development has changed. Current economic studies have started recognising the carrying capacity of nature as the core of new economic theories,” Mahanta said.\n\nThe inaugural session also featured the inauguration of a gallery displaying the results of projects supported under the programme. The event brought together representatives from academia, government, civil society and grassroots organisations to discuss how locally developed solutions can inform wider development policy.\n\nA key session on “ITK & Green Solutions” brought together experts from TISS Guwahati, TERI, TDU, Aaranyak, Cotton University and IIT Guwahati. The discussion examined the role of Indigenous Traditional Knowledge and community-led green solutions in ecological resilience, biodiversity conservation and sustainable agriculture. Panel members also highlighted the structural challenges facing traditional knowledge systems, including intergenerational loss of knowledge, rigid government scheme specifications, biopiracy risks and complex intellectual property rights frameworks. The discussion focused on how institutional systems can protect, validate and scale grassroots innovations without compromising community ownership and autonomy.\n\nThe second major discussion of the day, on “Appropriate Technology & Renewable Innovations,” examined the relevance of decentralised and locally adapted technologies for rural communities in the Northeast.",
+        "content_hash": "b14240b5ac593ef9ae7f6734ec4067dc74452b63a902f31b2e71b01ee2dc2f51",
+        "token_count": 402,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Corporate Sustainability",
+          "Biodiversity conservation",
+          "Environmental awareness"
+        ],
+        "categories": [
+          "Corporate Social Responsibility"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/press-release/indigenous-knowledge-grassroots-innovations-take-centre-stage-guwahati-conference",
+        "effective_start_date": "2026-09-08T00:00:00+00:00",
+        "article_uuid": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "embed_hash": "1ded41b0b0dfb5655f592ba0f0969765c9c9142afd9ca3d6b01500c1003d08d2",
+        "parent_chunk_id": "736a3ed2-8d5c-5a5b-8364-8b6dfe79c7a6",
+        "chunk_index": 2,
+        "nid": 13385,
+        "changed": "2026-09-09T07:16:49+00:00",
+        "created_at": "2026-09-10T10:30:52.311967+00:00",
+        "updated_at": "2026-09-10T10:30:52.311967+00:00",
+        "embed_model": "text-embedding-3-large:3072"
+      },
+      "vector": {
+        "dim": 3072,
+        "l2_norm": 1.0,
+        "is_zero": false,
+        "sha256_of_rounded": "bd908918b7167f134d0768a59a8fec08aa5e8da4bdbd0b0f67ae3f3eb0a74316",
+        "head": [
+          -0.012563,
+          0.006751,
+          -0.025172,
+          -0.015477,
+          0.00361,
+          0.008772
+        ]
+      }
+    },
+    {
+      "id": "176c8ea1-8287-5c4e-8c3a-088b26ce88ae",
+      "payload": {
+        "chunk_id": "176c8ea1-8287-5c4e-8c3a-088b26ce88ae",
+        "document_id": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": false,
+        "source_type": "website",
+        "bundle": "press_release",
+        "title": "Indigenous Knowledge, Grassroots Innovations Take Centre Stage at Guwahati Conference",
+        "chunk_text": "The second major discussion of the day, on “Appropriate Technology & Renewable Innovations,” examined the relevance of decentralised and locally adapted technologies for rural communities in the Northeast. Experts from SELCO Foundation, Sauramandala Foundation, Mahabahu Climate Forum and TISS Guwahati pointed out that the remote and hilly terrain of Assam and Meghalaya creates distinct logistical, geographical and climate-related challenges, making conventional urban or industrial clean-energy models difficult to apply in decentralised rural settings. The session explored the potential of off-grid renewable energy and low-cost appropriate technologies to strengthen community resilience, support rural livelihoods and improve the connection between policy and ground-level implementation.\n\nThe conference also featured a grassroots exhibition showcasing local products, traditional knowledge and community-led innovations. The stalls displayed bamboo jewellery, traditional rice varieties, pickles, fruit products, textiles, organic farming inputs, vermicompost, fisheries products and solar-powered technologies. Several indigenous rice varieties, including Boka Chaul, Tulshi Joha, Kunkuni Joha and Black Joha, were showcased alongside locally processed products such as bamboo-shoot pickle, jackfruit and pineapple products, ginger candy and fruit bars. Traditional Eri Dokhona, Eri Aronai, Eri shawls and Gamusa highlighted the link between indigenous knowledge, culture and rural livelihoods. The exhibition also featured grassroots agricultural practices such as Neemastra, Jeevamrit, Agniastra and vermicompost, as well as a solar irrigation model.\n\nThe Seventh Operational Phase of the GEF Small Grants Programme (SGP OP7) supports civil society and community-based organisations in documenting, revitalising and scaling Indigenous Technical Knowledge across the region. The programme provides technical and financial support to grassroots communities implementing field-tested models for biodiversity conservation, land restoration and climate adaptation.\n\nThe conference aims not only to document these practices but also to identify institutional, financial and implementation gaps that prevent grassroots innovations from being integrated into government schemes and funding frameworks. It will also work towards developing policy communication tools and sharing draft recommendations with the governments of Assam and Meghalaya.\n\nThe two-day conference will continue till Wednesday, with further discussions on policy convergence, institutional alignment, clean energy and community-led solutions for climate resilience and sustainable development across the Northeast.",
+        "content_hash": "9381c62b0eef703c36d7655b5069fbc816d77ca24a337f421f34b507382de3fe",
+        "token_count": 465,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Corporate Sustainability",
+          "Biodiversity conservation",
+          "Environmental awareness"
+        ],
+        "categories": [
+          "Corporate Social Responsibility"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/press-release/indigenous-knowledge-grassroots-innovations-take-centre-stage-guwahati-conference",
+        "effective_start_date": "2026-09-08T00:00:00+00:00",
+        "article_uuid": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "embed_hash": "58f88ddce67db508447ea0f20bba87593fdccc3425345ab76e3fd96e67e6b2cc",
+        "parent_chunk_id": "736a3ed2-8d5c-5a5b-8364-8b6dfe79c7a6",
+        "chunk_index": 3,
+        "nid": 13385,
+        "changed": "2026-09-09T07:16:49+00:00",
+        "created_at": "2026-09-10T10:30:52.311967+00:00",
+        "updated_at": "2026-09-10T10:30:52.311967+00:00",
+        "embed_model": "text-embedding-3-large:3072"
+      },
+      "vector": {
+        "dim": 3072,
+        "l2_norm": 1.0,
+        "is_zero": false,
+        "sha256_of_rounded": "f43c5cc531e4be9ea192318f89ef90b3d19189eb7e5a43d0163525a20cf09425",
+        "head": [
+          -0.012128,
+          0.020061,
+          -0.020259,
+          -0.010953,
+          0.009275,
+          -0.017223
+        ]
+      }
+    },
+    {
+      "id": "736a3ed2-8d5c-5a5b-8364-8b6dfe79c7a6",
+      "payload": {
+        "chunk_id": "736a3ed2-8d5c-5a5b-8364-8b6dfe79c7a6",
+        "document_id": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "pipeline_version": "c1.i1.p2.e1",
+        "is_parent": true,
+        "source_type": "website",
+        "bundle": "press_release",
+        "title": "Indigenous Knowledge, Grassroots Innovations Take Centre Stage at Guwahati Conference",
+        "chunk_text": "Guwahati, September 8:\n\nMore than 150 community farmers, grassroots practitioners, NGO representatives, resource persons and development professionals gathered at Gauhati University on Tuesday as a two-day national conference began with discussions on how Indigenous Traditional Knowledge, clean energy and grassroots innovations can contribute to biodiversity conservation, climate resilience and sustainable livelihoods in Assam and Meghalaya.\n\nThe conference, titled “Indigenous Traditional Knowledge, Clean Energy & Grassroots Innovation to Policy Solutions for Biodiversity, Climate Resilience and Land Restoration in Assam & Meghalaya,” organised under the GEF Small Grants Programme implemented by TERI as the National Host Institute under the guidance of MoEFCC and UNDP with TISS Guwahati as the Knowledge Partner, is being held at the Seminar Hall of the Department of Geography, Gauhati University, on September 8th and 9th. Twenty-two NGOs are participating in the event, with more than 60 representatives from these organisations.\n\nThe conference seeks to bridge the gap between field-level practices and formal policy by bringing together traditional knowledge, community-led clean-energy solutions, appropriate technologies and modern innovations. The focus is particularly significant for Assam and Meghalaya, where communities have historically relied on Indigenous Traditional Knowledge to manage forests, agriculture, water systems, land and other common resources.\n\nOpening the conference, Manish Kumar Pandey, National Coordinator, SGP-India, TERI, highlighted the outcomes of the first two-year intervention’s outcome in the Five-Year Project and stressed that community-led approaches should continue beyond the project period. “The project has successfully reached 11,000 beneficiaries. In this regard, the project should not be a source of fund for organisations, but a source to start working on community-driven approaches to keep the intervention going beyond the intervention period,” Pandey said.\n\nIn the opening remarks, Dr Dipankar Saharia, Senior Director at The Energy and Resources Institute (TERI), reported significant achievements, with more than 17,000 hectares of land brought under improved management and 2,800 hectares restored. More than 11,000 lives have been impacted, with farmers accounting for 61 per cent of those reached. The interventions have outreached 250 villages across 11 districts of Assam and Meghalaya and added 182 kW of renewable solar capacity.\n\nSetting the context for the conference, Dr Abhinandan Saikia, Project Lead, SGP Project-TISS Guwahati, said, “The contextualisation of the Northeast is very different, and the high reach of the participating groups with women’s groups helps people to identify the greatness of such small-fund projects.”\n\nThe conference is being organised in the context of concerns that Indigenous Traditional Knowledge, despite its demonstrated value, remains under-documented and insufficiently integrated into formal government programmes. Experts noted that standardised schemes often fail to adequately accommodate local ecological knowledge and community-led innovations.\n\nDr Keshav Kumar, IPS (Retd.), Advisor to the Government of Assam (Home & Political Affairs), highlighted the role of indigenous knowledge in strengthening relationships between communities and wildlife. “The indigenous knowledge among the community in wildlife forensics helps people to have a better harmony with wildlife and people in the community,” he said, urging that similar approaches be considered in rhino conservation and anti-poaching measures in Assam while also calling for greater protection of frontline wildlife workers.\n\nThe importance of bringing grassroots knowledge into academic institutions was also emphasised by Prof Jagannath Ambagudia, Campus Director, TISS Guwahati. “The current curriculum of TISS has tried to accommodate ITK into the framework, and the work of local NGOs has to be placed in academic studies and classrooms of various academic institutions,” Ambagudia said.\n\nIn his inaugural address, Prof Ratul Mahanta, HoD Department of Economics, Gauhati University, pointed to a shift in economic thinking towards recognising nature's carrying capacity. “The core idea of economic study to extract natural resources to attain development has changed. Current economic studies have started recognising the carrying capacity of nature as the core of new economic theories,” Mahanta said.\n\nThe inaugural session also featured the inauguration of a gallery displaying the results of projects supported under the programme. The event brought together representatives from academia, government, civil society and grassroots organisations to discuss how locally developed solutions can inform wider development policy.\n\nA key session on “ITK & Green Solutions” brought together experts from TISS Guwahati, TERI, TDU, Aaranyak, Cotton University and IIT Guwahati. The discussion examined the role of Indigenous Traditional Knowledge and community-led green solutions in ecological resilience, biodiversity conservation and sustainable agriculture. Panel members also highlighted the structural challenges facing traditional knowledge systems, including intergenerational loss of knowledge, rigid government scheme specifications, biopiracy risks and complex intellectual property rights frameworks. The discussion focused on how institutional systems can protect, validate and scale grassroots innovations without compromising community ownership and autonomy.\n\nThe second major discussion of the day, on “Appropriate Technology & Renewable Innovations,” examined the relevance of decentralised and locally adapted technologies for rural communities in the Northeast.\n\nExperts from SELCO Foundation, Sauramandala Foundation, Mahabahu Climate Forum and TISS Guwahati pointed out that the remote and hilly terrain of Assam and Meghalaya creates distinct logistical, geographical and climate-related challenges, making conventional urban or industrial clean-energy models difficult to apply in decentralised rural settings. The session explored the potential of off-grid renewable energy and low-cost appropriate technologies to strengthen community resilience, support rural livelihoods and improve the connection between policy and ground-level implementation.\n\nThe conference also featured a grassroots exhibition showcasing local products, traditional knowledge and community-led innovations. The stalls displayed bamboo jewellery, traditional rice varieties, pickles, fruit products, textiles, organic farming inputs, vermicompost, fisheries products and solar-powered technologies. Several indigenous rice varieties, including Boka Chaul, Tulshi Joha, Kunkuni Joha and Black Joha, were showcased alongside locally processed products such as bamboo-shoot pickle, jackfruit and pineapple products, ginger candy and fruit bars. Traditional Eri Dokhona, Eri Aronai, Eri shawls and Gamusa highlighted the link between indigenous knowledge, culture and rural livelihoods. The exhibition also featured grassroots agricultural practices such as Neemastra, Jeevamrit, Agniastra and vermicompost, as well as a solar irrigation model.\n\nThe Seventh Operational Phase of the GEF Small Grants Programme (SGP OP7) supports civil society and community-based organisations in documenting, revitalising and scaling Indigenous Technical Knowledge across the region. The programme provides technical and financial support to grassroots communities implementing field-tested models for biodiversity conservation, land restoration and climate adaptation.\n\nThe conference aims not only to document these practices but also to identify institutional, financial and implementation gaps that prevent grassroots innovations from being integrated into government schemes and funding frameworks. It will also work towards developing policy communication tools and sharing draft recommendations with the governments of Assam and Meghalaya.\n\nThe two-day conference will continue till Wednesday, with further discussions on policy convergence, institutional alignment, clean energy and community-led solutions for climate resilience and sustainable development across the Northeast.",
+        "content_hash": "217e826000e14afa965920c79f6709f3efc9d74703a76d626f9365feeb05f6a5",
+        "token_count": 1483,
+        "doc_version": 1,
+        "is_current": true,
+        "tags": [
+          "Corporate Sustainability",
+          "Biodiversity conservation",
+          "Environmental awareness"
+        ],
+        "categories": [
+          "Corporate Social Responsibility"
+        ],
+        "language": "en",
+        "source_url": "https://teriin.org/press-release/indigenous-knowledge-grassroots-innovations-take-centre-stage-guwahati-conference",
+        "effective_start_date": "2026-09-08T00:00:00+00:00",
+        "article_uuid": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+        "nid": 13385,
+        "changed": "2026-09-09T07:16:49+00:00",
+        "created_at": "2026-09-10T10:30:52.311967+00:00",
+        "updated_at": "2026-09-10T10:30:52.311967+00:00"
+      },
+      "vector": {
+        "dim": 3072,
+        "l2_norm": 0.0,
+        "is_zero": true,
+        "sha256_of_rounded": "bef9903c1145f56fc3d53166d762971d8673370a4be2b4ad1b1f135064716d53",
+        "head": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ]
+}

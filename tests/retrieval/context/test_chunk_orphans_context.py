@@ -178,7 +178,7 @@ def test_a_mixed_set_keeps_every_section_represented(parents):
         limit=6, token_budget=9000,
     )
     # Three sections in, three blocks out — the Bravo siblings share one.
-    # Order is not input order: `_order_for_attention` interleaves 3+ blocks.
+    # Blocks come out in ranked order, numbered from 1 (`_numbered`).
     assert len(blocks) == 3
     assert {b.payload["chunk_id"] for b in blocks} == {"c-alpha", "c-bravo-1", "c-charlie"}
     assert [b.n for b in blocks] == [1, 2, 3]

@@ -1,0 +1,122 @@
+{
+  "rich_text_fields": [
+    {
+      "field": "body",
+      "kind": "formatted_text",
+      "html_chars": 332,
+      "html": "<p>The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr <span>Ajay Shankar, Distinguished Fellow, Electricity &amp; Renewables Division, The Energy and Resources Institute (TERI).</span></p>",
+      "text": "The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI)."
+    },
+    {
+      "field": "field_article_summary",
+      "kind": "formatted_text",
+      "html_chars": 332,
+      "html": "<p>The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr <span>Ajay Shankar, Distinguished Fellow, Electricity &amp; Renewables Division, The Energy and Resources Institute (TERI).</span></p>",
+      "text": "The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI)."
+    }
+  ],
+  "record_body": "The Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).\n\nThe Nepal tragedy highlights the escalating impacts of climate change and underscores the urgent need for global action to achieve net-zero emissions and strengthen climate resilience, writes Mr Ajay Shankar, Distinguished Fellow, Electricity & Renewables Division, The Energy and Resources Institute (TERI).",
+  "record_body_chars": 618,
+  "files_discovered": [],
+  "entity_refs": [
+    {
+      "field_name": "field_authors",
+      "uuid": "be999aff-376a-49bd-b37a-8380b88ad036",
+      "entity_type": "user--user",
+      "label": "Mr Ajay Shankar"
+    },
+    {
+      "field_name": "field_division",
+      "uuid": "091c06a5-6592-4da4-9c1c-2cfe0ef62379",
+      "entity_type": "taxonomy_term--division",
+      "label": "Electricity & Fuels"
+    },
+    {
+      "field_name": "field_farticle_programme",
+      "uuid": "d78eff32-c892-47c1-8895-ba75451b90da",
+      "entity_type": "taxonomy_term--programs_units",
+      "label": "Energy"
+    },
+    {
+      "field_name": "field_farticle_stakeholders",
+      "uuid": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Academicians"
+    },
+    {
+      "field_name": "field_farticle_stakeholders",
+      "uuid": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Consultants"
+    },
+    {
+      "field_name": "field_farticle_stakeholders",
+      "uuid": "fed1993b-a1cb-4fe0-9c3b-36e6fe641088",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Consultants"
+    },
+    {
+      "field_name": "field_farticle_tags",
+      "uuid": "90b7af86-620d-45e7-aeea-1a8c4411b102",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Climate change"
+    },
+    {
+      "field_name": "field_farticle_tags",
+      "uuid": "a88d9489-d81b-43af-a76a-8c90d2a143e5",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Climate resilience"
+    },
+    {
+      "field_name": "field_farticle_tags",
+      "uuid": "a14fef1d-6229-4522-a1ef-b17c90d35455",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Global warming "
+    },
+    {
+      "field_name": "field_farticle_tags",
+      "uuid": "e3f4c9e6-d38e-4414-8dba-c6309a8624e7",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Net zero emission"
+    },
+    {
+      "field_name": "field_farticle_theme",
+      "uuid": "449b5d32-d2f2-4444-a708-0b6b85425c28",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Electricity and Renewables"
+    },
+    {
+      "field_name": "field_farticle_theme",
+      "uuid": "64fb6aa9-a944-4d9a-b0bc-b31d08353159",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Climate Change"
+    }
+  ],
+  "scalar_metadata": {
+    "field_authors": [
+      "Mr Ajay Shankar"
+    ],
+    "field_division": [
+      "Electricity & Fuels"
+    ],
+    "field_farticle_programme": [
+      "Energy"
+    ],
+    "field_farticle_stakeholders": [
+      "Academicians",
+      "Consultants",
+      "Consultants"
+    ],
+    "field_farticle_tags": [
+      "Climate change",
+      "Climate resilience",
+      "Global warming ",
+      "Net zero emission"
+    ],
+    "field_farticle_theme": [
+      "Electricity and Renewables",
+      "Climate Change"
+    ],
+    "field_article_published_in": "The Hindustan Times"
+  }
+}

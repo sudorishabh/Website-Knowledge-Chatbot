@@ -1,0 +1,17 @@
+2026-09-10 16:00:27,667 INFO app.ingestion.pipeline: Ingesting website 2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69 (https://teriin.org/opinion/nepal-wake-call)
+2026-09-10 16:00:27,681 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points "HTTP/1.1 200 OK"
+2026-09-10 16:00:28,017 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:28,030 INFO httpx: HTTP Request: PUT http://localhost:6333/collections/e2e_audit_documents/points?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:28,030 INFO app.ingestion.indexer: Indexed 1 points (1 children: 1 embedded, 0 reused; 0 parents) into 'e2e_audit_documents'
+2026-09-10 16:00:28,047 INFO httpx: HTTP Request: GET http://localhost:6333/collections/e2e_audit_documents/exists "HTTP/1.1 200 OK"
+2026-09-10 16:00:28,055 INFO httpx: HTTP Request: POST http://localhost:6333/collections/e2e_audit_documents/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-09-10 16:00:28,061 INFO app.ingestion.pipeline: new 2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69 -> v1
+2026-09-10 16:00:28,064 INFO app.knowledge.document_pipeline: prelude        entities=2451 chunks=1
+2026-09-10 16:00:28,068 INFO app.knowledge.document_pipeline: mentions       cached=0 mentions=6
+2026-09-10 16:00:28,073 INFO app.knowledge.document_pipeline: resolution     auto=4 provisional=2 ambiguous=0 unresolved=0 cache_recorded=1
+2026-09-10 16:00:30,293 INFO httpx: HTTP Request: POST https://terillm.openai.azure.com/openai/responses?api-version=2025-04-01-preview "HTTP/1.1 200 OK"
+2026-09-10 16:00:30,298 INFO app.knowledge.document_pipeline: claims         cms_authored=1 llm_calls=1 llm_failures=0 run_calls_used=40 run_calls_remaining=149960 llm=1 unknown_predicates=0 built=2
+2026-09-10 16:00:30,298 INFO app.knowledge.claims.validate: Rejected 2 assertions: {'subject_not_claim_eligible': 1, 'missing_object_entity': 1}
+2026-09-10 16:00:30,298 INFO app.knowledge.document_pipeline: validate       accepted=0 rejected=2 rejected_missing_object_entity=1 rejected_subject_not_claim_eligible=1
+2026-09-10 16:00:30,302 INFO app.knowledge.document_pipeline: persist        accepted=0 pending_predicates=0 rejections_recorded=2
+2026-09-10 16:00:30,306 INFO app.knowledge.document_pipeline: knowledge_document id=2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69 v=1 status=ok claims=0 pending=0 proj=skipped 2.24s

@@ -41,16 +41,32 @@ The gate is deliberately narrow:
 Modes
 -----
 ``PAST``, ``UPCOMING``, ``CURRENT``, ``POINT_IN_TIME``, ``DATE_RANGE``, ``NONE``.
-Only ``UPCOMING`` currently changes retrieval; the rest are classified so the
-distinction is explicit and testable, and so document-date questions keep using
-``effective_start_date`` and relationship-history questions keep using claim
-validity, exactly as before.
+
+Two of them gate, four of them rank, and none of them filters by date — that is
+still ``app.retrieval.understanding.filters.date_conditions``, which turns the
+window the user named into precision-aware overlap conditions before the search
+runs. Nothing here duplicates it.
+
+* ``UPCOMING`` and ``PAST`` **gate**: scheduled occurrences on the wrong side of
+  today are dropped from the finished context, under the rules above.
+* ``CURRENT``, ``PAST``, ``POINT_IN_TIME`` and ``DATE_RANGE`` **rank**, via
+  :func:`temporal_fit` — a band the reranker cuts *inside* the relevance band,
+  so fitting the asked-for period reorders candidates that are already
+  comparably relevant and can never lift one that is not. See
+  :mod:`app.retrieval.search.reranker`.
+* ``NONE`` does neither. A question with no temporal intent must not acquire
+  one, so :attr:`TemporalIntent.ranks` is False and every candidate scores the
+  same — one band, no reordering.
+
+All of it is behind ``temporal_intent_enabled`` except the ``UPCOMING`` gate,
+which predates the flag and keeps running as it always has.
 """
 from __future__ import annotations
 
 import logging
 import re
 from calendar import monthrange
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any, Sequence
 
@@ -75,10 +91,29 @@ _PATTERNS: tuple[tuple[str, str], ...] = (
     (UPCOMING, r"\bupcoming\b|\bforthcoming\b|\bscheduled\b|\bwill (?:be )?(?:take place|happen|run|host)"
                r"|\bnext (?:week|month|year|session|summit|conference|event)\b"
                r"|\bany (?:planned|future)\b|\bplanned\b|\bfuture\b(?!\s+of\b)"),
-    (PAST, r"\bpast\b|\bprevious(?:ly)?\b|\bformer\b|\bused to\b|\bhistor(?:y|ical)\b"
-           r"|\bearlier\b|\bonce\b|\bcompleted\b"),
-    (CURRENT, r"\bcurrent(?:ly)?\b|\bright now\b|\bat present\b|\bpresently\b"
-              r"|\bongoing\b|\bunderway\b|\bactive\b|\btoday\b|\blatest\b"),
+    (PAST, r"\bpast\b|\bprevious(?:ly)?\b|\bformer(?:ly)?\b|\bused to\b|\bhistor(?:y|ical)\b"
+           r"|\bearlier\b|\bonce\b|\bcompleted\b"
+           # Past-tense identity and role questions, the exact mirror of the
+           # present-tense ones below: both ask who holds a post, and the only
+           # thing separating them is the tense of the verb. Sitting above
+           # CURRENT is what makes a question carrying both cues ("who is the
+           # *former* head") read as the past question it actually is.
+           r"|\bwho\s+(?:was|were)\b|\bwho\s+served\b|\bstepped\s+down\b"
+           r"|\bsucceeded\s+by\b|\bno\s+longer\b"),
+    # An identity or role question asks about *now* even when it says so with
+    # nothing but a present-tense verb. "Who is the director general" asks who
+    # holds the post today; answering it from a 2020 page that was true when it
+    # was written is the failure this clause exists to prevent, and no explicit
+    # cue word ("currently", "today") appears anywhere in it to catch.
+    #
+    # Necessarily narrow. A bare "is" is far too common to read as a temporal
+    # signal, so the pattern requires the interrogative that makes the sentence
+    # a question about a person or a post: `who is/are`, or a verb of holding
+    # office. "What is the budget" gains no temporal intent from this.
+    (CURRENT, r"\bcurrent(?:ly)?\b|\bnow\b|\bat present\b|\bpresently\b"
+              r"|\bongoing\b|\bunderway\b|\bactive\b|\btoday\b|\blatest\b"
+              r"|\bwho\s+(?:is|are)\b"
+              r"|\bwho\s+(?:heads|leads|runs|chairs|directs|manages|oversees)\b"),
 )
 
 
@@ -160,6 +195,193 @@ def _is_scheduled(payload: Any) -> bool:
     return str(payload.get("bundle") or "") in SCHEDULED_BUNDLES
 
 
+#: Source types that are fixed artefacts — written once, on a date — rather than
+#: pages an organisation maintains. Whatever bundle such a document inherits from
+#: the page it hangs on, nothing about the document itself runs to the present.
+_ARTEFACT_SOURCE_TYPES: frozenset[str] = frozenset({"pdf_attachment"})
+
+
+def _is_open_ended(payload: Any) -> bool:
+    """Whether this document's period runs to the present rather than to a date.
+
+    True for a *page* of an open-ended bundle. ``ongoing_projects`` declares only
+    a start, deliberately — stored, that is indistinguishable from a single-date
+    document, and reading it as a point would call a project running since 2005
+    "not current". The same reading ``filters.date_conditions`` already applies
+    to the lower bound.
+
+    False for an attachment of such a page, whatever bundle it inherited. The
+    open-ended period is the project's, and the page is what carries it; a PDF
+    attached to that page is a dated artefact, written once, on the date it
+    states. Reading the inherited bundle alone made every such attachment a
+    perfect fit for any question about the present — one band above every dated
+    document — and the corpus holds some 24 attachment chunks under this bundle
+    for every page chunk. Measured on the reported "who is X": a 2019
+    building-retrofit guideline attached to an ongoing project led the context
+    above a 2023 brief, scoring lowest of the six on relevance, on the strength
+    of a foreword signed with the subject's then title; the answer gave that
+    title in the present tense. The guideline's date came from its own copyright
+    line, and that is exactly the date its period should close on.
+    """
+    from app.core.corpus import OPEN_ENDED_BUNDLES
+
+    if str(payload.get("source_type") or "") in _ARTEFACT_SOURCE_TYPES:
+        return False
+    return str(payload.get("bundle") or "") in OPEN_ENDED_BUNDLES
+
+
+# --------------------------------------------------------------------------- #
+# Temporal intent, and how well a document fits it
+# --------------------------------------------------------------------------- #
+
+#: Modes that can reorder a ranking. ``UPCOMING`` is absent because it already
+#: has a gate and nothing is gained by also scoring it; ``NONE`` is absent
+#: because a question with no temporal intent must not acquire one.
+_RANKING_MODES: frozenset[str] = frozenset({CURRENT, PAST, POINT_IN_TIME, DATE_RANGE})
+
+# Fit is banded, not weighted, so only the *order* of these matters and the gaps
+# only have to exceed the band tolerance. Named rather than spelled inline
+# because the reranker's tolerance is calibrated against them.
+FIT_MATCH = 1.0     # covers the time the question is about
+FIT_PARTIAL = 0.75  # overlaps it, but reaches outside
+FIT_UNKNOWN = 0.5   # no usable date — neither favoured nor penalised
+FIT_MISS = 0.25     # dated, and not the time asked about
+
+
+@dataclass(frozen=True)
+class TemporalIntent:
+    """The time a question is about: the mode, plus the window if one was named.
+
+    ``mode`` is :func:`detect_mode`'s verdict — the lexical classifier that has
+    always been in this module. ``date_from``/``date_to`` are not a second
+    extraction: they are the *same* bounds query understanding already produced
+    and ``filters.date_conditions`` already applied as Qdrant conditions,
+    carried here so ranking can ask "how well does this fit?" about the window
+    the filter asked "does this overlap at all?" about. Half-open like every
+    other date bound on the read path — ``date_to`` is exclusive.
+    """
+
+    mode: str = NONE
+    date_from: str | None = None
+    date_to: str | None = None
+
+    @property
+    def ranks(self) -> bool:
+        """Whether this intent is allowed to reorder candidates.
+
+        False for ``NONE`` and ``UPCOMING``, which is what makes the ranking
+        signal inert on the overwhelming majority of questions rather than a
+        freshness thumb on every scale.
+        """
+        return self.mode in _RANKING_MODES
+
+
+def temporal_fit(
+    payload: Any, intent: TemporalIntent, *, reference: date | None = None
+) -> float:
+    """How well this document's period matches the time the question is about.
+
+    Returns :data:`FIT_UNKNOWN` — the neutral value — for every case where the
+    answer is not known: no temporal intent, an intent with no window, a
+    document with no date. That is deliberate and load-bearing. An unknown must
+    never be scored as a miss, because the reranker bands these and a miss band
+    sits below a match band: penalising an undated passage would quietly demote
+    every document whose date ingestion could not recover.
+
+    Reads only fields the payload already carries. ``period_end`` supplies the
+    precision-aware end (a document stated as "2007" covers until 31 December),
+    so this never asserts a day its source did not state.
+    """
+    if not intent.ranks:
+        return FIT_UNKNOWN
+    today = _reference_date(reference)
+    start = _as_date(payload.get("effective_start_date"))
+    # An open-ended bundle has no end *because it has not ended*; every other
+    # document's period closes where its own precision says it does.
+    open_ended = _is_open_ended(payload)
+    end = None if open_ended else period_end(payload)
+
+    if intent.mode == CURRENT:
+        # Defence in depth: `hybrid_search.build_filter` already makes
+        # `is_current == True` mandatory, so a superseded chunk cannot reach a
+        # ranking. If one ever does, it is not evidence about the present.
+        if payload.get("is_current") is False:
+            return FIT_MISS
+        if start is None:
+            return FIT_UNKNOWN
+        if start > today:
+            return FIT_MISS  # not in force yet
+        if end is None:
+            return FIT_MATCH  # open-ended and already started: valid now
+        return FIT_MATCH if end >= today else FIT_MISS
+
+    if intent.mode == PAST:
+        if start is None:
+            return FIT_UNKNOWN
+        if open_ended:
+            return FIT_MISS  # still running, so not something that "was"
+        return FIT_MATCH if end is not None and end < today else FIT_MISS
+
+    # POINT_IN_TIME / DATE_RANGE: overlap with the window the user named.
+    lo = _as_date(intent.date_from)
+    hi = _as_date(intent.date_to)
+    if lo is None and hi is None or start is None:
+        # The mode fired lexically ("as of", "between ... and ...") but no bounds
+        # were extracted. There is nothing to compare against, and guessing a
+        # window here would be the second temporal classifier this must not be.
+        return FIT_UNKNOWN
+    last = end if end is not None else today
+    if hi is not None and start >= hi:
+        return FIT_MISS
+    if lo is not None and last < lo:
+        return FIT_MISS
+    contained = (lo is None or start >= lo) and (hi is None or last < hi)
+    return FIT_MATCH if contained else FIT_PARTIAL
+
+
+def _gate(
+    blocks: Sequence[Any],
+    stale: Any,
+    *,
+    reference: date | None,
+    label: str,
+    reason: str,
+) -> list[Any]:
+    """Drop the scheduled-occurrence blocks ``stale`` rejects, or change nothing.
+
+    The shared body of the two gates. Every property the upcoming gate has
+    always had is here and is the same for both: only scheduled bundles are
+    considered, the list comes back untouched when nothing is stale, and it
+    comes back untouched when *everything* is — answering from the wrong
+    occurrences is bad, answering from nothing is worse, and the generator can
+    say the corpus lists none.
+    """
+    if not blocks:
+        return list(blocks)
+    today = _reference_date(reference)
+
+    kept, dropped = [], []
+    for block in blocks:
+        payload = block.payload or {}
+        if _is_scheduled(payload) and stale(payload, today):
+            dropped.append(block)
+        else:
+            kept.append(block)
+    if not dropped:
+        return list(blocks)
+    if not kept:
+        logger.info(
+            "%s gate would empty the context (%d stale event blocks); "
+            "keeping them so the answer can say none are %s.",
+            label, len(dropped), label.lower(),
+        )
+        return list(blocks)
+    logger.info("%s gate dropped %d block(s) for events %s.", label, len(dropped), reason)
+    for i, block in enumerate(kept, start=1):
+        block.n = i
+    return kept
+
+
 def gate_upcoming(
     blocks: Sequence[Any], *, reference: date | None = None
 ) -> list[Any]:
@@ -169,29 +391,31 @@ def gate_upcoming(
     scheduled bundle, or when gating would leave nothing — the caller must
     always get a context it can reason about.
     """
-    if not blocks:
-        return list(blocks)
-    today = _reference_date(reference)
+    def over(payload: Any, today: date) -> bool:
+        end = period_end(payload)
+        return end is not None and end < today
 
-    kept, dropped = [], []
-    for block in blocks:
-        payload = block.payload or {}
-        end = period_end(payload) if _is_scheduled(payload) else None
-        if end is not None and end < today:
-            dropped.append(block)
-        else:
-            kept.append(block)
-    if not dropped:
-        return list(blocks)
-    if not kept:
-        logger.info(
-            "Upcoming gate would empty the context (%d stale event blocks); "
-            "keeping them so the answer can say none are upcoming.", len(dropped),
-        )
-        return list(blocks)
-    if dropped:
-        logger.info("Upcoming gate dropped %d block(s) for events already started.",
-                    len(dropped))
-        for i, block in enumerate(kept, start=1):
-            block.n = i
-    return kept
+    return _gate(blocks, over, reference=reference,
+                 label="Upcoming", reason="already started")
+
+
+def gate_past(blocks: Sequence[Any], *, reference: date | None = None) -> list[Any]:
+    """Drop blocks for scheduled occurrences that have not happened yet.
+
+    The exact mirror of :func:`gate_upcoming`, and it exists for the mirror
+    failure: "which workshops has TERI already run?" answered from next
+    quarter's calendar is wrong in the same way that "any upcoming programmes?"
+    answered from 2013 was. Same narrow scope — only the bundles whose date is a
+    scheduled occurrence — and the same refusal to empty a context.
+
+    Precision cuts the other way here, so it reads the period's *start*: an
+    occurrence stated as "2026" has not happened yet only while 1 January 2026
+    is still ahead, which is what the stored start already says. Nothing is
+    inferred for an undated block; it is kept, as before.
+    """
+    def not_yet(payload: Any, today: date) -> bool:
+        start = _as_date(payload.get("effective_start_date"))
+        return start is not None and start > today
+
+    return _gate(blocks, not_yet, reference=reference,
+                 label="Past", reason="that have not happened yet")

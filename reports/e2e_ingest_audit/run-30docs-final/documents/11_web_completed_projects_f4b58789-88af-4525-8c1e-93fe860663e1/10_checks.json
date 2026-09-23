@@ -1,0 +1,1035 @@
+[
+  {
+    "category": "outcome",
+    "name": "handler_outcome_is_indexed",
+    "status": "pass",
+    "detail": "Every fresh document is expected to end 'indexed'.",
+    "expected": "indexed",
+    "actual": "indexed"
+  },
+  {
+    "category": "outcome",
+    "name": "no_exception",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "canonical",
+    "name": "title_equals_node_title",
+    "status": "pass",
+    "detail": "",
+    "expected": "Delivering India’s NDC Targets: Role of Transport",
+    "actual": "Delivering India’s NDC Targets: Role of Transport"
+  },
+  {
+    "category": "canonical",
+    "name": "body_is_single_section",
+    "status": "pass",
+    "detail": "Website body becomes one section.",
+    "expected": 4446,
+    "actual": 4446
+  },
+  {
+    "category": "canonical",
+    "name": "raw_meta_equals_record_metadata",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "canonical",
+    "name": "article_uuid_is_node_uuid",
+    "status": "pass",
+    "detail": "",
+    "expected": "f4b58789-88af-4525-8c1e-93fe860663e1",
+    "actual": "f4b58789-88af-4525-8c1e-93fe860663e1"
+  },
+  {
+    "category": "canonical",
+    "name": "file_links_equal_record_files",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "canonical",
+    "name": "extra_carries_bundle_nid_changed",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": {
+      "bundle": "completed_projects",
+      "nid": 13345,
+      "changed": "2026-09-10T08:44:36+00:00"
+    }
+  },
+  {
+    "category": "canonical",
+    "name": "facets_match_drupal_facets_rule",
+    "status": "pass",
+    "detail": "",
+    "expected": {
+      "categories": [
+        "Transport"
+      ],
+      "tags": [
+        "Transport"
+      ],
+      "authors": []
+    },
+    "actual": {
+      "categories": [
+        "Transport"
+      ],
+      "tags": [
+        "Transport"
+      ],
+      "authors": []
+    }
+  },
+  {
+    "category": "canonical",
+    "name": "content_hash_is_sha256_of_body_text",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": "d8bfef342205c800e07eeac102ab5f39fd67d586b2ca95d13fbaed4a60954d61"
+  },
+  {
+    "category": "canonical",
+    "name": "body_text_non_empty",
+    "status": "pass",
+    "detail": "",
+    "expected": ">0 chars",
+    "actual": 4446
+  },
+  {
+    "category": "dates",
+    "name": "effective_start_date_present",
+    "status": "pass",
+    "detail": "Undated documents are excluded from date filters (pipeline warns).",
+    "expected": "a date",
+    "actual": "2024-09-01T00:00:00+00:00"
+  },
+  {
+    "category": "dates",
+    "name": "effective_date_evidence_present",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "dates",
+    "name": "website_date_rule",
+    "status": "info",
+    "detail": "rule=bundle_date_field source=cms_field fields=['field_completed_start_date', 'field_completed_end_date']",
+    "expected": null,
+    "actual": {
+      "rule": "bundle_date_field",
+      "source": "cms_field",
+      "fields": [
+        "field_completed_start_date",
+        "field_completed_end_date"
+      ],
+      "raw_values": [
+        "2024-09-01T04:30:00+00:00",
+        "2026-09-02T11:30:00+00:00"
+      ],
+      "field_role": "range_start",
+      "range_issue": null,
+      "precision": "day"
+    }
+  },
+  {
+    "category": "dates",
+    "name": "canonical_date_equals_evidence_value",
+    "status": "pass",
+    "detail": "",
+    "expected": "2024-09-01T00:00:00+00:00",
+    "actual": "2024-09-01T00:00:00+00:00"
+  },
+  {
+    "category": "dates",
+    "name": "canonical_end_equals_evidence_end",
+    "status": "pass",
+    "detail": "",
+    "expected": "2026-09-02T00:00:00+00:00",
+    "actual": "2026-09-02T00:00:00+00:00"
+  },
+  {
+    "category": "dates",
+    "name": "date_source_equals_evidence_source",
+    "status": "pass",
+    "detail": "",
+    "expected": "cms_field",
+    "actual": "cms_field"
+  },
+  {
+    "category": "dates",
+    "name": "date_decision_row_presence",
+    "status": "pass",
+    "detail": "Written only when the bundle maps to a real CMS date field.",
+    "expected": true,
+    "actual": 1
+  },
+  {
+    "category": "chunks",
+    "name": "chunks_produced",
+    "status": "pass",
+    "detail": "",
+    "expected": ">0 children",
+    "actual": {
+      "parents": 0,
+      "children": 3
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "chunk_ids_unique",
+    "status": "pass",
+    "detail": "",
+    "expected": 3,
+    "actual": 3
+  },
+  {
+    "category": "chunks",
+    "name": "every_parent_reference_resolves",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "chunks",
+    "name": "parents_have_at_least_two_children",
+    "status": "pass",
+    "detail": "A parent is emitted only when it groups more than one child.",
+    "expected": [],
+    "actual": {}
+  },
+  {
+    "category": "chunks",
+    "name": "children_carry_document_id",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "chunks",
+    "name": "children_carry_doc_version",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      1
+    ]
+  },
+  {
+    "category": "chunks",
+    "name": "children_within_token_limit",
+    "status": "pass",
+    "detail": "child_max_tokens=480",
+    "expected": 480,
+    "actual": {
+      "max_child_tokens": 379,
+      "over": []
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "parents_within_token_limit",
+    "status": "pass",
+    "detail": "parent_max_tokens=2200",
+    "expected": 2200,
+    "actual": {
+      "max_parent_tokens": 0,
+      "over": []
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "content_hash_is_sha256_of_text",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "chunks",
+    "name": "child_index_is_contiguous",
+    "status": "pass",
+    "detail": "",
+    "expected": [
+      0,
+      1,
+      2
+    ],
+    "actual": [
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "category": "chunks",
+    "name": "source_lines_covered_by_chunks",
+    "status": "pass",
+    "detail": "100.000% of 19 source lines appear verbatim in some chunk",
+    "expected": ">=98%",
+    "actual": {
+      "coverage": 1.0,
+      "missing_sample": []
+    }
+  },
+  {
+    "category": "chunks",
+    "name": "children_have_embed_text_with_breadcrumb",
+    "status": "pass",
+    "detail": "embed_text = 'title › heading' + text",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "point_count_equals_chunks",
+    "status": "pass",
+    "detail": "",
+    "expected": {
+      "chunks": 3,
+      "indexer_reported": 3
+    },
+    "actual": 3
+  },
+  {
+    "category": "qdrant",
+    "name": "every_chunk_id_is_a_point",
+    "status": "pass",
+    "detail": "",
+    "expected": 3,
+    "actual": {
+      "missing": [],
+      "extra": []
+    }
+  },
+  {
+    "category": "qdrant",
+    "name": "payload_equals_chunk_payload_plus_stamps",
+    "status": "pass",
+    "detail": "Stored payload == Chunk.to_payload() plus created_at/updated_at/embed_model.",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "qdrant",
+    "name": "children_have_real_vectors",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "parents_have_zero_vectors",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "vector_dimension_matches_setting",
+    "status": "pass",
+    "detail": "",
+    "expected": 3072,
+    "actual": [
+      3072
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "children_stamped_with_embed_model",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": [
+      "text-embedding-3-large:3072"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_carry_document_id",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "qdrant",
+    "name": "points_carry_effective_start_date",
+    "status": "pass",
+    "detail": "",
+    "expected": "2024-09-01T00:00:00+00:00",
+    "actual": [
+      "2024-09-01T00:00:00+00:00"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_carry_year_precision_only_when_year",
+    "status": "pass",
+    "detail": "",
+    "expected": "day",
+    "actual": [
+      "None"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_are_current_and_versioned",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      "1"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "points_stamped_with_pipeline_version",
+    "status": "pass",
+    "detail": "",
+    "expected": "c1.i1.p2.e1",
+    "actual": [
+      "c1.i1.p2.e1"
+    ]
+  },
+  {
+    "category": "qdrant",
+    "name": "swap_deleted_with_keep_ids",
+    "status": "pass",
+    "detail": "delete_document(id, keep_ids=<new chunk ids>) ran after the upsert.",
+    "expected": 3,
+    "actual": [
+      {
+        "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+        "keep_ids": 3
+      }
+    ]
+  },
+  {
+    "category": "mysql",
+    "name": "state_row_exists",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "row_source_type",
+    "status": "pass",
+    "detail": "",
+    "expected": "website",
+    "actual": "website"
+  },
+  {
+    "category": "mysql",
+    "name": "row_source_key",
+    "status": "pass",
+    "detail": "",
+    "expected": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport",
+    "actual": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport"
+  },
+  {
+    "category": "mysql",
+    "name": "row_fingerprint",
+    "status": "pass",
+    "detail": "",
+    "expected": "2026-09-10T08:44:36+00:00",
+    "actual": "2026-09-10T08:44:36+00:00"
+  },
+  {
+    "category": "mysql",
+    "name": "row_content_hash",
+    "status": "pass",
+    "detail": "",
+    "expected": "d8bfef342205c800e07eeac102ab5f39fd67d586b2ca95d13fbaed4a60954d61",
+    "actual": "d8bfef342205c800e07eeac102ab5f39fd67d586b2ca95d13fbaed4a60954d61"
+  },
+  {
+    "category": "mysql",
+    "name": "row_doc_version",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": 1
+  },
+  {
+    "category": "mysql",
+    "name": "row_pipeline_version",
+    "status": "pass",
+    "detail": "",
+    "expected": "c1.i1.p2.e1",
+    "actual": "c1.i1.p2.e1"
+  },
+  {
+    "category": "mysql",
+    "name": "row_bundle",
+    "status": "pass",
+    "detail": "",
+    "expected": "completed_projects",
+    "actual": "completed_projects"
+  },
+  {
+    "category": "mysql",
+    "name": "row_entity_type",
+    "status": "pass",
+    "detail": "",
+    "expected": "node",
+    "actual": "node"
+  },
+  {
+    "category": "mysql",
+    "name": "row_changed_mark",
+    "status": "pass",
+    "detail": "",
+    "expected": 1789029876,
+    "actual": 1789029876
+  },
+  {
+    "category": "mysql",
+    "name": "row_title",
+    "status": "pass",
+    "detail": "",
+    "expected": "Delivering India’s NDC Targets: Role of Transport",
+    "actual": "Delivering India’s NDC Targets: Role of Transport"
+  },
+  {
+    "category": "mysql",
+    "name": "row_url",
+    "status": "pass",
+    "detail": "",
+    "expected": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport",
+    "actual": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport"
+  },
+  {
+    "category": "mysql",
+    "name": "row_effective_start_date",
+    "status": "pass",
+    "detail": "",
+    "expected": "2024-09-01T00:00:00+00:00",
+    "actual": "2024-09-01T00:00:00"
+  },
+  {
+    "category": "mysql",
+    "name": "row_date_source",
+    "status": "pass",
+    "detail": "",
+    "expected": "cms_field",
+    "actual": "cms_field"
+  },
+  {
+    "category": "mysql",
+    "name": "row_start_precision",
+    "status": "pass",
+    "detail": "",
+    "expected": "day",
+    "actual": "day"
+  },
+  {
+    "category": "mysql",
+    "name": "row_effective_end_date",
+    "status": "pass",
+    "detail": "",
+    "expected": "2026-09-02T00:00:00+00:00",
+    "actual": "2026-09-02T00:00:00"
+  },
+  {
+    "category": "mysql",
+    "name": "row_end_precision",
+    "status": "pass",
+    "detail": "",
+    "expected": "day",
+    "actual": "day"
+  },
+  {
+    "category": "mysql",
+    "name": "row_indexed_at_set",
+    "status": "pass",
+    "detail": "",
+    "expected": "not null",
+    "actual": "2026-09-10T10:30:28"
+  },
+  {
+    "category": "mysql",
+    "name": "row_raw_meta_equals_canonical",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "author_facet_rows",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "mysql",
+    "name": "tag_facet_rows",
+    "status": "pass",
+    "detail": "",
+    "expected": [
+      "Transport"
+    ],
+    "actual": [
+      "Transport"
+    ]
+  },
+  {
+    "category": "mysql",
+    "name": "theme_rows_match_classification",
+    "status": "pass",
+    "detail": "documents_theme = theme_taxonomy.classify(categories)",
+    "expected": [
+      [
+        "Transport",
+        "sub",
+        "Sustainable Habitat",
+        "main",
+        "Sustainable Habitat > Transport",
+        2
+      ]
+    ],
+    "actual": [
+      [
+        "Transport",
+        "sub",
+        "Sustainable Habitat",
+        "main",
+        "Sustainable Habitat > Transport",
+        2
+      ]
+    ]
+  },
+  {
+    "category": "mysql",
+    "name": "attachment_link_rows",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "mysql",
+    "name": "ingest_log_indexed_row",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      "indexed"
+    ]
+  },
+  {
+    "category": "mysql",
+    "name": "ingest_log_chunk_count",
+    "status": "pass",
+    "detail": "",
+    "expected": 3,
+    "actual": 3
+  },
+  {
+    "category": "mysql",
+    "name": "ingest_log_hash_and_version",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "mysql",
+    "name": "no_retry_marker",
+    "status": "pass",
+    "detail": "",
+    "expected": [],
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "stage_report",
+    "status": "info",
+    "detail": "status=ok {'chunks_seen': 3, 'chunks_cached': 0, 'mentions': 2, 'entities_auto': 0, 'entities_provisional': 0, 'entities_ambiguous': 0, 'entities_unresolved': 2, 'claims_built': 0, 'claims_staged': 0, 'claims_rejected': 0, 'claims_retracted': 0, 'pending_predicates': 0, 'conflicts_disputed': 0, 'conflicts_superseded': 0} projection={'status': 'skipped', 'version': None, 'edges': 0}",
+    "expected": null,
+    "actual": {
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "doc_version": 1,
+      "run_id": "bd81cfa3bb064e29a32ee3c0e919a218",
+      "status": "ok",
+      "seconds": 0.02,
+      "knowledge_version": "kv1:9f993bff646d51c0",
+      "counts": {
+        "chunks_seen": 3,
+        "chunks_cached": 0,
+        "mentions": 2,
+        "entities_auto": 0,
+        "entities_provisional": 0,
+        "entities_ambiguous": 0,
+        "entities_unresolved": 2,
+        "claims_built": 0,
+        "claims_staged": 0,
+        "claims_rejected": 0,
+        "claims_retracted": 0,
+        "pending_predicates": 0,
+        "conflicts_disputed": 0,
+        "conflicts_superseded": 0
+      },
+      "rejection_counts": {},
+      "projection": {
+        "status": "skipped",
+        "version": null,
+        "edges": 0
+      },
+      "stages": [
+        {
+          "stage": "prelude",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {
+            "entities": 2451,
+            "chunks": 3
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "supersede",
+          "skipped": true,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "mentions",
+          "skipped": false,
+          "seconds": 0.01,
+          "counts": {
+            "cached": 0,
+            "mentions": 2
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "resolution",
+          "skipped": false,
+          "seconds": 0.01,
+          "counts": {
+            "auto": 0,
+            "provisional": 0,
+            "ambiguous": 0,
+            "unresolved": 2,
+            "cache_recorded": 3
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "claims",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {
+            "llm_calls": 0,
+            "llm_failures": 0,
+            "run_calls_used": 39,
+            "run_calls_remaining": 149961,
+            "llm": 0,
+            "unknown_predicates": 0,
+            "built": 0
+          },
+          "notes": [
+            "this document has no canonical PROJECT entity yet; seeding is a global pass (scripts.build_knowledge), and its claims will be staged once it runs"
+          ],
+          "errors": []
+        },
+        {
+          "stage": "validate",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "persist",
+          "skipped": false,
+          "seconds": 0.0,
+          "counts": {
+            "accepted": 0,
+            "pending_predicates": 0
+          },
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "conflicts",
+          "skipped": true,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        },
+        {
+          "stage": "project",
+          "skipped": true,
+          "seconds": 0.0,
+          "counts": {},
+          "notes": [],
+          "errors": []
+        }
+      ],
+      "errors": []
+    }
+  },
+  {
+    "category": "knowledge",
+    "name": "run_row_written",
+    "status": "pass",
+    "detail": "",
+    "expected": 1,
+    "actual": [
+      [
+        1,
+        "ok"
+      ]
+    ]
+  },
+  {
+    "category": "knowledge",
+    "name": "run_row_matches_report",
+    "status": "pass",
+    "detail": "",
+    "expected": {
+      "status": "ok",
+      "mentions": 2,
+      "claims_staged": 0
+    },
+    "actual": {
+      "status": "ok",
+      "mentions": 2,
+      "claims_staged": 0
+    }
+  },
+  {
+    "category": "knowledge",
+    "name": "mention_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 2,
+    "actual": 2
+  },
+  {
+    "category": "knowledge",
+    "name": "decision_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 2,
+    "actual": 2
+  },
+  {
+    "category": "knowledge",
+    "name": "mentions_point_at_own_chunks",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "staged_claim_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "claims_cite_own_chunks_or_document",
+    "status": "pass",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "knowledge",
+    "name": "rejection_rows_equal_report",
+    "status": "pass",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "claims_by_predicate",
+    "status": "info",
+    "detail": "{}",
+    "expected": null,
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "claims_by_method",
+    "status": "info",
+    "detail": "{}",
+    "expected": null,
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "cms_author_values",
+    "status": "info",
+    "detail": "0 author value(s) in metadata",
+    "expected": null,
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "cms_partner_values",
+    "status": "info",
+    "detail": "0 partner value(s) in metadata",
+    "expected": null,
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_is_cms_only",
+    "status": "n/a",
+    "detail": "AUTHORED must never come from the LLM.",
+    "expected": "cms_field",
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_is_cms_only",
+    "status": "n/a",
+    "detail": "PARTNER_OF must never come from the LLM.",
+    "expected": "cms_field",
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_records_its_source_field",
+    "status": "n/a",
+    "detail": "",
+    "expected": [
+      "field_authors",
+      "field_rpaper_author",
+      "field_article_authors",
+      "field_policybrief_authors",
+      "field_external_authors",
+      "field_author"
+    ],
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_records_its_source_field",
+    "status": "n/a",
+    "detail": "",
+    "expected": [
+      "field_completed_partners",
+      "field_ongoing_partners"
+    ],
+    "actual": {}
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_points_at_this_document",
+    "status": "n/a",
+    "detail": "The object identifies the document; the entity link is the claim's own provenance.",
+    "expected": "f4b58789-88af-4525-8c1e-93fe860663e1",
+    "actual": []
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_points_at_an_organization",
+    "status": "n/a",
+    "detail": "",
+    "expected": null,
+    "actual": null
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_never_exceeds_its_source",
+    "status": "pass",
+    "detail": "An author claim per stated author at most; unresolved names are skipped, never invented.",
+    "expected": "<= 0",
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_never_exceeds_its_source",
+    "status": "pass",
+    "detail": "",
+    "expected": "<= 0",
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "authored_has_no_duplicate_edge",
+    "status": "n/a",
+    "detail": "One edge per relationship, however many fields state it.",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "partner_of_has_no_duplicate_edge",
+    "status": "n/a",
+    "detail": "One edge per relationship, however many fields state it.",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "no_duplicate_claim_identity",
+    "status": "n/a",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "claim_ids_are_unique",
+    "status": "n/a",
+    "detail": "",
+    "expected": 0,
+    "actual": 0
+  },
+  {
+    "category": "knowledge",
+    "name": "extraction_cache_recorded",
+    "status": "pass",
+    "detail": "One cache row per child chunk content hash.",
+    "expected": 3,
+    "actual": 3
+  },
+  {
+    "category": "graph",
+    "name": "nothing_projected_when_skipped",
+    "status": "pass",
+    "detail": "projection skipped: no touched claims",
+    "expected": null,
+    "actual": {
+      "claims_in_graph": 0
+    }
+  }
+]

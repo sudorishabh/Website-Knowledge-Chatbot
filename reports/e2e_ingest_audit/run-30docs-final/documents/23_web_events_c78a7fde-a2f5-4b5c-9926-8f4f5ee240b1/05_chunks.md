@@ -1,0 +1,59 @@
+# Chunk tree (parents and their children)
+
+0 parent(s), 2 child(ren)
+
+## CHILDREN WITHOUT A PARENT RECORD (single-child windows)
+### CHILD #0 60943513-dbb0-54e9-ba1a-f1db114bb3f5
+- heading: None · type: None · tokens: 250 · page: None · pages: None · overlap_pages: None · has_table: False
+- embed_text prefix: 'WCEF2026 Accelerator Session: Circular Public Procurement for Sustainable Consumption and Production'
+
+```text
+Leveraging Public Demand and Information Instruments to Accelerate Resource Efficiency
+
+Public demand is one of the most potent levers available to foster early markets for circular products and services. By shifting purchasing patterns toward resource-efficient solutions, governments can significantly reduce reliance on virgin materials, extend product lifecycles, strengthen secondary-resource markets, and accelerate progress toward Sustainable Development Goal 12 (Responsible Consumption and Production).
+
+In India, public procurement accounts for an estimated 20–22 per cent of GDP. This substantial purchasing power represents a critical demand-side instrument to incentivize sustainable manufacturing, drive low-carbon innovation, and mainstream circular business models.
+
+Aligning Policy & Procurement
+
+India's Ecomark framework has evolved under the Ecomark Rules, 2024, with recent 2026 regulatory updates embedding stronger circularity principles—such as minimum recycled content thresholds, Extended Producer Responsibility (EPR) alignment, comprehensive lifecycle assessments (LCA), and supply-chain traceability.
+
+To maximize manufacturer uptake, these information instruments must be systematically paired with market-creation tools like public procurement. Existing provisions within India’s General Financial Rules (GFR), 2017—including lifecycle costing, recognized standards, and environmental technical specifications—provide foundational entry points to scale implementation.
+```
+### CHILD #1 8b6a60d1-ba0e-5315-82a0-33ca6afaed4c
+- heading: 'Session Objectives' · type: None · tokens: 305 · page: None · pages: None · overlap_pages: None · has_table: False
+- embed_text prefix: 'WCEF2026 Accelerator Session: Circular Public Procurement for Sustainable Consumption and Production › Session Objectives'
+
+```text
+This accelerator session convenes senior policymakers, public procurement officials, industry leaders, researchers, and civil society experts to translate circular economy ambitions into procurement practice.
+
+Through an evidence-based framing presentation, high-level panel dialogue, and a targeted interactive exercise, the session will:
+
+Evaluate Policy Alignment: Identify necessary institutional, legal, and market mechanisms to formally link ecolabeling schemes (information instruments) with public tendering frameworks (market promotion instruments).
+
+Prioritize High-Impact Sectors: Map priority product categories and industries best positioned for immediate, scalable adoption of Circular Public Procurement (CPP).
+
+Operationalize Standards: Detail actionable pathways for embedding ecolabels, digital product passports, and recognized environmental benchmarks into e-procurement portals (e.g., GeM).
+
+Bridge Policy to Practice: Surface pragmatic case studies and actionable next steps to move CPP from high-level ambition to everyday purchasing decisions.
+
+Key Questions Addressed
+
+Institutional Frameworks: What policy, institutional, and market conditions are essential to link ecolabels with public procurement mechanisms?
+
+Sector Readiness: Which sectors and product categories possess the supply-chain maturity and standards readiness for early CPP deployment?
+
+Implementation Systems: How can verification standards, ecolabels, and visual identifiers be seamlessly integrated into digital public procurement systems?
+
+Target Audience
+
+Central and State Government Policymakers
+
+Public Procurers and Tender Authorities
+
+Industry Representatives and Circular Innovators
+
+Standardization, Conformity Assessment, and Verification Bodies
+
+Academic, Research, and Multilateral Policy Organizations
+```

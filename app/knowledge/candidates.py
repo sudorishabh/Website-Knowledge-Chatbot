@@ -164,6 +164,17 @@ class EntityIndex:
             if (c := self._candidate(alias["entity_id"], "alias", alias)) is not None
         ]
 
+    def alias_groups(self) -> Iterable[tuple[tuple[str, str], list[Candidate]]]:
+        """Every ``(entity_type, normalized)`` alias group, as candidates.
+
+        :meth:`by_alias` answers one key at a time, which is what per-mention
+        resolution wants. A consumer that needs to build its own lookup over
+        *all* aliases would otherwise have to reach into the private index, so
+        this is the supported way to enumerate them.
+        """
+        for key in self._by_alias:
+            yield key, self.by_alias(*key)
+
     def by_initials(self, normalized_person: str) -> list[Candidate]:
         key = ("PERSON", initials_of(normalized_person))
         return [

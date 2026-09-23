@@ -1,0 +1,2148 @@
+{
+  "run_id": "20260910-102343",
+  "started_at": "2026-09-10T10:23:43+00:00",
+  "finished_at": "2026-09-10T10:31:20+00:00",
+  "pipeline_version": "c1.i1.p2.e1",
+  "run_dir": "D:\\OneDrive - The Energy and Resources Institute\\Desktop\\My_Files\\Projects\\Agentic-RAG-Chatbot\\reports\\e2e_ingest_audit\\run-30docs-final",
+  "isolation_notes": [
+    "MySQL tables: `e2e_audit_documents*` and `e2e_audit_ingest_log` (created fresh; 20 stale tables dropped first). Production `documents*` untouched.",
+    "Qdrant collection: `e2e_audit_documents` (recreated). Production `documents` collection untouched.",
+    "Neo4j: throwaway container `e2e-audit-neo4j` (neo4j:2026.07.1-community) at `bolt://localhost:7688`, empty at start.",
+    "Entity store snapshot: production `documents_entity/_alias/_identifier` copied into the isolated prefix ({'e2e_audit_documents_entity': 2451, 'e2e_audit_documents_entity_alias': 3518, 'e2e_audit_documents_entity_identifier': 972}) so mention resolution runs against the index a deployment has. No check reads production data.",
+    "Gazetteer, author facet and CMS-claim context are built from the isolated catalog, i.e. only from these 30 documents' metadata, so mention recognition is narrower than in production (see the assessment).",
+    "Workers forced to 1 (production .env has INGEST_WORKERS=2); the per-document logic is identical, only concurrency differs.",
+    "Feature flags as in .env: knowledge_enabled=True, knowledge_process_after_index=True, knowledge_extract_mentions=True, claim_extraction_enabled=True, knowledge_project_per_document=True, enrichment_enabled=False, date_resolution_enabled=True, extraction_mode=hybrid, verify_corpus_after_sweep=True.",
+    "Selection: newest-first sample of every configured source; the real detect_drupal_changes ran with only its bundle enumeration substituted."
+  ],
+  "selection": {
+    "candidates_seen": 184,
+    "per_source_fetched": {
+      "node/article": 12,
+      "node/page": 12,
+      "node/research_papers": 12,
+      "node/completed_projects": 12,
+      "node/feature_articles": 12,
+      "node/ongoing_projects": 12,
+      "node/news": 12,
+      "node/events": 12,
+      "node/press_release": 12,
+      "node/policy_brief": 12,
+      "node/videos": 12,
+      "node/infographics": 12,
+      "node/services": 12,
+      "node/report": 8,
+      "node/people": 8,
+      "block_content/basic": 12
+    },
+    "nodes_chosen": 24,
+    "expected_attachments": 6,
+    "expected_documents": 30,
+    "bundles": [
+      "article",
+      "page",
+      "completed_projects",
+      "feature_articles",
+      "ongoing_projects",
+      "news",
+      "events",
+      "press_release",
+      "block_content:basic"
+    ]
+  },
+  "handled": 30,
+  "tally": {
+    "indexed": 30
+  },
+  "ingest_seconds": 323.2,
+  "post_sweep": {
+    "knowledge_catch_up": {
+      "examined": 0,
+      "ok": 0,
+      "failed": 0
+    },
+    "graph_projection": {
+      "projection_version": "graph-project-v1:20260910T103101:f0d2981c",
+      "nodes": {
+        "Alias": 2793,
+        "Entity": 1726,
+        "Organization": 524,
+        "Person": 131,
+        "Predicate": 8,
+        "Project": 1071
+      },
+      "relationships": {
+        "HAS_ALIAS": 2793
+      },
+      "skipped": {}
+    },
+    "reconciliation": {
+      "ok": true,
+      "documents": 30,
+      "points": 1053,
+      "error": null,
+      "checks": [
+        {
+          "check": "indexed_without_points",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents the catalog reports as indexed that have no points at all. Clear their content hash (app.catalog.state.clear_change_markers) and let the next sweep rebuild them.",
+          "samples": []
+        },
+        {
+          "check": "points_without_catalog_row",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents with points but no catalog row. They are retrievable and uncatalogued; delete_document(id) removes them.",
+          "samples": []
+        },
+        {
+          "check": "duplicate_live_versions",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents whose points carry more than one doc_version — an interrupted swap. Re-index them to collapse it.",
+          "samples": []
+        },
+        {
+          "check": "version_mismatch",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents whose points disagree with the catalog's doc_version. Re-index them; the catalog is authoritative.",
+          "samples": []
+        },
+        {
+          "check": "chunk_id_mismatch",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Points whose payload chunk_id is not their own id. Citations resolve by payload, so these cite the wrong chunk.",
+          "samples": []
+        },
+        {
+          "check": "children_without_parent",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Child points naming a parent that does not exist. Context expansion falls back to the child alone for these.",
+          "samples": []
+        },
+        {
+          "check": "catalog_pipeline_drift",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents not built by pipeline c1.i1.p2.e1. Run scripts.reprocess_corpus to rebuild them.",
+          "samples": []
+        },
+        {
+          "check": "point_pipeline_drift",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents with points written by a pipeline other than c1.i1.p2.e1. Re-indexing replaces them.",
+          "samples": []
+        },
+        {
+          "check": "documents_without_date",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents with no effective date. They are invisible to date filters and to recency ranking; check the source exposes a date field.",
+          "samples": []
+        },
+        {
+          "check": "date_provenance_unrecorded",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "Documents whose effective_start_date has no recorded origin. Every write path sets it, so these came from one that does not — or predate scripts.backfill_date_provenance.",
+          "samples": []
+        },
+        {
+          "check": "stated_date_not_applied",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "The bundle's configured date field states a date that effective_start_date does not match. Either a sweep did not apply it, or something overwrote the value afterwards (app.ingestion.backfill lifts dates out of chunk payloads). Re-run scripts.backfill_bundle_dates.",
+          "samples": []
+        },
+        {
+          "check": "attachment_date_adrift",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "An attached file whose date or period differs from the page it hangs on. A file inherits both ends of its page's resolved range; only a publication statement verified inside the file's own text (date_source='document_text' or 'document_copyright') may differ. Re-run scripts.backfill_bundle_dates.",
+          "samples": []
+        },
+        {
+          "check": "inverted_date_range",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "A stored date range whose end falls before its start. `bundle_dates` drops an inverted end rather than storing it, so these were written by something else. Re-run scripts.backfill_bundle_dates.",
+          "samples": []
+        },
+        {
+          "check": "unmapped_bundle_dates",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "A catalogued node bundle with no entry in app.ingestion.bundle_dates.BUNDLE_DATE_FIELDS. Its documents keep their creation stamp — the safe direction — but nobody has said whether that is right. Declare it. (Custom blocks are exempt: they carry no `created` and are unmapped by design.)",
+          "samples": []
+        },
+        {
+          "check": "undeclared_source_date_field",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "A source field that looks like a date and holds a parseable one, which nothing has classified. It is being ignored — the safe direction — but if it is the date its bundle should carry, those documents are mis-dated. Classify it in app.ingestion.source_dates.FIELD_ROLES.",
+          "samples": []
+        },
+        {
+          "check": "year_precision_not_january",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "A year-precision date whose value is not 1 January. The day is a marker for the year, so anything else means the value and its precision disagree about what is known.",
+          "samples": []
+        },
+        {
+          "check": "month_precision_not_first_of_month",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "A month-precision date whose value is not the 1st. The day is a marker for the month, so anything else means the value and its precision disagree about what is known.",
+          "samples": []
+        },
+        {
+          "check": "graph_projection",
+          "count": 0,
+          "ok": true,
+          "skipped": false,
+          "detail": "projection matches MySQL and is current",
+          "samples": []
+        }
+      ]
+    }
+  },
+  "qdrant_info": {
+    "collection": "e2e_audit_documents",
+    "exists": true,
+    "points_count": 1053,
+    "vector_size": 3072,
+    "distance": "Cosine",
+    "payload_indexes": [
+      "authors",
+      "bundle",
+      "categories",
+      "chunk_index",
+      "chunk_text",
+      "document_id",
+      "effective_end_date",
+      "effective_start_date",
+      "end_precision",
+      "is_current",
+      "is_parent",
+      "language",
+      "parent_chunk_id",
+      "section_type",
+      "source_type",
+      "start_precision",
+      "tags"
+    ]
+  },
+  "neo4j_stats": {
+    "reachable": true,
+    "node_labels": {
+      "Alias": 2793,
+      "Entity": 1726,
+      "Organization": 524,
+      "Person": 131,
+      "Predicate": 8,
+      "Project": 1071
+    },
+    "relationship_types": {
+      "HAS_ALIAS": 2793
+    },
+    "current_state_edges": 0,
+    "projection_versions": {
+      "graph-project-v1:20260910T103101:f0d2981c": 4519
+    }
+  },
+  "table_counts": {
+    "e2e_audit_documents": 30,
+    "e2e_audit_documents_assertion": 0,
+    "e2e_audit_documents_assertion_link": 0,
+    "e2e_audit_documents_assertion_rejection": 27,
+    "e2e_audit_documents_attachment": 6,
+    "e2e_audit_documents_author": 4,
+    "e2e_audit_documents_date_decision": 21,
+    "e2e_audit_documents_dead_link": 0,
+    "e2e_audit_documents_entity": 2451,
+    "e2e_audit_documents_entity_alias": 3518,
+    "e2e_audit_documents_entity_extraction": 857,
+    "e2e_audit_documents_entity_identifier": 972,
+    "e2e_audit_documents_entity_mention": 2878,
+    "e2e_audit_documents_entity_resolution_decision": 2878,
+    "e2e_audit_documents_knowledge_run": 30,
+    "e2e_audit_documents_predicate_candidate": 0,
+    "e2e_audit_documents_retry": 0,
+    "e2e_audit_documents_tag": 68,
+    "e2e_audit_documents_theme": 24,
+    "e2e_audit_ingest_log": 30
+  },
+  "doc_rows": [
+    {
+      "#": 1,
+      "type": "web",
+      "bundle": "article",
+      "outcome": "indexed",
+      "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+      "date": "2026-08-31",
+      "date_source": "created",
+      "parents": 0,
+      "children": 4,
+      "points": 4,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "01_web_article_0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8"
+    },
+    {
+      "#": 2,
+      "type": "web",
+      "bundle": "article",
+      "outcome": "indexed",
+      "title": "Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge",
+      "date": "2025-11-12",
+      "date_source": "created",
+      "parents": 4,
+      "children": 12,
+      "points": 16,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "02_web_article_816867bf-eac7-4833-bfe1-7e202ff61c51"
+    },
+    {
+      "#": 3,
+      "type": "web",
+      "bundle": "page",
+      "outcome": "indexed",
+      "title": "TERI Alumni Association",
+      "date": "2025-09-30",
+      "date_source": "created",
+      "parents": 6,
+      "children": 23,
+      "points": 29,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "03_web_page_04107bb4-fefe-4ffa-be5d-f88ac9310dd6"
+    },
+    {
+      "#": 4,
+      "type": "pdf",
+      "bundle": "page",
+      "outcome": "indexed",
+      "title": "TERI Alumni Association",
+      "date": "2025-09-30",
+      "date_source": "parent_page",
+      "parents": 5,
+      "children": 23,
+      "points": 28,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "04_pdf_page_inbody_8a64f693f3de31c6620aa873d1d4c7425"
+    },
+    {
+      "#": 5,
+      "type": "pdf",
+      "bundle": "page",
+      "outcome": "indexed",
+      "title": "TERI Alumni Association",
+      "date": "2020-01-01",
+      "date_source": "document_copyright",
+      "parents": 98,
+      "children": 431,
+      "points": 529,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "05_pdf_page_inbody_019c7e59163edfbb3535b05744ff6949b"
+    },
+    {
+      "#": 6,
+      "type": "pdf",
+      "bundle": "page",
+      "outcome": "indexed",
+      "title": "TERI Alumni Association",
+      "date": "2022-01-01",
+      "date_source": "document_copyright",
+      "parents": 69,
+      "children": 294,
+      "points": 363,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "06_pdf_page_inbody_0a7c343146247d17ae9ebdffa512fb4a3"
+    },
+    {
+      "#": 7,
+      "type": "web",
+      "bundle": "page",
+      "outcome": "indexed",
+      "title": "Newsletters",
+      "date": "2020-10-22",
+      "date_source": "created",
+      "parents": 4,
+      "children": 17,
+      "points": 21,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "07_web_page_80d9bdc9-c159-493a-80e1-ca53cece85e3"
+    },
+    {
+      "#": 8,
+      "type": "web",
+      "bundle": "page",
+      "outcome": "indexed",
+      "title": "Contact Us",
+      "date": "2018-04-10",
+      "date_source": "created",
+      "parents": 1,
+      "children": 4,
+      "points": 5,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "08_web_page_2a2e9a77-da56-43a7-8138-3ebf16010d1b"
+    },
+    {
+      "#": 9,
+      "type": "web",
+      "bundle": "completed_projects",
+      "outcome": "indexed",
+      "title": "Science Technology and Innovation Hub in Gaondongrem, Goa",
+      "date": "2023-01-23",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 3,
+      "points": 3,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "09_web_completed_projects_36a999eb-b7c7-47fd-ac69-55f97841a9d3"
+    },
+    {
+      "#": 10,
+      "type": "web",
+      "bundle": "completed_projects",
+      "outcome": "indexed",
+      "title": "Establishing Resource and Knowledge Centre (RKC) for the Distribution Sector under the All-India Discoms Association (AIDA)",
+      "date": "2025-10-14",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "10_web_completed_projects_74d106c0-968e-43dc-b873-83d2e7460af8"
+    },
+    {
+      "#": 11,
+      "type": "web",
+      "bundle": "completed_projects",
+      "outcome": "indexed",
+      "title": "Delivering India’s NDC Targets: Role of Transport",
+      "date": "2024-09-01",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 3,
+      "points": 3,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "11_web_completed_projects_f4b58789-88af-4525-8c1e-93fe860663e1"
+    },
+    {
+      "#": 12,
+      "type": "web",
+      "bundle": "feature_articles",
+      "outcome": "indexed",
+      "title": "Nepal: A wake-up call",
+      "date": "2026-09-07",
+      "date_source": "created",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "12_web_feature_articles_2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69"
+    },
+    {
+      "#": 13,
+      "type": "web",
+      "bundle": "feature_articles",
+      "outcome": "indexed",
+      "title": "India’s carbon market needs a firewall",
+      "date": "2026-09-09",
+      "date_source": "created",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "13_web_feature_articles_abab1226-90b1-46c5-ac74-e63a7dc67da5"
+    },
+    {
+      "#": 14,
+      "type": "web",
+      "bundle": "feature_articles",
+      "outcome": "indexed",
+      "title": "The green wall without a foundation: Why Gujarat needs a state mangrove policy",
+      "date": "2026-09-08",
+      "date_source": "created",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "14_web_feature_articles_1cd4a081-ba2e-433d-952f-804bb42c1b89"
+    },
+    {
+      "#": 15,
+      "type": "web",
+      "bundle": "ongoing_projects",
+      "outcome": "indexed",
+      "title": "Adoption of green fuels in Indian Maritime sector.",
+      "date": "2026-01-14",
+      "date_source": "cms_field",
+      "parents": 1,
+      "children": 5,
+      "points": 6,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "15_web_ongoing_projects_a240619a-8365-429e-adde-9bf707c46882"
+    },
+    {
+      "#": 16,
+      "type": "web",
+      "bundle": "ongoing_projects",
+      "outcome": "indexed",
+      "title": "Peer Review of Carbon Credit Methodology for Jute-Based Net CO2 Emission Reduction",
+      "date": "2026-05-22",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "16_web_ongoing_projects_3807402a-fb95-4900-85ae-697403882e33"
+    },
+    {
+      "#": 17,
+      "type": "web",
+      "bundle": "ongoing_projects",
+      "outcome": "indexed",
+      "title": "National Roadmap: Solarisation of Closed & Reclaimed Coal Mines in India",
+      "date": "2026-04-10",
+      "date_source": "cms_field",
+      "parents": 1,
+      "children": 2,
+      "points": 3,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "17_web_ongoing_projects_2f5ede1c-8091-4ec8-9dd8-866797f0af41"
+    },
+    {
+      "#": 18,
+      "type": "web",
+      "bundle": "news",
+      "outcome": "indexed",
+      "title": "ISA SIDS and GRIHA Launch ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations",
+      "date": "2026-09-04",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "18_web_news_74aba0c4-1457-4495-9263-a0b95aa97875"
+    },
+    {
+      "#": 19,
+      "type": "web",
+      "bundle": "news",
+      "outcome": "indexed",
+      "title": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness",
+      "date": "2026-09-03",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "19_web_news_c00a39be-c021-4e95-9ce0-1c4a1912bc5e"
+    },
+    {
+      "#": 20,
+      "type": "web",
+      "bundle": "news",
+      "outcome": "indexed",
+      "title": "Renewables 2.0 will hinge on storage, transmission and economics of dispatchable clean power: Industry experts",
+      "date": "2026-09-09",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "20_web_news_be196812-8ac5-4a4d-8329-80fc5623695f"
+    },
+    {
+      "#": 21,
+      "type": "web",
+      "bundle": "events",
+      "outcome": "indexed",
+      "title": "Darbari Seth Memorial Lecture 2026",
+      "date": "2026-08-21",
+      "date_source": "cms_field",
+      "parents": 1,
+      "children": 3,
+      "points": 4,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "21_web_events_3c24d94b-f8bb-4475-b147-56dd0c35318f"
+    },
+    {
+      "#": 22,
+      "type": "pdf",
+      "bundle": "events",
+      "outcome": "indexed",
+      "title": "Darbari Seth Memorial Lecture 2026",
+      "date": "2026-08-21",
+      "date_source": "parent_page",
+      "parents": 1,
+      "children": 2,
+      "points": 3,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "22_pdf_events_33c32e72-2a50-4547-86a1-269699dade92"
+    },
+    {
+      "#": 23,
+      "type": "web",
+      "bundle": "events",
+      "outcome": "indexed",
+      "title": "WCEF2026 Accelerator Session: Circular Public Procurement for Sustainable Consumption and Production",
+      "date": "2026-09-18",
+      "date_source": "cms_field",
+      "parents": 0,
+      "children": 2,
+      "points": 2,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "23_web_events_c78a7fde-a2f5-4b5c-9926-8f4f5ee240b1"
+    },
+    {
+      "#": 24,
+      "type": "pdf",
+      "bundle": "events",
+      "outcome": "indexed",
+      "title": "Concept Note WCEF",
+      "date": "2026-09-18",
+      "date_source": "parent_page",
+      "parents": 0,
+      "children": 3,
+      "points": 3,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "24_pdf_events_6658c489-9aad-483b-9004-27b62225425d"
+    },
+    {
+      "#": 25,
+      "type": "web",
+      "bundle": "events",
+      "outcome": "indexed",
+      "title": "World Sustainable Development Summit 2027: Curtain Raiser",
+      "date": "2026-09-09",
+      "date_source": "cms_field",
+      "parents": 1,
+      "children": 2,
+      "points": 3,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "25_web_events_ce219043-a7a7-41ed-9812-2ecfe3842fe1"
+    },
+    {
+      "#": 26,
+      "type": "pdf",
+      "bundle": "events",
+      "outcome": "indexed",
+      "title": "World Sustainable Development Summit 2027: Curtain Raiser",
+      "date": "2026-09-09",
+      "date_source": "parent_page",
+      "parents": 1,
+      "children": 3,
+      "points": 4,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "26_pdf_events_f86baa25-6093-4b3a-a929-cd7176e77dd7"
+    },
+    {
+      "#": 27,
+      "type": "web",
+      "bundle": "press_release",
+      "outcome": "indexed",
+      "title": "ISA SIDS Platform and GRIHA Council Partner on ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations",
+      "date": "2026-09-02",
+      "date_source": "cms_field",
+      "parents": 1,
+      "children": 2,
+      "points": 3,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "27_web_press_release_7126f143-21fe-4372-ac55-07a092503549"
+    },
+    {
+      "#": 28,
+      "type": "web",
+      "bundle": "press_release",
+      "outcome": "indexed",
+      "title": "Indigenous Knowledge, Grassroots Innovations Take Centre Stage at Guwahati Conference",
+      "date": "2026-09-08",
+      "date_source": "cms_field",
+      "parents": 1,
+      "children": 4,
+      "points": 5,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "28_web_press_release_5ccc3216-3aa6-4f4d-b876-e0a3f90c0123"
+    },
+    {
+      "#": 29,
+      "type": "web",
+      "bundle": "press_release",
+      "outcome": "indexed",
+      "title": "TERI Brings WSDS 2027 Curtain Raiser to Guwahati, Focus on Northeast Climate Resilience",
+      "date": "2026-09-09",
+      "date_source": "cms_field",
+      "parents": 1,
+      "children": 6,
+      "points": 7,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "29_web_press_release_6d2d5ef3-25ab-4ff7-8583-5b9647588d7a"
+    },
+    {
+      "#": 30,
+      "type": "web",
+      "bundle": "basic",
+      "outcome": "indexed",
+      "title": "New in Electricity and Renewables",
+      "date": "2024-03-01",
+      "date_source": "created",
+      "parents": 0,
+      "children": 1,
+      "points": 1,
+      "claims": 0,
+      "proj": "skipped",
+      "fail": 0,
+      "folder": "30_web_basic_e258e64b-1235-449d-ba36-e1b5d9065426"
+    }
+  ],
+  "check_matrix": [
+    {
+      "category": "canonical",
+      "check": "article_uuid_is_node_uuid",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "body_is_single_section",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "body_text_non_empty",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "bundle_inherited_from_parent",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "content_hash_is_sha256_of_body_text",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "extra_carries_bundle_nid_changed",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "facets_match_drupal_facets_rule",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "file_links_equal_record_files",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "file_url_is_fetched_url",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "linked_article_uuid_is_parent_node",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "raw_meta_equals_record_metadata",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "section_text_equals_page_text",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "sections_equal_non_empty_pages",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "source_url_is_parent_page",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "title_equals_node_title",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "canonical",
+      "check": "title_precedence_description_node_filename",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "child_index_is_contiguous",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "children_carry_doc_version",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "children_carry_document_id",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "children_carry_page_numbers",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "children_have_embed_text_with_breadcrumb",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "children_within_token_limit",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "chunk_ids_unique",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "chunks_produced",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "content_hash_is_sha256_of_text",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "every_parent_reference_resolves",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "parents_have_at_least_two_children",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "parents_within_token_limit",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "chunks",
+      "check": "source_lines_covered_by_chunks",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "canonical_date_equals_evidence_value",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "canonical_end_equals_evidence_end",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "date_decision_current_date_is_parent_resolved",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "date_decision_row_names_parent_node",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "date_decision_row_presence",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "date_source_equals_evidence_source",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "date_source_is_document_derived",
+      "pass": 2,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "date_source_is_parent_page",
+      "pass": 4,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "date_source_matches_resolver_canonical_source",
+      "pass": 2,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "effective_date_evidence_present",
+      "pass": 24,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "effective_start_date_present",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "override_start_equals_resolver",
+      "pass": 2,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "parent_page_canonical_date_matches_parent_resolution",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "pdf_date_path",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "pdf_end_date_equals_parent",
+      "pass": 4,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "pdf_precision_equals_parent",
+      "pass": 4,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "pdf_start_date_equals_parent_resolved",
+      "pass": 4,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "resolver_ran",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "dates",
+      "check": "website_date_rule",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "graph",
+      "check": "nothing_projected_when_skipped",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "authored_has_no_duplicate_edge",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "authored_is_cms_only",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "authored_never_exceeds_its_source",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "authored_points_at_this_document",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "authored_records_its_source_field",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "claim_ids_are_unique",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "claims_by_method",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "claims_by_predicate",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "claims_cite_own_chunks_or_document",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "cms_author_values",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "cms_partner_values",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "decision_rows_equal_report",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "extraction_cache_recorded",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "mention_rows_equal_report",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "mentions_point_at_own_chunks",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "no_duplicate_claim_identity",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "partner_of_has_no_duplicate_edge",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "partner_of_is_cms_only",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "partner_of_never_exceeds_its_source",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "partner_of_points_at_an_organization",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "partner_of_records_its_source_field",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 30,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "rejected_claims_are_not_staged",
+      "pass": 8,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "rejection_rows_equal_report",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "rejections_by_reason",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "run_row_matches_report",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "run_row_written",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "stage_report",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "staged_claim_rows_equal_report",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "knowledge",
+      "check": "unresolved_author_values",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "attachment_link_rows",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "author_facet_rows",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "ingest_log_chunk_count",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "ingest_log_hash_and_version",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "ingest_log_indexed_row",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "no_retry_marker",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_bundle",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_changed_mark",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_content_hash",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_date_source",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_doc_version",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_effective_end_date",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_effective_start_date",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_end_precision",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_entity_type",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_fingerprint",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_indexed_at_set",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_pipeline_version",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_raw_meta_equals_canonical",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_source_key",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_source_type",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_start_precision",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_title",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "row_url",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "state_row_exists",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "tag_facet_rows",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "mysql",
+      "check": "theme_rows_match_classification",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "outcome",
+      "check": "handler_outcome_is_indexed",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "outcome",
+      "check": "no_exception",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "parent_child",
+      "check": "entity_refs_inherited_from_parent",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "parent_child",
+      "check": "facets_inherited_from_parent",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "parent_child",
+      "check": "linked_from_parent_in_attachment_table",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "parent_child",
+      "check": "parent_lists_this_file",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "parent_child",
+      "check": "parents_claiming_this_file",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "children_have_real_vectors",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "children_stamped_with_embed_model",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "every_chunk_id_is_a_point",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "parents_have_zero_vectors",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "payload_equals_chunk_payload_plus_stamps",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "point_count_equals_chunks",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "points_are_current_and_versioned",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "points_carry_document_id",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "points_carry_effective_start_date",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "points_carry_year_precision_only_when_year",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "points_stamped_with_pipeline_version",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "swap_deleted_with_keep_ids",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "qdrant",
+      "check": "vector_dimension_matches_setting",
+      "pass": 30,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "source",
+      "check": "pdf_downloaded_non_empty",
+      "pass": 6,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    },
+    {
+      "category": "source",
+      "check": "pdf_pages",
+      "pass": 0,
+      "fail": 0,
+      "n/a": 0,
+      "failing documents": ""
+    }
+  ],
+  "settings": {
+    "azure_openai_endpoint": "https://terillm.openai.azure.com/",
+    "azure_openai_api_version": "2025-04-01-preview",
+    "azure_openai_model": "gpt-5.4-nano",
+    "llm_structured_temperature": 0.0,
+    "azure_openai_embedding_model": "text-embedding-3-large",
+    "azure_openai_embedding_endpoint": "https://terillm.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings?api-version=2023-05-15",
+    "azure_openai_embedding_api_version": "2024-12-01-preview",
+    "azure_openai_embedding_dimensions": 3072,
+    "azure_openai_embedding_max_retries": 8,
+    "azure_openai_embedding_max_throttle_seconds": 60.0,
+    "azure_document_intelligence_endpoint": "https://chatbotvision.cognitiveservices.azure.com/",
+    "azure_document_intelligence_model": "prebuilt-read",
+    "pdf_scanned_char_threshold": 100,
+    "extraction_mode": "hybrid",
+    "camelot_flavor": "lattice",
+    "pdf_detect_ruled_grid": false,
+    "pdf_table_min_grid_lines": 3,
+    "pdf_detect_borderless_tables": false,
+    "pdf_borderless_min_aligned_rows": 4,
+    "pdf_borderless_min_columns": 3,
+    "pdf_running_header_min_fraction": 0.5,
+    "pdf_drop_number_soup": true,
+    "qdrant_url": "http://localhost:6333",
+    "qdrant_collection": "e2e_audit_documents",
+    "redis_url": "",
+    "semantic_cache_enabled": false,
+    "semantic_cache_threshold": 0.995,
+    "semantic_cache_collection": "semantic_cache",
+    "semantic_cache_ttl": 86400,
+    "semantic_cache_prune_every": 200,
+    "worker_sweep_interval_seconds": 3600,
+    "worker_sweep_reconcile": false,
+    "verify_corpus_after_sweep": true,
+    "retrieval_top_k": 6,
+    "retrieval_candidate_k": 40,
+    "prefer_website_enabled": true,
+    "website_candidate_k": 20,
+    "website_max_slots": 2,
+    "website_chunk_floor": 0.3,
+    "pdf_max_slots": 2,
+    "pdf_high_confidence_floor": 0.5,
+    "hybrid_use_sparse": false,
+    "multi_query_enabled": false,
+    "multi_query_paraphrases": 2,
+    "analysis_votes": 1,
+    "intent_confidence_threshold": 0.5,
+    "corrective_loop_enabled": false,
+    "corrective_min_score": 0.2,
+    "database_multi_call_enabled": false,
+    "entity_resolution_enabled": false,
+    "structured_topic_constraint_enabled": true,
+    "reranker_provider": "cross_encoder",
+    "rerank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "rerank_score_threshold": 0.0,
+    "rerank_max_candidates": 40,
+    "rerank_max_seq_length": 128,
+    "rerank_relevance_tolerance": 0.03,
+    "rerank_volatile_tolerance_multiplier": 2.0,
+    "rerank_substance_ratio": 1.5,
+    "rerank_table_boost": 0.15,
+    "dedup_cosine_threshold": 0.92,
+    "context_token_budget": 9000,
+    "faithfulness_check": false,
+    "metrics_log_enabled": true,
+    "is_retrieval_log": false,
+    "retrieval_log_dir": "",
+    "retrieval_log_include_text": true,
+    "retrieval_log_detail": "compact",
+    "retrieval_log_max_text_chars": 1200,
+    "retrieval_log_max_results": 10,
+    "retrieval_log_timezone": "Asia/Kolkata",
+    "retrieval_log_report": true,
+    "retrieval_log_summary": true,
+    "chat_stream_max_concurrency": 64,
+    "ops_detail_enabled": false,
+    "ops_admin_group": "",
+    "cors_allow_origins": "*",
+    "auth_enabled": false,
+    "jwt_algorithms": "HS256",
+    "jwt_audience": "",
+    "jwt_issuer": "",
+    "jwt_groups_claim": "groups",
+    "ingest_auth_enabled": true,
+    "ingest_admin_group": "",
+    "otel_enabled": false,
+    "otel_service_name": "agentic-rag",
+    "otel_exporter_otlp_endpoint": "",
+    "neo4j_uri": "bolt://localhost:7688",
+    "neo4j_user": "neo4j",
+    "neo4j_database": "neo4j",
+    "neo4j_connection_timeout": 10.0,
+    "knowledge_enabled": true,
+    "knowledge_process_after_index": true,
+    "knowledge_project_per_document": true,
+    "knowledge_stage_budget_seconds": 300.0,
+    "knowledge_llm_max_calls_per_document": 32,
+    "knowledge_extract_mentions": true,
+    "knowledge_stage_max_attempts": 3,
+    "graph_project_after_sweep": true,
+    "graph_projection_max_age_seconds": 86400,
+    "graph_retrieval_enabled": false,
+    "graph_routing_enabled": true,
+    "graph_routing_classes": null,
+    "graph_routing_budget_seconds": 3.0,
+    "graph_shadow_enabled": false,
+    "graph_shadow_log_path": null,
+    "claim_extraction_enabled": true,
+    "claim_min_confidence": 0.6,
+    "claim_llm_max_calls_per_run": 150000,
+    "mysql_host": "localhost",
+    "mysql_port": 3306,
+    "mysql_user": "root",
+    "mysql_database": "arc_db",
+    "mysql_connect_timeout": 10,
+    "mysql_pool_size": 5,
+    "mysql_pool_timeout": 30,
+    "drupal_jsonapi_base": "https://teriin.org/jsonapi",
+    "drupal_request_timeout": 60,
+    "drupal_page_size": 50,
+    "drupal_max_retries": 3,
+    "drupal_ingest_external_pdfs": false,
+    "drupal_block_min_chars": 200,
+    "date_resolution_enabled": true,
+    "theme_taxonomy_path": "",
+    "ingest_state_table": "e2e_audit_documents",
+    "ingest_log_table": "e2e_audit_ingest_log",
+    "ingest_log_enabled": true,
+    "ingest_log_unchanged": true,
+    "ingest_log_retention_days": 90,
+    "enrichment_enabled": false,
+    "enrichment_max_attempts": 3,
+    "ingest_max_docs_per_run": 0,
+    "ingest_batch_size": 0,
+    "ingest_batch_pause_seconds": 0.0,
+    "ingest_workers": 1,
+    "ingest_reconcile_max_missing_ratio": 0.1,
+    "ingest_reconcile_min_deletions": 2
+  },
+  "documents": [
+    {
+      "order": 1,
+      "document_id": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+      "folder": "01_web_article_0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 2,
+      "document_id": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "folder": "02_web_article_816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 3,
+      "document_id": "04107bb4-fefe-4ffa-be5d-f88ac9310dd6",
+      "folder": "03_web_page_04107bb4-fefe-4ffa-be5d-f88ac9310dd6",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 4,
+      "document_id": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+      "folder": "04_pdf_page_inbody_8a64f693f3de31c6620aa873d1d4c7425",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 5,
+      "document_id": "inbody:019c7e59163edfbb3535b05744ff6949b04cef47",
+      "folder": "05_pdf_page_inbody_019c7e59163edfbb3535b05744ff6949b",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 6,
+      "document_id": "inbody:0a7c343146247d17ae9ebdffa512fb4a3b39a5b2",
+      "folder": "06_pdf_page_inbody_0a7c343146247d17ae9ebdffa512fb4a3",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 7,
+      "document_id": "80d9bdc9-c159-493a-80e1-ca53cece85e3",
+      "folder": "07_web_page_80d9bdc9-c159-493a-80e1-ca53cece85e3",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 8,
+      "document_id": "2a2e9a77-da56-43a7-8138-3ebf16010d1b",
+      "folder": "08_web_page_2a2e9a77-da56-43a7-8138-3ebf16010d1b",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 9,
+      "document_id": "36a999eb-b7c7-47fd-ac69-55f97841a9d3",
+      "folder": "09_web_completed_projects_36a999eb-b7c7-47fd-ac69-55f97841a9d3",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 10,
+      "document_id": "74d106c0-968e-43dc-b873-83d2e7460af8",
+      "folder": "10_web_completed_projects_74d106c0-968e-43dc-b873-83d2e7460af8",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 11,
+      "document_id": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "folder": "11_web_completed_projects_f4b58789-88af-4525-8c1e-93fe860663e1",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 12,
+      "document_id": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+      "folder": "12_web_feature_articles_2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 13,
+      "document_id": "abab1226-90b1-46c5-ac74-e63a7dc67da5",
+      "folder": "13_web_feature_articles_abab1226-90b1-46c5-ac74-e63a7dc67da5",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 14,
+      "document_id": "1cd4a081-ba2e-433d-952f-804bb42c1b89",
+      "folder": "14_web_feature_articles_1cd4a081-ba2e-433d-952f-804bb42c1b89",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 15,
+      "document_id": "a240619a-8365-429e-adde-9bf707c46882",
+      "folder": "15_web_ongoing_projects_a240619a-8365-429e-adde-9bf707c46882",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 16,
+      "document_id": "3807402a-fb95-4900-85ae-697403882e33",
+      "folder": "16_web_ongoing_projects_3807402a-fb95-4900-85ae-697403882e33",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 17,
+      "document_id": "2f5ede1c-8091-4ec8-9dd8-866797f0af41",
+      "folder": "17_web_ongoing_projects_2f5ede1c-8091-4ec8-9dd8-866797f0af41",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 18,
+      "document_id": "74aba0c4-1457-4495-9263-a0b95aa97875",
+      "folder": "18_web_news_74aba0c4-1457-4495-9263-a0b95aa97875",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 19,
+      "document_id": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+      "folder": "19_web_news_c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 20,
+      "document_id": "be196812-8ac5-4a4d-8329-80fc5623695f",
+      "folder": "20_web_news_be196812-8ac5-4a4d-8329-80fc5623695f",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 21,
+      "document_id": "3c24d94b-f8bb-4475-b147-56dd0c35318f",
+      "folder": "21_web_events_3c24d94b-f8bb-4475-b147-56dd0c35318f",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 22,
+      "document_id": "33c32e72-2a50-4547-86a1-269699dade92",
+      "folder": "22_pdf_events_33c32e72-2a50-4547-86a1-269699dade92",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 23,
+      "document_id": "c78a7fde-a2f5-4b5c-9926-8f4f5ee240b1",
+      "folder": "23_web_events_c78a7fde-a2f5-4b5c-9926-8f4f5ee240b1",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 24,
+      "document_id": "6658c489-9aad-483b-9004-27b62225425d",
+      "folder": "24_pdf_events_6658c489-9aad-483b-9004-27b62225425d",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 25,
+      "document_id": "ce219043-a7a7-41ed-9812-2ecfe3842fe1",
+      "folder": "25_web_events_ce219043-a7a7-41ed-9812-2ecfe3842fe1",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 26,
+      "document_id": "f86baa25-6093-4b3a-a929-cd7176e77dd7",
+      "folder": "26_pdf_events_f86baa25-6093-4b3a-a929-cd7176e77dd7",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 27,
+      "document_id": "7126f143-21fe-4372-ac55-07a092503549",
+      "folder": "27_web_press_release_7126f143-21fe-4372-ac55-07a092503549",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 28,
+      "document_id": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+      "folder": "28_web_press_release_5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 29,
+      "document_id": "6d2d5ef3-25ab-4ff7-8583-5b9647588d7a",
+      "folder": "29_web_press_release_6d2d5ef3-25ab-4ff7-8583-5b9647588d7a",
+      "outcome": "indexed",
+      "checks_failed": []
+    },
+    {
+      "order": 30,
+      "document_id": "e258e64b-1235-449d-ba36-e1b5d9065426",
+      "folder": "30_web_basic_e258e64b-1235-449d-ba36-e1b5d9065426",
+      "outcome": "indexed",
+      "checks_failed": []
+    }
+  ]
+}

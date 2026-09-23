@@ -1,0 +1,65 @@
+{
+  "canonical": {
+    "effective_start_date": "2026-09-18T00:00:00+00:00",
+    "start_precision": "day",
+    "date_source": "parent_page",
+    "effective_end_date": "2026-09-18T00:00:00+00:00",
+    "end_precision": "day",
+    "edition_label": null
+  },
+  "website_evidence": null,
+  "record_created": null,
+  "record_changed": null,
+  "parent_page_resolution": {
+    "start_value": "2026-09-18T00:00:00+00:00",
+    "start_precision": "day",
+    "source": "cms_field",
+    "rule": "bundle_date_field",
+    "end_value": "2026-09-18T00:00:00+00:00",
+    "end_precision": "day",
+    "bundle": "events",
+    "fields": [
+      "field_event_start_date",
+      "field_event_end_date"
+    ],
+    "raw_values": [
+      "2026-09-18T08:30:00+00:00",
+      "2026-09-18T10:00:00+00:00"
+    ],
+    "field_role": "range_start",
+    "range_issue": null
+  },
+  "file_resolution": {
+    "start_value": "2026-09-18T00:00:00+00:00",
+    "start_precision": "day",
+    "end_value": "2026-09-18T00:00:00+00:00",
+    "end_precision": "day",
+    "edition_label": null,
+    "decision": {
+      "document_id": "6658c489-9aad-483b-9004-27b62225425d",
+      "action": "keep_page_date",
+      "candidate_start_date": "2026-09-18T00:00:00+00:00",
+      "candidate_precision": "day",
+      "date_type": "publication",
+      "edition_label": null,
+      "source": "node_effective_date",
+      "confidence": 1.0,
+      "evidence": "The parent events page states its date in field_event_start_date ('2026-09-18T08:30:00+00:00'); it holds one PDF, so that file carries its page's date.",
+      "rule": "parent_bundle_date_field",
+      "decided_by": "deterministic",
+      "supporting_evidence": "File timestamps, upload month and PDF metadata were not read: the page's own field is authoritative.",
+      "used": [
+        "drupal"
+      ]
+    },
+    "llm_raw": null,
+    "used": [
+      "drupal"
+    ]
+  },
+  "parent_page_canonical_date": {
+    "effective_start_date": "2026-09-18T00:00:00+00:00",
+    "start_precision": "day",
+    "effective_end_date": "2026-09-18T00:00:00+00:00"
+  }
+}

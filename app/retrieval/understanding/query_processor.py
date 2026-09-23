@@ -11,6 +11,13 @@ from pydantic import BaseModel, Field
 from app.config import get_settings
 from app.core.clients.llm import get_llm, get_structured_llm
 from app.core.dates import IsoDate, current_date_directive, exclusive_end
+from app.retrieval.search.temporal_gate import TemporalIntent, detect_mode
+from app.retrieval.understanding.annual_report_editions import (
+    EditionResolution,
+    SeriesRequest,
+    series_request,
+)
+from app.retrieval.understanding import clarify, content_scope
 from app.retrieval.understanding.catalog_prompt import (
     catalog_coverage_directive,
     catalog_inventory_directive,
@@ -188,6 +195,33 @@ class ProcessedQuery:
     # Full multi-label understanding (v2) for exposure/debugging; None on the
     # passthrough fallback. Downstream still routes on `intent`/`analysis`.
     understanding: QueryUnderstanding | None = None
+    # A question to ask the user instead of answering this turn, or None to
+    # answer as usual. Only ever set when `clarification_enabled` is on, the
+    # turn was labelled `clarification_needed`, and no clarification is already
+    # open — so the default is None on every path that exists today.
+    clarification: clarify.Clarification | None = None
+    # The earlier question this turn was merged with, when it is the answer to a
+    # clarification; None on an ordinary turn. Recorded for the trace, and as the
+    # marker that says why `search_query` mentions something the user did not
+    # type in this turn.
+    clarified_from: str | None = None
+    # The time this question is about: the mode `temporal_gate.detect_mode`
+    # classifies, plus the window understanding already extracted. Always
+    # computed (a regex over a string the analysis produced anyway) so the trace
+    # can show it; only *acted on* when `temporal_intent_enabled` is set, which
+    # the pipeline decides — see `app.pipeline.query_pipeline._prepare`.
+    temporal_intent: "TemporalIntent" = field(default_factory=lambda: TemporalIntent())
+    # The annual-report edition this question resolved to, or None. Carried
+    # rather than discarded because for a request that asks *for* the document
+    # ("give me the latest annual report") this object IS the answer — the
+    # edition, and the catalogued documents for it. Retrieval still applies it as
+    # a filter exactly as before; see `app.pipeline.query_pipeline._document_result`.
+    edition: EditionResolution | None = None
+    # A request for the annual-report *series* rather than one edition — list
+    # it, or count it. Kept apart from `edition` on purpose: a series request
+    # must never become a Qdrant filter, and the two answer different
+    # questions. None for every question that is not about the series.
+    series: SeriesRequest | None = None
 
     @property
     def is_ambiguous(self) -> bool:
@@ -626,43 +660,157 @@ def _corrected_intent(question: str, intent: Intent) -> Intent:
     return "qa"
 
 
-def _edition_conditions(question: str) -> list[Any]:
-    """Annual-report edition conditions for this question, or nothing.
+# Operations a content predicate does not disturb. A theme listing is about the
+# vocabulary, not about documents ("what topics are discussed?"), and a
+# distribution is about the facets; neither has a type word to widen.
+_FACET_OPERATIONS = frozenset({"list_themes", "distribution"})
 
-    "Latest annual report" cannot be answered by ranking: the newest edition is
-    absent from the unfiltered candidate set, so it is resolved here and applied
-    as a filter before retrieval. Returns [] for every question that does not
-    name an edition, which leaves retrieval byte-identical to before -
-    including for annual-report *content* questions that name no edition.
+
+def _widen_content_question(question: str, analysis: QueryAnalysis) -> None:
+    """Span every content type when the question conditions on the text.
+
+    A type word the model turned into ``bundle`` is a filter only in a
+    catalog-shaped question. When the wording asks for documents by what they
+    say (see :mod:`content_scope`), the word is descriptive: the bundle is
+    cleared — whichever bundle it was — and a ``structured`` route becomes
+    ``qa``, because the catalog cannot read inside a document and a list or
+    count it produced would be about something else.
+
+    The bundle is cleared on every route, not only ``structured``: the qa
+    path's catalog fallback and the scoped summary both plan from the same
+    slots, and a type filter is as wrong for them as for the catalog answer.
+    Runs after `_corrected_intent`, so a counting question rescued from
+    chitchat onto ``structured`` is still widened when it conditions on text.
+    """
+    if analysis.operation in _FACET_OPERATIONS:
+        return
+    if not content_scope.conditions_on_text(question):
+        return
+    if analysis.bundle:
+        logger.info(
+            "Content question: %r is descriptive here; spanning every content type.",
+            analysis.bundle,
+        )
+        analysis.bundle = None
+    if analysis.intent == "structured":
+        logger.info("Content question labelled structured; routing to qa.")
+        analysis.intent = "qa"
+
+
+def _drop_implicit_tags(question: str, analysis: QueryAnalysis) -> None:
+    """Keep an extracted tag only when the user asked for tagged content.
+
+    ``tags`` is applied as a hard AND condition on every search leg and as the
+    catalog's tag join, so a subject word the model placed there ("where IPCC
+    is mentioned" -> ``tags=[IPCC]``) shrinks the corpus to the documents an
+    editor happened to label — measured at 2, against 22 carrying IPCC in the
+    title. Dropping it costs nothing the question wanted: the word still
+    reaches the keyword and content-term legs from the question text, where
+    the reranker weighs it as content. A question that names the facet
+    ("tagged 'policy'") keeps the filter it asked for.
+
+    Decided here, once, because every consumer — the Qdrant facet filter, the
+    planner's tag join, the catalog fallback and the semantic-cache
+    fingerprint — reads this same ``analysis``.
+    """
+    if not analysis.tags or content_scope.names_tag_facet(question):
+        return
+    logger.info(
+        "Tags %r were not asked for as tags; matching them as content instead.",
+        analysis.tags,
+    )
+    analysis.tags = []
+
+
+def _edition(question: str) -> "EditionResolution | None":
+    """The annual-report edition this question resolves to, or None.
+
+    Split out from :func:`_edition_conditions` so the *resolution* survives the
+    call. It used to be consumed for its filter and dropped on the same line,
+    which is why "give me latest annual report" could resolve correctly to the
+    2024-25 edition and still be answered by asking a model to find that fact in
+    two pages of report prose. The identity is the answer to a question like
+    that; it has to reach the pipeline for the pipeline to be able to give it.
 
     Failures are contained: the resolver logs and returns None if the series
-    cannot be read, and this adds no condition.
+    cannot be read, and retrieval proceeds unfiltered exactly as before.
     """
     try:
-        from app.retrieval.understanding.annual_report_editions import conditions_for, resolve
+        from app.retrieval.understanding.annual_report_editions import resolve
 
         resolution = resolve(question)
     except Exception:
         logger.warning("Annual-report edition resolution failed; retrieval "
                        "proceeds unfiltered.", exc_info=True)
-        return []
+        return None
+    if resolution is None:
+        return None
+    logger.info("annual-report edition: %s", resolution.describe())
+    return resolution
+
+
+def _series_request(question: str) -> "SeriesRequest | None":
+    """Whether this question asks for the annual-report series itself.
+
+    Wrapped for the same reason `_edition` is: a resolver problem must cost the
+    deterministic answer, never the query. A None here simply leaves the
+    question on the path it takes today.
+    """
+    try:
+        return series_request(question)
+    except Exception:
+        logger.warning("Annual-report series detection failed; the question "
+                       "proceeds as usual.", exc_info=True)
+        return None
+
+
+def _edition_conditions(resolution: "EditionResolution | None") -> list[Any]:
+    """Qdrant conditions scoping retrieval to a resolved edition, or nothing.
+
+    "Latest annual report" cannot be answered by ranking: the newest edition is
+    absent from the unfiltered candidate set, so it is resolved before search and
+    applied as a filter. Returns [] for every question that resolved to no
+    edition, which leaves retrieval byte-identical to before — including for
+    annual-report *content* questions that name no edition.
+    """
     if resolution is None:
         return []
-    logger.info("annual-report edition: %s", resolution.describe())
-    return conditions_for(resolution)
+    try:
+        from app.retrieval.understanding.annual_report_editions import conditions_for
+
+        return conditions_for(resolution)
+    except Exception:  # pragma: no cover - defence in depth
+        logger.warning("Annual-report edition conditions failed; retrieval "
+                       "proceeds unfiltered.", exc_info=True)
+        return []
 
 
 def process(question: str, history: Sequence[dict[str, str]] | None = None) -> ProcessedQuery:
-    passthrough = ProcessedQuery(original=question, search_query=question, intent="qa")
     settings = get_settings()
+    clarifying = bool(getattr(settings, "clarification_enabled", False))
+    # An open clarification makes this turn the *answer* to the previous
+    # question rather than a question of its own, so the two are merged before
+    # anything reads them. `answered` doubles as the one-round guard: it is
+    # non-None exactly when a clarification is already open, and the decision
+    # below is skipped in that case, so the sequence can only be clarify→answer.
+    #
+    # With the flag off this is None and `effective` is `question` itself, which
+    # is what keeps every path below byte-identical to before.
+    answered = clarify.pending(history) if clarifying else None
+    effective = clarify.merge(answered, question) if answered else question
+    passthrough = ProcessedQuery(
+        original=question, search_query=effective, intent="qa",
+        clarified_from=answered,
+        temporal_intent=TemporalIntent(mode=detect_mode(effective)),
+    )
     votes = max(1, int(settings.analysis_votes))
     threshold = float(getattr(settings, "intent_confidence_threshold", 0.5))
     try:
         if votes > 1:
-            samples = _voted_understanding(question, history, votes)
+            samples = _voted_understanding(effective, history, votes)
         else:
             model = get_structured_llm().with_structured_output(QueryUnderstanding)
-            samples = [model.invoke(_understanding_messages(question, history))]
+            samples = [model.invoke(_understanding_messages(effective, history))]
     except Exception:
         logger.warning("Query analysis failed; using passthrough.", exc_info=True)
         return passthrough
@@ -673,15 +821,37 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
         return passthrough
 
     understanding = _merge_understanding(samples, threshold=threshold)
-    analysis = _to_legacy_analysis(question, understanding)
+    analysis = _to_legacy_analysis(effective, understanding)
+    # Resolved once and used twice: as the pre-search filter it has always been,
+    # and as the answer to a request that asks for the document itself.
+    edition = _edition(effective)
+    # Independent of the edition above, and deliberately so: a series question
+    # resolves to no edition (see `resolve`), and the two must not be able to
+    # collapse into one another.
+    series = _series_request(effective)
     # A chitchat draw on a real question is unrecoverable downstream, so it is
     # checked against the corpus here rather than trusted. See `_corrected_intent`.
-    analysis.intent = _corrected_intent(question, analysis.intent)
+    analysis.intent = _corrected_intent(effective, analysis.intent)
+    # A type word is a filter only in a catalog-shaped question; one that
+    # conditions on what the documents say spans every type. See `content_scope`.
+    _widen_content_question(effective, analysis)
+    # A tag is a filter only when the user asked for tagged content; a subject
+    # word the model put there is matched as content. See `content_scope`.
+    _drop_implicit_tags(effective, analysis)
+    # Read from the understanding, not from `analysis.intent`: by this line the
+    # terminal label has already been collapsed onto chitchat and possibly
+    # rescued back to qa, and neither still says the user was unclear.
+    clarification = (
+        clarify.decide(understanding, effective)
+        if clarifying and answered is None
+        else None
+    )
     logger.info(
-        "intent: %s -> route=%s%s",
+        "intent: %s -> route=%s%s%s",
         [f"{p.label}:{p.confidence}" for p in understanding.intents],
         analysis.intent,
         " (ambiguous)" if _is_ambiguous(understanding.intents) else "",
+        " (clarifying)" if clarification is not None else "",
     )
     return ProcessedQuery(
         original=question,
@@ -690,7 +860,22 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
         answer_format=analysis.answer_format,
         source_type=analysis.source_type,
         language=analysis.language,
-        filters=_facet_filters(analysis) + _edition_conditions(question),
+        filters=_facet_filters(analysis) + _edition_conditions(edition),
         analysis=analysis,
         understanding=understanding,
+        clarification=clarification,
+        clarified_from=answered,
+        # Detected on `analysis.search_query` — the exact string `retrieve` is
+        # handed and the one `_gate_temporal` has always detected on itself.
+        # Same input, same classifier, so the promoted mode is by construction
+        # the mode the gate would have computed, and the UPCOMING path cannot
+        # change. The window is the one understanding already extracted; it is
+        # not re-derived here.
+        temporal_intent=TemporalIntent(
+            mode=detect_mode(analysis.search_query),
+            date_from=analysis.date_from,
+            date_to=analysis.date_to,
+        ),
+        edition=edition,
+        series=series,
     )

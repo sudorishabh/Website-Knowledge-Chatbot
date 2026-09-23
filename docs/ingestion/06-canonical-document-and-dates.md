@@ -43,7 +43,8 @@ class CanonicalDocument:
     language: str = "en"
     effective_start_date: str | None               # the effective/start date
     date_source: str | None        # created | cms_field | parent_page
-                                           #   | document_text
+                                           #   | document_title | document_copyright
+                                           #   | document_text | no_evidence
     start_precision: str | None     # year | month | day
     effective_end_date: str | None            # end of the period, or None
     end_precision: str | None
@@ -245,10 +246,24 @@ bundle -> configured field -> extract -> normalise -> effective date
 | Source type | Date | Can be overridden by |
 | --- | --- | --- |
 | `website` | the bundle's configured field, else the record's `created` (or `revision_created`) | nothing |
-| `pdf_attachment` | **its parent page's resolved date** | a **quoted, verified publication statement in the PDF's own text**, and only where the page had nothing but a creation stamp |
+| `pdf_attachment`, **alone on its page** | **its parent page's resolved date** | nothing |
+| `pdf_attachment`, **sharing its page** | a date the **file's own name** states; else a date its **own text** states; else its page's date, **but only where the page's bundle states one** | — |
 
 `date_source` on the document and in the catalog records which happened:
-`created`, `cms_field`, `parent_page`, or `document_text`.
+`created`, `cms_field`, `parent_page`, `document_title`, `document_copyright`,
+`document_text`, or `no_evidence`.
+
+**A file sharing its page may end up with no date at all.** That is the point of
+`no_evidence`, not a gap in it. A page holding twelve PDFs is a shelf that
+accreted documents over years, so its Drupal creation stamp is a fact about the
+shelf — `TERI-Annual-Report-2024-25.pdf` was stored as 2022-02-09, and 69 FCRA
+financial statements spanning eight years all shared 2018-04-04. Where such a
+file states nothing about itself, no date is the honest record: a date-scoped
+query that misses a document is recoverable, one that confidently returns it
+under the wrong year is not. Measured on the live corpus, of 1,523 attachments on
+multi-PDF pages, 164 take a date from their own name, 156 keep a corroborated
+copyright year, 869 keep a date their page's *bundle* states, and 334 are left
+undated. The 1,986 attachments alone on their page are untouched.
 
 **What `effective_start_date` now means.** For `news`, `press_release`, `report` and
 `research_papers` the bundle's field *is* a stated publication date. For
@@ -554,30 +569,110 @@ inheritance rather than to a different date.
 
 ### The contract
 
-**A file carries its page's date.** The parent's `EffectiveDate` is resolved
-**once** per attachment build and passed in; every PDF on the page takes that
-value *and its precision*, whether the page holds one file or twelve. There is one
-resolution to disagree with, so a page and its attachments cannot diverge — which
-they previously did by construction, because this path read `node.created` while
-the page's own builder applied the bundle's field.
+**A file alone on its page carries that page's date.** The parent's
+`EffectiveDate` is resolved **once** per attachment build and passed in, so a page
+and its attachment cannot diverge — which they previously did by construction,
+because this path read `node.created` while the page's own builder applied the
+bundle's field. Nothing about the file is read: not its name, not its timestamps.
+One PDF on a page is that page's publication.
 
 Being uploaded later, having a later `file.created`, sitting under a later
-`/files/YYYY-MM/` path, carrying a later PDF `CreationDate` or `ModDate`, naming a
-year in its filename, or sharing a page with other PDFs are all **supporting
-signals**: they decide whether a document is worth reading closely, and never set
-a date. Nor does the ingestion clock.
+`/files/YYYY-MM/` path, or carrying a later PDF `CreationDate` or `ModDate` are
+all **supporting signals**: they decide whether a document is worth reading
+closely, and never set a date. Nor does the ingestion clock.
 
-**Where the page states its own date, the page is authoritative.** If the
-parent's date came from its bundle's configured field, `decide` returns
-`keep_page_date` with rule `parent_bundle_date_field` before any upload heuristic
-runs — the PDF's bytes are not parsed and the model is not called. There is
-nothing a file-level reading could improve on, and the only thing it could
-produce is a *different* date, which is precisely what must not happen.
+**A file sharing its page is a document in its own right**, and two rules follow.
 
-**An override needs the document to say so**, and is only reachable where the
-page fell back to a creation stamp — the weak case the interpreter was built for
-(the 2017–18 migration cohort). Only the LLM interpreter can propose one, and only
-when its verdict survives every gate.
+*The file's own name decides* (`title_override`). It reads three strings the
+crawl already holds, **strongest first**:
+
+| # | Source | Why here |
+| --- | --- | --- |
+| 1 | `filename` | Belongs to the file. |
+| 2 | `pdf_internal_title` | Belongs to the file, but producers leave template junk in it. |
+| 3 | `link_text` | Belongs to the *page*, not the file: routinely generic ("Annual Report", "Download") or stale where the file behind the slot was swapped for a newer edition. |
+
+So a clear filename is never overridden by a link label:
+`TERI-Annual-Report-2024-25.pdf` behind the text "Annual Report" is the 2024-25
+edition, and `Annual_Report_2024.pdf` behind the text "Report 2022" is a 2024
+document mislabelled on the page. Link text stays last rather than being dropped,
+because it is the only source for a file whose name carries nothing.
+
+The date is read at the precision the string states — `09 March 2026` a day,
+`feb21` a month, `2024-25` a year — and the *kind* of statement is recorded
+separately, because it says how much weight it carries:
+
+| `title_kind` | Example | Effect |
+| --- | --- | --- |
+| `full_date` | `15.03.2022` | Settles the file outright: no read, no model call. |
+| `edition` | `2024-25` | Settles it outright too — a period the document *covers* has no publication day inside it to find. |
+| `month_year` | `feb21`, `2024_September` | Fixes the month; the document's own text may sharpen it *inside* that month. |
+| `bare_year` | `Post_2015_…` | Weakest. Never displaces a CMS-stated date or a verified text date. |
+
+`Tender_..._2024_December.pdf` whose first line reads `ISSUE NO. 22 DATED
+11-12-2024` is therefore dated to the 11th; the same file with `11-12-2023` in
+its body keeps December 2024, because a different year is a disagreement and not
+a sharpening.
+
+Two false positives are blocked by name. A year must be **delimited** to count:
+`ES2009CE09.pdf` is a project code, and reading 2009 out of it would move 137
+files onto a date nothing stated. And a number introduced by a sequence label is
+not a day: `Issue 8, Nov 2019` is the eighth issue, published in November 2019.
+
+*Where nothing states a date, the file gets none* (`page_date_is_usable`). The
+exception, and it is a large one: where the page's **bundle** states its date in a
+configured CMS field, the page is still authoritative for every file on it. An
+event's agenda, concept note and slide deck all happened on the day of the event.
+Only a page dated by its bare Drupal creation stamp loses the right to lend it.
+
+### The precedence table
+
+The resolver implements this, rather than accumulating special cases. "Strong"
+means the page's bundle states its date in a configured CMS field; "weak" means
+the page has only its Drupal creation stamp.
+
+| Situation | Result |
+| --- | --- |
+| Single PDF | Parent effective date |
+| Multi PDF + full file date | File date |
+| Multi PDF + edition/period | File period |
+| Multi PDF + month/year | File month; text may sharpen |
+| Multi PDF + bare year + strong CMS parent | Keep CMS date |
+| Multi PDF + bare year + weak creation parent | File year may win |
+| Multi PDF + verified text date | File text date |
+| Multi PDF + no file evidence + strong CMS parent | Parent date |
+| Multi PDF + no file evidence + weak creation parent | Undated |
+| Resolver failure + strong CMS parent | Parent date |
+| Resolver failure + weak multi-PDF parent | Undated |
+
+The last two rows are not a detail. "Fail closed" used to mean one thing here —
+keep the page's date — which is right where that date is a claim about the
+content and exactly backwards on a shelf: an unrelated crash in a rule that never
+ran would hand every file on the page the day somebody typed the node, silently
+reintroducing the original bug. `_failed()` asks the *same* predicate the success
+path asks, so the two cannot drift.
+
+### An override replaces only what it establishes
+
+An override used to clear the parent's `effective_end_date` unconditionally. That
+destroyed real information: a file on a 2020-2025 project named "Annual Report
+2024" states something about 2024 and nothing whatever about when the project
+ends.
+
+| Evidence | `effective_start_date` | `effective_end_date` |
+| --- | --- | --- |
+| full date | the day | cleared — a document issued on one day covers no period |
+| month + year | the month | cleared, same reason |
+| edition / bare year / copyright year | the year | **the parent's end survives** |
+
+With one bound: the result must read forwards. An override landing after the
+inherited end drops it rather than storing a backwards range, which
+`reconcile.date_checks.inverted_date_range` would correctly report as something
+else having written the column.
+
+**An override otherwise needs the document's text to say so** — a copyright year
+its own DocInfo corroborates, or a publication statement the LLM interpreter
+quotes and every gate accepts.
 
 `PageContext` therefore carries **two** dates: `node_created`, the creation stamp,
 which the upload-gap arithmetic reasons about, and `node_start_date`, the
@@ -638,19 +733,31 @@ error either way.
 That is a deliberate narrowing after manual review. The previous version treated a
 late upload as a publication date, which conflates two different facts: when a file
 was *put on the server* and when the document was *released*. Drupal's
-`file.created`, a `/files/YYYY-MM/` path, a PDF `CreationDate`, a year in a
-filename, a reporting period, an event date, a notification date and an effective
-date are all evidence of something — but none of them is, by itself, a publication
-date.
+`file.created`, a `/files/YYYY-MM/` path, a PDF `CreationDate`, an event date, a
+notification date and an effective date are all evidence of something — but none
+of them is, by itself, a publication date. A **year in the filename** is the one
+item that has since moved off this list, and only on a multi-PDF page; see
+*The file's own name decides* above.
 
 Upload timing keeps one job: **it decides where it is worth spending money.**
 
+Read `keep` below as "fall back to the page's date" — which on a multi-PDF page
+whose own date is only a Drupal creation stamp means `drop_page_date` and no date
+at all. Every branch routes through one helper, so the rule that fired and the
+value it yields cannot drift apart, and no branch added later can quietly
+reintroduce the borrowed date.
+
 ```
+name states a full date or a reporting
+  period                              -> override (title_states_date)
+                                         [multi-PDF pages only; nothing below runs]
+
 page has no date at all               -> needs_manual_review (no_page_date)
 
 page's bundle states its date in a
   configured CMS field                -> keep (parent_bundle_date_field, conf 1.0)
-                                         [nothing below is evaluated]
+                                         [single-PDF pages only;
+                                          nothing below is evaluated]
 
 single-PDF page:
   file uploaded > 365d after the page,
@@ -776,22 +883,36 @@ effective_start_date = (decision.candidate_start_date if decision.action == "pro
 ```
 
 **Only an override may move the date.** Every other outcome — including a review —
-keeps the page's own date on the document. `resolve()` wraps everything in a
-`try/except` that returns the page date on any unexpected error: a stale date is
-recoverable and a wrong one is not. A model outage returns `None` from `interpret`
-and produces a `keep_page_date` decision with `rule="llm_unavailable"`.
+lands on the page's own date where that date is the file's to borrow, and on **no
+date** where it is not. `resolve()` wraps everything in a `try/except` that returns
+the page date on any unexpected error: a stale date is recoverable and a wrong one
+is not. A model outage returns `None` from `interpret` and produces a
+`keep_page_date` decision with `rule="llm_unavailable"`.
+
+The drop is applied in two places that ask the same predicate — in `decide`, so
+the audit row says `drop_page_date`, and again in `_outcome`, because the
+interpreter can hand back `keep_page_date` or `needs_manual_review` for a file on
+exactly such a page and a date the rules refused must not return through the
+model's door.
 
 On the document:
 
-- `effective_start_date` — the resolved date.
-- `date_source` — `"document_text"` if overridden, else `"parent_page"`.
+- `effective_start_date` — the resolved date, or `None` where none was
+  established.
+- `date_source` — `"document_title"`, `"document_copyright"` or `"document_text"`
+  for the three kinds of override, `"no_evidence"` for a file left undated, else
+  `"parent_page"`. `no_evidence` is recorded rather than left NULL so "we looked
+  and found nothing" stays distinguishable from "this row predates the resolver",
+  which is what `reconcile.date_checks.date_provenance_unrecorded` alarms on.
 - `start_precision` — **inherited from the page**. A file hanging off a
   research paper is year-precision too; rendering its 1 January as a day would
-  invent a January publication for the file exactly as it would for the page.
-  `"day"` for an override, which by definition quoted a stated day.
+  invent a January publication for the file exactly as it would for the page. For
+  an override it is the decision's own — whatever the name or the statement
+  actually established. `None` exactly when there is no date: a leftover `"day"`
+  would read as a claim.
 - `effective_end_date` / `end_precision` — **inherited whole**. A file on
   a completed project covers the period the project did. Cleared on an override:
-  a quoted publication statement gives a day, never a period.
+  a statement about a publication gives a day or a year, never a period.
 - `extra["edition_label"]` — set when an edition was found. **A reporting period is
   a label, never a date**: "Annual Report 2024-2025" sets this and leaves
   `effective_start_date` alone.
@@ -950,7 +1071,7 @@ FROM documents_date_decision WHERE document_id = ?;
 
 | Setting | Default | Effect |
 | --- | --- | --- |
-| `date_resolution_enabled` | `true` | Off means every PDF plainly inherits its page's resolved date; decisions are still recorded. |
+| `date_resolution_enabled` | `true` | Off means every PDF plainly inherits its page's resolved date — no name read, no drop; decisions are still recorded. |
 | `azure_openai_model`, `llm_structured_temperature` | — | The interpreter's model. |
 
 ## Hand-off

@@ -59,6 +59,30 @@ from app.ingestion.bundle_dates import (
     resolve_effective_dates,
 )
 
+#: ``date_source`` values this script cannot recompute, and therefore preserves.
+#:
+#: The line is drawn at **what the evidence needs**, not at "the resolver
+#: decided it". Both of these were read out of the PDF's own bytes — a quoted
+#: publication statement, a copyright year its DocInfo corroborates — and this
+#: script has no bytes. Overwriting them with anything it *can* work out would
+#: replace better evidence with worse.
+TEXT_DERIVED_SOURCES: frozenset[str] = frozenset({
+    "document_text", "document_copyright",
+})
+
+#: ``date_source`` values this script **re-derives on every run**.
+#:
+#: ``document_title`` and ``no_evidence`` come from the file's naming and from
+#: the shape of its page — both of which are in the catalogue, so
+#: :func:`_attachment_target` reaches them by calling the same functions
+#: ingestion calls. Skipping them as "already decided" is what made the
+#: ending-year change invisible to 55 documents: the rule moved, the rows did
+#: not, and a dry run reported two. A re-derived value that has not changed is
+#: not a move, so nothing churns.
+RECOMPUTED_SOURCES: frozenset[str] = frozenset({
+    "document_title", "no_evidence",
+})
+
 
 @dataclass(frozen=True)
 class Move:
@@ -69,8 +93,12 @@ class Move:
     bundle: str | None
     url: str | None
     old_start: str
-    new_start: str
-    start_precision: str
+    #: ``None`` when the correct outcome is *no date* — a file on a multi-PDF
+    #: page dated only by its Drupal creation stamp, which is not that file's to
+    #: borrow. Written as SQL NULL, not skipped: leaving the wrong date in place
+    #: is the bug.
+    new_start: str | None
+    start_precision: str | None
     source: str
     rule: str
     field: str | None
@@ -84,10 +112,26 @@ class Move:
     range_issue: str | None = None
     #: The page this attachment inherited from. None for a page.
     parent_id: str | None = None
+    #: The resolver's own decision, for an attachment whose date came from its
+    #: naming. Carried verbatim rather than re-derived so the audit row records
+    #: what actually happened, down to the quoted statement.
+    audit: Any = None
+    filename: str | None = None
+    #: How many PDFs the parent page holds — the fact the whole attachment rule
+    #: turns on, and the first thing a reviewer checks.
+    page_pdf_count: int = 1
+    #: The parent page's own resolved date, so the row reads "would have been X,
+    #: assigned Y".
+    parent_start: str | None = None
 
     @property
     def start_changed(self) -> bool:
-        return bool(self.old_start) and self.old_start[:10] != self.new_start[:10]
+        return bool(self.old_start) and self.old_start[:10] != (self.new_start or "")[:10]
+
+    @property
+    def start_cleared(self) -> bool:
+        """Did this move *remove* a date rather than correct one?"""
+        return self.new_start is None and bool(self.old_start)
 
     @property
     def end_changed(self) -> bool:
@@ -99,7 +143,14 @@ class Move:
 
     @property
     def days(self) -> int:
-        """How many days too late the stored date was. Negative = too early."""
+        """How many days too late the stored date was. Negative = too early.
+
+        Zero for a move that *removes* a date: there is no new date to measure a
+        distance to, and reporting one would put a cleared document in a
+        "shifted by N days" bucket it does not belong in.
+        """
+        if not self.old_start or not self.new_start:
+            return 0
         old = datetime.fromisoformat(self.old_start[:19]).date()
         new = datetime.fromisoformat(self.new_start[:19]).date()
         return (old - new).days
@@ -289,9 +340,28 @@ def attachment_moves(resolutions: dict[str, EffectiveDate]) -> list[Move]:
     first parent by document id, deterministically, which is the same rule the
     crawl's per-run dedup applies.
 
-    A document whose date came from a verified publication statement inside its
-    own text (``date_source = 'document_text'``) is left alone: that is
-    the one override the design grants, and it outranks inheritance.
+    **This does not mean "copy the parent's date onto every file".** It means
+    "apply what ingestion would apply", and for a file sharing its page that is
+    not inheritance. Two of the resolver's rules need no PDF bytes — the file's
+    own naming and the weak-shelf drop — so both are applied here by calling the
+    *same functions* ingestion calls
+    (:func:`app.ingestion.date_resolution.read_title_evidence`,
+    :func:`app.ingestion.date_rules.page_date_is_usable`). A second
+    implementation of either would drift, and the drift would look exactly like
+    the bug this script exists to correct: a sweep quietly re-stamping 300
+    documents with the day their shelf page was typed.
+
+    The rule that *does* need bytes is not re-run here; its verdicts are
+    recognised and left alone (:data:`TEXT_DERIVED_SOURCES`):
+
+    * ``document_text`` — a publication statement verified inside the PDF's text.
+    * ``document_copyright`` — a copyright year its own DocInfo corroborates.
+
+    Everything else is **re-derived, not preserved** (:data:`RECOMPUTED_SOURCES`).
+    A row already reading ``document_title`` is not evidence that the current
+    rule would still produce that date — when the edition rule moved from the
+    opening year of a span to the closing one, 55 documents needed exactly this
+    path and a skip list would have hidden every one of them.
     """
     from app.catalog.db import state_table
     from app.core.clients import mysql_connection
@@ -312,13 +382,23 @@ def attachment_moves(resolutions: dict[str, EffectiveDate]) -> list[Move]:
             f"       {end} AS effective_end_date, "
             f"       {end_precision} AS end_precision, "
             f"       {source} AS date_source, "
-            f"       d.url, d.bundle "
+            f"       d.url, d.bundle, d.title, a.filename, a.origin, "
+            f"       p.title AS parent_title "
             f"FROM `{table}_attachment` a "
             f"JOIN `{table}` d ON d.document_id = a.file_uuid "
+            f"LEFT JOIN `{table}` p ON p.document_id = a.document_id "
             f"WHERE d.source_type = 'pdf_attachment' "
             f"ORDER BY a.file_uuid, a.document_id"
         )
         rows = list(cur.fetchall())
+        # How many PDFs each page holds — the single fact that decides whether a
+        # file is that page's document or one of a shelf of them. Counted the
+        # same way the crawl counts it: distinct files per node.
+        cur.execute(
+            f"SELECT document_id, COUNT(DISTINCT file_uuid) AS n "
+            f"FROM `{table}_attachment` GROUP BY document_id"
+        )
+        pdf_counts = {r["document_id"]: int(r["n"]) for r in cur.fetchall()}
 
     seen: set[str] = set()
     moves: list[Move] = []
@@ -327,29 +407,147 @@ def attachment_moves(resolutions: dict[str, EffectiveDate]) -> list[Move]:
         if document_id in seen:
             continue
         seen.add(document_id)
-        if row["date_source"] == "document_text":
+        if row["date_source"] in TEXT_DERIVED_SOURCES:
             continue
         parent = resolutions.get(row["parent_id"])
         if parent is None or not parent.start_value:
             continue
         stored = _iso(row["effective_start_date"])
         stored_end = _iso(row["effective_end_date"])
-        if (stored and parent.start_value[:10] == stored[:10]
-                and parent.start_precision == (row["start_precision"] or "day")
-                and (parent.end_value or "")[:10] == (stored_end or "")[:10]):
+        target = _attachment_target(
+            row, parent, pdf_count=pdf_counts.get(row["parent_id"], 1))
+        # "Already correct" has to include "already correctly undated", or every
+        # run re-proposes the same 321 no-op writes. A NULL precision means
+        # `day` only where there is a date for it to describe; with no date
+        # there is no precision, and reading one in makes an undated row look
+        # different from an undated target forever.
+        stored_precision = row["start_precision"] or ("day" if stored else None)
+        same_day = (
+            (stored or None) == (target.start or None)
+            or bool(stored and target.start and target.start[:10] == stored[:10])
+        )
+        if (same_day
+                and target.precision == stored_precision
+                and (target.end or "")[:10] == (stored_end or "")[:10]):
             continue
         moves.append(Move(
             document_id=document_id, source_type="pdf_attachment",
             bundle=parent.bundle or row["bundle"], url=row["url"],
-            old_start=stored or "", new_start=parent.start_value,
-            start_precision=parent.start_precision, source="parent_page",
-            rule="inherited_from_parent", field=parent.start_field,
-            old_end=stored_end, new_end=parent.end_value,
-            end_precision=parent.end_precision,
-            range_issue=parent.range_issue,
+            old_start=stored or "", new_start=target.start,
+            start_precision=target.precision, source=target.source,
+            rule=target.rule, field=parent.start_field,
+            old_end=stored_end, new_end=target.end,
+            end_precision=target.end_precision,
+            range_issue=parent.range_issue if target.source == "parent_page" else None,
             parent_id=row["parent_id"],
+            audit=target.decision, filename=row.get("filename"),
+            page_pdf_count=pdf_counts.get(row["parent_id"], 1),
+            parent_start=parent.start_value,
         ))
     return moves
+
+
+@dataclass(frozen=True)
+class _Target:
+    """What one attachment's date should be, once the byteless rules have run."""
+
+    start: str | None
+    precision: str | None
+    end: str | None
+    end_precision: str | None
+    source: str
+    rule: str
+    #: The resolver's own :class:`~app.ingestion.date_rules.DateDecision`, where
+    #: one was produced. None for plain inheritance, which the page's own
+    #: decision row already explains.
+    decision: Any = None
+
+
+def _attachment_target(row: dict, parent: EffectiveDate, *, pdf_count: int) -> _Target:
+    """The date this attachment should carry — by asking ingestion, not by
+    restating it.
+
+    A :class:`~app.ingestion.date_evidence.PdfEvidence` is assembled from the
+    catalog row and handed to the very functions the ingestion path uses, so
+    there is one set of rules and this script cannot disagree with a crawl.
+    Only the rules that need no PDF bytes can run here; everything else falls
+    through to inheritance, which is what a file with no self-statement gets on
+    the ingestion path too.
+    """
+    from app.ingestion.date_evidence import PageContext, PdfEvidence
+    from app.ingestion.date_resolution import read_title_evidence
+    from app.ingestion.date_rules import page_date_is_usable
+
+    # A link label equal to the page's own title is the page's, not the file's —
+    # `canonical.from_pdf` falls back to `node.title` when a file has no
+    # description, so using it as link text would read the shelf's name as the
+    # file's.
+    anchor = row.get("title")
+    if anchor and anchor == row.get("parent_title"):
+        anchor = None
+    page = PageContext(
+        node_uuid=row["parent_id"] or "",
+        node_title=row.get("parent_title") or "",
+        node_created=parent.start_value,
+        node_start_date=parent.start_value,
+        node_start_precision=parent.start_precision,
+        node_end_date=parent.end_value,
+        node_end_precision=parent.end_precision,
+        date_field=parent.start_field,
+        date_source=parent.source,
+        bundle=parent.bundle,
+        pdf_count=max(1, pdf_count),
+    )
+    evidence = PdfEvidence(
+        document_id=row["document_id"], origin=row.get("origin") or "attachment",
+        url=row.get("url"), filename=row.get("filename"), anchor=anchor,
+        page=page,
+    )
+
+    titled = read_title_evidence(evidence).decision
+    if titled is not None:
+        # An override replaces only the temporal information it establishes —
+        # the same rule `date_resolution._end_after_override` applies.
+        point = titled.candidate_precision in ("day", "month")
+        keeps_order = (
+            parent.end_value is None
+            or str(titled.candidate_start_date)[:10] <= parent.end_value[:10]
+        )
+        keep_end = (not point) and keeps_order
+        return _Target(
+            start=titled.candidate_start_date,
+            precision=titled.candidate_precision,
+            end=parent.end_value if keep_end else None,
+            end_precision=parent.end_precision if keep_end else None,
+            source="document_title", rule="title_states_date",
+            decision=titled,
+        )
+
+    if not page_date_is_usable(page):
+        from app.ingestion.date_rules import DateDecision
+
+        return _Target(
+            start=None, precision=None, end=None, end_precision=None,
+            source="no_evidence", rule="multi_pdf_no_evidence",
+            decision=DateDecision(
+                document_id=row["document_id"], action="drop_page_date",
+                candidate_start_date=None, date_type="unknown",
+                source="node_effective_date", confidence=0.0,
+                rule="multi_pdf_no_evidence", decided_by="deterministic",
+                evidence=(
+                    f"One of {page.pdf_count} PDFs on a {page.bundle} page dated "
+                    f"only by its Drupal creation stamp "
+                    f"({str(page.effective_date)[:10]}), and the file states no "
+                    f"date of its own. Left undated rather than given a date "
+                    f"nothing established."
+                ),
+                used=["drupal"],
+            ),
+        )
+
+    return _Target(start=parent.start_value, precision=parent.start_precision,
+                   end=parent.end_value, end_precision=parent.end_precision,
+                   source="parent_page", rule="inherited_from_parent")
 
 
 def invariants() -> dict[str, Any]:
@@ -407,25 +605,43 @@ def preflight(moves: list[Move], *, expect: int) -> list[str]:
     stray = {m.field for m in moves} - mapped - {None}
     if stray:
         problems.append(f"field(s) {sorted(stray)} are not in the bundle mapping")
-    stray_sources = {m.source for m in moves} - {"created", "cms_field", "parent_page"}
+    stray_sources = ({m.source for m in moves}
+                     - {"created", "cms_field", "parent_page", "document_title",
+                        "no_evidence"})
     if stray_sources:
         problems.append(f"unexpected provenance {sorted(stray_sources)}")
+    # A cleared date is a deliberate outcome, not a value: every check below
+    # asks about the *shape* of a value, so a move that removes one is exempt
+    # from all of them and gets its own two instead.
+    cleared = [m for m in moves if m.new_start is None]
+    valued = [m for m in moves if m.new_start is not None]
+    mislabelled = [m for m in cleared if m.source != "no_evidence"]
+    if mislabelled:
+        problems.append(
+            f"{len(mislabelled)} move(s) clear the date without recording "
+            f"`no_evidence` as the reason")
+    with_leftovers = [m for m in cleared
+                      if m.new_end is not None or m.start_precision is not None]
+    if with_leftovers:
+        problems.append(
+            f"{len(with_leftovers)} cleared move(s) still carry an end date or a "
+            f"precision; both would read as claims about a date that is not there")
     # A year-start_precision value is stored as 1 January *as a marker for the year*.
     # Any other day would mean the value and its start_precision disagree about what is
     # known, which is what `year_precision_not_january` watches for.
-    off_january = [m for m in moves
+    off_january = [m for m in valued
                    if m.start_precision == "year"
                    and not m.new_start.startswith(m.new_start[:4] + "-01-01")]
     if off_january:
         problems.append(
             f"{len(off_january)} year-start_precision value(s) are not 1 January")
     if any(not m.new_start.endswith("+00:00") and "+" not in m.new_start[10:]
-           for m in moves):
+           for m in valued):
         problems.append("a value carries no timezone; the calendar date would shift")
     # An end before its start must never reach the column. `bundle_dates` drops
     # an inverted end rather than resolving it, so this is a belt-and-braces
     # assertion that nothing downstream reassembled one.
-    backwards = [m for m in moves
+    backwards = [m for m in valued
                  if m.new_end and m.new_end[:10] < m.new_start[:10]]
     if backwards:
         problems.append(
@@ -467,7 +683,8 @@ def apply(moves: list[Move], *, progress_every: int = 200) -> dict[str, int]:
             # record whose CMS end date was cleared, or whose range turned out to
             # be inverted, has to lose the stored end rather than keep a value
             # the source no longer supports.
-            [(m.new_start[:19].replace("T", " "), m.source, m.start_precision,
+            [(m.new_start[:19].replace("T", " ") if m.new_start else None,
+              m.source, m.start_precision,
               m.new_end[:19].replace("T", " ") if m.new_end else None,
               m.end_precision, m.document_id) for m in moves],
         )
@@ -903,6 +1120,94 @@ def repair_qdrant_from_catalog(
 LEGACY_GRAPH_PROPERTIES: tuple[str, ...] = ("published_at",)
 
 
+def push_catalog_dates_to_graph(*, apply_writes: bool = False) -> dict[str, Any]:
+    """Bring every ``:Document`` node's date into line with the catalogue.
+
+    The third store, and the one this script never touched. Neo4j is a
+    *projection* — ``app.knowledge.graph.project`` reads
+    ``documents.effective_start_date`` and writes it onto the node — so a full
+    re-projection would also fix it. This exists because a re-projection rebuilds
+    claims, chunks and relationships to correct a date, which is a great deal of
+    work and risk for a metadata change, and because the projection is not run on
+    a schedule.
+
+    **MySQL is read first and the graph is written from it**, never the reverse:
+    the catalogue is the system of record and the graph is rebuildable from it.
+
+    Two properties of Cypher matter here and both are load-bearing:
+
+    * ``SET d.prop = NULL`` **removes** the property. That is exactly right for a
+      document that is now deliberately undated — the node stops matching a date
+      filter instead of matching the wrong year — but it means this write is how
+      an undated document becomes undated in the graph, not an afterthought.
+    * ``MATCH`` (not ``MERGE``) so a document the graph has never projected is
+      left alone rather than conjured as a bare node with a date and nothing else.
+
+    The node carries ``effective_start_date`` only; there is no end-date property
+    on ``:Document`` and nothing reads one, so none is invented here.
+
+    An unreachable graph is reported as skipped rather than failed, which is how
+    the rest of the codebase treats Neo4j.
+    """
+    from app.catalog.db import state_table
+    from app.core.clients import mysql_connection
+    from app.core.clients.graph import read_session, write_session
+
+    table = state_table()
+    with mysql_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            f"SELECT document_id, effective_start_date FROM `{table}` "
+            f"ORDER BY document_id"
+        )
+        wanted = {r["document_id"]: _iso(r["effective_start_date"])
+                  for r in cur.fetchall()}
+
+    result: dict[str, Any] = {"catalog_documents": len(wanted)}
+    try:
+        with read_session() as session:
+            rows = session.run(
+                "MATCH (d:Document) "
+                "RETURN d.document_id AS document_id, "
+                "       d.effective_start_date AS effective_start_date"
+            ).data()
+    except Exception as exc:  # noqa: BLE001 - an optional store
+        result["graph"] = f"unreachable ({type(exc).__name__}); skipped"
+        return result
+
+    result["graph_documents"] = len(rows)
+    stale = []
+    orphans = 0
+    for row in rows:
+        document_id = row["document_id"]
+        if document_id not in wanted:
+            orphans += 1
+            continue
+        if (row["effective_start_date"] or None) != wanted[document_id]:
+            stale.append({"document_id": document_id,
+                          "effective_start_date": wanted[document_id]})
+    result["already_correct"] = len(rows) - len(stale) - orphans
+    result["would_change" if not apply_writes else "changed"] = len(stale)
+    result["nodes_not_in_the_catalogue"] = orphans
+    result["losing_their_date"] = sum(1 for r in stale
+                                      if r["effective_start_date"] is None)
+    if not apply_writes or not stale:
+        return result
+
+    written = 0
+    with write_session() as session:
+        for start in range(0, len(stale), 500):
+            batch = stale[start:start + 500]
+            session.run(
+                "UNWIND $rows AS row "
+                "MATCH (d:Document {document_id: row.document_id}) "
+                "SET d.effective_start_date = row.effective_start_date",
+                rows=batch,
+            )
+            written += len(batch)
+    result["changed"] = written
+    return result
+
+
 def drop_legacy_graph_property(*, apply_writes: bool = False) -> dict[str, Any]:
     """Remove the superseded date property from every ``:Document`` node.
 
@@ -1071,6 +1376,45 @@ def record_decisions(
     return written
 
 
+def record_attachment_decisions(moves: list[Move]) -> int:
+    """Audit rows for the attachments this run re-decided.
+
+    The page pass writes rows from an ``EffectiveDate``; an attachment's answer
+    is a ``DateDecision``, because for a file sharing its page the question is
+    not "what does the CMS say" but "what does this file say about itself". The
+    decision is carried on the move rather than re-derived, so the row records
+    what was actually applied — including the quoted statement, which is the
+    whole point of the column.
+
+    Only moves the resolver decided get a row. Plain inheritance is already
+    explained by the parent page's own row, and writing a near-duplicate per
+    file would bury the ones a reviewer needs to see.
+    """
+    from app.catalog import date_decisions
+
+    decided = [m for m in moves if m.audit is not None]
+    if not decided:
+        return 0
+    date_decisions.ensure_table()
+    written = 0
+    for move in decided:
+        row = date_decisions.from_decision(
+            move.audit,
+            origin="attachment",
+            bundle=move.bundle,
+            node_uuid=move.parent_id,
+            page_pdf_count=move.page_pdf_count,
+            current_start_date=move.parent_start,
+            url=move.url,
+            filename=move.filename,
+            candidate_end_date=move.new_end,
+            range_issue=move.range_issue,
+        )
+        date_decisions.record(row)
+        written += 1
+    return written
+
+
 def clear_answer_cache() -> str:
     """Drop the semantic cache so pre-correction answers stop being served.
 
@@ -1103,11 +1447,50 @@ _RANGE_BUNDLES = frozenset(
 )
 
 
+#: How an attachment's `date_source` reads in the summary. Ordered as the
+#: resolver weighs them, strongest evidence first, so the shape of the corpus is
+#: legible at a glance rather than alphabetical.
+_ATTACHMENT_SOURCES: tuple[tuple[str, str], ...] = (
+    ("document_title", "title-derived"),
+    ("document_text", "text-derived"),
+    ("document_copyright", "copyright-derived"),
+    ("parent_page", "parent-CMS-derived"),
+    ("no_evidence", "intentionally undated"),
+)
+
+
+def summary(moves: list[Move]) -> dict[str, int]:
+    """The headline counts, for the line printed immediately before a write."""
+    files = [m for m in moves if m.source_type == "pdf_attachment"]
+    return {
+        "documents_changing": len(moves),
+        "attachments_becoming_undated": sum(1 for m in files if m.start_cleared),
+        "title_derived": sum(1 for m in files if m.source == "document_title"),
+        "range_changes": sum(1 for m in moves if m.end_changed),
+        "review_rows": sum(1 for m in moves if m.range_issue),
+    }
+
+
 def report(moves: list[Move], unrecoverable: list[str]) -> None:
     pages = [m for m in moves if m.source_type == "website"]
     files = [m for m in moves if m.source_type == "pdf_attachment"]
     print(f"documents whose date would change: {len(moves)} "
           f"({len(pages)} pages, {len(files)} attachments)\n")
+
+    # The two source types are answered by different rules and have different
+    # failure modes, so they are never added together.
+    print(f"  {'website documents':34} {'documents':>9}")
+    print(f"  {'  start date changed':34} "
+          f"{sum(1 for m in pages if m.start_changed):9}")
+    print(f"  {'  end date changed':34} "
+          f"{sum(1 for m in pages if m.end_changed):9}")
+    print(f"  {'  newly undated':34} "
+          f"{sum(1 for m in pages if m.start_cleared):9}")
+
+    print(f"\n  {'PDF attachments':34} {'documents':>9}")
+    by_source: Counter = Counter(m.source for m in files)
+    for key, label in _ATTACHMENT_SOURCES:
+        print(f"  {'  ' + label:34} {by_source[key]:9}")
 
     print(f"  {'bundle':24} {'pages':>7} {'files':>7}")
     by_bundle: Counter = Counter(m.bundle for m in pages)
@@ -1146,7 +1529,16 @@ def report(moves: list[Move], unrecoverable: list[str]) -> None:
     for rule, n in Counter(m.rule for m in moves).most_common():
         print(f"  {rule:30} {n:9}")
 
-    dated = [m for m in moves if m.old_start]
+    cleared = [m for m in moves if m.start_cleared]
+    if cleared:
+        print(f"\n  {len(cleared)} document(s) would LOSE their date entirely — "
+              f"a shelf page's creation stamp is not any one file's date. "
+              f"The first few:")
+        for move in cleared[:6]:
+            print(f"    {move.old_start[:10]} -> (none)  [{move.bundle}] "
+                  f"{str(move.filename or move.url)[-46:]}")
+
+    dated = [m for m in moves if m.old_start and m.new_start]
     later = [m for m in dated if m.days < 0]
     print(f"\n  direction: {len(dated) - len(later)} earlier, {len(later)} later")
     buckets: Counter = Counter()
@@ -1270,6 +1662,7 @@ def main(argv: list[str] | None = None) -> int:
     pages, resolutions, unrecoverable = page_moves()
     files = [] if args.pages_only else attachment_moves(resolutions)
     moves = pages + files
+    examined = invariants()["documents"]
 
     mode = "APPLY" if args.apply else "DRY RUN — nothing will be written"
     print(f"=== {mode} ===\n")
@@ -1289,7 +1682,21 @@ def main(argv: list[str] | None = None) -> int:
             print(f"    rows not yet carried across: "
                   f"{legacy['rows_not_yet_carried']}")
 
+    graph = push_catalog_dates_to_graph(apply_writes=False)
+    print("\n  graph (Neo4j) against the catalogue:")
+    for key, value in graph.items():
+        print(f"    {key:30} {value}")
+
     if not args.apply:
+        counts = summary(moves)
+        print("\n  ---- summary ----")
+        print(f"    Documents examined:            {examined}")
+        print(f"    Documents changing:            {counts['documents_changing']}")
+        print(f"    Attachments becoming undated:  "
+              f"{counts['attachments_becoming_undated']}")
+        print(f"    Title-derived:                 {counts['title_derived']}")
+        print(f"    Range changes:                 {counts['range_changes']}")
+        print(f"    Review/error rows:             {counts['review_rows']}")
         print("\nNo changes written. Re-run with --apply to commit.")
         return 0
 
@@ -1322,6 +1729,7 @@ def main(argv: list[str] | None = None) -> int:
          if not args.limit or k in {m.document_id for m in selected}},
         urls,
     )
+    tally["attachment_decisions_recorded"] = record_attachment_decisions(selected)
     after = invariants()
 
     print(f"\napplied: {tally}")
@@ -1340,6 +1748,14 @@ def main(argv: list[str] | None = None) -> int:
 
     payloads = migrate_payload_keys()
     print(f"\npayload keys migrated: {payloads}")
+
+    # The third store. Written from MySQL after MySQL is correct, so a failure
+    # here leaves a stale projection rather than a catalogue disagreeing with
+    # itself — and the projection can always be rebuilt.
+    graph = push_catalog_dates_to_graph(apply_writes=True)
+    print("\ngraph dates:")
+    for key, value in graph.items():
+        print(f"  {key:30} {value}")
 
     if args.drop_legacy:
         try:

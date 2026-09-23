@@ -1,0 +1,343 @@
+{
+  "target": 30,
+  "per_bundle_cap": 3,
+  "per_source_fetch": 12,
+  "candidates_seen": 184,
+  "per_source_fetched": {
+    "node/article": 12,
+    "node/page": 12,
+    "node/research_papers": 12,
+    "node/completed_projects": 12,
+    "node/feature_articles": 12,
+    "node/ongoing_projects": 12,
+    "node/news": 12,
+    "node/events": 12,
+    "node/press_release": 12,
+    "node/policy_brief": 12,
+    "node/videos": 12,
+    "node/infographics": 12,
+    "node/services": 12,
+    "node/report": 8,
+    "node/people": 8,
+    "block_content/basic": 12
+  },
+  "expected_documents": 30,
+  "expected_attachments": 6,
+  "bundle_specs": [
+    "article",
+    "page",
+    "completed_projects",
+    "feature_articles",
+    "ongoing_projects",
+    "news",
+    "events",
+    "press_release",
+    "block_content:basic"
+  ],
+  "nodes": [
+    {
+      "uuid": "f4b58789-88af-4525-8c1e-93fe860663e1",
+      "bundle": "completed_projects",
+      "entity_type": "node",
+      "nid": 13345,
+      "title": "Delivering India’s NDC Targets: Role of Transport",
+      "url": "https://teriin.org/project/delivering-indias-ndc-targets-role-transport",
+      "created": "2026-08-21T03:57:50+00:00",
+      "changed": "2026-09-10T08:44:36+00:00",
+      "files": []
+    },
+    {
+      "uuid": "1cd4a081-ba2e-433d-952f-804bb42c1b89",
+      "bundle": "feature_articles",
+      "entity_type": "node",
+      "nid": 13389,
+      "title": "The green wall without a foundation: Why Gujarat needs a state mangrove policy",
+      "url": "https://teriin.org/opinion/green-wall-without-foundation-why-gujarat-needs-state-mangrove-policy",
+      "created": "2026-09-08T07:20:38+00:00",
+      "changed": "2026-09-10T08:17:47+00:00",
+      "files": []
+    },
+    {
+      "uuid": "be196812-8ac5-4a4d-8329-80fc5623695f",
+      "bundle": "news",
+      "entity_type": "node",
+      "nid": 13388,
+      "title": "Renewables 2.0 will hinge on storage, transmission and economics of dispatchable clean power: Industry experts",
+      "url": "https://teriin.org/news/renewables-20-will-hinge-storage-transmission-and-economics-dispatchable-clean-power-industry",
+      "created": "2026-09-10T07:07:43+00:00",
+      "changed": "2026-09-10T07:19:35+00:00",
+      "files": []
+    },
+    {
+      "uuid": "6d2d5ef3-25ab-4ff7-8583-5b9647588d7a",
+      "bundle": "press_release",
+      "entity_type": "node",
+      "nid": 13387,
+      "title": "TERI Brings WSDS 2027 Curtain Raiser to Guwahati, Focus on Northeast Climate Resilience",
+      "url": "https://teriin.org/press-release/teri-brings-wsds-2027-curtain-raiser-guwahati-focus-northeast-climate-resilience",
+      "created": "2026-09-10T04:52:01+00:00",
+      "changed": "2026-09-10T05:21:34+00:00",
+      "files": []
+    },
+    {
+      "uuid": "abab1226-90b1-46c5-ac74-e63a7dc67da5",
+      "bundle": "feature_articles",
+      "entity_type": "node",
+      "nid": 13386,
+      "title": "India’s carbon market needs a firewall",
+      "url": "https://teriin.org/opinion/indias-carbon-market-needs-firewall",
+      "created": "2026-09-09T12:20:08+00:00",
+      "changed": "2026-09-09T12:23:49+00:00",
+      "files": []
+    },
+    {
+      "uuid": "2f5ede1c-8091-4ec8-9dd8-866797f0af41",
+      "bundle": "ongoing_projects",
+      "entity_type": "node",
+      "nid": 13382,
+      "title": "National Roadmap: Solarisation of Closed & Reclaimed Coal Mines in India",
+      "url": "https://teriin.org/project/national-roadmap-solarisation-closed-reclaimed-coal-mines-india",
+      "created": "2026-09-08T10:31:02+00:00",
+      "changed": "2026-09-09T09:17:53+00:00",
+      "files": []
+    },
+    {
+      "uuid": "e258e64b-1235-449d-ba36-e1b5d9065426",
+      "bundle": "basic",
+      "entity_type": "block_content",
+      "nid": null,
+      "title": "New in Electricity and Renewables",
+      "url": null,
+      "created": "2024-03-01T08:23:10+00:00",
+      "changed": "2026-09-09T09:15:44+00:00",
+      "files": []
+    },
+    {
+      "uuid": "5ccc3216-3aa6-4f4d-b876-e0a3f90c0123",
+      "bundle": "press_release",
+      "entity_type": "node",
+      "nid": 13385,
+      "title": "Indigenous Knowledge, Grassroots Innovations Take Centre Stage at Guwahati Conference",
+      "url": "https://teriin.org/press-release/indigenous-knowledge-grassroots-innovations-take-centre-stage-guwahati-conference",
+      "created": "2026-09-09T07:09:58+00:00",
+      "changed": "2026-09-09T07:16:49+00:00",
+      "files": []
+    },
+    {
+      "uuid": "ce219043-a7a7-41ed-9812-2ecfe3842fe1",
+      "bundle": "events",
+      "entity_type": "node",
+      "nid": 13371,
+      "title": "World Sustainable Development Summit 2027: Curtain Raiser",
+      "url": "https://teriin.org/event/world-sustainable-development-summit-2027-curtain-raiser",
+      "created": "2026-09-07T05:27:15+00:00",
+      "changed": "2026-09-09T06:39:23+00:00",
+      "files": [
+        {
+          "uuid": "f86baa25-6093-4b3a-a929-cd7176e77dd7",
+          "origin": "attachment",
+          "filename": "Curtain Raiser WSDS Agenda.pdf",
+          "url": "https://teriin.org/sites/default/files/2026-09/Curtain%20Raiser%20WSDS%20Agenda.pdf"
+        }
+      ]
+    },
+    {
+      "uuid": "74d106c0-968e-43dc-b873-83d2e7460af8",
+      "bundle": "completed_projects",
+      "entity_type": "node",
+      "nid": 13384,
+      "title": "Establishing Resource and Knowledge Centre (RKC) for the Distribution Sector under the All-India Discoms Association (AIDA)",
+      "url": "https://teriin.org/project/establishing-resource-and-knowledge-centre-rkc-distribution-sector-under-all-india-discoms",
+      "created": "2026-09-08T10:45:06+00:00",
+      "changed": "2026-09-08T10:48:10+00:00",
+      "files": []
+    },
+    {
+      "uuid": "3807402a-fb95-4900-85ae-697403882e33",
+      "bundle": "ongoing_projects",
+      "entity_type": "node",
+      "nid": 13383,
+      "title": "Peer Review of Carbon Credit Methodology for Jute-Based Net CO2 Emission Reduction",
+      "url": "https://teriin.org/project/peer-review-carbon-credit-methodology-jute-based-net-co2-emission-reduction",
+      "created": "2026-09-08T10:34:19+00:00",
+      "changed": "2026-09-08T10:35:59+00:00",
+      "files": []
+    },
+    {
+      "uuid": "a240619a-8365-429e-adde-9bf707c46882",
+      "bundle": "ongoing_projects",
+      "entity_type": "node",
+      "nid": 13381,
+      "title": "Adoption of green fuels in Indian Maritime sector.",
+      "url": "https://teriin.org/project/adoption-green-fuels-indian-maritime-sector",
+      "created": "2026-09-08T10:21:39+00:00",
+      "changed": "2026-09-08T10:28:15+00:00",
+      "files": []
+    },
+    {
+      "uuid": "c00a39be-c021-4e95-9ce0-1c4a1912bc5e",
+      "bundle": "news",
+      "entity_type": "node",
+      "nid": 13379,
+      "title": "Sarbananda Sonowal Charts Course for Zero-Emission Shipping Corridors, Pushes Ports to Fast-Track Green Fuel Readiness",
+      "url": "https://teriin.org/news/sarbananda-sonowal-charts-course-zero-emission-shipping-corridors-pushes-ports-fast-track",
+      "created": "2026-09-03T10:08:28+00:00",
+      "changed": "2026-09-08T10:12:22+00:00",
+      "files": []
+    },
+    {
+      "uuid": "74aba0c4-1457-4495-9263-a0b95aa97875",
+      "bundle": "news",
+      "entity_type": "node",
+      "nid": 13378,
+      "title": "ISA SIDS and GRIHA Launch ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations",
+      "url": "https://teriin.org/news/isa-sids-and-griha-launch-isa-isun-design-challenge-promote-solar-and-climate-resilient",
+      "created": "2026-09-04T09:31:12+00:00",
+      "changed": "2026-09-08T09:34:52+00:00",
+      "files": []
+    },
+    {
+      "uuid": "2a1ca7a4-e2f8-4bb1-ad8c-b7a915986e69",
+      "bundle": "feature_articles",
+      "entity_type": "node",
+      "nid": 13374,
+      "title": "Nepal: A wake-up call",
+      "url": "https://teriin.org/opinion/nepal-wake-call",
+      "created": "2026-09-07T08:58:40+00:00",
+      "changed": "2026-09-08T09:04:12+00:00",
+      "files": []
+    },
+    {
+      "uuid": "c78a7fde-a2f5-4b5c-9926-8f4f5ee240b1",
+      "bundle": "events",
+      "entity_type": "node",
+      "nid": 13332,
+      "title": "WCEF2026 Accelerator Session: Circular Public Procurement for Sustainable Consumption and Production",
+      "url": "https://teriin.org/event/wcef2026-accelerator-session-circular-public-procurement-and-ecolabels",
+      "created": "2026-08-14T07:25:38+00:00",
+      "changed": "2026-09-08T06:49:49+00:00",
+      "files": [
+        {
+          "uuid": "6658c489-9aad-483b-9004-27b62225425d",
+          "origin": "attachment",
+          "filename": "Concept Note_WCEF_CPP_Ecolabel_virtual.pdf",
+          "url": "https://teriin.org/sites/default/files/2026-09/Concept%20Note_WCEF_CPP_Ecolabel_virtual.pdf"
+        }
+      ]
+    },
+    {
+      "uuid": "7126f143-21fe-4372-ac55-07a092503549",
+      "bundle": "press_release",
+      "entity_type": "node",
+      "nid": 13372,
+      "title": "ISA SIDS Platform and GRIHA Council Partner on ISA-iSUN Design Challenge to Promote Solar and Climate-Resilient Tourism Infrastructure in Island Nations",
+      "url": "https://teriin.org/press-release/isa-sids-platform-and-griha-council-partner-isa-isun-design-challenge-promote-solar",
+      "created": "2026-09-07T08:33:00+00:00",
+      "changed": "2026-09-07T08:35:01+00:00",
+      "files": []
+    },
+    {
+      "uuid": "2a2e9a77-da56-43a7-8138-3ebf16010d1b",
+      "bundle": "page",
+      "entity_type": "node",
+      "nid": 7971,
+      "title": "Contact Us",
+      "url": "https://teriin.org/contact",
+      "created": "2018-04-10T09:14:26+00:00",
+      "changed": "2026-09-03T11:37:35+00:00",
+      "files": []
+    },
+    {
+      "uuid": "80d9bdc9-c159-493a-80e1-ca53cece85e3",
+      "bundle": "page",
+      "entity_type": "node",
+      "nid": 9590,
+      "title": "Newsletters",
+      "url": "https://teriin.org/newsletters",
+      "created": "2020-10-22T09:00:43+00:00",
+      "changed": "2026-09-03T10:30:16+00:00",
+      "files": []
+    },
+    {
+      "uuid": "04107bb4-fefe-4ffa-be5d-f88ac9310dd6",
+      "bundle": "page",
+      "entity_type": "node",
+      "nid": 12393,
+      "title": "TERI Alumni Association",
+      "url": "https://teriin.org/alumni",
+      "created": "2025-09-30T04:28:20+00:00",
+      "changed": "2026-09-02T04:24:58+00:00",
+      "files": [
+        {
+          "uuid": "inbody:8a64f693f3de31c6620aa873d1d4c742561566cb",
+          "origin": "inbody",
+          "filename": "TERI-Alumni-Quarterly-Inaugural-Issue.pdf",
+          "url": "https://teriin.org/sites/default/files/files/TERI-Alumni-Quarterly-Inaugural-Issue.pdf"
+        },
+        {
+          "uuid": "inbody:019c7e59163edfbb3535b05744ff6949b04cef47",
+          "origin": "inbody",
+          "filename": "Book-on-Dr-RK-Pachauri.pdf",
+          "url": "https://www.teriin.org/sites/default/files/files/Book-on-Dr-RK-Pachauri.pdf"
+        },
+        {
+          "uuid": "inbody:0a7c343146247d17ae9ebdffa512fb4a3b39a5b2",
+          "origin": "inbody",
+          "filename": "Book_on_Dr_RK_Pachauri_II.pdf",
+          "url": "https://www.teriin.org/sites/default/files/files/Book_on_Dr_RK_Pachauri_II.pdf"
+        }
+      ]
+    },
+    {
+      "uuid": "816867bf-eac7-4833-bfe1-7e202ff61c51",
+      "bundle": "article",
+      "entity_type": "node",
+      "nid": 12475,
+      "title": "Forest Pathshaala: Adivasi Children and the Ecologies of Knowledge",
+      "url": "https://teriin.org/article/forest-pathshaala-adivasi-children-and-ecologies-knowledge",
+      "created": "2025-11-12T08:16:05+00:00",
+      "changed": "2026-09-02T04:16:58+00:00",
+      "files": []
+    },
+    {
+      "uuid": "3c24d94b-f8bb-4475-b147-56dd0c35318f",
+      "bundle": "events",
+      "entity_type": "node",
+      "nid": 13334,
+      "title": "Darbari Seth Memorial Lecture 2026",
+      "url": "https://teriin.org/event/darbari-seth-memorial-lecture-2026",
+      "created": "2026-08-17T06:09:28+00:00",
+      "changed": "2026-08-31T09:52:29+00:00",
+      "files": [
+        {
+          "uuid": "33c32e72-2a50-4547-86a1-269699dade92",
+          "origin": "attachment",
+          "filename": "DSML2026_ AGENDA.pdf",
+          "url": "https://teriin.org/sites/default/files/2026-08/DSML2026_%20AGENDA.pdf"
+        }
+      ]
+    },
+    {
+      "uuid": "0a5e1528-9f38-4f24-a0f4-3cf9a2930cb8",
+      "bundle": "article",
+      "entity_type": "node",
+      "nid": 13363,
+      "title": "When Risk Stops Looking Normal: Lessons from the Nepal Floods",
+      "url": "https://teriin.org/article/when-risk-stops-looking-normal-lessons-nepal-floods",
+      "created": "2026-08-31T09:18:16+00:00",
+      "changed": "2026-08-31T09:19:47+00:00",
+      "files": []
+    },
+    {
+      "uuid": "36a999eb-b7c7-47fd-ac69-55f97841a9d3",
+      "bundle": "completed_projects",
+      "entity_type": "node",
+      "nid": 13181,
+      "title": "Science Technology and Innovation Hub in Gaondongrem, Goa",
+      "url": "https://teriin.org/project/science-technology-and-innovation-hub-gaondongrem-goa",
+      "created": "2026-06-19T04:16:09+00:00",
+      "changed": "2026-08-31T08:30:58+00:00",
+      "files": []
+    }
+  ]
+}

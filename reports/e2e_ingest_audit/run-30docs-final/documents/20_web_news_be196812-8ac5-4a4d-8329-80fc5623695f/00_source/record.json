@@ -1,0 +1,491 @@
+{
+  "raw": {
+    "fetched_at": "2026-09-10T15:54:58+05:30",
+    "jsonapi_resource": {
+      "type": "node--news",
+      "id": "be196812-8ac5-4a4d-8329-80fc5623695f",
+      "links": {
+        "self": {
+          "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f?resourceVersion=id%3A17851"
+        }
+      },
+      "attributes": {
+        "drupal_internal__nid": 13388,
+        "drupal_internal__vid": 17851,
+        "langcode": "en",
+        "revision_timestamp": "2026-09-10T07:19:35+00:00",
+        "revision_log": null,
+        "status": true,
+        "title": "Renewables 2.0 will hinge on storage, transmission and economics of dispatchable clean power: Industry experts ",
+        "created": "2026-09-10T07:07:43+00:00",
+        "changed": "2026-09-10T07:19:35+00:00",
+        "promote": false,
+        "sticky": false,
+        "default_langcode": true,
+        "revision_translation_affected": true,
+        "metatag": null,
+        "path": {
+          "alias": "/news/renewables-20-will-hinge-storage-transmission-and-economics-dispatchable-clean-power-industry",
+          "pid": 12698,
+          "langcode": "en"
+        },
+        "body": {
+          "value": "<p>At the 6th edition of ET Energy Leadership Summit 2026 leaders from NTPC Green Energy, MSEDCL, ReNew and TERI said the next phase of renewable growth will be defined by dispatchability rather than headline capacity additions.</p>",
+          "format": "basic_html",
+          "processed": "<p>At the 6th edition of ET Energy Leadership Summit 2026 leaders from NTPC Green Energy, MSEDCL, ReNew and TERI said the next phase of renewable growth will be defined by dispatchability rather than headline capacity additions.</p>",
+          "summary": ""
+        },
+        "field_news_date": "2026-09-09T11:30:03+00:00",
+        "field_news_link": {
+          "uri": "https://energy.economictimes.indiatimes.com/news/renewable/renewables-2-0-will-hinge-on-storage-transmission-and-economics-of-dispatchable-clean-power-industry-experts/133971175?utm_source=top_story&utm_medium=homepage",
+          "title": "Read more",
+          "options": []
+        },
+        "field_news_source": "ET Energy World",
+        "field_news_type": [
+          "electronic_media"
+        ]
+      },
+      "relationships": {
+        "node_type": {
+          "data": {
+            "type": "node_type--node_type",
+            "id": "ad434096-8c31-46ca-b102-c7028cece671",
+            "meta": {
+              "drupal_internal__target_id": "news"
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/node_type?resourceVersion=id%3A17851"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/relationships/node_type?resourceVersion=id%3A17851"
+            }
+          }
+        },
+        "revision_uid": {
+          "data": {
+            "type": "user--user",
+            "id": "03d7bfdb-3407-4337-a410-2063c44ef7c1",
+            "meta": {
+              "drupal_internal__target_id": 1482
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/revision_uid?resourceVersion=id%3A17851"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/relationships/revision_uid?resourceVersion=id%3A17851"
+            }
+          }
+        },
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "ccaaa8d5-a8f0-4af4-a7b3-3bdf0bb732a4",
+            "meta": {
+              "drupal_internal__target_id": 0
+            }
+          },
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/uid?resourceVersion=id%3A17851"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/relationships/uid?resourceVersion=id%3A17851"
+            }
+          }
+        },
+        "field_language": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/field_language?resourceVersion=id%3A17851"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/relationships/field_language?resourceVersion=id%3A17851"
+            }
+          }
+        },
+        "field_news_image": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/field_news_image?resourceVersion=id%3A17851"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/relationships/field_news_image?resourceVersion=id%3A17851"
+            }
+          }
+        },
+        "field_news_tags": {
+          "data": [
+            {
+              "type": "taxonomy_term--tags",
+              "id": "527b75ee-f68a-43f2-ba24-75aafefdf0ab",
+              "meta": {
+                "drupal_internal__target_id": 2984
+              }
+            },
+            {
+              "type": "taxonomy_term--tags",
+              "id": "e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344",
+              "meta": {
+                "drupal_internal__target_id": 2797
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/field_news_tags?resourceVersion=id%3A17851"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/relationships/field_news_tags?resourceVersion=id%3A17851"
+            }
+          }
+        },
+        "field_news_themes": {
+          "data": [
+            {
+              "type": "taxonomy_term--themes",
+              "id": "449b5d32-d2f2-4444-a708-0b6b85425c28",
+              "meta": {
+                "drupal_internal__target_id": 4368
+              }
+            }
+          ],
+          "links": {
+            "related": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/field_news_themes?resourceVersion=id%3A17851"
+            },
+            "self": {
+              "href": "https://teriin.org/jsonapi/node/news/be196812-8ac5-4a4d-8329-80fc5623695f/relationships/field_news_themes?resourceVersion=id%3A17851"
+            }
+          }
+        }
+      }
+    },
+    "included": [
+      {
+        "type": "taxonomy_term--tags",
+        "id": "527b75ee-f68a-43f2-ba24-75aafefdf0ab",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/527b75ee-f68a-43f2-ba24-75aafefdf0ab?resourceVersion=id%3A2984"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 2984,
+          "drupal_internal__revision_id": 2984,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Solar",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-05-07T12:13:09+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/527b75ee-f68a-43f2-ba24-75aafefdf0ab/vid?resourceVersion=id%3A2984"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/527b75ee-f68a-43f2-ba24-75aafefdf0ab/relationships/vid?resourceVersion=id%3A2984"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/527b75ee-f68a-43f2-ba24-75aafefdf0ab/revision_user?resourceVersion=id%3A2984"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/527b75ee-f68a-43f2-ba24-75aafefdf0ab/relationships/revision_user?resourceVersion=id%3A2984"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/527b75ee-f68a-43f2-ba24-75aafefdf0ab/parent?resourceVersion=id%3A2984"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/527b75ee-f68a-43f2-ba24-75aafefdf0ab/relationships/parent?resourceVersion=id%3A2984"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--tags",
+        "id": "e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344?resourceVersion=id%3A2797"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 2797,
+          "drupal_internal__revision_id": 2797,
+          "langcode": "en",
+          "revision_created": null,
+          "revision_log_message": null,
+          "status": true,
+          "name": "Clean energy",
+          "description": null,
+          "weight": 0,
+          "changed": "2018-02-12T07:26:41+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": null,
+            "pid": null,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "8a5697dc-41bd-453b-8992-bdc6c8b0de67",
+              "meta": {
+                "drupal_internal__target_id": "tags"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344/vid?resourceVersion=id%3A2797"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344/relationships/vid?resourceVersion=id%3A2797"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344/revision_user?resourceVersion=id%3A2797"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344/relationships/revision_user?resourceVersion=id%3A2797"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--tags",
+                "id": "virtual",
+                "meta": {
+                  "links": {
+                    "help": {
+                      "href": "https://www.drupal.org/docs/8/modules/json-api/core-concepts#virtual",
+                      "meta": {
+                        "about": "Usage and meaning of the 'virtual' resource identifier."
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344/parent?resourceVersion=id%3A2797"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/tags/e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344/relationships/parent?resourceVersion=id%3A2797"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "taxonomy_term--themes",
+        "id": "449b5d32-d2f2-4444-a708-0b6b85425c28",
+        "links": {
+          "self": {
+            "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28?resourceVersion=id%3A4368"
+          }
+        },
+        "attributes": {
+          "drupal_internal__tid": 4368,
+          "drupal_internal__revision_id": 4368,
+          "langcode": "en",
+          "revision_created": "2024-03-01T08:24:28+00:00",
+          "revision_log_message": null,
+          "status": true,
+          "name": "Electricity and Renewables",
+          "description": {
+            "value": "<p>TERI aims to continually build strong capabilities in the electricity and renewables sector and provides advisory services on technical and policy issues related to conventional as well as renewable energy sources like solar PV, floating solar, solar thermal, wind, hydro and green hydrogen.</p>",
+            "format": "full_html",
+            "processed": "<p>TERI aims to continually build strong capabilities in the electricity and renewables sector and provides advisory services on technical and policy issues related to conventional as well as renewable energy sources like solar PV, floating solar, solar thermal, wind, hydro and green hydrogen.</p>"
+          },
+          "weight": 3,
+          "changed": "2024-03-01T08:34:57+00:00",
+          "default_langcode": true,
+          "revision_translation_affected": true,
+          "metatag": null,
+          "path": {
+            "alias": "/Electricity-and-Renewables",
+            "pid": 10669,
+            "langcode": "en"
+          }
+        },
+        "relationships": {
+          "vid": {
+            "data": {
+              "type": "taxonomy_vocabulary--taxonomy_vocabulary",
+              "id": "d1a67c2b-18e2-4952-9a41-d042ccc56014",
+              "meta": {
+                "drupal_internal__target_id": "themes"
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/vid?resourceVersion=id%3A4368"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/relationships/vid?resourceVersion=id%3A4368"
+              }
+            }
+          },
+          "revision_user": {
+            "data": null,
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/revision_user?resourceVersion=id%3A4368"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/relationships/revision_user?resourceVersion=id%3A4368"
+              }
+            }
+          },
+          "parent": {
+            "data": [
+              {
+                "type": "taxonomy_term--themes",
+                "id": "d1561408-ba30-4835-a9da-96f7c311b55c",
+                "meta": {
+                  "drupal_internal__target_id": 29
+                }
+              }
+            ],
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/parent?resourceVersion=id%3A4368"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/relationships/parent?resourceVersion=id%3A4368"
+              }
+            }
+          },
+          "field_theme_image": {
+            "data": {
+              "type": "file--file",
+              "id": "9736d0c2-1932-45e0-91d6-dfe7ddd91326",
+              "meta": {
+                "alt": "Electricity and Renewables",
+                "title": "",
+                "width": 1600,
+                "height": 430,
+                "drupal_internal__target_id": 10022
+              }
+            },
+            "links": {
+              "related": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/field_theme_image?resourceVersion=id%3A4368"
+              },
+              "self": {
+                "href": "https://teriin.org/jsonapi/taxonomy_term/themes/449b5d32-d2f2-4444-a708-0b6b85425c28/relationships/field_theme_image?resourceVersion=id%3A4368"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "parsed_drupal_record": {
+    "uuid": "be196812-8ac5-4a4d-8329-80fc5623695f",
+    "bundle": "news",
+    "nid": 13388,
+    "title": "Renewables 2.0 will hinge on storage, transmission and economics of dispatchable clean power: Industry experts",
+    "url": "https://teriin.org/news/renewables-20-will-hinge-storage-transmission-and-economics-dispatchable-clean-power-industry",
+    "body": "At the 6th edition of ET Energy Leadership Summit 2026 leaders from NTPC Green Energy, MSEDCL, ReNew and TERI said the next phase of renewable growth will be defined by dispatchability rather than headline capacity additions.",
+    "created": "2026-09-10T07:07:43+00:00",
+    "changed": "2026-09-10T07:19:35+00:00",
+    "metadata": {
+      "field_news_tags": [
+        "Solar",
+        "Clean energy"
+      ],
+      "field_news_themes": [
+        "Electricity and Renewables"
+      ],
+      "field_news_date": "2026-09-09T11:30:03+00:00",
+      "field_news_source": "ET Energy World",
+      "field_news_type": [
+        "electronic_media"
+      ]
+    },
+    "files": [],
+    "refs": [
+      {
+        "field_name": "field_news_tags",
+        "uuid": "527b75ee-f68a-43f2-ba24-75aafefdf0ab",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Solar"
+      },
+      {
+        "field_name": "field_news_tags",
+        "uuid": "e5d1e3e2-04d5-4d60-9d61-a0a6f1f8b344",
+        "entity_type": "taxonomy_term--tags",
+        "label": "Clean energy"
+      },
+      {
+        "field_name": "field_news_themes",
+        "uuid": "449b5d32-d2f2-4444-a708-0b6b85425c28",
+        "entity_type": "taxonomy_term--themes",
+        "label": "Electricity and Renewables"
+      }
+    ]
+  }
+}

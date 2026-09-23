@@ -1,0 +1,85 @@
+{
+  "document_id": "74d106c0-968e-43dc-b873-83d2e7460af8",
+  "source_type": "website",
+  "title": "Establishing Resource and Knowledge Centre (RKC) for the Distribution Sector under the All-India Discoms Association (AIDA)",
+  "sections": [
+    {
+      "text": "TERI supported the All India Discoms Association (AIDA) in developing a strategic blueprint for establishing a Resource and Knowledge Centre (RKC) for India's electricity distribution sector. The assignment involved assessment of the capacity building needs of electricity distribution companies (DISCOMs), review of national and international best practices, consultation with key stakeholders, and design of the institutional, governance, and operational framework for the proposed centre.\n\nThe study resulted in a roadmap for creating a national platform(or repository?) that can help DISCOMs improve performance through research, knowledge sharing, capacity building, policy support, innovation, and technical advisory services. The proposed RKC is envisioned as a collaborative hub connecting utilities, government agencies, regulators, academia, and industry to address emerging challenges and opportunities in India's evolving power sector. Following the completion of the blueprint, the RKC is currently moving into the implementation stage under the aegis of AIDA.",
+      "heading": null,
+      "page_start": null,
+      "page_end": null,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/project/establishing-resource-and-knowledge-centre-rkc-distribution-sector-under-all-india-discoms",
+  "file_url": null,
+  "pdf_id": null,
+  "pdf_path": null,
+  "article_uuid": "74d106c0-968e-43dc-b873-83d2e7460af8",
+  "linked_pdf_id": null,
+  "linked_article_uuid": null,
+  "authors": [],
+  "tags": [
+    "Energy services",
+    "Energy technology"
+  ],
+  "categories": [
+    "Energy"
+  ],
+  "language": "en",
+  "effective_start_date": "2025-10-14T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "cms_field",
+  "effective_end_date": "2026-03-31T00:00:00+00:00",
+  "end_precision": "day",
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "0bb4d0f259ee2e4cd77691600b2726c923520186e3fd84a4fb6f0cd1bbd4c126",
+  "extra": {
+    "bundle": "completed_projects",
+    "nid": 13384,
+    "changed": "2026-09-08T10:48:10+00:00"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_completed_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_completed_tags",
+      "uuid": "a411441c-e719-48b4-a63d-ce085e2a790a",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Energy services"
+    },
+    {
+      "field_name": "field_completed_tags",
+      "uuid": "1b4b7623-c398-4c06-a5a5-f2d0912fc52c",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Energy technology"
+    },
+    {
+      "field_name": "field_completed_theme",
+      "uuid": "d1561408-ba30-4835-a9da-96f7c311b55c",
+      "entity_type": "taxonomy_term--themes",
+      "label": "Energy"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {
+    "field_completed_stakeholders": [
+      "Businesses"
+    ],
+    "field_completed_tags": [
+      "Energy services",
+      "Energy technology"
+    ],
+    "field_completed_theme": [
+      "Energy"
+    ],
+    "field_completed_end_date": "2026-03-31T11:30:00+00:00",
+    "field_completed_start_date": "2025-10-14T04:30:29+00:00",
+    "field_show_on_theme_page": false
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "document_id": "33c32e72-2a50-4547-86a1-269699dade92",
+  "source_type": "pdf_attachment",
+  "title": "Darbari Seth Memorial Lecture 2026",
+  "sections": [
+    {
+      "text": "Twenty-fifth Darbari Seth Memorial Lecture \n21 August 2026, New Delhi \nStein Auditorium, India Habitat Centre, Lodhi Road, New Delhi  \n \nAGENDA \nTheme: New Horizons - Charting India’s Green Energy Future \n \nTime \nProgramme \n3:30 – 3:33 PM \nArrival of the Dignitaries on the Dais \n3:33 – 3:36 PM \nLighting of the Lamp \n3:36 – 3:41 PM\n \n \n \nWelcome Address and Opening Remarks by Dr. Vibha Dhawan, \nDirector General, TERI    \n3:41 – 3:44 PM\n \n \n \nScreening of Thematic Video of the World Sustainable Development \nSummit (WSDS) 2027 and Launch of Official Website of WSDS 2027 \n3:44 – 3:59 PM\n \n \nSpecial Address by  \nMr. Nitin Desai, Chairman, TERI \n3:59 – 4:19 PM\n \n \n \nDarbari Seth Lecture by  \nShri Pabitra Margherita, Hon’ble Minister of State for External \nAffairs, Textiles, Government of India \n \n4:19 – 4:24 PM \nIntroduction to the Awards by Mr. Sanjay Seth, Senior Director, \nGRIHA Council \n4:24 – 4:39 PM \nPresentation of Long Service Awards and Felicitation of the Winners \nof the TERI Roll of Honour Awards 2025–2026 by Shri Pabitra \nMargherita, Hon’ble Minister of State for External Affairs, Textiles, \nGovernment of India, and Mr. Mahendra Singhi, Member, Governing \nCouncil, TERI \n4:39 – 4:45 PM \nQuestion and Answer Session \n4:45 – 5:00 PM \nVote of Thanks by Dr. Dipankar Saharia, Senior Director, TERI \n5:00 PM \nTea\n\n| Time | Programme |\n| --- | --- |\n| 3:30 – 3:33 PM | Arrival of the Dignitaries on the Dais |\n| 3:33 – 3:36 PM | Lighting of the Lamp |\n| 3:36 – 3:41 PM | Welcome Address and Opening Remarks by Dr. Vibha Dhawan, Director General, TERI |\n| 3:41 – 3:44 PM | Screening of Thematic Video of the World Sustainable Development Summit (WSDS) 2027 and Launch of Official Website of WSDS 2027 |\n| 3:44 – 3:59 PM | Special Address by Mr. Nitin Desai, Chairman, TERI |\n| 3:59 – 4:19 PM | Darbari Seth Lecture by Shri Pabitra Margherita, Hon’ble Minister of State for External Affairs, Textiles, Government of India |\n| 4:19 – 4:24 PM | Introduction to the Awards by Mr. Sanjay Seth, Senior Director, GRIHA Council |\n| 4:24 – 4:39 PM | Presentation of Long Service Awards and Felicitation of the Winners of the TERI Roll of Honour Awards 2025–2026 by Shri Pabitra Margherita, Hon’ble Minister of State for External Affairs, Textiles, Government of India, and Mr. Mahendra Singhi, Member, Governing Council, TERI |\n| 4:39 – 4:45 PM | Question and Answer Session |\n| 4:45 – 5:00 PM | Vote of Thanks by Dr. Dipankar Saharia, Senior Director, TERI |\n| 5:00 PM | Tea |",
+      "heading": null,
+      "page_start": 1,
+      "page_end": 1,
+      "order": 0
+    }
+  ],
+  "source_url": "https://teriin.org/event/darbari-seth-memorial-lecture-2026",
+  "file_url": "https://teriin.org/sites/default/files/2026-08/DSML2026_%20AGENDA.pdf",
+  "pdf_id": "33c32e72-2a50-4547-86a1-269699dade92",
+  "pdf_path": "DSML2026_ AGENDA.pdf",
+  "article_uuid": null,
+  "linked_pdf_id": null,
+  "linked_article_uuid": "3c24d94b-f8bb-4475-b147-56dd0c35318f",
+  "authors": [],
+  "tags": [
+    "Energy access",
+    "Green growth"
+  ],
+  "categories": [],
+  "language": "en",
+  "effective_start_date": "2026-08-21T00:00:00+00:00",
+  "start_precision": "day",
+  "date_source": "parent_page",
+  "effective_end_date": "2026-08-21T00:00:00+00:00",
+  "end_precision": "day",
+  "doc_version": 1,
+  "is_current": true,
+  "content_hash": "c6366147e8e80e43f7d98ef516ab81cc88bf4a8af8abd4de06e0664f87081cf8",
+  "extra": {
+    "bundle": "events"
+  },
+  "entity_refs": [
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "cac4b63b-7db7-491b-a703-d44af5bd4446",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Academicians"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "1cbc0c9d-479e-4862-9c23-f1f0637552a5",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Businesses"
+    },
+    {
+      "field_name": "field_event_stakeholders",
+      "uuid": "c3e4c219-bfe2-4864-8fc6-eb585cb042c9",
+      "entity_type": "taxonomy_term--stakeholders",
+      "label": "Civil society/Grassroots"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "62f88197-f851-49a6-9434-8f085e2cb8de",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Energy access"
+    },
+    {
+      "field_name": "field_event_tags",
+      "uuid": "afea3364-db5a-4426-9496-8edca08f40a0",
+      "entity_type": "taxonomy_term--tags",
+      "label": "Green growth"
+    },
+    {
+      "field_name": "field_related_terms",
+      "uuid": "4b29ab8e-87eb-4527-81d1-a98e8dbe7aee",
+      "entity_type": "taxonomy_term--related_terms",
+      "label": "25th Darbari Seth"
+    }
+  ],
+  "file_links": [],
+  "raw_meta": {}
+}

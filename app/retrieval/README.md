@@ -28,7 +28,8 @@ direction between them is one-way.
 ```
 
 `retriever.py` at the top level is the orchestrator: it runs
-understanding → search → context, and consults `graph/` behind a flag.
+understanding → search → context, consults `graph/` behind a flag, and — when
+the caller passes a web plan — `web/` after ranking.
 `structured/` and `graph/` are chosen by the *caller*
 (`app/pipeline/query_pipeline.py`), not by `retriever.py`.
 
@@ -110,6 +111,25 @@ is `chunk_id` in Qdrant.
 query set), `plans.py`, `policy.py`, `pipeline.py`, `traverse.py`,
 `hydrate.py` (ids → text), `facts.py`, `scope.py`, `shadow.py` (measure without
 answering), `intent.py`.
+
+### `web/` — evidence the corpus cannot supply
+
+A fallback, off by default (`web_search_enabled`). **Isolated the same way as
+`graph/`**: nothing on the default path imports it, `retriever.py` is its only
+production doorway, and `tests/retrieval/web/test_web_retrieval.py` asserts
+both. It never writes to the stores and never crawls.
+
+`planner.py` (what the question needs; deterministic), `sufficiency.py` (is the
+internal evidence enough — and the web decision), `service.py` (`gather`: the
+one entry point), `providers.py` (Brave/Tavily behind one interface),
+`corpus.py` (results the corpus already holds are read from it; missing TERI
+pages are recorded as gaps), `safety.py` (SSRF, domain policy, URL identity),
+`fetch.py` (robots.txt, pacing, bounds), `extract.py` (HTML/PDF → dated,
+sanitized blocks), `passages.py` (→ `Candidate`s with provenance), `cache.py`.
+
+Web candidates join the corpus's in the one banded ranking
+(`search/reranker.merge_ranked`). See
+[`docs/retrieval/13-web-retrieval.md`](../../docs/retrieval/13-web-retrieval.md).
 
 ---
 

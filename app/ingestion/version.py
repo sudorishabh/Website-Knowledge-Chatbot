@@ -51,7 +51,23 @@ CHUNK_IDENTITY = 1
 #: The bump is cheap: `_reusable_vectors` keys on chunk id + `embed_hash` +
 #: `embed_model`, none of which this touches, so a re-indexed document reuses
 #: every stored vector and nothing is re-embedded.
-PAYLOAD = 2
+#:
+#: 3 — an attached PDF's `effective_start_date` is now decided differently, so
+#: the same crawl produces a different payload. Two rules changed
+#: (`app.ingestion.date_resolution`): on a page holding several PDFs the file's
+#: own name states its date, and where nothing states one and the page is dated
+#: only by its Drupal creation stamp the file is left undated. Measured on the
+#: live corpus, 164 attachments take a date from their name and 334 lose one
+#: they should never have had.
+#:
+#: This is a *value* change, where the four components otherwise describe
+#: structural ones — but it is the component that governs the payload and the
+#: module's own test settles it: identical input now produces different output,
+#: and without the bump a document whose body text has not changed keeps the
+#: wrong date forever, which is the exact failure this module exists to prevent.
+#: Vectors are reused on the same keys as before, so the reprocess re-embeds
+#: nothing.
+PAYLOAD = 3
 EMBED_INPUT = 1
 
 #: The version stamped on everything this pipeline writes. Short by design: it
