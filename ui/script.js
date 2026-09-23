@@ -845,10 +845,14 @@
     // The knowledge graph is its own kind: it is not a document, and the
     // "everything that isn't a website is a PDF" split used to file it under
     // PDFs and label the chip with the literal string "pdf_attachment".
+    // Pages read from the web for this answer are their own kind too: they are
+    // not the organisation's catalogued content, and filing them under PDFs
+    // would repeat the knowledge-graph mistake.
     const graph = citations.filter((c) => c.type === "knowledge_graph");
     const webPages = citations.filter((c) => c.type === "website");
+    const fromWeb = citations.filter((c) => c.type === "web");
     const pdfs = citations.filter(
-      (c) => c.type !== "website" && c.type !== "knowledge_graph",
+      (c) => c.type !== "website" && c.type !== "knowledge_graph" && c.type !== "web",
     );
 
     // A self-contained reference block pinned to the bottom of the answer.
@@ -863,6 +867,7 @@
     renderSourceGroup(section, "Knowledge graph", graph);
     renderSourceGroup(section, "Web pages", webPages);
     renderSourceGroup(section, "PDFs", pdfs);
+    renderSourceGroup(section, "From the web", fromWeb);
     bubble.appendChild(section);
   }
 
@@ -936,6 +941,15 @@
 
     // Row 2: supporting detail — page/section, or the site host for web pages.
     const meta = [];
+    if (c.type === "web") {
+      // Where it was read, and when: the page's own date when it states one,
+      // else the date it was read — labelled, so neither passes for the other.
+      const host = c.domain || hostLabel(c.url);
+      if (host) meta.push(host);
+      if (c.is_primary_source === false) meta.push("third-party");
+      if (c.published_date) meta.push("published " + c.published_date);
+      else if (c.retrieved_at) meta.push("read " + String(c.retrieved_at).slice(0, 10));
+    }
     if (c.page != null) meta.push("Page " + c.page);
     if (c.section) meta.push(c.section);
     if (!meta.length && c.type === "website") {
