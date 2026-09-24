@@ -16,4 +16,5 @@ Reading order:
 * :mod:`.fetch` — reading one page from the live site: allowlisted, cached,
   revalidated, one request per page at a time, last good copy on failure.
 * :mod:`.extract` — the rendered page as titled sections, documents kept as links.
+* :mod:`.people` — who the people listings name, and whether a question names them.
 """
