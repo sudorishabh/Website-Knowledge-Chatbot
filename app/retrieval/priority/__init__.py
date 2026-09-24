@@ -17,4 +17,5 @@ Reading order:
   revalidated, one request per page at a time, last good copy on failure.
 * :mod:`.extract` — the rendered page as titled sections, documents kept as links.
 * :mod:`.people` — who the people listings name, and whether a question names them.
+* :mod:`.match` — which pages a question needs, and the reason for each.
 """
