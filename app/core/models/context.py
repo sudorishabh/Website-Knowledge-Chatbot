@@ -50,6 +50,19 @@ def is_graph_facts(payload: dict[str, Any]) -> bool:
     return payload.get("kind") == GRAPH_FACTS_KIND
 
 
+# The marker `app.retrieval.priority` puts on a block read from the live site at
+# question time. Here for the same reason as the graph's: retrieval builds the
+# block and generation labels it, and neither may import the other's module to
+# agree on a literal. Unlike the facts block it *is* a web page, so it keeps
+# ``source_type="website"`` and cites like one.
+PRIORITY_PAGE_KIND = "priority_page"
+
+
+def is_priority_page(payload: dict[str, Any]) -> bool:
+    """Whether this payload is a section of a priority page read live."""
+    return payload.get("kind") == PRIORITY_PAGE_KIND
+
+
 # Storage values that all mean "a page on the website". ``website`` is
 # canonical; ``article`` is what points indexed before the rename carry. Defined
 # here so retrieval and generation share one list — a copy that forgets the alias

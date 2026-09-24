@@ -18,4 +18,7 @@ Reading order:
 * :mod:`.extract` — the rendered page as titled sections, documents kept as links.
 * :mod:`.people` — who the people listings name, and whether a question names them.
 * :mod:`.match` — which pages a question needs, and the reason for each.
+* :mod:`.evidence` — the entry points: ``explicit_targets`` before routing,
+  ``gather`` before the cache, and the ``PriorityEvidence`` retrieval uses to
+  drop stored copies and lead the context.
 """
