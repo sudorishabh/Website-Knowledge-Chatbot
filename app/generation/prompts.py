@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.core.models.context import GRAPH_FACTS_KIND, is_graph_facts
+from app.core.models.context import GRAPH_FACTS_KIND, is_graph_facts, is_priority_page
 
 if TYPE_CHECKING:
     from app.core.models.context import ContextBlock
@@ -12,6 +12,10 @@ REFUSAL = "I don't have information on that in the available sources."
 # The header token that marks a block as the organisation's own standing
 # description of itself. Referenced verbatim in rule 8, so the two cannot drift.
 CANONICAL_MARKER = "official page"
+
+# The header token on a block read from the live site at question time (see
+# app.retrieval.priority). Referenced verbatim in rule 9.
+LIVE_MARKER = "live page"
 
 # Authority at or above this is "the organisation's own statement", as scored by
 # the reranker's derived-authority scale. Shared with ranking on purpose: the
@@ -274,6 +278,16 @@ _RULES_TAIL = (
     "not signals of authority — a 60-word service page that states the answer "
     "outranks a 400-word announcement that alludes to it. Use the longer "
     "source to add detail once the direct one has answered, not to replace it.\n"
+    f"   - A block whose header says \"{LIVE_MARKER}\" is the organisation's own "
+    "page as the live website shows it now. For what that page states about the "
+    "organisation itself — who holds which post, who sits on a council or team, "
+    "what a theme, centre or programme covers, what the page currently lists — "
+    "it is the current position: answer from it and prefer it to any block that "
+    "disagrees, whatever that block's date. The date beside it is when the page "
+    "was read, not when anything on it was published: never give it as a "
+    "publication date. A document it names with a link in brackets was not "
+    "read: give its title and the link, and do not describe its contents beyond "
+    "what the page itself says.\n"
     "   - Publication dates: a block header may carry `edition <period>` and a `web\n"
     "page date`. These are different facts and must never be merged. The edition is\n"
     "the reporting period the document covers; the page date is when the web page\n"
@@ -536,6 +550,13 @@ def _source_hint(payload: dict) -> str:
     # no ingest change.
     if _is_canonical(payload):
         bits.append(CANONICAL_MARKER)
+    if is_priority_page(payload):
+        # When it was read, labelled as that — never a "page date", which the
+        # rules below treat as when something went up.
+        read = str(payload.get("fetched_at") or "")[:10]
+        bits.append(f"{LIVE_MARKER}, read {read}" if read else LIVE_MARKER)
+        if payload.get("stale"):
+            bits.append("the live site did not answer; this is the last copy read")
     if payload.get("title"):
         bits.append(str(payload["title"]))
     # The reporting period the document itself covers, when one was recovered at
