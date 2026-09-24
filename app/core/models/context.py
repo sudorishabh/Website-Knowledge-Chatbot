@@ -57,20 +57,6 @@ def is_graph_facts(payload: dict[str, Any]) -> bool:
 WEBSITE_SOURCE_TYPES: tuple[str, ...] = ("website", "article")
 
 
-# The ``source_type`` of evidence fetched from the public web at query time
-# (see ``app.retrieval.web``), and the predicate that recognises it. Defined in
-# the neutral core for the same reason as ``GRAPH_FACTS_KIND``: retrieval builds
-# these payloads, generation labels them as untrusted in the prompt, the
-# citation builder describes them, and the pipeline keeps them out of the answer
-# cache. A web payload is never written to Qdrant, so ingestion never sees one.
-WEB_SOURCE_TYPE = "web"
-
-
-def is_web(payload: dict[str, Any]) -> bool:
-    """Whether this payload is evidence fetched from the web, not the corpus."""
-    return payload.get("source_type") == WEB_SOURCE_TYPE
-
-
 def source_kind(payload: dict[str, Any]) -> str | None:
     """The payload's source type with the legacy website alias folded in."""
     source_type = payload.get("source_type")

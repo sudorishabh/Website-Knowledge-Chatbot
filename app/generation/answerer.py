@@ -18,12 +18,10 @@ from app.generation.prompts import (
     format_context_blocks,
     graph_facts_rule,
     has_graph_facts,
-    has_web_sources,
     format_directive,
     grounded_system_prompt,
     supersession_note,
     today_anchor,
-    web_sources_rule,
 )
 
 logger = logging.getLogger(__name__)
@@ -107,7 +105,6 @@ def _build_system(
     *,
     has_history: bool = False,
     graph_facts: bool = False,
-    web_sources: bool = False,
     plan_directive: str = "",
 ) -> str:
     """The grounded system prompt for this call.
@@ -120,10 +117,9 @@ def _build_system(
 
     `graph_facts` says whether one of the blocks is the knowledge graph's
     verified-relationship block, which needs a rule of its own about reading
-    validity windows; `web_sources`, whether any block was read from the web,
-    which needs one about trust, attribution and dates. The extra rules are
-    numbered from 10 in the order they are added, continuing the list the base
-    prompt ends at, so the model is never handed a rule 11 with no rule 10.
+    validity windows. Both extra rules are numbered from 10 in the order they
+    are added, continuing the list the base prompt ends at, so the model is
+    never handed a rule 11 with no rule 10.
     """
     system = grounded_system_prompt()
     next_rule = 10
@@ -132,9 +128,6 @@ def _build_system(
         next_rule += 1
     if graph_facts:
         system += f"\n{graph_facts_rule(next_rule)}"
-        next_rule += 1
-    if web_sources:
-        system += f"\n{web_sources_rule(next_rule)}"
     directive = format_directive(answer_format)
     if directive:
         system += f"\n\n{directive}"
@@ -167,7 +160,6 @@ def generate_answer(
         correction,
         has_history=bool(messages),
         graph_facts=has_graph_facts(blocks),
-        web_sources=has_web_sources(blocks),
         plan_directive=plan_directive,
     )
     prompt = ChatPromptTemplate.from_messages(
@@ -205,7 +197,6 @@ def generate_stream(
         None,
         has_history=bool(messages),
         graph_facts=has_graph_facts(blocks),
-        web_sources=has_web_sources(blocks),
         plan_directive=plan_directive,
     )
     prompt = ChatPromptTemplate.from_messages(

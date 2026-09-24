@@ -10,10 +10,7 @@ filter-building logic and table:
 - ``document_ids_in_scope`` / ``attachments_for`` answer id-scoped retrieval
   (scoped summarization, website-attachment supplementation) — these bake in
   ``source_type='website', entity_type='node'`` since that's the retrieval
-  layer's catalog of record;
-- ``indexed_documents_for_urls`` answers web retrieval's internal-first check:
-  which web results the corpus already holds, so they are read from their
-  ingested chunks instead of being fetched.
+  layer's catalog of record.
 
 DB errors fail open: the count/list/distribution functions let real errors
 raise (callers already guard), while the id-scope helpers below swallow errors
@@ -1057,87 +1054,4 @@ def attachments_for(document_ids: Sequence[str]) -> dict[str, list[dict[str, Any
                 "filename": row["filename"],
             }
         )
-    return out
-
-
-def _url_spellings(url: str) -> list[str]:
-    """Every way the catalog may have written the same address.
-
-    Ingestion stores what the CMS gave it — scheme, ``www.`` and trailing slash
-    as the site emitted them, and file names escaped or not — so a URL found on
-    the web is looked up under each spelling rather than only its own.
-    """
-    from urllib.parse import quote, unquote, urlsplit
-
-    parts = urlsplit((url or "").strip())
-    host = (parts.hostname or "").lower().removeprefix("www.")
-    if not host:
-        return []
-    raw_path = parts.path or "/"
-    bare = unquote(raw_path)
-    paths = {raw_path, bare, quote(bare, safe="/%:@-._~")}
-    paths |= {p.rstrip("/") or "/" for p in paths} | {p.rstrip("/") + "/" for p in paths}
-    query = f"?{parts.query}" if parts.query else ""
-    return sorted(
-        f"{scheme}://{h}{path}{query}"
-        for scheme in ("https", "http")
-        for h in (host, f"www.{host}")
-        for path in paths
-    )
-
-
-def indexed_documents_for_urls(urls: Sequence[str]) -> dict[str, list[str]] | None:
-    """The indexed documents already at each address, keyed by the URL given.
-
-    The web retrieval's internal-first check: a page the corpus already holds
-    is answered from its ingested chunks — dated by the ingestion rules, with
-    its attachments OCR'd and their tables extracted — rather than fetched and
-    read again. Two ways an address can be in the catalog: as a document's own
-    ``url`` (a page, and the attachments hanging off it, which carry the page's
-    address), and as an attachment's file ``url`` (a PDF, whose document id is
-    its ``file_uuid``). Only documents holding indexed content count
-    (``content_state`` NULL); a page catalogued as metadata only has nothing to
-    retrieve.
-
-    ``None`` when the catalog cannot be read — not ``{}``, because "none of
-    these is ingested" and "it is not known which are" lead to different
-    things: a caller fetches every URL either way, but only the first may be
-    reported as gaps in the corpus.
-    """
-    spelled: dict[str, str] = {}
-    for url in dict.fromkeys(u for u in urls if u):
-        for variant in _url_spellings(url):
-            spelled.setdefault(variant, url)
-    if not spelled:
-        return {}
-    table = _table()
-    placeholders = ", ".join(["%s"] * len(spelled))
-    variants = tuple(spelled)
-    page_sql = (
-        f"SELECT document_id, url FROM `{table}`"
-        f" WHERE url IN ({placeholders}) AND content_state IS NULL"
-    )
-    file_sql = (
-        f"SELECT a.file_uuid AS document_id, a.url AS url"
-        f" FROM `{table}_attachment` a JOIN `{table}` d ON d.document_id = a.file_uuid"
-        f" WHERE a.url IN ({placeholders}) AND d.content_state IS NULL"
-    )
-    try:
-        with mysql_connection() as conn, conn.cursor() as cur:
-            cur.execute(page_sql, variants)
-            rows = list(cur.fetchall())
-            cur.execute(file_sql, variants)
-            rows += list(cur.fetchall())
-    except Exception:
-        logger.warning("Catalog URL lookup failed; the URLs' status is unknown.",
-                       exc_info=True)
-        return None
-    out: dict[str, list[str]] = {}
-    for row in rows:
-        original = spelled.get(row["url"])
-        if original is None:
-            continue
-        ids = out.setdefault(original, [])
-        if row["document_id"] not in ids:
-            ids.append(row["document_id"])
     return out

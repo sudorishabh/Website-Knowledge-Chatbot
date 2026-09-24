@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from typing import Any
-from urllib.parse import urlsplit
 
 from app.core.models.context import (
     WEBSITE_SOURCE_TYPES,
     is_graph_facts,
-    is_web,
     page_span,
     source_kind,
 )
@@ -38,44 +36,10 @@ def _primary_url(payload: dict[str, Any]) -> str | None:
     own citation in the PDFs group — the page must not resolve to it, or it reads
     as a PDF under Web pages). A PDF links to the attachment it was downloaded
     from; every ingested PDF carries that URL, so None means there is genuinely
-    nothing to open. A web page links to the address it was read from, and a
-    web PDF to its page, like an ingested one."""
+    nothing to open."""
     if payload.get("source_type") in _WEBSITE_TYPES:
         return payload.get("source_url") or _with_page(payload.get("file_url"), payload)
-    if is_web(payload):
-        return _with_page(payload.get("file_url"), payload) or payload.get("url")
     return _with_page(payload.get("file_url"), payload)
-
-
-def _domain(payload: dict[str, Any], url: str | None) -> str | None:
-    """The site a source is on: the web passage's own record, else its link's host."""
-    if payload.get("domain"):
-        return str(payload["domain"])
-    host = (urlsplit(url).hostname or "") if url else ""
-    return host.lower().removeprefix("www.") or None
-
-
-def _provenance(payload: dict[str, Any], url: str | None) -> dict[str, Any]:
-    """How the source was found, when, and from where — one description for every
-    kind of source, so a primary citation and its alternates cannot disagree.
-
-    Only a web source reports a ``published_date``: it is the date that page
-    states for itself. A corpus source's date is its CMS page date, a different
-    fact the prompt already labels as such, and repeating it here as a
-    publication date would be the page-date conflation the date guard exists to
-    catch (``app.generation.date_claims``)."""
-    web = is_web(payload)
-    authors = payload.get("authors")
-    return {
-        "domain": _domain(payload, url),
-        "authors": [str(a) for a in authors] if isinstance(authors, list) else [],
-        "published_date": payload.get("published_date") if web else None,
-        "date_source": payload.get("date_source") if web else None,
-        "retrieved_at": payload.get("retrieved_at") if web else None,
-        "retrieval_method": payload.get("retrieval_method") or "corpus",
-        "is_primary_source": bool(payload.get("is_primary_source")) if web else None,
-        "chunk_id": payload.get("chunk_id"),
-    }
 
 
 def _source_type(payload: dict[str, Any]) -> str:
@@ -99,16 +63,14 @@ def _source_from_payload(payload: dict[str, Any]) -> CitationSource:
     shape covers both kinds without a branch.
     """
     start, end = page_span(payload)
-    url = _primary_url(payload)
     return CitationSource(
         type=_source_type(payload),
         title=payload.get("title"),
-        url=url,
+        url=_primary_url(payload),
         page=start,
         page_end=end,
         section=payload.get("section_heading"),
         edition=payload.get("edition_label"),
-        **_provenance(payload, url),
     )
 
 
@@ -142,7 +104,6 @@ def _graph_citation(block: ContextBlock) -> Citation:
         title=f"Knowledge graph — verified relationships ({detail})",
         url=None,
         document_id=None,
-        retrieval_method=GRAPH_CITATION_TYPE,
     )
 
 
@@ -155,10 +116,15 @@ def _citation_from_block(block: ContextBlock) -> Citation:
     source = _source_from_payload(block.payload)
     return Citation(
         n=block.n,
+        type=source.type,
+        title=source.title,
+        url=source.url,
+        page=source.page,
+        page_end=source.page_end,
+        section=source.section,
+        edition=source.edition,
         document_id=block.payload.get("document_id"),
-        score=round(float(block.score), 4) if block.score else None,
         also_available=[_source_from_payload(alt) for alt in block.also_available],
-        **source.model_dump(),
     )
 
 

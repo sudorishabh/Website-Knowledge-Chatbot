@@ -59,7 +59,6 @@ stating up front:
 | [10 — Caching](10-caching.md) | The semantic answer cache: what makes two questions "the same," the corpus-revision partition key, and fail-open behaviour. |
 | [11 — Observability and Logging](11-observability-and-logging.md) | Spans and timing metrics, the per-query retrieval trace, and read-path health/readiness. |
 | [12 — Operations and Troubleshooting](12-operations-and-troubleshooting.md) | Deployment, the full configuration reference, security, scalability, runbooks, and a troubleshooting matrix. |
-| [13 — Web Retrieval](13-web-retrieval.md) | The web fallback (off by default): when it is consulted and why, internal-first sorting of search results, safe fetching, extraction, provenance, ranking, the prompt and citation changes, caching, tracing, and the six-question benchmark. |
 
 ## Topic map
 
@@ -95,7 +94,6 @@ specific question rather than reading front to back.
 | Configuration reference | [12](12-operations-and-troubleshooting.md#configuration-reference) | every doc's own config table |
 | Security and access control | [12](12-operations-and-troubleshooting.md#security-and-access-control) | [02](02-triggers-and-api.md) |
 | Troubleshooting a wrong or missing answer | [12](12-operations-and-troubleshooting.md#troubleshooting-matrix) | [`app/README.md`, "Where a bug lives"](../../app/README.md#where-a-bug-lives) |
-| Web search, and why a question did or did not use it | [13](13-web-retrieval.md#when-the-web-is-consulted) | [13, observability](13-web-retrieval.md#observability-why-did-it-use-this-page-and-why-not) |
 
 ## Where the code is
 
@@ -118,7 +116,6 @@ claims (see "Before you read further" above) by
 | 10 | `app/cache/{semantic_cache,cache_keys}.py` |
 | 11 | `app/observability/{tracing,metrics}.py` · `app/observability/retrieval_log/*` |
 | 12 | `app/config.py` · `docker-compose.yml` · `app/retrieval/retriever.py` (the orchestrator that ties search, ranking, context and graph together — see doc 04 for its search-assembly role and docs 05–06 for its context-merge and gating role) |
-| 13 | `app/retrieval/web/{planner,sufficiency,providers,safety,fetch,extract,passages,corpus,cache,service}.py` · `app/core/clients/web.py` · `app/core/pdf_text.py` · the web leg in `app/retrieval/retriever.py` |
 
 `app/retrieval/retriever.py` does not have a single dedicated doc — it is the
 glue between stages, so its logic is described where each piece of that logic

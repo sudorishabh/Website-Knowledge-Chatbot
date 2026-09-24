@@ -2,8 +2,8 @@
 
 Lazily-created, ``@lru_cache``-memoized handles to the external services the app
 depends on — the embedding model, the chat LLM, the Qdrant vector store, the
-MySQL pool, Redis and the public web. Feature packages (ingestion, retrieval,
-generation, pipeline) depend on this layer; it depends only on ``app.config``.
+MySQL pool and Redis. Feature packages (ingestion, retrieval, generation,
+pipeline) depend on this layer; it depends only on ``app.config``.
 """
 from __future__ import annotations
 
@@ -33,7 +33,6 @@ from app.core.clients.vector_store import (
     get_qdrant_client,
     refresh_document_title,
 )
-from app.core.clients.web import get_web_http_client
 
 __all__ = [
     "embed_query",
@@ -55,5 +54,4 @@ __all__ = [
     "mysql_connection",
     "new_mysql_connection",
     "get_redis",
-    "get_web_http_client",
 ]

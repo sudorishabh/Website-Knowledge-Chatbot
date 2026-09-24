@@ -22,12 +22,6 @@ from dataclasses import dataclass
 
 from app.config import get_settings
 
-# How a page becomes text is defined once, in the core, so web retrieval reads a
-# fetched PDF exactly as ingestion reads an indexed one. The private names stay
-# because this module's own functions use them.
-from app.core.pdf_text import open_pdf as _open
-from app.core.pdf_text import page_text as _page_text
-
 # Reuse the frozen public types so both extraction paths emit one structure.
 from app.ingestion.extractors.pdf_extractor import (
     ExtractedVia,
@@ -70,6 +64,16 @@ class PageSignal:
         if self.has_table:
             return "camelot"
         return "local"
+
+
+def _open(content: bytes):
+    import fitz  # PyMuPDF
+
+    return fitz.open(stream=content, filetype="pdf")
+
+
+def _page_text(page) -> str:
+    return (page.get_text("text") or "").strip()
 
 
 def _grid_line_counts(page) -> tuple[int, int]:

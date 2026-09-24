@@ -20,7 +20,7 @@ def _sha(*parts: str) -> str:
 #: did nothing. That is how the fix for "who is X" answering from a 2020 page
 #: was reported as not working three times: each retest matched the cached
 #: answer at cosine 1.0.
-PIPELINE_REVISION = "2026-09-23.1"
+PIPELINE_REVISION = "2026-09-18.3"
 
 
 def _pref_fingerprint() -> str:
@@ -36,11 +36,6 @@ def _pref_fingerprint() -> str:
         str(s.retrieval_top_k),
         str(s.retrieval_candidate_k),
         str(s.context_token_budget),
-        # Whether the web may supplement the corpus changes what a question is
-        # answered from, so switching it on or off — or changing who searches —
-        # must not serve answers built under the other setting.
-        str(getattr(s, "web_search_enabled", False)),
-        str(getattr(s, "web_search_provider", "")),
     )
 
 

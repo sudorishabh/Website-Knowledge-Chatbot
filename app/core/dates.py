@@ -21,7 +21,6 @@ bad date must not turn a working query into an error.
 
 from __future__ import annotations
 
-import email.utils
 import logging
 import re
 from datetime import date, datetime, timedelta, timezone
@@ -164,80 +163,3 @@ def current_date_directive() -> str:
         "If the request names no period at all, leave both dates null — do not "
         "default to the current year."
     )
-
-
-# A PDF information-dictionary date: "D:20250409102200+05'30'", or any prefix
-# of it down to the year. Only the calendar day is read.
-_PDF_DATE = re.compile(r"^D:(\d{4})(\d{2})?(\d{2})?")
-
-# Dates written out for a reader: "09 Apr 2025", "9th April 2025",
-# "April 9, 2025". Every part is required — a month and year alone is a period,
-# not a day, and is left unread rather than pinned to the first.
-_MONTHS = {
-    name: number
-    for number, names in enumerate(
-        (("jan", "january"), ("feb", "february"), ("mar", "march"), ("apr", "april"),
-         ("may",), ("jun", "june"), ("jul", "july"), ("aug", "august"),
-         ("sep", "sept", "september"), ("oct", "october"), ("nov", "november"),
-         ("dec", "december")),
-        start=1,
-    )
-    for name in names
-}
-_DAY_MONTH_YEAR = re.compile(
-    r"\b(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?,?\s+((?:19|20)\d{2})\b"
-)
-_MONTH_DAY_YEAR = re.compile(
-    r"\b([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+((?:19|20)\d{2})\b"
-)
-
-
-def _written_day(text: str) -> str | None:
-    for pattern, order in ((_DAY_MONTH_YEAR, (0, 1, 2)), (_MONTH_DAY_YEAR, (1, 0, 2))):
-        match = pattern.search(text)
-        if not match:
-            continue
-        parts = match.groups()
-        day, month_name, year = (parts[i] for i in order)
-        month = _MONTHS.get(month_name.lower())
-        if month is None:
-            continue
-        try:
-            return date(int(year), month, int(day)).isoformat()
-        except ValueError:
-            return None
-    return None
-
-
-def stated_day(value: Any) -> str | None:
-    """A date an external source states, as ``YYYY-MM-DD``, or None.
-
-    Web retrieval reads dates written by other people's software: ISO 8601 in
-    page metadata, RFC 2822 from some search APIs ("Wed, 09 Apr 2025 10:22:00
-    GMT"), the PDF form ("D:20250409..."), and dates written out on the page
-    itself ("09 Apr 2025"). A PDF date that stops at the year or month is
-    completed to the first day, which callers must label as such.
-
-    Unreadable means None — an unknown date is honest, a guessed one is not.
-    """
-    if value is None:
-        return None
-    if isinstance(value, datetime):
-        return value.date().isoformat()
-    if not isinstance(value, str) or not value.strip():
-        return None
-    text = value.strip()
-    cleaned = clean_iso_date(text)
-    if cleaned:
-        return cleaned[:10]
-    pdf = _PDF_DATE.match(text)
-    if pdf:
-        year, month, day = pdf.group(1), pdf.group(2) or "01", pdf.group(3) or "01"
-        try:
-            return date(int(year), int(month), int(day)).isoformat()
-        except ValueError:
-            return None
-    try:
-        return email.utils.parsedate_to_datetime(text).date().isoformat()
-    except (TypeError, ValueError, IndexError):
-        return _written_day(text)

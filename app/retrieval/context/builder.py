@@ -163,10 +163,7 @@ def _admissible_text(
     1. the parent's text, when there is a parent and it is substantive;
     2. the child's own text, when *it* is substantive — this is both the orphan
        case and the excluded-parent case, where the child is the largest
-       admissible passage available. A candidate with no stored parent that
-       carries its section inline (``context_text``: a web passage, whose page
-       has no parent chunk in Qdrant) is admitted with that section instead, the
-       same expansion done where the text came from;
+       admissible passage available;
     3. nothing: neither is substantive, so the candidate contributes no context.
 
     An excluded child under a substantive parent still expands (case 1). The
@@ -180,8 +177,7 @@ def _admissible_text(
         return parent_text, parent
     if _is_excluded(cand.payload):
         return None
-    inline = cand.payload.get("context_text") if not cand.parent_id else None
-    return (inline or cand.text), None
+    return cand.text, None
 
 
 def _block_payload(

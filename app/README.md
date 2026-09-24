@@ -112,8 +112,7 @@ routing → search → rerank → context → generation → citations → metri
 
 ### `retrieval/` — the read path
 
-Four stages plus two alternative answer routes, and a web fallback (`web/`, off
-by default) that supplements the corpus when it cannot answer. See
+Four stages plus two alternative answer routes. See
 [`retrieval/README.md`](retrieval/README.md).
 
 ### `generation/` — answer synthesis
@@ -169,11 +168,10 @@ Table reference: [`docs/ingestion/08-persistence-and-catalog.md`](../docs/ingest
 
 | Path | What |
 | --- | --- |
-| `clients/` | The only place external services are constructed: `vector_store` (Qdrant), `database` (MySQL pool), `embeddings` (Azure + throttle gate), `llm`, `graph` (Neo4j), `cache` (Redis), `web` (the non-redirecting HTTP client web retrieval uses). All `lru_cache`d. |
+| `clients/` | The only place external services are constructed: `vector_store` (Qdrant), `database` (MySQL pool), `embeddings` (Azure + throttle gate), `llm`, `graph` (Neo4j), `cache` (Redis). All `lru_cache`d. |
 | `models/` | Cross-package data contracts: `CanonicalDocument`, `ContextBlock`, plus payload interpretation helpers. |
 | `corpus.py` | The bundle vocabulary both paths must agree on. |
 | `dates.py`, `editions.py` | Date parsing and edition-label spelling, shared so ingestion and retrieval cannot drift. |
-| `pdf_text.py`, `text_normalize.py` | How a born-digital PDF page becomes text, shared so a PDF fetched by web retrieval is read exactly as ingestion reads one. |
 
 **`core/` is where a shared piece goes.** If two packages need the same rule and
 one currently reaches into the other for it, that rule belongs here —
