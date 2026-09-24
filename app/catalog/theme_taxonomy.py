@@ -149,10 +149,18 @@ def _clean(value: Any) -> str:
     return _WHITESPACE.sub(" ", str(value or "")).strip()
 
 
+_AMPERSAND = re.compile(r"\s*&\s*")
+
+
 def _key(value: Any) -> str:
     """Match key — case-insensitive on top of :func:`_clean`, so CMS display
-    drift ("energy  access") still resolves against the map."""
-    return _clean(value).casefold()
+    drift ("energy  access") still resolves against the map.
+
+    "&" and "and" are one key. The site spells the same theme both ways — its
+    menu has "Energy Assessment & Modelling", its terms "Energy Assessment and
+    Modelling" — and the CMS term "Environment & Public Health" (195 documents)
+    stayed unmapped against a map that wrote "and"."""
+    return _clean(_AMPERSAND.sub(" and ", _clean(value))).casefold()
 
 
 def _group_code(bucket_name: str) -> str:
