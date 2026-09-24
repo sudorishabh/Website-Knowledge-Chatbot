@@ -1,0 +1,335 @@
+[
+  {
+    "name": "Outreach",
+    "page_url": "https://www.teriin.org/outreach",
+    "description": "TERI's outreach and knowledge-dissemination section, covering events, publications, multimedia, media engagement, and other initiatives that communicate TERI's research and sustainability work to wider audiences."
+  },
+  {
+    "name": "Policy",
+    "page_url": "https://www.teriin.org/policy",
+    "description": "Presents TERI's policy research, analysis, modelling, and advisory work across areas such as energy, climate change, environment, agriculture, and sustainable development."
+  },
+  {
+    "name": "Services",
+    "page_url": "https://www.teriin.org/services",
+    "description": "Describes TERI's research, consultancy, technical advisory, testing, capacity-building, and implementation services across sustainability-related sectors."
+  },
+  {
+    "name": "technologies",
+    "page_url": "https://www.teriin.org/technologies",
+    "description": "Showcases technologies and innovations developed by TERI to address environmental, energy, agricultural, resource-efficiency, and sustainable-development challenges."
+  },
+  {
+    "name": "Centres of Excellence",
+    "page_url": "https://teriin.org/centre-of-excellence",
+    "description": "Lists TERI's specialised Centres of Excellence, which bring together research, innovation, policy, capacity building, and partnerships around focused sustainability challenges."
+  },
+  {
+    "name": "founder",
+    "page_url": "https://teriin.org/history",
+    "description": "Provides the history of TERI and profiles its founders, highlighting the institution's origins, evolution, and contribution to energy, environment, and sustainable development."
+  },
+  {
+    "name": "Mission and Goals",
+    "page_url": "https://teriin.org/mission-and-goals",
+    "description": "Explains TERI's mission, goals, values, and broad areas of work, including clean energy, climate resilience, resource efficiency, sustainable habitats, ecosystems, and human well-being."
+  },
+  {
+    "name": "annoucements",
+    "page_url": "https://teriin.org/announcements",
+    "description": "Publishes TERI's official announcements, notices, tenders, procurement information, calls, and other institutional updates."
+  },
+  {
+    "name": "FCRA Financials",
+    "page_url": "https://teriin.org/fcra-financials",
+    "description": "Provides TERI's FCRA-related financial disclosures, including audited statements, receipts and payments, income and expenditure statements, balance sheets, and related financial information."
+  },
+  {
+    "name": "Annual Reports",
+    "page_url": "https://teriin.org/annual-reports",
+    "description": "An archive of TERI's annual reports containing year-wise information about the institute's activities, research, programmes, achievements, and institutional performance."
+  },
+  {
+    "name": "Alumni",
+    "page_url": "https://teriin.org/alumni",
+    "description": "Provides information about the TERI Alumni Association and its efforts to connect former members, facilitate knowledge sharing, mentoring, collaboration, and continued engagement with TERI."
+  },
+  {
+    "name": "People - committee of directors",
+    "page_url": "https://teriin.org/people/committee-of-directors",
+    "description": "Lists members of TERI's Committee of Directors and provides links to individual profiles containing their roles, expertise, and professional backgrounds.",
+    "example-of-people-url": "https://teriin.org/profile/[name-of-person]"
+  },
+  {
+    "name": "people - governing council",
+    "page_url": "https://teriin.org/people/governing-council",
+    "description": "Lists members of TERI's Governing Council and provides access to individual profiles with information about their professional and institutional backgrounds.",
+    "example-of-people-url": "https://teriin.org/governing-council/[name-of-person]"
+  },
+  {
+    "name": "people - distinguished fellows",
+    "page_url": "https://teriin.org/people/distinguished-fellows",
+    "description": "Profiles TERI's Distinguished Fellows and Distinguished Fellows Emeriti, highlighting senior experts and their contributions across sustainability, energy, environment, climate, and related fields.",
+    "example-of-people-url": "https://teriin.org/profile/[name-of-person]"
+  },
+  {
+    "name": "Regional centers",
+    "description": "TERI has regional centres across India that undertake location-specific research, projects, partnerships, capacity building, and outreach in areas such as energy, environment, agriculture, climate, water, biodiversity, and sustainable development.",
+    "children": [
+      {
+        "name": "Bengaluru",
+        "site_url": "https://teriin.org/bengaluru",
+        "description": "TERI's Southern Regional Centre in Bengaluru works on industrial energy efficiency, renewable energy, environmental studies, sustainable buildings, water resources, and green materials."
+      },
+      {
+        "name": "Goa",
+        "site_url": "https://teriin.org/goa",
+        "description": "TERI's Western Regional Centre in Goa focuses on coastal ecology, marine resources, water management, agriculture, biodiversity, waste management, climate research, and community capacity building."
+      },
+      {
+        "name": "guwahati",
+        "site_url": "https://teriin.org/guwahati",
+        "description": "TERI's North-Eastern Regional Centre in Guwahati works on sustainable development in the North East through research and projects in agriculture, biotechnology, rural extension, water, waste, and community development."
+      },
+      {
+        "name": "Gurugram",
+        "site_url": "https://teriin.org/photo-story/teri-gram-gwal-pahari",
+        "description": "TERI Gram at Gwal Pahari, Gurugram is a research and development campus focused on green technologies, sustainable habitats, renewable energy, biotechnology, waste and water management, and environmental innovation."
+      },
+      {
+        "name": "Mukteshwar - Nainital",
+        "site_url": "https://teriin.org/himalayan-centre-nainital",
+        "description": "TERI's Himalayan Centre in Mukteshwar, Nainital focuses on community engagement, sustainable livelihoods, agricultural innovation, biodiversity, and development initiatives for Himalayan communities."
+      },
+      {
+        "name": "Hyderabad",
+        "site_url": "https://teriin.org/hyderabad",
+        "description": "TERI's Southern Regional Centre in Hyderabad is a knowledge hub focused on energy transition, research, analysis, capacity building, and collaboration with government, industry, academia, and society."
+      },
+      {
+        "name": "Mumbai",
+        "site_url": "https://teriin.org/mumbai",
+        "description": "TERI's Western Regional Centre in Mumbai works on environmental monitoring, natural-resource management, nutrition and livelihoods, biodiversity, climate-related projects, CSR, and sustainability consultancy."
+      }
+    ]
+  },
+  {
+    "name": "Main Themes",
+    "description": "TERI's core thematic areas of research and work. This section should be used when someone asks about the organisation's main thematic areas, research domains, or sustainability themes.",
+    "children": [
+      {
+        "name": "Sustainable Agriculture",
+        "page_url": "https://teriin.org/agriculture",
+        "description": "Focuses on sustainable and climate-resilient agriculture, including soil health, agricultural productivity, resource efficiency, biotechnology, waste utilisation, and livelihood improvement.",
+        "children": []
+      },
+      {
+        "name": "Climate Change",
+        "page_url": "https://teriin.org/climate",
+        "description": "Covers climate science, climate modelling, vulnerability and impact assessment, adaptation, mitigation, climate policy, and strategies for building climate resilience.",
+        "children": []
+      },
+      {
+        "name": "Energy",
+        "page_url": "https://teriin.org/energy",
+        "description": "Covers energy systems and the transition towards cleaner, more efficient, and lower-carbon energy through renewable energy, energy efficiency, modelling, electricity, fuels, and energy access.",
+        "children": [
+          {
+            "name": "Energy Assessment and Modelling",
+            "page_url": "https://teriin.org/energy-assessment-and-modelling",
+            "description": "Uses energy-system and economic modelling to study energy demand, supply, emissions, technology pathways, and long-term transition scenarios to inform policy and planning."
+          },
+          {
+            "name": "Electricity and Renewables",
+            "page_url": "https://teriin.org/Electricity-and-Renewables",
+            "description": "Works on electricity systems and renewable-energy technologies and policies, including solar, wind, hydro, floating solar, solar thermal, and green hydrogen."
+          },
+          {
+            "name": "Energy Efficiency",
+            "page_url": "https://teriin.org/energy-efficiency",
+            "description": "Promotes improved energy performance across buildings and industry through energy audits, efficiency technologies, benchmarking, policy support, and capacity building."
+          },
+          {
+            "name": "Energy Access",
+            "page_url": "https://teriin.org/energy-access",
+            "description": "Focuses on improving reliable and affordable energy access through decentralised energy solutions, renewable technologies, innovative delivery models, and rural development approaches."
+          }
+        ]
+      },
+      {
+        "name": "Environment",
+        "page_url": "https://teriin.org/environment",
+        "description": "Addresses environmental challenges through work on air, water, land, forests, biodiversity, waste, biotechnology, marine systems, pollution control, and resource conservation.",
+        "children": [
+          {
+            "name": "Water",
+            "page_url": "https://teriin.org/water",
+            "description": "Focuses on water conservation, water-use efficiency, groundwater, watershed management, wastewater treatment, and approaches to long-term water security."
+          },
+          {
+            "name": "Land",
+            "page_url": "https://teriin.org/land",
+            "description": "Addresses land degradation, restoration, sustainable land management, ecosystem resilience, carbon outcomes, and livelihood impacts associated with land resources."
+          },
+          {
+            "name": "Forest & Biodiversity",
+            "page_url": "https://teriin.org/forest",
+            "description": "Works on forest conservation, biodiversity, ecosystem services, sustainable forest management, forest-based livelihoods, carbon finance, and human-wildlife interactions."
+          },
+          {
+            "name": "Waste",
+            "page_url": "https://teriin.org/waste",
+            "description": "Develops approaches and technologies for waste reduction, recycling, resource recovery, treatment, and circular-economy systems."
+          },
+          {
+            "name": "Air",
+            "page_url": "https://teriin.org/air",
+            "description": "Focuses on air-quality assessment and management through emissions inventories, source apportionment, modelling, monitoring, health-impact studies, and pollution-control strategies."
+          },
+          {
+            "name": "Advanced Biofuels & Biochemicals",
+            "page_url": "https://teriin.org/advanced-biofuels-biochemicals",
+            "description": "Develops advanced biofuels, biochar, and biochemical solutions using biomass, waste, and other low-cost feedstocks as part of a circular and sustainable bioeconomy.",
+            "children": [
+              {
+                "name": "Pyrolytic Biofuels, Biochar & Green Chemicals",
+                "page_url": "https://teriin.org/PBBGC",
+                "description": "Focuses on thermochemical and catalytic conversion of biomass and waste into pyrolytic biofuels, biochar, activated carbon, and green chemicals."
+              },
+              {
+                "name": "Microbial Biofuels and Biochemicals",
+                "page_url": "https://teriin.org/microbial-biofuels-and-biochemicals",
+                "description": "Develops microbial and biotechnological pathways for producing biofuels and biochemicals from agricultural, industrial, algal, and other low-cost organic feedstocks."
+              }
+            ]
+          },
+          {
+            "name": "Industrial Biotechnology",
+            "page_url": "https://teriin.org/industrial-biotechnology",
+            "description": "Applies biotechnology, specialised microbes, metagenomics, and bioprocess engineering to areas such as bioremediation, resource recovery, carbon conversion, enzymes, and sustainable materials."
+          },
+          {
+            "name": "Marine and Coastal",
+            "page_url": "https://teriin.org/marine-and-coastal",
+            "description": "Studies marine and coastal ecosystems, blue carbon, biodiversity, pollution, sustainable aquaculture, resource management, and community livelihoods to support a sustainable blue economy."
+          }
+        ]
+      },
+      {
+        "name": "Sustainable Habitat",
+        "page_url": "https://teriin.org/habitat",
+        "description": "Promotes sustainable, resilient, and resource-efficient human settlements through work on buildings, transport, cities, urban planning, and low-carbon development.",
+        "children": [
+          {
+            "name": "Transport",
+            "page_url": "https://teriin.org/transport",
+            "description": "Focuses on sustainable and low-carbon mobility, including electric mobility, transport emissions, energy efficiency, urban transport, railways, and sustainable freight systems."
+          },
+          {
+            "name": "Buildings",
+            "page_url": "https://teriin.org/buildings",
+            "description": "Advances energy- and resource-efficient buildings through green design, building assessments, energy audits, policy support, capacity building, and sustainable building frameworks."
+          },
+          {
+            "name": "Cities",
+            "page_url": "https://teriin.org/cities",
+            "description": "Works towards inclusive, resilient, and sustainable cities through urban research, climate action, planning, governance, capacity building, and data-driven decision-making."
+          }
+        ]
+      },
+      {
+        "name": "Environment and Public Health",
+        "page_url": "https://teriin.org/environment-and-public-health",
+        "description": "Examines connections between environmental conditions and public health, including risks associated with air, water, food, pollution, nutrition, and community resilience.",
+        "children": []
+      },
+      {
+        "name": "Resources & Sustainable Development",
+        "page_url": "https://teriin.org/resource-sustainable-development",
+        "description": "Focuses on sustainable resource use, resource efficiency, circular economy, waste management, governance, and long-term development pathways.",
+        "children": [
+          {
+            "name": "Resource Efficiency & Governance",
+            "page_url": "https://teriin.org/resource-efficiency-and-governance",
+            "description": "Examines resource demand, efficiency, waste, circular economy, and governance approaches that can reduce environmental impacts while supporting economic development."
+          },
+          {
+            "name": "Centre for Sustainable Development Research",
+            "page_url": "https://teriin.org/CSDR",
+            "description": "Focuses on systemic sustainable-development transitions through policy research, green budgeting, green public procurement, sustainability leadership, knowledge partnerships, and SDG-related initiatives."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Other Themes",
+    "description": "These are additional TERI programmes, platforms, initiatives, and knowledge areas. They should not normally be presented as the organisation's core thematic areas when someone asks specifically about TERI's main themes; instead, surface the relevant content from these individual sections.",
+    "children": [
+      {
+        "name": "TERI Council for Business Sustainability",
+        "page_url": "https://www.teriin.org/teri-council-for-business-sustainability",
+        "description": "Connects TERI with businesses and sustainability leaders to encourage the integration of sustainability into corporate strategy, operations, innovation, and decision-making."
+      },
+      {
+        "name": "Corporate Social Responsibility",
+        "page_url": "https://teriin.org/teri-corporate-social-responsibility",
+        "description": "Supports organisations in designing and implementing CSR and sustainability programmes across areas such as environment, education, livelihoods, water, sanitation, and clean energy."
+      },
+      {
+        "name": "Green Shipping",
+        "page_url": "https://teriin.org/green-shipping",
+        "description": "Focuses on reducing the environmental and carbon footprint of the maritime sector through cleaner fuels, policy research, circular approaches, life-cycle assessment, and industry collaboration."
+      },
+      {
+        "name": "World Sustainable Development Summit",
+        "page_url": "https://teriin.org/world-sustainable-development-summit",
+        "description": "TERI's flagship annual summit that brings together governments, researchers, businesses, civil society, and other stakeholders to discuss and advance sustainable development and climate action."
+      },
+      {
+        "name": "TERI Knowledge Resource Centre",
+        "page_url": "https://teriin.org/krc",
+        "description": "TERI's knowledge and information platform supporting research, learning, information services, digital resources, skill development, and sustainability-focused knowledge initiatives.",
+        "children": [
+          {
+            "name": "Knowledge Products and Services",
+            "page_url": "https://teriin.org/knowledge-products-and-services",
+            "description": "Provides information resources and knowledge services that support research, learning, analysis, and professional information needs for TERI and external users."
+          },
+          {
+            "name": "Knowledge Repositories & Information Centre",
+            "page_url": "https://teriin.org/knowledge-repositories-information-centre",
+            "description": "Provides access to TERI's information resources, databases, repositories, and research-support facilities for researchers, institutions, industry, and other users."
+          },
+          {
+            "name": "Skill Development & Awareness Programmes",
+            "page_url": "https://teriin.org/skill-development-awareness-programmes",
+            "description": "Provides training, skill development, entrepreneurship, and awareness programmes focused on sustainability-related subjects and green livelihood opportunities."
+          },
+          {
+            "name": "Sustainability Driven Knowledge Projects",
+            "page_url": "https://teriin.org/sustainability-driven-knowledge-projects",
+            "description": "Covers knowledge initiatives that produce databases, studies, surveys, monitoring systems, reports, and evaluation resources to support sustainability research, policy, and implementation."
+          }
+        ]
+      },
+      {
+        "name": "Environment Education",
+        "page_url": "https://teriin.org/environment-education-1",
+        "description": "Promotes education for sustainable development through research, training, youth engagement, curriculum support, communication, capacity building, and environmental awareness initiatives.",
+        "children": [
+          {
+            "name": "Education for Youth Empowerment",
+            "page_url": "https://teriin.org/Education-for-Youth-Empowerment",
+            "description": "Uses education for sustainable development to build young people's knowledge, skills, leadership, and capacity to take practical sustainability action in their communities."
+          },
+          {
+            "name": "Strategic Communication for Sustainability",
+            "page_url": "https://teriin.org/strategic-communication-for-sustainability",
+            "description": "Uses strategic communication, education, and behavioural-change approaches to promote environmentally responsible lifestyles and encourage sustainability action."
+          }
+        ]
+      }
+    ]
+  }
+]

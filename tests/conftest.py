@@ -44,6 +44,19 @@ def _retrieval_logging_off_by_default(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _priority_pages_off_by_default(monkeypatch):
+    """Keep live page reads out of unrelated tests.
+
+    The feature ships on, and with it on every test that drives the pipeline
+    would read teriin.org. A test of the feature turns it on for itself and
+    stubs the fetch.
+    """
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "priority_pages_enabled", False, raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _knowledge_stage_off_by_default(monkeypatch):
     """Keep the ingest-path knowledge stage out of unrelated ingestion tests.
 
