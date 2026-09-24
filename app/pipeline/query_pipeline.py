@@ -62,6 +62,10 @@ class _Generation:
     # the question has one part or the extraction step failed. See
     # `app.generation.answer_plan`.
     plan_directive: str = ""
+    # The answer-cache fingerprint the answer is stored under: the facet
+    # fingerprint plus the content of any priority page it stands on. None means
+    # the facet fingerprint alone.
+    cache_fingerprint: dict[str, Any] | None = None
 
 
 # Content capabilities that pair with a database lookup into a combined answer.
@@ -351,6 +355,87 @@ def _capabilities(pq: ProcessedQuery) -> set[str]:
     return {p.label for p in pq.understanding.intents}
 
 
+# --------------------------------------------------------------------------- #
+# Priority pages (app.retrieval.priority)
+# --------------------------------------------------------------------------- #
+# Two touch points, both behind `priority_pages_enabled` and both imported
+# lazily so the package is never loaded with the feature off:
+#
+# * before routing, the cheap triggers (a person, a page name, a group) — they
+#   decide whether a catalog answer may stand for a question the live page owns;
+# * before the answer cache, the pages themselves — their content hashes are
+#   part of the cache key, so a changed page cannot be answered from yesterday.
+
+#: Reasons that let a page overrule the catalog route. The theme facet and a
+#: description match do not: "how many climate projects" is a count the
+#: catalog does exactly, whatever page the theme also has.
+_CATALOG_OVERRIDING = frozenset({"person", "name", "group"})
+#: Page kinds that can. Theme and centre pages list a sample of their projects,
+#: so a count about a theme stays with the catalog.
+_CATALOG_OVERRIDING_KINDS = frozenset({"people", "page", "profile", "group"})
+
+
+def _priority_text(question: str, pq: ProcessedQuery) -> str:
+    """The question as the priority triggers read it: the user's own words, plus
+    the rewrite that folds in the conversation, so a follow-up still names what
+    the earlier turn was about."""
+    rewritten = (pq.search_query or "").strip()
+    if not rewritten or rewritten.lower() == question.strip().lower():
+        return question
+    return f"{question}\n{rewritten}"
+
+
+def _priority_theme(pq: ProcessedQuery) -> str | None:
+    return getattr(pq.analysis, "theme", None) if pq.analysis is not None else None
+
+
+def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
+    """The deterministic priority triggers, or None with the feature off or for
+    a question about one edition of a series (the edition's own PDF answers it)."""
+    if not get_settings().priority_pages_enabled or pq.edition is not None:
+        return None
+    from app.retrieval.priority.evidence import explicit_targets
+
+    try:
+        with span("rag.priority_targets") as s:
+            targets = explicit_targets(_priority_text(question, pq), theme=_priority_theme(pq))
+            s.set("targets", len(targets))
+        return targets
+    except Exception:  # pragma: no cover - defence in depth; the call never raises
+        logger.warning("Priority page triggers failed; continuing without them.",
+                       exc_info=True)
+        return None
+
+
+def _priority_overrides_catalog(targets: list[Any] | None) -> bool:
+    """Whether a live page owns this question outright, so the catalog route —
+    which cannot see these pages — must not answer it instead."""
+    for target in targets or ():
+        if target.reason not in _CATALOG_OVERRIDING:
+            continue
+        if target.kind == "group" and getattr(target.group, "kind", None) != "centre":
+            continue  # "what are the main themes" is the theme map's to answer
+        if target.kind in _CATALOG_OVERRIDING_KINDS:
+            return True
+    return False
+
+
+def _priority_evidence(
+    question: str, pq: ProcessedQuery, query_vector: list[float], targets: list[Any] | None
+) -> Any | None:
+    """The priority pages this question gets, or None with the feature off."""
+    if targets is None:
+        return None
+    from app.retrieval.priority.evidence import gather
+
+    with span("rag.priority_pages") as s:
+        evidence = gather(_priority_text(question, pq), query_vector=query_vector,
+                          theme=_priority_theme(pq), explicit=targets)
+        s.set("pages", len(evidence.reads))
+        s.set("blocks", len(evidence.blocks))
+    return evidence
+
+
 def _db_section(
     pq: ProcessedQuery, question: str, history: list[dict[str, str]] | None
 ) -> str:
@@ -498,7 +583,15 @@ def _prepare(
     # too, so the redundant case costs one query on a path that is already refusing.
     db_consulted = combined
 
-    if pq.intent == "structured":
+    # The priority pages' cheap triggers, ahead of routing: a question naming a
+    # page the catalog cannot see ("who is on the governing council", "latest
+    # tenders") must reach that page rather than be answered from the catalog.
+    priority_targets = _priority_targets(question, pq)
+    catalog_route = pq.intent == "structured" and not _priority_overrides_catalog(
+        priority_targets
+    )
+
+    if catalog_route:
         from app.retrieval.structured.answerer import answer_structured
         from app.retrieval.structured.tools import resolve_lookup_chain
 
@@ -552,10 +645,16 @@ def _prepare(
 
     with span("rag.embed_query"):
         query_vector = embed_query(pq.search_query)
+    # Read before the cache: an answer built on a live page is only reusable
+    # while that page still says the same thing, so its content is in the key.
+    priority = _priority_evidence(question, pq, query_vector, priority_targets)
+    fingerprint = semantic_cache.facet_fingerprint(pq)
+    if priority is not None:
+        fingerprint = {**fingerprint, **priority.fingerprint()}
     with span("rag.semantic_cache") as s:
         semantic = semantic_cache.lookup(
             query_vector, top_k=n, answer_format=pq.answer_format,
-            fingerprint=semantic_cache.facet_fingerprint(pq),
+            fingerprint=fingerprint,
         )
         s.set("hit", semantic is not None)
     if semantic is not None:
@@ -564,6 +663,9 @@ def _prepare(
         return {**semantic, "cached": True}, None
 
     def _run_retrieve(subqueries: list[Any]) -> list[ContextBlock]:
+        # `priority` only when the feature is on, so with it off the call is
+        # exactly the one it always was.
+        extra = {"priority": priority} if priority is not None else {}
         return retrieve(
             pq.search_query,
             filters=pq.filters,
@@ -574,6 +676,7 @@ def _prepare(
             capabilities=caps,
             temporal=_temporal_intent(pq),
             subqueries=subqueries,
+            **extra,
         )
 
     # The deterministic catalog section (combined queries only), the answer
@@ -649,6 +752,12 @@ def _prepare(
     return None, _Generation(
         pq=pq, blocks=blocks, query_vector=query_vector,
         top_k=n, db_prefix=db_prefix, plan_directive=directive,
+        # Recomputed after retrieval, which may have read further pages whose
+        # stored copies it ranked.
+        cache_fingerprint=(
+            {**semantic_cache.facet_fingerprint(pq), **priority.fingerprint()}
+            if priority is not None else None
+        ),
     )
 
 
@@ -705,7 +814,10 @@ def _persist(gen: _Generation, result: dict[str, Any]) -> None:
         semantic_cache.store(
             gen.query_vector, result, top_k=gen.top_k,
             answer_format=gen.pq.answer_format,
-            fingerprint=semantic_cache.facet_fingerprint(gen.pq),
+            fingerprint=(
+                gen.cache_fingerprint if gen.cache_fingerprint is not None
+                else semantic_cache.facet_fingerprint(gen.pq)
+            ),
         )
 
 
@@ -938,11 +1050,22 @@ def _search_blocks(
 ) -> dict[str, Any]:
     pq = process(question, history)
     _trace_understanding(pq, top_k=top_k or get_settings().retrieval_top_k)
+    # The inspection endpoint shows what generation would be given, so it reads
+    # the same priority pages the answer path would.
+    extra: dict[str, Any] = {}
+    targets = _priority_targets(question, pq)
+    if targets is not None:
+        from app.core.clients.embeddings import embed_query
+
+        query_vector = embed_query(pq.search_query)
+        extra = {"query_vector": query_vector,
+                 "priority": _priority_evidence(question, pq, query_vector, targets)}
     blocks = retrieve(
         pq.search_query,
         filters=pq.filters, n=top_k, answer_format=pq.answer_format,
         source_type=pq.source_type, capabilities=_capabilities(pq),
         temporal=_temporal_intent(pq),
+        **extra,
     )
     retrieval_log.note_context(blocks)
     retrieval_log.note_outcome(
@@ -969,6 +1092,7 @@ def _search_blocks(
                 "document_id": b.payload.get("document_id"),
                 "source_type": b.payload.get("source_type"),
                 "title": b.payload.get("title"),
+                "source_url": b.payload.get("source_url"),
                 "page_number": b.payload.get("page_number"),
                 "section_heading": b.payload.get("section_heading"),
             }
