@@ -111,6 +111,21 @@ query set), `plans.py`, `policy.py`, `pipeline.py`, `traverse.py`,
 `hydrate.py` (ids → text), `facts.py`, `scope.py`, `shadow.py` (measure without
 answering), `intent.py`.
 
+### `priority/` — the organisation's own pages, read live
+
+A fixed list (`data/priority_crawl_pages.json`) of theme, regional-centre,
+people and institutional pages the crawl cannot reproduce. When a question
+concerns one, the page is fetched at question time and its sections lead the
+context; the stored copy of any listed page is never used. Not a route of its
+own: the pipeline builds a `PriorityEvidence` and hands it to `retrieve`,
+which drops stored copies and merges the live blocks in front. Linked PDFs are
+never downloaded — they reach the answer as links.
+
+`registry.py` (the list), `fetch.py` (allowlisted, cached, revalidated),
+`extract.py` (page → sections), `people.py` (names on the people pages),
+`match.py` (which pages, and why), `evidence.py` (the entry points). See
+[`docs/retrieval/13-priority-pages.md`](../../docs/retrieval/13-priority-pages.md).
+
 ---
 
 ## Import rules

@@ -59,6 +59,7 @@ stating up front:
 | [10 — Caching](10-caching.md) | The semantic answer cache: what makes two questions "the same," the corpus-revision partition key, and fail-open behaviour. |
 | [11 — Observability and Logging](11-observability-and-logging.md) | Spans and timing metrics, the per-query retrieval trace, and read-path health/readiness. |
 | [12 — Operations and Troubleshooting](12-operations-and-troubleshooting.md) | Deployment, the full configuration reference, security, scalability, runbooks, and a troubleshooting matrix. |
+| [13 — Priority Pages](13-priority-pages.md) | The organisation's own pages read live at question time: which questions trigger them, what is read, how they lead the context and key the cache, and why documents stay links. |
 
 ## Topic map
 
