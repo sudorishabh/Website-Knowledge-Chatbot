@@ -13,4 +13,6 @@ reach the answer as links only.
 Reading order:
 
 * :mod:`.registry` — the page list: pages, groups, and the phrases that name them.
+* :mod:`.fetch` — reading one page from the live site: allowlisted, cached,
+  revalidated, one request per page at a time, last good copy on failure.
 """
