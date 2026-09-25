@@ -125,8 +125,7 @@ def test_single_vote_keeps_pinned_llm(monkeypatch):
 # --------------------------------------------------------------------------- #
 # Merge completeness. _merge_understanding rebuilds QueryUnderstanding field by
 # field, so a slot it forgets is silently reset to its default rather than
-# failing — which is exactly how `theme_children` reached the tools as False
-# however the classifier set it.
+# failing.
 # --------------------------------------------------------------------------- #
 
 _MERGE_EXEMPT = frozenset({
@@ -147,22 +146,3 @@ def test_merge_votes_every_understanding_slot():
         if name not in _MERGE_EXEMPT and f"s.{name}" not in source
     ]
     assert not missing, f"_merge_understanding drops: {missing}"
-
-
-def test_merge_carries_theme_children():
-    merged = qp._merge_understanding(
-        [
-            _u([("database", 0.9)], operation="list_themes", theme_children=True),
-            _u([("database", 0.9)], operation="list_themes", theme_children=True),
-            _u([("database", 0.9)], operation="list_themes", theme_children=False),
-        ],
-        threshold=0.5,
-    )
-    assert merged.theme_children is True
-
-
-def test_merge_theme_children_defaults_false_when_unset():
-    merged = qp._merge_understanding(
-        [_u([("database", 0.9)], operation="list_themes")], threshold=0.5
-    )
-    assert merged.theme_children is False

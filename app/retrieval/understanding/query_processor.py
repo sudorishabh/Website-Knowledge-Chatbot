@@ -65,9 +65,6 @@ class QueryAnalysis(BaseModel):
     # default to today's behaviour when unset.
     secondary_group_by: GroupBy | None = None
     count_of: CountOf = "records"
-    # list_themes: the user asked for sub-themes/children rather than the
-    # top-level themes.
-    theme_children: bool = False
     title_contains: str | None = None
     limit: int = 10
 
@@ -172,11 +169,6 @@ class QueryUnderstanding(BaseModel):
     group_by: GroupBy | None = None
     bundle: str | None = None
     title_contains: str | None = None
-    theme_children: bool = Field(
-        default=False,
-        description="For list_themes: true when the user asked for sub-themes / "
-        "children rather than the top-level themes.",
-    )
     limit: int = 10
 
 
@@ -388,7 +380,6 @@ def _merge_understanding(
         # Any slot added to QueryUnderstanding must be voted here too: this
         # rebuilds the object field by field, so an omission silently resets the
         # slot to its default instead of failing.
-        theme_children=bool(vote(lambda s: s.theme_children)),
         limit=vote(lambda s: s.limit) or 10,
     )
 
@@ -489,7 +480,6 @@ def _to_legacy_analysis(question: str, u: QueryUnderstanding) -> QueryAnalysis:
         operation=u.operation,
         bundle=u.bundle,
         group_by=u.group_by,
-        theme_children=u.theme_children,
         title_contains=u.title_contains,
         limit=u.limit,
     )
