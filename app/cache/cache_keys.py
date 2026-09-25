@@ -32,7 +32,9 @@ def _sha(*parts: str) -> str:
 #: 2026-09-25.5: a compressed shape reminder follows the question.
 #: 2026-09-25.6: a single-source list is cited once, on its opening sentence.
 #: 2026-09-25.7: the shape reminder opens with the context-only rule.
-PIPELINE_REVISION = "2026-09-25.7"
+#: 2026-09-25.8: a bare phrase naming the organisation's people or one of its
+#: listed pages is answered from retrieval instead of by small talk.
+PIPELINE_REVISION = "2026-09-25.8"
 
 
 def _pref_fingerprint() -> str:

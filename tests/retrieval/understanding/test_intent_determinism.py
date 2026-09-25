@@ -1,5 +1,5 @@
 """Unit tests for the deterministic chitchat-correction guard
-(``app.retrieval.understanding.query_processor._corrected_intent`` and its two probes).
+(``app.retrieval.understanding.query_processor._corrected_intent`` and its probes).
 
 Regression cover for a measured failure: identical questions drew different
 intents on different calls because the query-analysis LLM samples at a
@@ -169,3 +169,45 @@ def test_a_relational_match_alone_still_rescues(monkeypatch):
 def test_the_lexical_probe_never_raises_on_odd_input():
     for text in (None, "", "?" * 50, "𝔘𝔫𝔦𝔠𝔬𝔡𝔢 𝔱𝔢𝔰𝔱?", "a" * 5000):
         qp._looks_like_real_question(text)  # must not raise
+
+
+# --------------------------------------------------------------------------- #
+# 7. A bare noun phrase naming the organisation's people or one of its pages.
+#    Measured 2026-09-25: "TERI top researchers" drew clarification_needed at
+#    0.91, which collapses onto chitchat, and the user was asked what they
+#    meant instead of being answered. It has no question shape and names no
+#    gazetteer entity, so neither probe above could see it.
+# --------------------------------------------------------------------------- #
+
+_BARE_SUBJECTS = [
+    "TERI top researchers",        # the reported turn — asks for people
+    "yes leading researchers",     # its follow-up, before the history rewrite
+    "TERI climate change team",
+    "air quality experts",
+    "green shipping",              # a listed page's own name
+    "centres of excellence",       # a curated page phrase
+    "Teri thematic area",          # the home page's theme-list phrase
+]
+
+
+@pytest.mark.parametrize("question", _BARE_SUBJECTS)
+def test_a_bare_phrase_naming_people_or_a_page_is_rescued(question):
+    assert qp._looks_like_real_question(question) is False  # the gap this closes
+    assert qp._corrected_intent(question, "chitchat") == "qa"
+
+
+@pytest.mark.parametrize("question", ["okay cool", "nice work", "good job", "great, got it"])
+def test_content_words_alone_are_not_enough(question):
+    # Two content words and no question shape: small talk, not a subject.
+    assert qp._corrected_intent(question, "chitchat") == "chitchat"
+
+
+@pytest.mark.parametrize("question", ["who are you?", "thanks team", "hi, you are the experts"])
+def test_a_person_word_in_small_talk_is_not_rescued(question):
+    # The social/meta check runs first and wins, as in the lexical probe.
+    assert qp._names_an_organisation_subject(question) is False
+
+
+def test_the_subject_probe_never_raises_on_odd_input():
+    for text in (None, "", "?" * 50, "a" * 5000):
+        qp._names_an_organisation_subject(text)  # must not raise
