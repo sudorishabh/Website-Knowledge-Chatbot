@@ -141,6 +141,37 @@ def test_retrieval_setting_change_still_invalidates(monkeypatch):
     assert cache_keys.semantic_partition(6, "table") != before
 
 
+@pytest.mark.parametrize("field, changed", [
+    ("azure_openai_model", lambda current: f"{current}-other"),
+    ("llm_temperature_supported", lambda current: not current),
+    ("llm_reasoning_effort", lambda current: f"{current or ''}-other"),
+])
+def test_a_model_change_invalidates(monkeypatch, field, changed):
+    """The model writes the answer, so changing it — or how it is called — must
+    not leave the previous model's answers servable for the rest of their TTL.
+    The model used to be missing from the fingerprint entirely.
+
+    Each case moves the field away from whatever the local .env set, so the
+    test holds on any machine."""
+    monkeypatch.setattr(cache_keys, "corpus_revision", lambda: "rev-1")
+    settings = cache_keys.get_settings()
+    before = cache_keys.semantic_partition(6, "default")
+
+    monkeypatch.setattr(settings, field, changed(getattr(settings, field)))
+    assert cache_keys.semantic_partition(6, "default") != before
+
+
+def test_a_blank_effort_is_the_same_as_none(monkeypatch):
+    # A blank .env line sends no effort (app.core.clients.llm), so it must not
+    # split the cache from an unset one either.
+    monkeypatch.setattr(cache_keys, "corpus_revision", lambda: "rev-1")
+    settings = cache_keys.get_settings()
+    monkeypatch.setattr(settings, "llm_reasoning_effort", None)
+    unset = cache_keys.semantic_partition(6, "default")
+    monkeypatch.setattr(settings, "llm_reasoning_effort", "  ")
+    assert cache_keys.semantic_partition(6, "default") == unset
+
+
 def test_corpus_revision_changes_the_partition(monkeypatch):
     monkeypatch.setattr(cache_keys, "corpus_revision", lambda: "rev-1")
     first = cache_keys.semantic_partition(6, "default")

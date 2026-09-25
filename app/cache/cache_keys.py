@@ -36,10 +36,16 @@ PIPELINE_REVISION = "2026-09-25.7"
 
 
 def _pref_fingerprint() -> str:
-    """Hash of the retrieval-preference settings, plus `PIPELINE_REVISION`, so
-    that toggling the feature, tuning its knobs, or shipping a behaviour change
-    self-invalidates the semantic cache (otherwise old-mode answers would be
-    served until TTL and pollute before/after comparisons)."""
+    """Hash of the settings that decide what an answer says, plus
+    `PIPELINE_REVISION`, so that toggling the feature, tuning its knobs,
+    switching the model or shipping a behaviour change self-invalidates the
+    semantic cache (otherwise old-mode answers would be served until TTL and
+    pollute before/after comparisons).
+
+    The chat model and the two knobs that shape its calls are here because a
+    model is the largest single change to an answer there is, and it used to be
+    missing: switching to gpt-6-luna on 2026-09-25 would have kept serving, for
+    a day, every answer the previous model wrote."""
     s = get_settings()
     return _sha(
         PIPELINE_REVISION,
@@ -48,6 +54,9 @@ def _pref_fingerprint() -> str:
         str(s.retrieval_top_k),
         str(s.retrieval_candidate_k),
         str(s.context_token_budget),
+        str(s.azure_openai_model),
+        str(s.llm_temperature_supported),
+        str((s.llm_reasoning_effort or "").strip()),
     )
 
 
