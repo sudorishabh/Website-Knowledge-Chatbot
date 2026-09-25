@@ -214,6 +214,20 @@ def test_the_shape_reminder_defers_to_the_wording_rules():
     assert "TERI" not in SHAPE_REMINDER
 
 
+def test_the_shape_reminder_opens_with_grounding():
+    """Measured on identical blocks: with the reminder last and no word about
+    grounding in it, "what is the capital of France" was answered "Paris" from
+    the model's own knowledge in two of three runs (one of three on main).
+    Leading with rule 1 and rule 3 took it to none of four."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert SHAPE_REMINDER.startswith(
+        "Every statement comes only from the numbered context above, never from "
+        "your own knowledge"
+    )
+    assert "the whole answer is rule 3's exact reply" in SHAPE_REMINDER
+
+
 def test_a_publication_date_question_is_kept_out_of_the_direct_fact_shape():
     """Measured on identical blocks: "answer first" led one run to "The Annual
     Report 2024-25 was published in 2025" — the page date, as rule 9 forbids.

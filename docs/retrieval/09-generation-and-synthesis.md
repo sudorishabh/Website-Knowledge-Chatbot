@@ -299,8 +299,13 @@ then invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
   the end of the human turn is where the model is looking when it starts to
   write. It names shapes, never a question or an organisation, defers to a
   requested format, and hands a publication-date question to rule 9's
-  labelled parts by name. It deliberately does not mention the refusal:
-  naming it there turned a publication-date question into one.
+  labelled parts by name. It *opens* with rules 1 and 3 — context only, and
+  rule 3's exact reply when the context says nothing — because the last
+  instruction the model reads outweighs the first: without that line, "what
+  is the capital of France" was answered "Paris" in two of three runs on
+  identical blocks (one of three with no reminder at all), and with it in none
+  of four, while the publication-date question kept its labelled parts in four
+  of four.
 
 - **The dates note** (`prompts.supersession_note`) fills `{dates}`, and is
   empty for every context the builder did not flag — which is almost all of

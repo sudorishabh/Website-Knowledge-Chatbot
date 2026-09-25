@@ -31,7 +31,8 @@ def _sha(*parts: str) -> str:
 #: theme is no longer answered with the theme list.
 #: 2026-09-25.5: a compressed shape reminder follows the question.
 #: 2026-09-25.6: a single-source list is cited once, on its opening sentence.
-PIPELINE_REVISION = "2026-09-25.6"
+#: 2026-09-25.7: the shape reminder opens with the context-only rule.
+PIPELINE_REVISION = "2026-09-25.7"
 
 
 def _pref_fingerprint() -> str:

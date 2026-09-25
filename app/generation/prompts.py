@@ -487,9 +487,17 @@ GROUNDED_SYSTEM_PROMPT = _build_grounded_prompt()
 # it names shapes, never a question or an organisation — and it defers to the
 # rules that prescribe exact wording, so it cannot talk the model out of a
 # refusal or rule 9's labelled date parts.
+#
+# It opens with grounding for the same reason it exists: the last instruction
+# the model reads outweighs the first. A version that went straight to "the
+# answer first" had "what is the capital of France" answered "Paris" from the
+# model's own knowledge in two of three runs on identical blocks.
 SHAPE_REMINDER = (
-    "Before writing, choose the shape 'Answer style' gives for this question "
-    "(or the shape requested above, if one was):\n"
+    "Every statement comes only from the numbered context above, never from "
+    "your own knowledge; when the context says nothing about the question, "
+    "the whole answer is rule 3's exact reply.\n"
+    "Otherwise, before writing, choose the shape 'Answer style' gives for "
+    "this question (or the shape requested above, if one was):\n"
     "- the members of a set (themes, centres, programmes, people): one "
     "sentence saying what the list is, not naming the items, then one bullet "
     "per item — **name** — the one-line description the context gives it, or "
