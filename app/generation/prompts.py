@@ -99,7 +99,9 @@ _ANSWER_STRUCTURE = (
     "3 and 9 prescribe, do not write \"the context\", \"the blocks\", \"the "
     "provided / available / retrieved sources\", \"the documents searched\", "
     "\"an attached report\" or \"according to the passages\": the reader never "
-    "sees them. Where the answer rests on a block marked "
+    "sees them. Nor say where on a page something appears (\"listed under "
+    "...\", \"the New in X section highlights\", \"linked as a PDF\"): give the "
+    "item, not its position. Where the answer rests on a block marked "
     f"\"{CANONICAL_MARKER}\" or \"{LIVE_MARKER}\", you may attribute it to that "
     "page by name in the opening sentence (\"According to the organisation's "
     "Climate Change page, ...\"); otherwise state the facts with their "
@@ -134,22 +136,30 @@ _ANSWER_STYLE = (
     "sentences or a few bullets of the detail the context carries around it: "
     "dates, roles, scope, figures, caveats. No headings. Even a one-fact "
     "question gets its fact plus two or three sentences of surrounding "
-    "detail, never a bare clause or a single sentence.\n"
+    "detail, never a bare clause or a single sentence. When a document was "
+    "published is the exception: rule 9's labelled parts are that answer, and "
+    "a page date is never the fact to lead with.\n"
     "- List — the question asks what the members of a set are (themes, "
     "centres, programmes, offices, projects, people, publications). One "
-    "opening sentence saying what the list is, then one bullet per item: the "
-    "item's name in bold, then \" — \" and a one-line description whenever the "
-    "context gives one for that item. Keep every item the context lists, in "
-    "its order. No headings unless the context itself groups the items.\n"
+    "opening sentence saying what the list is — without naming the items, "
+    "which the bullets do — then one bullet per item: the item's name in "
+    "bold, then \" — \" and a one-line description whenever the context gives "
+    "one for that item. An item the context describes nowhere is its name "
+    "alone; never add a note that its description is missing. Keep every item "
+    "the context lists, in its order. No headings unless the context itself "
+    "groups the items.\n"
     "- Overview — \"tell me about X\", \"what is X\", \"what does X work on\", "
     "or a subject the context covers from several angles. Open with 1-3 "
     "sentences saying what X is (and who runs it, and since when, where the "
-    "context says so). Then 2-5 sections, each under a short Markdown heading "
-    "(### Heading) naming what that section covers — taken from the material "
-    "itself, such as focus areas, projects, partners or findings, never a "
-    "fixed template and never \"Overview\" or \"Introduction\". Under each "
-    "heading, 2-6 bullets, one point each. An answer of three or more "
-    "sections may close with one sentence that ties them together.\n"
+    "context says so); the details belong in the sections. Then 2-5 sections, "
+    "each under a short Markdown heading (### Heading) naming what its items "
+    "are — taken from the material itself, such as focus areas, projects, "
+    "partners or findings, never the name of the page section they appeared "
+    "in, never a fixed template and never \"Overview\" or \"Introduction\". "
+    "Under each "
+    "heading, 2-6 bullets, one point each. The sections add what the opening "
+    "did not: never restate the opening as a section. An answer of three or "
+    "more sections may close with one sentence that ties them together.\n"
     "- Comparison — two or more things across two or more dimensions: a "
     "Markdown table, one row per thing.\n"
     "Formatting, whatever the shape:\n"
@@ -160,6 +170,8 @@ _ANSWER_STYLE = (
     "Paragraphs stay at 2-4 sentences. No walls of text.\n"
     "- Headings only in an overview, and never over a section with fewer than "
     "two points — merge it into a neighbour instead.\n"
+    "- Name each item once, even when several blocks list it; cite those "
+    "blocks together ([2][3]).\n"
     "- When the context's description of an item is cut off mid-sentence, give "
     "the part that is complete; never finish it from your own knowledge.\n"
     "- A list or an overview that rests mainly on one page whose header gives a "
@@ -463,6 +475,39 @@ def _build_grounded_prompt() -> str:
 # came to lead with a three-year-old web page and put the document correcting it
 # in a captioned aside below. One evidence set gets one answer.
 GROUNDED_SYSTEM_PROMPT = _build_grounded_prompt()
+
+
+# The shapes again, compressed, for the end of the human turn. `_ANSWER_STYLE`
+# says all of this, but it sits in the middle of a system prompt of several
+# thousand tokens, and on 2026-09-25 the small model answering questions ignored
+# it on most of a ten-question run: seven themes still came back as one
+# sentence, nine centres each still carried "[1]", and a yes/no question got one
+# sentence. The same fix as `supersession_note`: the end of the human turn is
+# where the model is looking when it starts to write. Generic by construction —
+# it names shapes, never a question or an organisation — and it defers to the
+# rules that prescribe exact wording, so it cannot talk the model out of a
+# refusal or rule 9's labelled date parts.
+SHAPE_REMINDER = (
+    "Before writing, choose the shape 'Answer style' gives for this question "
+    "(or the shape requested above, if one was):\n"
+    "- the members of a set (themes, centres, programmes, people): one "
+    "sentence saying what the list is, not naming the items, then one bullet "
+    "per item — **name** — the one-line description the context gives it, or "
+    "the name alone when it gives none;\n"
+    "- \"tell me about X\" / \"what is X\": one or two opening sentences saying "
+    "what X is, then ### sections of bullets holding the details, none "
+    "repeating the opening; head each section by what its items are, never by "
+    "the page section they came from;\n"
+    "- one fact, or yes or no: the answer first, then 2-4 sentences of the "
+    "detail around it;\n"
+    "- when a document was published: rule 9's labelled parts (report "
+    "edition; page publication date; report publication date), never a page "
+    "date given as the day the document was published;\n"
+    "- a comparison: a table.\n"
+    "Cite a list that comes from one block once, on its opening sentence. Name "
+    "each item once. Never write about the context, or where on a page "
+    "something was listed."
+)
 
 
 def today_anchor() -> str:

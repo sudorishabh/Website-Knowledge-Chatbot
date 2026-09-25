@@ -169,6 +169,87 @@ def test_a_summary_stays_unsectioned():
     assert "no headings" in format_directive("summary")
 
 
+def test_page_layout_is_not_narrated():
+    # Measured: "(listed under "New in Green Shipping")" after seven bullets.
+    structure = _structure()
+    assert "Nor say where on a page something appears" in structure
+    assert "give the item, not its position" in structure
+
+
+def test_an_item_is_named_once_and_the_opening_is_not_restated():
+    style = _style()
+    assert "Name each item once, even when several blocks list it" in style
+    assert "never restate the opening as a section" in style
+
+
+def test_the_shape_reminder_follows_the_question(monkeypatch):
+    """The style sits mid-way through a long system prompt, and the small model
+    ignored it on most of a live run; the reminder goes where it is looking."""
+    from langchain_core.runnables import RunnableLambda
+
+    from app.core.models.context import ContextBlock
+    from app.generation import answerer
+    from app.generation.prompts import SHAPE_REMINDER
+
+    seen: dict = {}
+
+    def capture(prompt_value):
+        seen["human"] = prompt_value.to_messages()[-1].content
+        return "an answer"
+
+    monkeypatch.setattr(answerer, "get_llm", lambda **_: RunnableLambda(capture))
+    answerer.generate_answer(
+        "a question", [ContextBlock(n=1, text="x", payload={"source_type": "website"})]
+    )
+    assert seen["human"].endswith(f"Question: a question\n\n{SHAPE_REMINDER}")
+
+
+def test_the_shape_reminder_defers_to_the_wording_rules():
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "or the shape requested above, if one was" in SHAPE_REMINDER
+    assert "rule 9's labelled parts" in SHAPE_REMINDER
+    # Naming the refusal here turned a publication-date question into one.
+    assert "refusal" not in SHAPE_REMINDER
+    assert "TERI" not in SHAPE_REMINDER
+
+
+def test_a_publication_date_question_is_kept_out_of_the_direct_fact_shape():
+    """Measured on identical blocks: "answer first" led one run to "The Annual
+    Report 2024-25 was published in 2025" — the page date, as rule 9 forbids.
+    The shape and the reminder both hand the question back to rule 9."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "report edition; page publication date; report publication date" in SHAPE_REMINDER
+    assert "never a page date given as the day the document was published" in SHAPE_REMINDER
+    fact = _style()[_style().index("- Direct fact —") : _style().index("- List —")]
+    assert "rule 9's labelled parts are that answer" in fact
+
+
+def test_an_undescribed_item_is_its_name_alone():
+    # Measured: nine centres each followed by "(no description provided in the
+    # available sources)" once the reminder asked for a description per item.
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "or the name alone when it gives none" in SHAPE_REMINDER
+    assert "never add a note that its description is missing" in _style()
+
+
+def test_a_list_opening_does_not_name_the_items():
+    # Measured: all seven themes in the opening sentence, then again as bullets.
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "not naming the items" in SHAPE_REMINDER
+    assert "without naming the items" in _style()
+
+
+def test_sections_are_headed_by_what_they_hold_not_the_page_section():
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "never by the page section they came from" in SHAPE_REMINDER
+    assert "never the name of the page section they appeared in" in _style()
+
+
 def test_attribution_by_page_name_is_licensed_only_by_the_header_markers():
     structure = _structure()
     assert f"\"{CANONICAL_MARKER}\" or \"{LIVE_MARKER}\"" in structure

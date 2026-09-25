@@ -29,7 +29,8 @@ def _sha(*parts: str) -> str:
 #: 2026-09-25.3: answers take a shape (list, overview, direct fact) with
 #: headings, lighter citations and a "Read more" link; a question naming one
 #: theme is no longer answered with the theme list.
-PIPELINE_REVISION = "2026-09-25.3"
+#: 2026-09-25.5: a compressed shape reminder follows the question.
+PIPELINE_REVISION = "2026-09-25.5"
 
 
 def _pref_fingerprint() -> str:

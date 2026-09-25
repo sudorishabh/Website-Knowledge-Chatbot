@@ -15,6 +15,7 @@ from app.core.models.context import ContextBlock
 from app.generation.prompts import (
     CHITCHAT_SYSTEM_PROMPT,
     REFUSAL,
+    SHAPE_REMINDER,
     format_context_blocks,
     graph_facts_rule,
     has_graph_facts,
@@ -30,8 +31,9 @@ logger = logging.getLogger(__name__)
 #: or the empty string, so a context the builder did not flag renders exactly as
 #: it always has. Placed between the context and the question rather than in the
 #: system prompt: it is a per-request fact about *this* evidence, and the end of
-#: the human turn is where the model is looking when it starts to write.
-_HUMAN_TURN = "Numbered context:\n{context}\n\n{dates}Question: {question}"
+#: the human turn is where the model is looking when it starts to write. For the
+#: same reason `{shape}` — `prompts.SHAPE_REMINDER` — follows the question.
+_HUMAN_TURN = "Numbered context:\n{context}\n\n{dates}Question: {question}\n\n{shape}"
 
 
 def _dates(blocks: list[ContextBlock]) -> str:
@@ -176,6 +178,7 @@ def generate_answer(
             "context": format_context_blocks(blocks),
             "dates": _dates(blocks),
             "question": question,
+            "shape": SHAPE_REMINDER,
         }
     ).strip()
 
@@ -213,5 +216,6 @@ def generate_stream(
             "context": format_context_blocks(blocks),
             "dates": _dates(blocks),
             "question": question,
+            "shape": SHAPE_REMINDER,
         }
     )
