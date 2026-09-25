@@ -17,6 +17,13 @@ every item cites the same single block, so no item loses a citation that
 differed from its neighbours'; and the opening sentence always ends up
 carrying it, so `query_pipeline._cited_blocks` and the sources footer see the
 same blocks as before.
+
+A grouped list — names under ### headings, as a selection of people is — has no
+sentence above each group, so its items used to keep their markers: fifteen
+people, fifteen "[2]"s, below an opening that already cited [1][2]. A run of
+named items under a heading now drops its one shared marker when the answer's
+opening already carries it. Only named items ("- **Name** — ..."): an overview's
+bullets are claims, and a claim keeps its own citation.
 """
 from __future__ import annotations
 
@@ -29,6 +36,7 @@ _MARKER = re.compile(r"\[(\d+)\]")
 # hyphen: item names carry them ("TERI-CFCL Centre").
 _EMPTY_DESCRIPTION = re.compile(r"\s*[—–]\s*((?:\s*\[\d+\])*)\s*\.?\s*$")
 _READ_MORE = re.compile(r"^\s*Read more:\s*\[[^\]]+\]\(https?://[^\s)]+\)")
+_NAMED_ITEM = re.compile(r"^\s*(?:[-*]|\d+\.)\s+\*\*[^*]+\*\*")
 
 
 def _drop_empty_description(line: str) -> str:
@@ -72,19 +80,46 @@ def _lead_index(lines: list[str], run_start: int) -> int | None:
     return j
 
 
-def _collapse_run(lines: list[str], start: int, end: int) -> None:
+def _under_heading(lines: list[str], run_start: int) -> bool:
+    """Whether the run sits directly below a heading, past at most one blank."""
+    j = run_start - 1
+    if j >= 0 and not lines[j].strip():
+        j -= 1
+    return j >= 0 and bool(_HEADING.match(lines[j]))
+
+
+def _opening_markers(lines: list[str]) -> set[str]:
+    """The blocks the answer's opening cites: every line before its first
+    heading or list item."""
+    cited: set[str] = set()
+    for line in lines:
+        if _BULLET.match(line) or _HEADING.match(line):
+            break
+        cited.update(_MARKER.findall(line))
+    return cited
+
+
+def _collapse_run(lines: list[str], start: int, end: int, opening: set[str]) -> None:
     """Move a single shared citation off every item of ``lines[start:end]``."""
     if end - start < 2:
         return
     cited = [set(_MARKER.findall(lines[i])) for i in range(start, end)]
     if len(cited[0]) != 1 or any(c != cited[0] for c in cited):
         return
+    (n,) = cited[0]
     lead = _lead_index(lines, start)
     if lead is None:
-        # A list under a heading has no sentence to carry the citation, so the
-        # items keep theirs.
+        # A list under a heading has no sentence of its own to carry the
+        # citation. Its named items shed it only when the opening already
+        # cites the block; anything else keeps its markers.
+        if (
+            n in opening
+            and _under_heading(lines, start)
+            and all(_NAMED_ITEM.match(lines[i]) for i in range(start, end))
+        ):
+            for i in range(start, end):
+                lines[i] = _without_markers(lines[i])
         return
-    (n,) = cited[0]
     lines[lead] = _with_marker(lines[lead], n)
     for i in range(start, end):
         lines[i] = _without_markers(lines[i])
@@ -100,6 +135,7 @@ def tidy_lists(answer: str) -> str:
         elif _READ_MORE.match(line) and _MARKER.search(line):
             lines[i] = _without_markers(line)
 
+    opening = _opening_markers(lines)
     i = 0
     while i < len(lines):
         if not _BULLET.match(lines[i]):
@@ -108,5 +144,5 @@ def tidy_lists(answer: str) -> str:
         start = i
         while i < len(lines) and _BULLET.match(lines[i]):
             i += 1
-        _collapse_run(lines, start, i)
+        _collapse_run(lines, start, i, opening)
     return "\n".join(lines)

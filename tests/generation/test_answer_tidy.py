@@ -47,6 +47,59 @@ def test_a_list_under_a_heading_keeps_its_citations():
     assert tidy_lists(answer) == answer
 
 
+# A selection of people, as gpt-6-luna answered "TERI top researchers" with the
+# selection shape in its prompt (trimmed to two people a group).
+_GROUPED = (
+    "If by top researchers you mean its senior research leaders, these are some "
+    "of the most senior people listed [1][2].\n"
+    "\n"
+    "### Senior leadership\n"
+    "- **Dr Vibha Dhawan** — Director General [2]\n"
+    "- **Mr Girish Sethi** — Senior Director, Energy [2].\n"
+    "\n"
+    "### Distinguished Fellows\n"
+    "- **Mr R R Rashmi** — Distinguished Fellow, Green Shipping [1][2]\n"
+    "- **Mr S Vijay Kumar** — Distinguished Fellow, Food and Land Use [1]\n"
+    "\n"
+    "### By area\n"
+    "- **Energy:** Girish Sethi, Jiwesh Nandan [1][2]\n"
+    "- **Climate:** Suruchi Bhadwal, Ajai Malhotra [1][2]"
+)
+
+
+def test_named_items_under_a_heading_shed_a_marker_the_opening_carries():
+    tidied = tidy_lists(_GROUPED)
+    assert "- **Dr Vibha Dhawan** — Director General\n" in tidied
+    assert "- **Mr Girish Sethi** — Senior Director, Energy.\n" in tidied
+    # The opening still cites both blocks, so the sources footer is unchanged.
+    assert "most senior people listed [1][2]." in tidied
+
+
+def test_a_group_whose_items_cite_different_blocks_keeps_them():
+    tidied = tidy_lists(_GROUPED)
+    assert "Green Shipping [1][2]" in tidied
+    assert "Food and Land Use [1]" in tidied
+    # Two markers on every item is not one shared marker.
+    assert "Girish Sethi, Jiwesh Nandan [1][2]" in tidied
+
+
+def test_a_heading_group_keeps_a_marker_the_opening_does_not_carry():
+    answer = _GROUPED.replace("listed [1][2].", "listed [1].")
+    assert "- **Dr Vibha Dhawan** — Director General [2]" in tidy_lists(answer)
+
+
+def test_claims_under_a_heading_keep_their_citations_whatever_the_opening():
+    # An overview's bullets are claims, not named items.
+    answer = (
+        "Green shipping is a programme [1].\n"
+        "\n"
+        "### Research\n"
+        "- It develops cleaner fuels [1].\n"
+        "- It assesses ports [1]."
+    )
+    assert tidy_lists(answer) == answer
+
+
 def test_an_item_with_several_citations_is_left_alone():
     answer = "Lead:\n- **A** — x [1][2]\n- **B** — y [1][2]"
     assert tidy_lists(answer) == answer

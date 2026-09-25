@@ -568,8 +568,12 @@ measured on identical blocks with every rule above in place:
 - a list drawn from one block cites it on the opening sentence *and* on every
   item. When every item carries the same single `[n]`, the citation moves to
   the opening sentence (added there if missing) and leaves the items. A list
-  whose items cite different blocks, or several, or that sits under a heading
-  with no sentence to carry the citation, is left alone;
+  whose items cite different blocks, or several, is left alone. A list under a
+  heading has no sentence of its own to carry the citation. Its items shed a
+  shared single `[n]` only when they are named items (`- **Name** — ...`) and
+  the answer's opening already cites `[n]`. That is the grouped selection,
+  which otherwise carried fifteen `[2]`s below an opening citing `[1][2]`. An
+  overview's bullets under a heading are claims and keep their citations;
 - an item with no description keeps the dash that would have introduced one
   (`**Name** — [1]`); the dash goes. Only an em or en dash: names carry
   hyphens;
