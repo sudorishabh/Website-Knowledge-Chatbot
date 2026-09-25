@@ -100,6 +100,53 @@ def test_a_profile_does_not_repeat_the_name_under_its_title():
     assert "Electrical engineer" in profile.text
 
 
+@pytest.fixture(scope="module")
+def home():
+    return _page("home.html", "https://www.teriin.org/")
+
+
+def test_the_home_page_opens_with_its_thematic_areas(home):
+    lead = home.sections[0]
+    assert lead.lead and lead.heading == "Thematic Areas"
+    for area in ("Sustainable Agriculture", "Climate Change", "Energy", "Environment",
+                 "Sustainable Habitat", "Environment & Public Health",
+                 "Resources & Sustainable Development"):
+        assert area in lead.text.splitlines()
+    assert "post-Paris agreement era" in lead.text
+
+
+def test_the_home_page_is_cut_at_its_own_section_headings(home):
+    assert [s.heading for s in home.sections] == [
+        "Thematic Areas", "Our Impact", "Insights & Engagements", "Key Projects", "Multimedia",
+    ]
+    impact = home.sections[1].text.splitlines()
+    assert impact[1:3] == ["7574+", "Projects Undertaken"]
+
+
+def test_the_home_page_leaves_out_its_menus_carousel_and_newsletter(home):
+    text = home.text
+    assert "Main navigation" not in text
+    assert "Energy Assessment & Modelling" not in text  # the themes menu
+    assert "Fourth TERI-IHC Lecture" not in text        # the banner carousel
+    assert "Join Our Knowledge Network" not in text
+
+
+def test_a_page_without_an_h1_is_titled_by_its_document_title(home):
+    assert home.title == "TERI: Innovative Solutions for Sustainable Development - India"
+
+
+def test_a_section_element_opens_a_section_only_on_a_page_without_an_h1():
+    body = ('<section><h2>Mission</h2><p>Why we exist.</p></section>'
+            '<p>Everything after the section.</p>')
+    with_h1 = extract('<div class="region region-content"><h1>Alumni</h1>' + body + '</div>',
+                      "https://teriin.org/alumni")
+    assert [s.heading for s in with_h1.sections] == ["Alumni"]
+    without = extract('<div class="region region-home-sections"><p>Banner</p>' + body + '</div>',
+                      "https://teriin.org/")
+    assert [s.heading for s in without.sections] == ["Mission"]
+    assert "Banner" not in without.text
+
+
 def test_a_document_reached_only_through_an_image_is_named_by_its_file():
     html = (
         '<div class="region region-content"><h1 class="page-header">Brochures</h1>'

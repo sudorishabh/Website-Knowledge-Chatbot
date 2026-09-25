@@ -17,12 +17,15 @@ from app.retrieval.priority.registry import parse
 
 FIXTURES = Path(__file__).parent / "fixtures"
 PAGES = {
+    "https://www.teriin.org": "home.html",
     "https://teriin.org/climate": "climate.html",
     "https://teriin.org/people/committee-of-directors": "committee-of-directors.html",
     "https://teriin.org/profile/alekhya-datta": "profile-alekhya-datta.html",
     "https://teriin.org/fcra-financials": "fcra-financials.html",
 }
 REGISTRY = parse([
+    {"name": "Home", "page_url": "https://www.teriin.org",
+     "description": "The landing page, with the thematic areas."},
     {"name": "FCRA Financials", "page_url": "https://teriin.org/fcra-financials",
      "description": "FCRA disclosures."},
     {"name": "People - committee of directors",
@@ -32,10 +35,8 @@ REGISTRY = parse([
         {"name": "Goa", "site_url": "https://teriin.org/goa", "description": "Coastal work."},
         {"name": "Mumbai", "site_url": "https://teriin.org/mumbai", "description": "Western work."},
     ]},
-    {"name": "Main Themes", "description": "Core themes.", "children": [
-        {"name": "Climate Change", "page_url": "https://teriin.org/climate",
-         "description": "Climate science and policy."},
-    ]},
+    {"name": "Climate Change Theme", "page_url": "https://teriin.org/climate",
+     "description": "Climate science and policy.", "children": []},
 ])
 QUERY = [1.0, 0.0]
 
@@ -81,7 +82,7 @@ def _gather(question, embed=None, **kw):
 
 def test_a_named_page_leads_with_its_opening_section():
     got = _gather("tell me about the climate change theme")
-    assert [(t.name, t.reason) for t in got.targets] == [("Climate Change", match.NAME)]
+    assert [(t.name, t.reason) for t in got.targets] == [("Climate Change Theme", match.NAME)]
     lead = got.blocks[0]
     assert "post-Paris agreement era" in lead.text
     assert is_priority_page(lead.payload)
@@ -128,6 +129,34 @@ def test_a_group_is_answered_from_the_list_without_a_fetch(_pages):
     assert block.payload["title"] == "Regional centers"
     assert "- Goa: Coastal work. (https://teriin.org/goa)" in block.text
     assert "https://teriin.org/goa" not in _pages
+
+
+def test_the_list_of_themes_is_answered_from_the_home_page(_pages):
+    got = _gather("what are TERI's thematic areas")
+    assert [(t.name, t.reason) for t in got.targets] == [("Home", match.NAME)]
+    lead = got.blocks[0]
+    assert lead.text.startswith("Thematic Areas\nSustainable Agriculture")
+    assert lead.payload["source_url"] == "https://www.teriin.org"
+    assert lead.payload["title"] == "TERI: Innovative Solutions for Sustainable Development - India"
+
+
+def test_a_theme_listing_reads_the_home_page_whatever_the_wording(_pages):
+    got = _gather("what are the main themes", themes_listing=True)
+    assert [(t.name, t.reason) for t in got.targets] == [("Home", match.NAME)]
+    assert "https://www.teriin.org" in _pages
+
+
+def test_a_theme_listing_adds_no_page_by_description(_pages):
+    # Every description scores 1.0 here; the list of themes still reads only the home page.
+    got = _gather("what are TERI's thematic areas", embed=lambda texts: [[1.0, 0.0]] * len(texts))
+    assert [t.name for t in got.targets] == ["Home"]
+    assert got.similar_top == []
+
+
+def test_one_named_theme_is_answered_from_its_own_page_not_the_list(_pages):
+    got = _gather("tell me about the climate change thematic area", themes_listing=True)
+    assert [t.name for t in got.targets] == ["Climate Change Theme"]
+    assert "https://www.teriin.org" not in _pages
 
 
 def test_a_page_that_cannot_be_read_contributes_nothing():

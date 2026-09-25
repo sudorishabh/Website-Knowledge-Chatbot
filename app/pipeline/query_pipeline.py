@@ -371,7 +371,9 @@ def _capabilities(pq: ProcessedQuery) -> set[str]:
 #: catalog does exactly, whatever page the theme also has.
 _CATALOG_OVERRIDING = frozenset({"person", "name", "group"})
 #: Page kinds that can. Theme and centre pages list a sample of their projects,
-#: so a count about a theme stays with the catalog.
+#: so a count about a theme stays with the catalog. The home page overrules it
+#: only for a theme listing: the list of themes is the home page's to give, and
+#: a listing that names one theme is that theme's page's.
 _CATALOG_OVERRIDING_KINDS = frozenset({"people", "page", "profile", "group"})
 
 
@@ -389,6 +391,12 @@ def _priority_theme(pq: ProcessedQuery) -> str | None:
     return getattr(pq.analysis, "theme", None) if pq.analysis is not None else None
 
 
+def _lists_themes(pq: ProcessedQuery) -> bool:
+    """Whether understanding read the question as a request for the list of
+    themes, which the home page gives rather than the catalog's theme map."""
+    return pq.analysis is not None and getattr(pq.analysis, "operation", None) == "list_themes"
+
+
 def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
     """The deterministic priority triggers, or None with the feature off or for
     a question about one edition of a series (the edition's own PDF answers it)."""
@@ -398,7 +406,8 @@ def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
 
     try:
         with span("rag.priority_targets") as s:
-            targets = explicit_targets(_priority_text(question, pq), theme=_priority_theme(pq))
+            targets = explicit_targets(_priority_text(question, pq), theme=_priority_theme(pq),
+                                       themes_listing=_lists_themes(pq))
             s.set("targets", len(targets))
         return targets
     except Exception:  # pragma: no cover - defence in depth; the call never raises
@@ -407,14 +416,20 @@ def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
         return None
 
 
-def _priority_overrides_catalog(targets: list[Any] | None) -> bool:
+def _priority_overrides_catalog(targets: list[Any] | None, *, themes_listing: bool = False) -> bool:
     """Whether a live page owns this question outright, so the catalog route —
     which cannot see these pages — must not answer it instead."""
     for target in targets or ():
+        if themes_listing and target.kind == "theme" and target.reason in ("name", "theme"):
+            # Understanding can read "tell me about the climate change thematic"
+            # as a theme listing; the themes are flat, so that theme's page answers.
+            return True
         if target.reason not in _CATALOG_OVERRIDING:
             continue
         if target.kind == "group" and getattr(target.group, "kind", None) != "centre":
-            continue  # "what are the main themes" is the theme map's to answer
+            continue
+        if getattr(target.page, "is_home", False) and not themes_listing:
+            continue  # "documents in each thematic area" is a catalog count
         if target.kind in _CATALOG_OVERRIDING_KINDS:
             return True
     return False
@@ -588,7 +603,7 @@ def _prepare(
     # tenders") must reach that page rather than be answered from the catalog.
     priority_targets = _priority_targets(question, pq)
     catalog_route = pq.intent == "structured" and not _priority_overrides_catalog(
-        priority_targets
+        priority_targets, themes_listing=_lists_themes(pq)
     )
 
     if catalog_route:

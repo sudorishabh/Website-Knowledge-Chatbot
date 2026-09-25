@@ -1,14 +1,16 @@
-"""The theme map follows the priority page list.
+"""The theme map names the themes the priority page list names.
 
-`data/priority_crawl_pages.json` mirrors the live site's themes menu and is the
-authority for which themes are main, which are other, and what sits under what.
-`app/theme_structure.json` is what ingestion classifies against; this keeps the
-two from drifting apart again (they had: "Microbes" was still a sub-theme, and
-four live sub-themes were missing).
+`data/priority_crawl_pages.json` mirrors the live site and is the authority for
+which themes exist. Since 2026-09-25 it lists them flat, one "<theme> Theme"
+page each, so it no longer says what sits under what; the hierarchy that
+ingestion classifies against lives in `app/theme_structure.json` alone. This
+keeps the two lists of names from drifting apart again (they had: "Microbes"
+was still a theme there, and four live themes were missing).
 """
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from app.catalog import theme_taxonomy
@@ -16,27 +18,35 @@ from app.catalog import theme_taxonomy
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _edges(buckets, wanted=("Main Themes", "Other Themes")):
-    """(bucket, parent, name) for every theme, names keyed the way the
-    classifier keys them."""
+def _map_names(buckets):
+    """Every theme in the map, at any depth, keyed the way the classifier keys
+    them."""
     out = set()
 
-    def walk(nodes, bucket, parent):
+    def walk(nodes):
         for node in nodes or ():
-            name = theme_taxonomy._key(node["name"])
-            out.add((bucket, parent, name))
-            walk(node.get("children"), bucket, name)
+            out.add(theme_taxonomy._key(node["name"]))
+            walk(node.get("children"))
 
     for bucket in buckets:
-        if bucket.get("name") in wanted:
-            walk(bucket.get("children"), bucket["name"], None)
+        if bucket.get("name") in ("Main Themes", "Other Themes"):
+            walk(bucket.get("children"))
     return out
 
 
-def test_the_theme_map_is_the_priority_lists_theme_tree():
+def _listed_names(entries):
+    """Every "<theme> Theme" page on the priority list, without the suffix."""
+    return {
+        theme_taxonomy._key(re.sub(r"\s+theme$", "", entry["name"].strip(), flags=re.I))
+        for entry in entries
+        if re.search(r"\s+theme$", str(entry.get("name") or "").strip(), re.I)
+    }
+
+
+def test_the_theme_map_names_the_priority_lists_themes():
     priority = json.loads((ROOT / "data" / "priority_crawl_pages.json").read_text(encoding="utf-8"))
     theme_map = json.loads((ROOT / "app" / "theme_structure.json").read_text(encoding="utf-8"))
-    assert _edges(theme_map) == _edges(priority)
+    assert _map_names(theme_map) == _listed_names(priority)
 
 
 def test_ampersand_and_and_are_one_theme_key():

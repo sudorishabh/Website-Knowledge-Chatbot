@@ -372,7 +372,11 @@ def _select(
 # -- the entry points --------------------------------------------------------------------
 
 def explicit_targets(
-    question: str, *, theme: str | None = None, registry: Registry | None = None
+    question: str,
+    *,
+    theme: str | None = None,
+    themes_listing: bool = False,
+    registry: Registry | None = None,
 ) -> list[Target]:
     """The deterministic triggers for ``question``: cheap enough to run before
     routing, which needs them to decide whether a catalog answer may stand."""
@@ -380,7 +384,7 @@ def explicit_targets(
     if not registry.pages:
         return []
     return match.explicit(question, registry=registry, people=listed_people(registry),
-                          theme=theme)
+                          theme=theme, themes_listing=themes_listing)
 
 
 def gather(
@@ -388,6 +392,7 @@ def gather(
     *,
     query_vector: Sequence[float],
     theme: str | None = None,
+    themes_listing: bool = False,
     explicit: Sequence[Target] | None = None,
     registry: Registry | None = None,
     embed: Embed | None = None,
@@ -402,11 +407,14 @@ def gather(
     settings = get_settings()
     try:
         targets = list(explicit) if explicit is not None else explicit_targets(
-            question, theme=theme, registry=registry)
+            question, theme=theme, themes_listing=themes_listing, registry=registry)
         people = [t for t in targets if t.reason == match.PERSON][:MAX_PEOPLE]
         others = [t for t in targets if t.reason != match.PERSON]
         targets = match.ranked([*people, *others])
-        if _page_count(targets) < settings.priority_max_pages:
+        # A question for the list of themes is about no one theme, so a
+        # description match would only add a page the answer does not need.
+        lists_themes = any(t.page is not None and t.page.is_home for t in targets)
+        if _page_count(targets) < settings.priority_max_pages and not lists_themes:
             found, evidence.similar_top = match.similar(query_vector, registry=registry, embed=embed)
             targets = match.ranked([*targets, *found])
         pages = [t for t in targets if t.kind != GROUP_KIND][: settings.priority_max_pages]

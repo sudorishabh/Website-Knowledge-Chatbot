@@ -24,7 +24,9 @@ def _sha(*parts: str) -> str:
 #: copies of those pages are no longer used.
 #: 2026-09-25.1: sub-themes are gone from question time — no sub-theme
 #: listings, and a theme filter matches its exact name only.
-PIPELINE_REVISION = "2026-09-25.1"
+#: 2026-09-25.2: the list of themes is answered from the live home page, and
+#: the theme pages are a flat list named "<theme> Theme".
+PIPELINE_REVISION = "2026-09-25.2"
 
 
 def _pref_fingerprint() -> str:

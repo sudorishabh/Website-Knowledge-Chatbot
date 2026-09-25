@@ -11,10 +11,15 @@ The file mixes three shapes, and the parser keeps them apart:
 
 * an entry with a URL is a **page** (``page_url``, or ``site_url`` on the
   regional centres — both spellings are in the file);
-* an entry with children and no URL is a **group** ("Regional centers", "Main
-  Themes", "Other Themes"). A group is not fetched: its own description and its
-  members' names already answer "what are the regional centres?";
+* an entry with children and no URL is a **group** ("Regional centers"). A
+  group is not fetched: its own description and its members' names already
+  answer "what are the regional centres?";
 * a page's children are pages too, with that page as their parent.
+
+The themes are flat since 2026-09-25: one top-level page each, named "<theme>
+Theme" ("Climate Change Theme"), with no hierarchy between them. The list of
+themes itself is the home page's to give — its "Thematic Areas" section — so
+the phrases that ask for that list ("TERI's thematic areas") name the home page.
 
 Nothing here touches the network.
 """
@@ -41,6 +46,9 @@ THEME = "theme"
 CENTRE = "centre"
 PEOPLE = "people"
 PAGE = "page"
+
+#: How the file marks a theme page: "Climate Change Theme".
+_THEME_SUFFIX = re.compile(r"\s+theme$", re.I)
 
 
 def normalize_url(url: str | None) -> str:
@@ -78,12 +86,26 @@ def normalize_text(text: str | None) -> str:
     return _NON_WORD.sub(" ", lowered).strip()
 
 
+#: Phrases that ask for the list of themes, which the home page gives. Tight on
+#: purpose — a page that matches leads the context — so a bare "themes" or
+#: "research area" is not one: "which themes have the most publications" is a
+#: catalog count, and a question the query understanding reads as a theme
+#: listing reaches the home page without any of these (``match.explicit``).
+THEMES_OVERVIEW: tuple[str, ...] = (
+    "thematic area", "theme area", "themes area", "teri themes", "themes of teri",
+    "themes teri", "themes does teri", "themes at teri", "teri research area",
+    "research areas of teri", "teri focus area", "focus areas of teri",
+    "areas teri works", "areas does teri work", "teri areas of work",
+    "areas of work of teri",
+)
+
 # Phrases that name a page outright, beyond its own name. Keyed by path, since
 # the names in the file are labels ("founder", "annoucements") rather than what
 # anyone types. Only distinctive phrases: a bare "policy" or "energy" names a
 # topic far more often than it names a page, so those pages are reached through
 # the theme facet and the description match instead.
 _EXTRA_ALIASES: dict[str, tuple[str, ...]] = {
+    "/": (*THEMES_OVERVIEW, "home page", "homepage"),
     "/history": ("founder", "founded", "history of teri", "teri history", "origin of teri"),
     "/mission-and-goals": (
         "teri mission", "mission of teri", "mission statement", "teri vision",
@@ -134,9 +156,6 @@ _EXTRA_ALIASES: dict[str, tuple[str, ...]] = {
 _GROUP_ALIASES: dict[str, tuple[str, ...]] = {
     CENTRE: ("regional centre", "regional center", "regional office", "centres of teri",
              "centers of teri", "teri centres", "teri centers"),
-    "main": ("main theme", "thematic area", "core theme", "research area", "focus area",
-             "themes of teri", "teri themes"),
-    "other": ("other theme",),
 }
 
 
@@ -159,11 +178,24 @@ class PriorityPage:
         return normalize_url(self.url)
 
     @property
+    def is_home(self) -> bool:
+        return _path_of(self.key) == "/"
+
+    @property
+    def topic(self) -> str:
+        """What the page is about: a theme page's name without its "Theme"."""
+        return _THEME_SUFFIX.sub("", self.name) if self.kind == THEME else self.name
+
+    @property
     def match_names(self) -> tuple[str, ...]:
         """The normalized forms of this page's own name worth matching on: a
-        single common word ("Water", "Policy") names a topic, not the page."""
-        name = normalize_text(re.sub(r"^people\s*-\s*", "", self.name, flags=re.I))
+        single common word ("Water", "Policy") names a topic, not the page. A
+        theme is also named by its topic with "theme" or "thematic" after it,
+        which is how "the water theme" reaches a one-word theme."""
+        name = normalize_text(re.sub(r"^people\s*-\s*", "", self.topic, flags=re.I))
         names = [name] if len(name.split()) > 1 else []
+        if self.kind == THEME and name:
+            names += [f"{name} theme", f"{name} thematic"]
         if name.startswith("teri ") and len(name.split()) > 2:
             names.append(name[len("teri "):])
         return tuple(dict.fromkeys(n for n in names if n))
@@ -196,6 +228,11 @@ class Registry:
         return self.by_key(normalize_url(url))
 
     @property
+    def home(self) -> PriorityPage | None:
+        """The home page, which gives the list of themes."""
+        return next((p for p in self.pages if p.is_home), None)
+
+    @property
     def keys(self) -> frozenset[str]:
         return frozenset(_index(self))
 
@@ -222,6 +259,8 @@ def _group_kind(name: str) -> str:
 def _page_kind(entry: dict[str, Any], group_kind: str | None, url: str) -> str:
     if entry.get("example-of-people-url") or _path_of(normalize_url(url)).startswith("/people/"):
         return PEOPLE
+    if _THEME_SUFFIX.search(str(entry.get("name") or "").strip()):
+        return THEME
     return group_kind or PAGE
 
 
@@ -277,15 +316,14 @@ def parse(raw: Any) -> Registry:
         members: list[PriorityPage] = []
         _walk(entry["children"], group=name, group_kind=kind, parent=None, out=members)
         pages.extend(members)
-        bucket = CENTRE if kind == CENTRE else ("main" if "main" in name.lower() else "other")
         groups.append(PriorityGroup(
             name=name,
             description=str(entry.get("description") or "").strip(),
             kind=kind,
-            # Direct members only: "what are the main themes" lists the primary
-            # themes, not every sub-theme beneath them.
+            # Direct members only: a group lists what sits in it, not what sits
+            # beneath its members.
             members=tuple(m for m in members if m.parent is None),
-            aliases=_GROUP_ALIASES.get(bucket, ()),
+            aliases=_GROUP_ALIASES.get(kind, ()),
         ))
     return Registry(pages=tuple(pages), groups=tuple(groups))
 

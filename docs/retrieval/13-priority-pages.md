@@ -1,9 +1,10 @@
 # 13 — Priority Pages
 
 **Purpose.** Answer from the organisation's own pages as the live site shows
-them, whenever a question concerns one of them — theme pages, regional centres,
-the people pages and profiles, and the institutional pages — and leave every
-other question to the corpus exactly as before.
+them, whenever a question concerns one of them — the home page (for the list of
+themes), theme pages, regional centres, the people pages and profiles, and the
+institutional pages — and leave every other question to the corpus exactly as
+before.
 
 **Inputs.** The question, its `ProcessedQuery` (the rewritten search query and
 the resolved theme facet), the query vector the pipeline already computed, and
@@ -28,6 +29,7 @@ read:
 
 | Pages | What they are in Drupal | In the corpus? |
 | --- | --- | --- |
+| The home page (`/`) | the front page, its sections hand-built in one body field | no |
 | 44 theme and regional-centre pages (`/climate`, `/goa`, …) | taxonomy terms rendered through Views (`theme_tabs`, `theme_experts`, `theme_projects`) | no — taxonomy terms are refused by design |
 | `/services`, `/people/*` (4) | Views routes | no |
 | `/profile/<slug>`, `/governing-council/<slug>` | user entities | no |
@@ -47,9 +49,11 @@ organisation does on climate change was not in the corpus at all.
 question
   -> understanding (unchanged)
   -> chitchat / series lookups (unchanged, terminal)
-  -> explicit_targets()            people, page names, groups, theme facet   (rag.priority_targets)
+  -> explicit_targets()            people, page names, groups, theme facet,  (rag.priority_targets)
+                                   theme listing
        overrides the catalog route only for a person, an institutional or
-       people page, or the regional-centres group
+       people page, the regional-centres group, or the home page when
+       understanding read a theme listing (operation list_themes)
   -> structured / scoped_summary (unchanged unless overridden)
   -> embed_query (unchanged, one vector)
   -> gather()                      + description similarity; read pages;     (rag.priority_pages)
@@ -80,18 +84,30 @@ Strongest first; none costs a model call.
 | Reason | Fires when | Opening section admitted |
 | --- | --- | --- |
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
-| `name` | a page's own multi-word name ("climate change", "green shipping") or a curated phrase ("director general", "tender", "founder", "fcra") | yes |
-| `group` | "regional centres", "main themes", … → one block built from the list itself; nothing fetched | — |
+| `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
+| `group` | "regional centres", … → one block built from the list itself; nothing fetched | — |
 | `theme` | understanding resolved a theme facet that is a page on the list | yes |
 | `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next | yes |
 | `surfaced` | retrieval ranked a listed page's stored copy within the top `n` | no — sections by score only |
 
 A single common word never names a page on its own ("water", "policy",
 "energy" name topics far more often than pages); those pages are reached
-through the theme facet and the description match. Descriptions are embedded
-with the organisation's name removed — every description mentions it and most
-questions do too, and left in it pulled "TERI's work on air pollution" to the
-Policy page instead of Air.
+through "water theme", the theme facet and the description match. Descriptions
+are embedded with the organisation's name removed — every description mentions
+it and most questions do too, and left in it pulled "TERI's work on air
+pollution" to the Policy page instead of Air — and a theme by its topic without
+the file's "Theme", which otherwise pulled "what are TERI's thematic areas" to
+the Environment page at 0.56.
+
+**Themes.** The file lists the themes flat, one "<theme> Theme" page each, and
+the list of themes is the home page's to give: its "Thematic Areas" section,
+the seven areas with a line on each. So a question asking for the list reads
+the home page, and one naming a theme reads that theme's page instead — the
+home page gives way whenever a theme is named ("the climate change thematic
+area"). A theme listing adds no page by description match, since it is about
+no one theme. The overview phrases are deliberately tight: a page that matches
+leads the context, and "which themes have the most publications" is a catalog
+count — the home page overrules the catalog only for a `list_themes` reading.
 
 **Calibration** (2026-09-24, 20 questions): most on-topic questions scored
 0.49–0.75 against the right page, every off-list question stayed below 0.46,
@@ -118,8 +134,12 @@ downloaded**: a URL ending in `.pdf`, `.docx`, `.xlsx`, … is refused before an
 request, and a response that is not HTML is dropped unread.
 
 **Extraction** (`extract.py`): one cut for every page — from the
-`region-content` div to the footer regions — then sections opened by the
-page's `h1` and its classed section titles (`block-title`, `section-heading`).
+`region-content` div (`region-home-sections` on the home page, which has no
+`region-content`) to the footer regions — then sections opened by the page's
+`h1` and its classed section titles (`block-title`, `section-heading`). A page
+with no `h1` — only the home page — also opens a section at the first heading
+of each `<section>` element, begins at its first section ("Thematic Areas",
+past the banner carousel of headlines), and is titled by its document title.
 Long sections are cut at line boundaries to ≤ 2,400 characters, each piece led
 by its heading. Linked documents stay in the text as `label (URL)` — a PDF
 behind "Read more" is labelled with its item's title — so the answer can hand
@@ -162,7 +182,8 @@ exactly what it was. The key is recomputed after retrieval, because a
 lookup of the same question will not build, so it is not reused — correct, at
 the cost of a cache hit.
 
-`PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature.
+`PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature, and to
+`2026-09-25.2` when the list of themes moved to the home page.
 
 ---
 
@@ -171,7 +192,8 @@ the cost of a cache hit.
 Measured on the live server: warm (page in the 5-minute cache, vectors
 embedded), the whole feature costs ~40 ms per question (`rag.priority_targets`
 13.6 ms + `rag.priority_pages` 26.4 ms). The first question after a restart
-paid ~3.7 s, almost all of it embedding the 59 descriptions and the page's
+paid ~3.7 s, almost all of it embedding the 59 descriptions (60 since the home
+page joined) and the page's
 sections once; a page read itself took 83 ms.
 
 ---
@@ -194,10 +216,11 @@ sections once; a page read itself took 83 ms.
 
 - **Adding or changing a page**: edit `data/priority_crawl_pages.json`
   (tracked in git) and restart. `page_url` and `site_url` are both read.
-- **The theme hierarchy follows the same file.** `app/theme_structure.json` is
-  its Main/Other theme tree, and
-  `tests/catalog/test_theme_map_matches_priority_pages.py` fails if they
-  diverge. After changing either, re-apply the map to stored rows:
+- **The theme names follow the same file.** The file no longer holds a
+  hierarchy; `app/theme_structure.json` keeps the Main/Other tree that
+  ingestion classifies against, and
+  `tests/catalog/test_theme_map_matches_priority_pages.py` fails if the two
+  name different themes. After changing the map, re-apply it to stored rows:
   `python -m scripts.reclassify_theme_rows --dry-run`, then without the flag.
 - **Seeing a decision**: every trace holds `notes.priority_pages` — targets and
   reasons, similarity top three, each read (cache hit, stale, ms, sections,
