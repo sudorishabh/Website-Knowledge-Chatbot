@@ -38,7 +38,9 @@ def _sha(*parts: str) -> str:
 #: listings.
 #: 2026-09-25.10: a broad question is answered on its named reading, a long list
 #: is grouped, and several people listings are named beside the question.
-PIPELINE_REVISION = "2026-09-25.10"
+#: 2026-09-25.11: a question for the top or leading members of a long set is
+#: answered with a selection of them, grouped and indexed by area.
+PIPELINE_REVISION = "2026-09-25.11"
 
 
 def _pref_fingerprint() -> str:

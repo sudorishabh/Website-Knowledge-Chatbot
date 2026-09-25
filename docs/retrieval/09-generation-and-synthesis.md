@@ -221,7 +221,7 @@ and would have won.
 
 ### Answer shapes, formatting and depth
 
-`_ANSWER_STYLE` names four shapes and asks the model to pick the one that fits
+`_ANSWER_STYLE` names five shapes and asks the model to pick the one that fits
 the question and the material. Which one applies is the model's reading, never
 a list of questions:
 
@@ -229,10 +229,11 @@ a list of questions:
 | --- | --- | --- |
 | Direct fact | who / when / how many / yes-no | The answer in the first sentence, then 2–4 sentences or a few bullets of surrounding detail; no headings |
 | List | the members of a set — themes, centres, programmes, people | One opening sentence, then one bullet per item: **name** — the one-line description the context gives it; every item kept, in order |
+| Selection | the top, leading or key members of a set the context lists at length (more than about 15) | About 12–15 of them, most senior first, under 2–3 `###` headings by level; a `### By area` index; one closing sentence offering the full listing or one area |
 | Overview | "tell me about X", a subject covered from several angles | 1–3 opening sentences, then 2–5 `###` sections whose headings come from the material, 2–6 bullets each; a three-section answer may close with one tying sentence |
 | Comparison | several things across several dimensions | A Markdown table |
 
-Three more rules came from the people questions ("TERI top researchers"):
+Four more rules came from the people questions ("TERI top researchers"):
 
 - **A broad question is answered on its named reading.** When a word has no
   measure the context gives ("top", "main", "leading"), the answer takes the
@@ -240,6 +241,18 @@ Three more rules came from the people questions ("TERI top researchers"):
   draws on every list or page in the context that fits it. The first wording
   ("answer its most likely reading") was read as "pick one set" and dropped a
   whole listing that fitted.
+- **"Top" asks for a selection, not the whole set.** Drawing on both listings,
+  the next answers printed all 15 fellows and all 35 directors, HR and
+  communications posts among them. The selection shape says what to choose by,
+  all of it stated in the context: the head of the organisation leads, then
+  the heads of areas by the seniority of their titles, with a few fellows
+  beside them and never in their place. Only roles that fit the question are
+  kept (a researchers question leaves out administration, HR, communications,
+  partnerships and business development), and the choice goes one per area
+  before a second from any area. Each clause fixed a measured miss. Ranked by
+  "distinction", six fellows displaced the Director General. Picked in page
+  order, two directors of one area beat an area left out. Asking for all,
+  every or the full list still gets the List shape.
 - **A list of more than about 12 items is grouped** into 2–4 sections by
   something the context states for every item (a title's level, a division,
   the listing it came from). The same question once came back as one flat list
@@ -310,10 +323,12 @@ then invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
   distinct people listings were read because the question asks for the
   organisation's people (`priority_reason == "staff"`, see
   [13](13-priority-pages.md)); then it names them by block number and says the
-  answer draws on each, one group per listing, holding the people who fit the
-  question. With both the Committee of Directors and the Distinguished Fellows
-  in context and the broad-reading rule already in the prompt, three answers in
-  four still named only the fellows; with the note, all four drew on both.
+  answer draws on all of them, and that the top or leading people are chosen
+  across them by seniority and fit, not listing by listing. With both the
+  Committee of Directors and the Distinguished Fellows in context and the
+  broad-reading rule already in the prompt, three answers in four still named
+  only the fellows; with the note, all four drew on both. Its first wording
+  ("one group per listing") then had each listing printed whole.
 - **The shape reminder** (`prompts.SHAPE_REMINDER`) fills `{shape}`: the
   answer shapes of `_ANSWER_STYLE` compressed to a few lines, after the
   question. The style section sits in the middle of a system prompt of several

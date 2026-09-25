@@ -96,7 +96,10 @@ SUPERSEDES_MARKER = "dates an earlier statement here"
 # reading it chose. The first wording ("answer its most likely reading") was
 # read as "pick one set": with both listings in context the answer named only
 # the Distinguished Fellows and dropped the Committee of Directors, so the
-# clause now says the reading takes in every list that fits it.
+# clause now says the reading draws on every list that fits it. Drawing on every
+# list is not repeating all of it: "everything the context holds" had the next
+# answer print all fifty people, so a top-or-leading question is handed on to the
+# selection shape.
 _ANSWER_STRUCTURE = (
     "Answer structure (mandatory):\n"
     "- Write one answer from all the blocks together, whatever mix of sources "
@@ -120,10 +123,11 @@ _ANSWER_STRUCTURE = (
     "gives (\"top\", \"main\", \"best\", \"leading\"), answer its most likely "
     "reading and name that reading in the opening sentence (\"If by the main "
     "programmes you mean the flagship programmes and the centres that run "
-    "them, ...\"). The reading takes in everything the context holds that fits "
-    "it — often more than one of the lists or pages given, each its own "
-    "group — never just the first set that fits. Never ask back instead, and "
-    "never open by saying the sources do not define the word.\n"
+    "them, ...\"). The reading draws on every list or page in the context that "
+    "fits it, never just the first set that fits; when it asks for the top or "
+    "leading ones, answer it as the Selection shape below says, not with "
+    "everything those lists hold. Never ask back instead, and never open by "
+    "saying the sources do not define the word.\n"
     "- When the context does not answer the question, follow rule 3: the refusal "
     "alone.\n"
 )
@@ -148,6 +152,15 @@ _ANSWER_STRUCTURE = (
 # what makes a list that long readable, and "former" is exactly the kind of
 # marker a list of current people must honour.
 #
+# The selection shape: grouped, that list was still every fellow and every
+# director, HR and communications posts among them, and the reader who asked for
+# the *top* researchers wanted a dozen. "Top", "leading" and "key" ask for a
+# choice, so the shape says what to choose by — the seniority and fit the
+# context states — and the order that choosing went wrong in: ranked by
+# "distinction" the fellows displaced the Director General, and picked in page
+# order two directors of one area beat an area left out. The closing offer is
+# what keeps a partial answer honest about being one.
+#
 # Asking a grounded model for fuller answers raises the pressure to pad, so the
 # anti-padding clause is not optional decoration — it is what keeps the extra
 # length coming from the context. The direct-fact floor exists because an
@@ -171,14 +184,41 @@ _ANSWER_STYLE = (
     "bold, then \" — \" and a one-line description whenever the context gives "
     "one for that item. An item the context describes nowhere is its name "
     "alone; never add a note that its description is missing. Keep every item "
-    "the context lists, in its order. A list of more than about 12 items is "
+    "the context lists, in its order, unless the question asks for a "
+    "selection (the next shape). A list of more than about 12 items is "
     "split into 2-4 groups by something the context states for every item — a "
     "role or seniority, a division or area, the page that lists it — each under "
     "a short ### heading, the items keeping their order within it; a shorter "
     "list takes no headings unless the context itself groups the items. When "
     "the question is about who or what is current, leave out anyone or anything "
     "the context marks as former, past or ended.\n"
-    "- Overview — \"tell me about X\", \"what is X\", \"what does X work on\", "
+    "- Selection — the question asks for the top, leading, key, main, most "
+    "senior or best-known members of a set (\"top researchers\", \"key "
+    "programmes\") and the context lists more than about 15 of them. That asks "
+    "for the ones that matter most, not the whole set: give about 12-15, "
+    "chosen by what the context states about each. Rank by the seniority of a "
+    "title — the head of the organisation leads whenever the context lists "
+    "one, then those heading an area (senior directors, then directors, then "
+    "associate directors, and the like) — and draw in a few holders of a "
+    "distinction such as a fellowship alongside them, never in their place. "
+    "Keep only those whose role fits the question: a question about "
+    "researchers or experts leaves out posts in administration, human "
+    "resources, communications, partnerships, special projects or business "
+    "development. Spread the choice across areas: take the most senior person "
+    "the context gives for each distinct area, one per area, before a second "
+    "from any area — never simply the first items in the context's order. "
+    "Open by naming the reading ('Answer structure') and saying these are "
+    "some of the most senior of them. Group them under 2-3 short ### headings "
+    "by level or kind, most senior first, each bullet **name** — role and "
+    "area. When they span several areas, add a ### By area section of 3-5 "
+    "broad areas, each bullet naming two or more of them — **Area:** the "
+    "names — with a lone name folded into the nearest area; it is the one "
+    "place a name appears twice. Close with one sentence offering more, "
+    "naming one or two of those "
+    "areas (\"I can also list the full ..., or the ... in one area such as "
+    "...\"). A question for all, every or the full list is a List, never a "
+    "selection.\n"
+    "- Overview —\"tell me about X\", \"what is X\", \"what does X work on\", "
     "or a subject the context covers from several angles. Open with 1-3 "
     "sentences saying what X is (and who runs it, and since when, where the "
     "context says so); the details belong in the sections. Then 2-5 sections, "
@@ -198,10 +238,12 @@ _ANSWER_STYLE = (
     "one sentence.\n"
     "- A bullet is one point in a line or two, starting with the point itself. "
     "Paragraphs stay at 2-4 sentences. No walls of text.\n"
-    "- Headings only in an overview or a grouped long list, and never over a "
-    "section with fewer than two points — merge it into a neighbour instead.\n"
+    "- Headings only in an overview, a selection or a grouped long list, and "
+    "never over a section with fewer than two points — merge it into a "
+    "neighbour instead.\n"
     "- Name each item once, even when several blocks list it; cite those "
-    "blocks together ([2][3]).\n"
+    "blocks together ([2][3]). A selection's By area bullets are the one "
+    "exception.\n"
     "- When the context's description of an item is cut off mid-sentence, give "
     "the part that is complete; never finish it from your own knowledge.\n"
     "- A list or an overview that rests mainly on one page whose header gives a "
@@ -534,6 +576,13 @@ SHAPE_REMINDER = (
     "the name alone when it gives none; more than about 12 items grouped under "
     "### headings by role, level or area, and no one the context marks as "
     "former;\n"
+    "- the top, leading or key members of a set the context lists at length: "
+    "about 12-15 of them, not all — the head of the organisation first, then "
+    "the most senior heads of areas, with a few holders of a distinction such "
+    "as a fellowship beside them — only those whose role fits the question, "
+    "under ### headings by "
+    "level, then a ### By area section when they span several areas, and one "
+    "closing sentence offering the full listing or one area;\n"
     "- \"tell me about X\" / \"what is X\": one or two opening sentences saying "
     "what X is, then ### sections of bullets holding the details, none "
     "repeating the opening; head each section by what its items are, never by "
@@ -547,8 +596,8 @@ SHAPE_REMINDER = (
     "A broad question gets its most likely reading, named in the opening "
     "sentence and answered from every list or page in the context that fits "
     "it. Cite a list that comes from one block once, on its opening "
-    "sentence. Name each item once. Never write about the context, or where on "
-    "a page something was listed."
+    "sentence. Name each item once, a By area bullet excepted. Never write "
+    "about the context, or where on a page something was listed."
 )
 
 
@@ -606,8 +655,9 @@ def grounded_system_prompt() -> str:
 # conflict with the style, so the older wording would have won.
 _FORMAT_DIRECTIVES: dict[str, str] = {
     "list": (
-        "Shape the answer as the List shape above: one opening sentence, then "
-        "one bullet per item. Each bullet gives the item's name or claim first, "
+        "Shape the answer as the List shape above, or the Selection shape when "
+        "the question asks for the top or leading ones: one opening sentence, "
+        "then one bullet per item. Each bullet gives the item's name or claim first, "
         "then a clause of the detail the context gives for that item (a date, "
         "a scope, a figure) rather than stopping at the bare name; only omit "
         "the clause when the context truly offers nothing more for that item. "
@@ -921,6 +971,11 @@ def staff_note(blocks: "list[ContextBlock]") -> str:
     as `supersession_note` does for dates: these listings are here because the
     question asks for people, so each is part of the answer. Every word derives
     from payload fields retrieval set; nothing names a person.
+
+    It once said "one group per listing, holding the people in it who fit", and
+    the answers that followed printed each listing whole, one after the other.
+    A question for the top people is a choice made across the listings, so the
+    note now says that instead.
     """
     listings: list[tuple[int, str]] = []
     for block in blocks:
@@ -936,8 +991,9 @@ def staff_note(blocks: "list[ContextBlock]") -> str:
     return (
         f"People listings in this context: {named}. Each was read because the "
         "question asks for the organisation's people, so the answer draws on "
-        "each of them — one group per listing, holding the people in it who fit "
-        "the question — rather than choosing one listing as the answer."
+        "all of them rather than choosing one listing as the answer. For the "
+        "top or leading people, choose across all of them by seniority and fit "
+        "to the question, not listing by listing and not everyone they hold."
     )
 
 

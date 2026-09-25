@@ -37,7 +37,8 @@ def _structure() -> str:
 
 def test_the_style_names_each_shape_a_question_takes():
     style = _style()
-    for shape in ("- Direct fact —", "- List —", "- Overview —", "- Comparison —"):
+    for shape in ("- Direct fact —", "- List —", "- Selection —", "- Overview —",
+                  "- Comparison —"):
         assert shape in style, shape
     assert "Pick the one shape below that fits" in style
 
@@ -287,8 +288,69 @@ def test_a_long_list_is_grouped_by_what_the_context_states():
     style = _style()
     assert "more than about 12 items is split into 2-4 groups" in style
     assert "something the context states for every item" in style
-    assert "Headings only in an overview or a grouped long list" in style
+    assert "Headings only in an overview, a selection or a grouped long list" in style
     assert "more than about 12 items grouped under ### headings" in SHAPE_REMINDER
+
+
+def _selection() -> str:
+    style = _style()
+    return style[style.index("- Selection —") : style.index("- Overview —")]
+
+
+def test_a_question_for_the_top_ones_gets_a_selection_not_the_whole_set():
+    """Measured 2026-09-25: "TERI top researchers" with both people listings in
+    hand came back as all 15 fellows and all 35 directors, HR and
+    communications posts among them. The reader wanted the leading dozen."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    selection = _selection()
+    assert "the top, leading, key, main, most senior or best-known members" in selection
+    assert "not the whole set: give about 12-15" in selection
+    assert "unless the question asks for a selection" in _style()
+    assert "about 12-15 of them, not all" in SHAPE_REMINDER
+    # The whole set stays the answer when the reader asks for it.
+    assert "A question for all, every or the full list is a List" in selection
+
+
+def test_a_selection_ranks_by_the_seniority_the_context_states():
+    """Measured: the first wording ("rank highest by ... a distinction such as a
+    fellowship") led with six fellows and left out the Director General."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    selection = _selection()
+    assert "the head of the organisation leads whenever the context lists" in selection
+    assert "never in their place" in selection
+    assert "the head of the organisation first" in SHAPE_REMINDER
+
+
+def test_a_selection_keeps_to_roles_that_fit_and_spreads_across_areas():
+    """Measured: picked in page order, two directors of one area made the cut
+    while whole areas went unrepresented."""
+    selection = _selection()
+    assert "Keep only those whose role fits the question" in selection
+    assert "human resources, communications" in selection
+    assert "one per area, before a second from any area" in selection
+    assert "never simply the first items in the context's order" in selection
+
+
+def test_a_selection_is_grouped_indexed_by_area_and_offers_the_rest():
+    from app.generation.prompts import SHAPE_REMINDER
+
+    selection = _selection()
+    assert "2-3 short ### headings" in selection
+    assert "### By area section of 3-5" in selection
+    assert "a lone name folded into the nearest area" in selection
+    assert "Close with one sentence offering more" in selection
+    assert "A selection's By area bullets are the one" in _style()
+    assert "a By area bullet excepted" in SHAPE_REMINDER
+
+
+def test_a_broad_question_for_the_top_ones_defers_to_the_selection():
+    assert "answer it as the Selection shape below says" in _structure()
+
+
+def test_a_requested_list_still_allows_a_selection():
+    assert "or the Selection shape when" in format_directive("list")
 
 
 def _listing(n, title, reason="staff"):
@@ -308,8 +370,10 @@ def test_several_people_listings_are_named_beside_the_question():
     note = staff_note([_listing(1, "Distinguished Fellows"),
                        _listing(2, "Committee of Directors")])
     assert "[1] Distinguished Fellows, [2] Committee of Directors" in note
-    assert "draws on each of them" in note
+    assert "draws on all of them" in note
     assert "rather than choosing one listing as the answer" in note
+    # A top-people question selects across the listings, not from each in turn.
+    assert "not listing by listing and not everyone they hold" in note
 
 
 def test_the_note_is_absent_unless_two_listings_were_read_for_people():
