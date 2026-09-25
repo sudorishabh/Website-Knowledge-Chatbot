@@ -4,20 +4,26 @@ One extractor serves every page on the list, because they share one theme:
 whatever the page is — a taxonomy term assembled from Views, a people listing,
 a profile, an ordinary node — its content sits between the
 ``region-content`` div and the footer regions, after the site header, the main
-menu and the themes menu. Surveyed on all 59 pages on 2026-09-24; each gave
-clean text from that cut.
+menu and the themes menu. The home page is the one exception: it has no
+``region-content``, and its content is the ``region-home-sections`` div instead.
+Surveyed on all 60 pages on 2026-09-25; each gave clean text from that cut.
 
 Sections follow the page's own headings. On the Views-built pages a section
 title is an ``h2`` carrying ``block-title`` or ``section-heading`` ("Projects",
 "Team", "NEW IN CLIMATE CHANGE"), while the items inside a section use bare
-``h2``–``h5`` for their own titles — so only the classed headings (and the
-page's ``h1``) open a section, and the rest stay lines of text. A page with no
-classed headings is one section per ``h1``, cut to size.
+``h2``–``h5`` for their own titles — so only the classed headings and the
+page's ``h1`` open a section, and the rest stay lines of text. A page with no
+``h1`` (the home page) also opens one at the first heading inside each
+``<section>`` element: there "Thematic Areas", "Key Projects" and the rest are
+bare ``h2``s, each leading its own ``<section>``. Only there, because on a page
+with an ``h1`` the rule mislabels what follows a ``<section>`` (the alumni page).
+A page with none of these is one section per ``h1``, cut to size.
 
 What is dropped: scripts, styles, forms, images, the targets of ordinary links
 (the citation links the page itself), link-only chrome such as "Read more", and
 anything before the ``h1`` — on the people pages that is the tab strip, printed
-twice.
+twice. A page with no ``h1`` (the home page) begins at its first section
+heading instead, which drops the home page's banner carousel of headlines.
 
 What is kept as a link, never read: documents. A PDF (or office file) linked
 from the page is written into the text as ``label (URL)`` so the answer can
@@ -40,11 +46,14 @@ from app.retrieval.priority.fetch import is_document_url
 #: sections are cut at line boundaries: the announcements page is 76k characters.
 MAX_SECTION_CHARS = 2400
 
-_START = re.compile(r'<div[^>]+class="[^"]*\bregion-content\b[^"]*"', re.I)
+_START = re.compile(
+    r'<div[^>]+class="[^"]*\bregion-(?:content|home-sections)\b[^"]*"', re.I
+)
 _END = re.compile(
     r'<div[^>]+class="[^"]*\bregion-footer(?:-links)?\b[^"]*"|<footer\b', re.I
 )
 _TITLE = re.compile(r"<title[^>]*>(.*?)</title>", re.I | re.S)
+_H1 = re.compile(r"<h1\b", re.I)
 
 _SKIP = frozenset({"script", "style", "noscript", "svg", "form", "button",
                    "select", "option", "textarea", "iframe", "template"})
@@ -99,14 +108,18 @@ class PageContent:
 class _Parser(HTMLParser):
     """Emits ``("break", heading)`` and ``("line", text)`` events in order."""
 
-    def __init__(self, base_url: str) -> None:
+    def __init__(self, base_url: str, *, section_elements: bool = False) -> None:
         super().__init__(convert_charrefs=True)
         self.base_url = base_url
+        #: Whether a ``<section>`` element's first heading opens a section.
+        self.section_elements = section_elements
         self.events: list[tuple[str, str]] = []
         self.links: list[Link] = []
         self._skip = 0
         self._buf: list[str] = []
         self._heading: tuple[str, bool] | None = None  # (tag, opens a section)
+        #: A ``<section>`` has opened and its first heading is still to come.
+        self._section_pending = False
         self._anchor: tuple[str, list[str]] | None = None
         self._cell = False
         #: Document URLs already written into the text, and those only ever
@@ -132,9 +145,13 @@ class _Parser(HTMLParser):
         if tag in _HEADINGS:
             self._flush()
             classes = (attr.get("class") or "").split()
-            opens = tag == "h1" or any(c in classes for c in _SECTION_CLASSES)
+            opens = (tag == "h1" or self._section_pending
+                     or any(c in classes for c in _SECTION_CLASSES))
+            self._section_pending = False
             self._heading = (tag, opens)
         elif tag in _BLOCK or tag == "br":
+            if tag == "section" and self.section_elements:
+                self._section_pending = True
             self._flush()
         elif tag in ("td", "th"):
             if self._cell:
@@ -261,18 +278,22 @@ def extract(html: str, base_url: str, *, max_chars: int = MAX_SECTION_CHARS) -> 
     """The page's content as sections. Never raises on bad markup — the parser
     is tolerant, and a page it cannot read yields no sections, which the caller
     treats as a failed fetch."""
-    parser = _Parser(base_url)
+    region = _main_region(html)
+    parser = _Parser(base_url, section_elements=_H1.search(region) is None)
     try:
-        parser.feed(_main_region(html))
+        parser.feed(region)
         parser.close()
     except Exception:  # pragma: no cover - HTMLParser is lenient; defence in depth
         pass
     events = parser.events
     # Content before the page's own title is navigation (the people pages' tab
-    # strip); the h1 is where the page begins.
+    # strip); the h1 is where the page begins. A page without one (the home
+    # page) begins at its first section heading, after the banner carousel.
     first_h1 = next((i for i, (kind, _) in enumerate(events) if kind == "h1"), None)
-    if first_h1 is not None:
-        events = events[first_h1:]
+    first_break = next((i for i, (kind, _) in enumerate(events) if kind == "break"), None)
+    begin = first_h1 if first_h1 is not None else first_break
+    if begin is not None:
+        events = events[begin:]
 
     grouped: list[tuple[str | None, list[str]]] = []
     for kind, text in events:
@@ -304,7 +325,11 @@ def extract(html: str, base_url: str, *, max_chars: int = MAX_SECTION_CHARS) -> 
         unescape(re.sub(r"\s+", " ", title_match.group(1))).split("|")[0].strip()
         if title_match else None
     )
-    title = next((h for h, _ in grouped if h), None) or page_title
+    # The h1 names the page. Without one, the first section heading names only
+    # that section ("Thematic Areas"), so the document title is used instead.
+    title = (grouped[0][0] if first_h1 is not None and grouped else None) or page_title or next(
+        (h for h, _ in grouped if h), None
+    )
     digest = hashlib.sha256("\n\n".join(s.text for s in sections).encode("utf-8")).hexdigest()
     return PageContent(
         title=title,
