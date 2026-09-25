@@ -10,8 +10,8 @@ the detected answer format, and (when the question has more than one part) a
 plan directive.
 
 **Outputs.** Answer text — buffered or token-streamed — already through
-citation-marker validation, an optional one-shot faithfulness correction, and
-a mandatory publication-date guard.
+citation-marker validation, an optional one-shot faithfulness correction, a
+mandatory publication-date guard, and an unknown-link check.
 
 **Components.** `app/generation/prompts.py`, `answerer.py`, `sections.py`,
 `answer_plan.py`, `faithfulness.py`, `redundancy.py`, `date_claims.py`.
@@ -47,11 +47,19 @@ until someone records why, the same way.
 at import as a pure string constant — assembling it per call would repeat work
 on every question for text that never changes.
 
-The answer structure it demands is one continuous answer from all the blocks
-together, whatever mix of sources they came from, with no section labelled by
-where its material came from. Rule text and a worked example both exist because
-the failure mode is a model that manufactures a supplementary section and fills
-it by restating the answer.
+The answer structure it demands is one answer from all the blocks together,
+whatever mix of sources they came from, organised by topic and never by source:
+no section labelled by where its material came from, and no sentence about the
+material itself ("the context", "the available sources", "an attached report").
+Rule text and worked examples both exist because the failure mode is a model
+that manufactures a supplementary section and fills it by restating the answer.
+It used to say "one continuous answer"; a model read "continuous" as "prose",
+and every overview came back as unbroken paragraphs (§ Answer shapes, below).
+
+Naming the page a statement comes from is allowed, and is the one kind of
+attribution the answer makes in words: when the answer rests on a block marked
+`official page` or `live page`, the opening sentence may say "According to the
+organisation's Climate Change page, …".
 
 ### What this replaced, and why
 
@@ -91,11 +99,11 @@ because each clause exists for a specific observed failure, not as boilerplate:
 | Rule | Defends against |
 | --- | --- |
 | 1 — context only | Outside-knowledge answers |
-| 2 — cite every claim | Unattributable prose |
+| 2 — cite every claim, at the end of its sentence or bullet | Unattributable prose. Placement is part of the rule: "after every claim" was applied per phrase, and nine centres listed from one page came back each followed by `[1]`. A list drawn from one block is now cited once, on its opening sentence. Citations stay mandatory because the sources footer shows only the cited blocks (`query_pipeline._cited_blocks`) and the faithfulness check scopes each claim to its citations |
 | 3 — the exact refusal string, with five carve-outs | A model that refuses a partial answer the context *does* support, refuses a yes/no it can evidence, refuses a "where do I get X" question because the block names X without narrating a how-to, gives a bare refusal when the context shows something merely *adjacent* to what was asked, or refuses "list the articles where X is mentioned" because it cannot enumerate every article — the first carve-out has it list the retrieved blocks that mention X, one per block with title, date and citation, framed as what the sources include; the kind of document the user named is descriptive, not a filter. Measured 2026-09-18 on six IPCC blocks: as the *last* bullet the same instruction was still refused; as the *first* it produced the list, so its position is pinned by `tests/generation/test_grounded_prompt_rules.py` |
 | 4 — no invention | Fabricated sources, URLs, page numbers |
 | 5 — website precedence (mixed only) | A PDF version presented as equally true when the website disagrees |
-| 6 — the block structure (mixed) / one continuous answer (single) | See above |
+| 6 — one answer, citing any source kind | See above |
 | 7 — context is reference material | Prompt injection from inside a passage |
 | 8 — no document counts, the "official page" carve-out, and the retrieved-list carve-out | Treating a sample of pages as the whole corpus ("how many reports exist"); the `official page` marker (`CANONICAL_MARKER`, threshold `_CANONICAL_AUTHORITY = 0.85` on `derived_authority`) lets a genuine standing statement — a service catalogue, a themes page — be read as source material rather than over-generalised from |
 | 9 — newer-wins, temporal phrasing, and the edition/page-date split | The largest rule by far; see next section |
@@ -168,6 +176,11 @@ cannot be shown a fact the prompt then has no rule to govern:
   not known)"` rather than a fabricated January day — the same refusal
   `DateInterpretation.statement_is_year_only` makes on the write side (see
   [ingestion 06](../ingestion/06-canonical-document-and-dates.md#the-interpreter-and-its-gates)).
+- `link <url>` — last, and only on the organisation's own web pages (a block
+  that is `official page` or `live page` and has a `source_url`). It is what
+  the "Read more" line a list or an overview ends with is copied from. An
+  ordinary article's address is already in the sources footer, and offering
+  it here would only invite a link per bullet; a PDF's address never appears.
 - The graph's facts block gets its own hint instead — `"knowledge graph ·
   current relationships"` or `"knowledge graph · includes past
   relationships"` — never the generic `(source)` a block with no
@@ -196,23 +209,63 @@ When query understanding detects a desired shape (`list`, `table`, `summary`,
 `detailed`, `timeline`), `format_directive` appends a per-format instruction —
 plus, for `table` and `timeline`, a short worked exemplar — after the base
 prompt. `default`/unknown formats add nothing, deliberately: the base
-`_ANSWER_STYLE` guidance already asks for a useful length with real structure,
-and a directive here can only narrow the shape further, never loosen it. The
-directive is scoped by `_MIXED_SCOPE_NOTE` / `_SINGLE_SCOPE_NOTE` to say
-explicitly whether it applies *inside* the block wrappers or to the one
-answer — without that scoping, "no preamble, shape as a table" reads as
-licence to drop the mandatory block structure.
+`_ANSWER_STYLE` guidance already names the shapes, and a directive here can
+only narrow the shape further, never loosen it. Each directive is written as
+one of those shapes taken further — `list` is the List shape, `detailed` is the
+Overview at its fullest, `summary` stays unsectioned — rather than as a second
+description of it, because `_SCOPE_NOTE` makes a directive win any conflict
+with the style. The old `list` directive ("no preamble", "each bullet leads
+with its claim and its citation") contradicted both the list shape and rule 2,
+and would have won.
 
-### Answer length and depth
+### Answer shapes, formatting and depth
 
-`_ANSWER_STYLE` states a length as a *range* (roughly 6–10 sentences or 4–8
-bullets for an ordinary question, more for one the context covers from
-several angles) rather than an open-ended "be thorough" — the abstract
-instruction lost to the model's own pull toward one-line answers, measured
-directly: a question worth several sentences of context was still coming back
-as a bare fact. The anti-padding clause sits right beside it: every added
-sentence must carry its own `[n]` and say something new, because raising the
-length floor also raises the temptation to fill it with restatement.
+`_ANSWER_STYLE` names four shapes and asks the model to pick the one that fits
+the question and the material. Which one applies is the model's reading, never
+a list of questions:
+
+| Shape | For | Looks like |
+| --- | --- | --- |
+| Direct fact | who / when / how many / yes-no | The answer in the first sentence, then 2–4 sentences or a few bullets of surrounding detail; no headings |
+| List | the members of a set — themes, centres, programmes, people | One opening sentence, then one bullet per item: **name** — the one-line description the context gives it; every item kept, in order |
+| Overview | "tell me about X", a subject covered from several angles | 1–3 opening sentences, then 2–5 `###` sections whose headings come from the material, 2–6 bullets each; a three-section answer may close with one tying sentence |
+| Comparison | several things across several dimensions | A Markdown table |
+
+Formatting rules ride with them: bold only an item's name and at most one or
+two key terms in a paragraph; headings only in an overview and never over a
+single point; a description cut off mid-sentence in the context (a live page's
+teaser ending "...") is given to its last complete phrase, never finished from
+memory; and a list or an overview resting on one page whose header gives a
+`link` ends with `Read more: [title](link)`.
+
+They replaced one generic line — "structure anything past a couple of sentences
+… **bold** for the points that matter most" — which, measured on 2026-09-25,
+produced seven themes run into one sentence with their descriptions dropped,
+nine centres listed inline with `[1]` after each, and an overview of four
+paragraphs with some forty bold phrases. The model was left to invent a
+structure per answer and invented none.
+
+The direct-fact floor ("never a bare clause or a single sentence") stays: an
+abstract "be thorough" lost to the model's own pull toward one-line answers.
+So does the anti-padding clause: every added sentence or bullet must rest on a
+cited block and say something new, because a shape with sections raises the
+temptation to fill them with restatement.
+
+### The worked examples
+
+The model copies the exemplar's shape more than anything described to it —
+the single three-sentence paragraph that stood here until 2026-09-25 is the
+shape every answer came back in. There are three, all about an invented
+organisation ("Org One") so no example can leak a real fact:
+
+1. **An overview** of a programme from a mixed website + PDF context, in
+   `###` sections, closing with its `Read more` link — mixed because that is
+   the context the model used to split by source.
+2. **A list** of centres: one citation on the opening sentence, each item's
+   description kept, a truncated teaser cut at its last complete phrase, and
+   the one item described from a second block carrying that block's citation.
+3. **A role stated at two times** — rule 9's dated-title clause, the one rule a
+   model reliably ignores when a block reads like a standing label.
 
 ### `today_anchor()`: a fixed "now"
 
@@ -430,7 +483,25 @@ first known edition/page-date pair. This is the one place in generation where
 correctness is enforced by string substitution rather than another model
 call: the guard's job is that the claim cannot reach a reader, not that it is
 merely usually absent. Either outcome emits its own `correction` SSE event
-(`reason: "publication_date"` or `"publication_date_fallback"`).
+(`reason: "date_claim"` or `"date_claim_fallback"`).
+
+---
+
+## Post-generation verification: unknown links
+
+`faithfulness.strip_unknown_links(answer, blocks)` runs last, after both passes
+above, because either rewrite can itself introduce a link. It unlinks every
+Markdown link — the one form the frontend turns into an anchor — whose address
+the context never showed: not a block's `source_url` / `file_url`, and not
+written anywhere in a block's text (a live page names the documents it links to
+as "Title (https://...)"). The label stays as plain text, so the sentence still
+reads. Matching ignores case and a trailing slash or full stop.
+
+It exists because the answer style now asks a list or an overview to end with a
+link to its page. Rule 4 already forbids inventing a URL, and the header gives
+the real one, but a model asked for a link will sometimes supply a plausible one,
+and a plausible link to the wrong page is worse than none. When it changes the
+answer it emits a `correction` event with `reason: "unknown_link"`.
 
 Order relative to faithfulness matters: the date guard runs **after** the
 faithfulness pass and reads whatever text that pass left behind (`strip_tags`
@@ -535,6 +606,7 @@ component rather than an active stage of generation.
 | Claim is entailed by its cited evidence | `faithfulness.verify` | One regeneration with a correction note; streamed answer kept if the retry fails |
 | A number in the answer appears in cited evidence | `numeric_mismatches` | Reported only — no correction |
 | A document is not dated by its page's date | `date_claims.verify_date_claims` | One regeneration, then a mechanical sentence rewrite if the regeneration doesn't clear it |
+| A link's address was shown in the context | `faithfulness.strip_unknown_links` | The anchor is removed and its label kept; a `correction` event carries the result |
 | Requirement extraction succeeds | `extract_requirements` | Fails open to `[]` — no plan directive |
 | Context is non-empty | `generate_answer` | Returns `REFUSAL` with no model call |
 
@@ -558,9 +630,9 @@ component rather than an active stage of generation.
   `"Answer dated a document by its page; correcting once (%d claim(s))."`,
   `"Replaced %d unsafe publication-date sentence(s) after a failed
   regeneration."`.
-- Two `correction` SSE event reasons distinguish the two guards:
-  `faithfulness` and `publication_date` / `publication_date_fallback`, so a
-  client or a retrieval-log trace can tell which check fired without parsing
+- The `correction` SSE event's `reason` distinguishes the guards:
+  `faithfulness`, `date_claim` / `date_claim_fallback` and `unknown_link`, so
+  a client or a retrieval-log trace can tell which check fired without parsing
   the log.
 - Per-query retrieval-log trace (`is_retrieval_log=true`) captures the
   rendered context string handed to the model

@@ -66,7 +66,8 @@ question
                                    n is read live instead
        build context, attachments, graph merge (unchanged)
        merge()                     priority blocks lead; corpus keeps ≥2 slots (rag.priority_merge)
-  -> generation                    header "official page · live page, read <date>"
+  -> generation                    header "official page · live page, read <date>
+                                   · ... · link <url>"
   -> semantic cache store          key recomputed after retrieval
 ```
 
@@ -108,6 +109,9 @@ area"). A theme listing adds no page by description match, since it is about
 no one theme. The overview phrases are deliberately tight: a page that matches
 leads the context, and "which themes have the most publications" is a catalog
 count — the home page overrules the catalog only for a `list_themes` reading.
+When understanding reads a theme listing *and* names a theme, the home page
+gives way as above and the catalog declines the listing too (see
+[07](07-structured-answers.md#the-tools)), so the named theme's page answers.
 
 **Calibration** (2026-09-24, 20 questions): most on-topic questions scored
 0.49–0.75 against the right page, every off-list question stayed below 0.46,
