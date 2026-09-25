@@ -30,7 +30,8 @@ def _sha(*parts: str) -> str:
 #: headings, lighter citations and a "Read more" link; a question naming one
 #: theme is no longer answered with the theme list.
 #: 2026-09-25.5: a compressed shape reminder follows the question.
-PIPELINE_REVISION = "2026-09-25.5"
+#: 2026-09-25.6: a single-source list is cited once, on its opening sentence.
+PIPELINE_REVISION = "2026-09-25.6"
 
 
 def _pref_fingerprint() -> str:

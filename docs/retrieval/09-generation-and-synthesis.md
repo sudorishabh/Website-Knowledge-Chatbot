@@ -14,7 +14,8 @@ citation-marker validation, an optional one-shot faithfulness correction, a
 mandatory publication-date guard, and an unknown-link check.
 
 **Components.** `app/generation/prompts.py`, `answerer.py`, `sections.py`,
-`answer_plan.py`, `faithfulness.py`, `redundancy.py`, `date_claims.py`.
+`answer_plan.py`, `faithfulness.py`, `redundancy.py`, `date_claims.py`,
+`tidy.py`.
 
 ---
 
@@ -286,8 +287,20 @@ particular call.
 `answerer.py` is deliberately thin: it assembles the system prompt (base +
 history rule + graph-facts rule + format directive + correction + plan
 directive + `today_anchor()`), a `MessagesPlaceholder` for history, and one
-human turn (`"Numbered context:\n{context}\n\n{dates}Question: {question}"`),
+human turn (`"Numbered context:\n{context}\n\n{dates}Question: {question}\n\n{shape}"`),
 then invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
+
+- **The shape reminder** (`prompts.SHAPE_REMINDER`) fills `{shape}`: the
+  answer shapes of `_ANSWER_STYLE` compressed to a few lines, after the
+  question. The style section sits in the middle of a system prompt of several
+  thousand tokens, and on a ten-question live run the small answering model
+  ignored it on most answers — the themes still in one sentence, a yes/no
+  question in one line. The reminder is the `supersession_note` fix again:
+  the end of the human turn is where the model is looking when it starts to
+  write. It names shapes, never a question or an organisation, defers to a
+  requested format, and hands a publication-date question to rule 9's
+  labelled parts by name. It deliberately does not mention the refusal:
+  naming it there turned a publication-date question into one.
 
 - **The dates note** (`prompts.supersession_note`) fills `{dates}`, and is
   empty for every context the builder did not flag — which is almost all of
@@ -500,8 +513,29 @@ reads. Matching ignores case and a trailing slash or full stop.
 It exists because the answer style now asks a list or an overview to end with a
 link to its page. Rule 4 already forbids inventing a URL, and the header gives
 the real one, but a model asked for a link will sometimes supply a plausible one,
-and a plausible link to the wrong page is worse than none. When it changes the
-answer it emits a `correction` event with `reason: "unknown_link"`.
+and a plausible link to the wrong page is worse than none.
+
+## Post-generation tidying: list citations (`tidy.py`)
+
+`tidy.tidy_lists(answer)` runs straight after the link check and corrects three
+habits the prompt asks against and the small answering model keeps anyway —
+measured on identical blocks with every rule above in place:
+
+- a list drawn from one block cites it on the opening sentence *and* on every
+  item. When every item carries the same single `[n]`, the citation moves to
+  the opening sentence (added there if missing) and leaves the items. A list
+  whose items cite different blocks, or several, or that sits under a heading
+  with no sentence to carry the citation, is left alone;
+- an item with no description keeps the dash that would have introduced one
+  (`**Name** — [1]`); the dash goes. Only an em or en dash: names carry
+  hyphens;
+- the `Read more` line carries a citation; it goes, the link being the source.
+
+Nothing here changes what the answer claims, and a clean answer comes back
+byte-for-byte unchanged, so it never costs a correction. The opening sentence
+always keeps the citation, so the sources footer sees the same blocks. The two
+passes share one `correction` event: `reason: "unknown_link"` when a link was
+removed, otherwise `"list_citations"`.
 
 Order relative to faithfulness matters: the date guard runs **after** the
 faithfulness pass and reads whatever text that pass left behind (`strip_tags`
@@ -607,6 +641,7 @@ component rather than an active stage of generation.
 | A number in the answer appears in cited evidence | `numeric_mismatches` | Reported only — no correction |
 | A document is not dated by its page's date | `date_claims.verify_date_claims` | One regeneration, then a mechanical sentence rewrite if the regeneration doesn't clear it |
 | A link's address was shown in the context | `faithfulness.strip_unknown_links` | The anchor is removed and its label kept; a `correction` event carries the result |
+| A single-source list is cited once | `tidy.tidy_lists` | The repeated `[n]` moves to the opening sentence; an empty description's dash is dropped |
 | Requirement extraction succeeds | `extract_requirements` | Fails open to `[]` — no plan directive |
 | Context is non-empty | `generate_answer` | Returns `REFUSAL` with no model call |
 
@@ -631,7 +666,8 @@ component rather than an active stage of generation.
   `"Replaced %d unsafe publication-date sentence(s) after a failed
   regeneration."`.
 - The `correction` SSE event's `reason` distinguishes the guards:
-  `faithfulness`, `date_claim` / `date_claim_fallback` and `unknown_link`, so
+  `faithfulness`, `date_claim` / `date_claim_fallback`, `unknown_link` and
+  `list_citations`, so
   a client or a retrieval-log trace can tell which check fired without parsing
   the log.
 - Per-query retrieval-log trace (`is_retrieval_log=true`) captures the

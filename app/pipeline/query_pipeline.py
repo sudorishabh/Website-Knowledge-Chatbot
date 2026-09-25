@@ -1029,16 +1029,22 @@ def stream_answer(
                 "reason": reason,
             }
 
-        # Last, so it reads whatever text the passes above settled on: either
-        # rewrite can itself introduce a link.
+        # Last, so they read whatever text the passes above settled on: either
+        # rewrite can itself introduce a link or a list. One correction for
+        # both, named for the one that matters more.
+        from app.generation.tidy import tidy_lists
+
         linked = faithfulness.strip_unknown_links(answer, gen.blocks)
         if linked != answer:
             logger.info("Unlinked a URL the context never showed.")
-            answer = linked
+        tidied = tidy_lists(linked)
+        if tidied != answer:
+            reason = "unknown_link" if linked != answer else "list_citations"
+            answer = tidied
             yield {
                 "type": "correction",
                 "text": f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer,
-                "reason": "unknown_link",
+                "reason": reason,
             }
 
         result = _assemble(answer, gen)

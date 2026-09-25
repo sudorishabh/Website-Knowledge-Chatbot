@@ -4,7 +4,8 @@ Event contract (each ``data:`` line is one JSON object, keyed by ``type``):
   token      — one answer fragment; concatenate in order.
   correction — full replacement answer text (a post-generation check flagged
                the streamed draft; ``reason`` says which: ``faithfulness``,
-               ``date_claim``, ``date_claim_fallback`` or ``unknown_link``).
+               ``date_claim``, ``date_claim_fallback``, ``unknown_link`` or
+               ``list_citations``).
                Discard prior tokens.
   sources    — citations + answer metadata; follows the final answer text.
   done       — normal end of stream.
