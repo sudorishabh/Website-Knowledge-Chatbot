@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     # `app.core.clients.llm.get_llm`, so the call sites keep their intent for
     # a model that does honour it.
     llm_temperature_supported: bool = True
+    # Reasoning effort for a reasoning deployment ("none", "low", "medium", ...;
+    # which values a model accepts varies — gpt-6-luna rejects "minimal"). Unset
+    # sends nothing and the deployment uses its own default. Measured on
+    # gpt-6-luna, same blocks, one long answer: the default waited 9.6 s for the
+    # first token, "low" 4.1 s, "none" 2.7 s, with the refusal and the labelled
+    # publication-date parts intact at both. Applies to every call.
+    llm_reasoning_effort: str | None = None
     azure_openai_embedding_model: str = ""
     azure_openai_embedding_key: str = ""
     azure_openai_embedding_endpoint: str = ""

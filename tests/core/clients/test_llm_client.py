@@ -1,4 +1,5 @@
-"""The chat client never sends a temperature to a deployment that rejects one.
+"""The chat client never sends a temperature to a deployment that rejects one,
+and sends a reasoning effort only when one is configured.
 
 Measured 2026-09-25 on gpt-6-luna: every call carrying `temperature` came back
 400 "Unsupported parameter: 'temperature' is not supported with this model" —
@@ -25,6 +26,7 @@ def settings(monkeypatch):
             azure_openai_model="some-deployment",
             llm_structured_temperature=0.0,
             llm_temperature_supported=True,
+            llm_reasoning_effort=None,
         )
         values.update(over)
         monkeypatch.setattr(llm, "get_settings", lambda: SimpleNamespace(**values))
@@ -55,3 +57,26 @@ def test_the_default_is_to_send_it():
     from app.config import Settings
 
     assert Settings.model_fields["llm_temperature_supported"].default is True
+
+
+# --------------------------------------------------------------------------- #
+# Reasoning effort.
+# --------------------------------------------------------------------------- #
+
+def test_a_reasoning_effort_is_sent_in_the_responses_api_form(settings):
+    settings(llm_reasoning_effort="low")
+    assert llm.get_llm(temperature=0.2).reasoning == {"effort": "low"}
+    assert llm.get_structured_llm().reasoning == {"effort": "low"}
+
+
+@pytest.mark.parametrize("unset", [None, "", "  "])
+def test_no_effort_is_sent_when_unset(settings, unset):
+    # A blank .env line must not send an empty effort the deployment rejects.
+    settings(llm_reasoning_effort=unset)
+    assert llm.get_llm().reasoning is None
+
+
+def test_the_default_sends_no_effort():
+    from app.config import Settings
+
+    assert Settings.model_fields["llm_reasoning_effort"].default is None
