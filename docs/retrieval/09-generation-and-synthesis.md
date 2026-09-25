@@ -574,11 +574,14 @@ measured on identical blocks with every rule above in place:
   item. When every item carries the same single `[n]`, the citation moves to
   the opening sentence (added there if missing) and leaves the items. A list
   whose items cite different blocks, or several, is left alone. A list under a
-  heading has no sentence of its own to carry the citation. Its items shed a
-  shared single `[n]` only when they are named items (`- **Name** — ...`) and
-  the answer's opening already cites `[n]`. That is the grouped selection,
-  which otherwise carried fifteen `[2]`s below an opening citing `[1][2]`. An
-  overview's bullets under a heading are claims and keep their citations;
+  heading has no sentence of its own to carry the citation. When its items are
+  named items (`- **Name** — ...`) sharing a single `[n]`, the marker moves to
+  the answer's opening instead, which gains it if it lacks it. That is the
+  grouped selection, which otherwise carried fifteen `[2]`s below an opening
+  that cited `[1][2]`, or nothing at all. An answer that opens with a heading
+  keeps the markers. So do an overview's bullets under a heading, which are
+  claims. Either way the marker goes before the sentence's closing colon or
+  full stop (`listed [2].`);
 - an item with no description keeps the dash that would have introduced one
   (`**Name** — [1]`); the dash goes. Only an em or en dash: names carry
   hyphens;

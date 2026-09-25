@@ -83,9 +83,18 @@ def test_a_group_whose_items_cite_different_blocks_keeps_them():
     assert "Girish Sethi, Jiwesh Nandan [1][2]" in tidied
 
 
-def test_a_heading_group_keeps_a_marker_the_opening_does_not_carry():
-    answer = _GROUPED.replace("listed [1][2].", "listed [1].")
-    assert "- **Dr Vibha Dhawan** — Director General [2]" in tidy_lists(answer)
+def test_an_opening_without_the_marker_is_given_it():
+    # Measured in the live chat: the opening cited nothing, so every director
+    # under "Senior research and technical leaders" kept his "[2]".
+    answer = _GROUPED.replace(" listed [1][2].", " listed.")
+    tidied = tidy_lists(answer)
+    assert "most senior people listed [2]." in tidied
+    assert "- **Dr Vibha Dhawan** — Director General\n" in tidied
+
+
+def test_an_answer_that_opens_with_a_heading_keeps_its_markers():
+    answer = "### Senior leadership\n- **Dr A** — Director General [2]\n- **Mr B** — Director [2]"
+    assert tidy_lists(answer) == answer
 
 
 def test_claims_under_a_heading_keep_their_citations_whatever_the_opening():

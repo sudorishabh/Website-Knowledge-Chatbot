@@ -21,9 +21,10 @@ same blocks as before.
 A grouped list — names under ### headings, as a selection of people is — has no
 sentence above each group, so its items used to keep their markers: fifteen
 people, fifteen "[2]"s, below an opening that already cited [1][2]. A run of
-named items under a heading now drops its one shared marker when the answer's
-opening already carries it. Only named items ("- **Name** — ..."): an overview's
-bullets are claims, and a claim keeps its own citation.
+named items under a heading now hands its one shared marker to the answer's
+opening, which gains it when it lacks it — the live answer that showed this
+opened with no citation at all. Only named items ("- **Name** — ..."): an
+overview's bullets are claims, and a claim keeps its own citation.
 """
 from __future__ import annotations
 
@@ -57,12 +58,13 @@ def _without_markers(line: str) -> str:
 
 
 def _with_marker(line: str, n: str) -> str:
-    """The opening sentence with ``[n]`` on it, before a closing colon if any."""
+    """The opening sentence with ``[n]`` on it, before a closing colon or full
+    stop if any — where rule 2 and the worked examples put a citation."""
     if f"[{n}]" in line:
         return line
     stripped = line.rstrip()
-    if stripped.endswith(":"):
-        return f"{stripped[:-1].rstrip()} [{n}]:"
+    if stripped.endswith((":", ".")):
+        return f"{stripped[:-1].rstrip()} [{n}]{stripped[-1]}"
     return f"{stripped} [{n}]"
 
 
@@ -88,18 +90,19 @@ def _under_heading(lines: list[str], run_start: int) -> bool:
     return j >= 0 and bool(_HEADING.match(lines[j]))
 
 
-def _opening_markers(lines: list[str]) -> set[str]:
-    """The blocks the answer's opening cites: every line before its first
-    heading or list item."""
-    cited: set[str] = set()
-    for line in lines:
+def _opening_index(lines: list[str]) -> int | None:
+    """The last line of the answer's opening — the prose before its first
+    heading or list item — or None when the answer opens with either."""
+    last = None
+    for i, line in enumerate(lines):
         if _BULLET.match(line) or _HEADING.match(line):
             break
-        cited.update(_MARKER.findall(line))
-    return cited
+        if line.strip():
+            last = i
+    return last
 
 
-def _collapse_run(lines: list[str], start: int, end: int, opening: set[str]) -> None:
+def _collapse_run(lines: list[str], start: int, end: int, opening: int | None) -> None:
     """Move a single shared citation off every item of ``lines[start:end]``."""
     if end - start < 2:
         return
@@ -110,13 +113,15 @@ def _collapse_run(lines: list[str], start: int, end: int, opening: set[str]) -> 
     lead = _lead_index(lines, start)
     if lead is None:
         # A list under a heading has no sentence of its own to carry the
-        # citation. Its named items shed it only when the opening already
-        # cites the block; anything else keeps its markers.
+        # citation, so its named items hand it to the answer's opening, as a
+        # flat list hands it to its lead. With no opening, or items that are
+        # claims rather than names, the markers stay where they are.
         if (
-            n in opening
+            opening is not None
             and _under_heading(lines, start)
             and all(_NAMED_ITEM.match(lines[i]) for i in range(start, end))
         ):
+            lines[opening] = _with_marker(lines[opening], n)
             for i in range(start, end):
                 lines[i] = _without_markers(lines[i])
         return
@@ -135,7 +140,7 @@ def tidy_lists(answer: str) -> str:
         elif _READ_MORE.match(line) and _MARKER.search(line):
             lines[i] = _without_markers(line)
 
-    opening = _opening_markers(lines)
+    opening = _opening_index(lines)
     i = 0
     while i < len(lines):
         if not _BULLET.match(lines[i]):
