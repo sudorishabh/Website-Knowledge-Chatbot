@@ -45,7 +45,7 @@ class QueryUnderstanding(BaseModel):
     intents: list[IntentPrediction]      # multi-label, each with confidence + rationale
     output_format: OutputFormat          # prose | list | table | csv | json | markdown | diagram | timeline
     scope: QueryScope                    # source_type, target, theme, author, tags, dates, language
-    operation, group_by, bundle, title_contains, theme_children, limit  # database-only slots
+    operation, group_by, bundle, title_contains, limit  # database-only slots
 ```
 
 `QueryScope.date_to` is a computed `@property`, not a field the model fills:
