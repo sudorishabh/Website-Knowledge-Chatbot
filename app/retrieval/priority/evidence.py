@@ -411,6 +411,12 @@ def gather(
         people = [t for t in targets if t.reason == match.PERSON][:MAX_PEOPLE]
         others = [t for t in targets if t.reason != match.PERSON]
         targets = match.ranked([*people, *others])
+        # A question for the organisation's people that names none of them is
+        # answered by the people listings, which no phrase or description match
+        # would otherwise reach (see `match.staff_listings`).
+        staff = match.staff_listings(question, query_vector, registry=registry,
+                                     targets=targets, embed=embed)
+        targets = match.ranked([*targets, *staff])
         # A question for the list of themes is about no one theme, so a
         # description match would only add a page the answer does not need.
         lists_themes = any(t.page is not None and t.page.is_home for t in targets)

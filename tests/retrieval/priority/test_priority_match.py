@@ -187,3 +187,90 @@ class TestSimilarity:
         page = parse([{"name": "Environment Theme", "page_url": "https://teriin.org/environment",
                        "description": "Air, water and land."}]).pages[0]
         assert match.description_text(page) == "Environment. Air, water and land."
+
+
+class TestStaffListings:
+    """A question for the organisation's people that names none of them.
+
+    Measured 2026-09-25: "List TERI's leading researchers" read no people page —
+    no curated phrase says "researchers" and the best listing's description
+    scored 0.428 under a 0.48 bar — so the answer was the refusal, although the
+    Committee of Directors and Distinguished Fellows listings held it.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        match.clear_vectors()
+        yield
+        match.clear_vectors()
+
+    @staticmethod
+    def _registry():
+        return parse([
+            {"name": "Air", "page_url": "https://teriin.org/air", "description": "Air quality."},
+            {"name": "People - committee of directors",
+             "page_url": "https://teriin.org/people/committee-of-directors",
+             "description": "Directors."},
+            {"name": "people - governing council",
+             "page_url": "https://teriin.org/people/governing-council",
+             "description": "Council."},
+            {"name": "people - distinguished fellows",
+             "page_url": "https://teriin.org/people/distinguished-fellows",
+             "description": "Fellows."},
+        ])
+
+    @staticmethod
+    def _embed(texts):
+        # Directors along x, Fellows along y, Council along z, Air along w.
+        axes = {"Air": [0, 0, 0, 1.0], "committee of directors": [1.0, 0, 0, 0],
+                "distinguished fellows": [0, 1.0, 0, 0], "governing council": [0, 0, 1.0, 0]}
+        return [next(v for k, v in axes.items() if k in t) for t in texts]
+
+    def _staff(self, question, vector=(0.8, 0.6, 0.1, 0.0), targets=()):
+        found = match.staff_listings(question, list(vector), registry=self._registry(),
+                                     targets=targets, embed=self._embed)
+        return [(t.name, t.reason) for t in found]
+
+    @pytest.mark.parametrize("question", [
+        "List TERI's leading researchers.", "TERI top researchers", "air quality experts",
+        "TERI climate change team", "who are the scientists at TERI",
+    ])
+    def test_a_question_for_people_reads_the_closest_two_listings(self, question):
+        assert self._staff(question) == [
+            ("People - committee of directors", match.STAFF),
+            ("people - distinguished fellows", match.STAFF),
+        ]
+
+    def test_the_listings_follow_the_question_not_the_file(self):
+        # A question closest to the council gets the council.
+        assert self._staff("which people sit on the council", vector=(0.1, 0.2, 0.9, 0.0))[0] == (
+            "people - governing council", match.STAFF)
+
+    @pytest.mark.parametrize("question", [
+        "who wrote the net-zero paper?",   # one document's byline: the corpus answers it
+        "authors of the 2024 energy report",
+        "what is blended finance",
+    ])
+    def test_a_question_not_for_the_organisations_people_reads_none(self, question):
+        assert self._staff(question) == []
+
+    def test_a_named_person_or_listing_is_left_to_its_own_page(self):
+        reg = self._registry()
+        committee = next(p for p in reg.pages if "committee" in p.name)
+        named = Target(committee.name, committee.kind, NAME, url=committee.url, page=committee)
+        assert self._staff("who are the directors", targets=[named]) == []
+        person = Target("Dr A", "profile", PERSON, url="https://teriin.org/profile/a")
+        assert self._staff("researchers working with Dr A", targets=[person]) == []
+
+    def test_without_vectors_the_file_order_decides(self):
+        def boom(texts):
+            raise RuntimeError("embedding service down")
+
+        found = match.staff_listings("TERI researchers", [1.0, 0, 0, 0],
+                                     registry=self._registry(), embed=boom)
+        assert [t.name for t in found] == ["People - committee of directors",
+                                           "people - governing council"]
+
+    def test_staff_is_an_about_reason(self):
+        # So each listing's opening section is admitted whatever it scores.
+        assert match.STAFF in match.ABOUT

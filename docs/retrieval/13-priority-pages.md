@@ -87,6 +87,7 @@ Strongest first; none costs a model call.
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
 | `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
 | `group` | "regional centres", … → one block built from the list itself; nothing fetched | — |
+| `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named. Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
 | `theme` | understanding resolved a theme facet that is a page on the list | yes |
 | `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next | yes |
 | `surfaced` | retrieval ranked a listed page's stored copy within the top `n` | no — sections by score only |

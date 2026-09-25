@@ -108,6 +108,16 @@ def test_blocks_are_capped():
     assert len(got.blocks) == 3
 
 
+def test_a_question_for_the_organisations_people_reads_the_people_listing():
+    """Measured: "List TERI's leading researchers" read no people page and was
+    refused, although the Committee of Directors listing held the answer."""
+    got = _gather("yes leading researchers\nList TERI's leading researchers.")
+    assert [(t.name, t.reason) for t in got.targets] == [
+        ("People - committee of directors", match.STAFF)
+    ]
+    assert got.blocks and "Vibha Dhawan" in got.blocks[0].text
+
+
 def test_a_question_about_nothing_on_the_list_reads_nothing(_pages):
     got = _gather("what is blended finance")
     # Only the people listing is read, to know whose name to look for.

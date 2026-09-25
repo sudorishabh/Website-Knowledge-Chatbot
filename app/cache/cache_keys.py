@@ -34,7 +34,9 @@ def _sha(*parts: str) -> str:
 #: 2026-09-25.7: the shape reminder opens with the context-only rule.
 #: 2026-09-25.8: a bare phrase naming the organisation's people or one of its
 #: listed pages is answered from retrieval instead of by small talk.
-PIPELINE_REVISION = "2026-09-25.8"
+#: 2026-09-25.9: a question for the organisation's people reads its people
+#: listings.
+PIPELINE_REVISION = "2026-09-25.9"
 
 
 def _pref_fingerprint() -> str:
