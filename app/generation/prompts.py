@@ -159,7 +159,11 @@ _ANSWER_STRUCTURE = (
 # context states — and the order that choosing went wrong in: ranked by
 # "distinction" the fellows displaced the Director General, and picked in page
 # order two directors of one area beat an area left out. The closing offer is
-# what keeps a partial answer honest about being one.
+# what keeps a partial answer honest about being one. The head of the
+# organisation is exempted from the role filter by name because the two rules
+# collided: "researchers leave out administration" read the Director General as
+# an administrative post, and one "top researchers" answer in the live chat
+# opened with a senior director instead.
 #
 # Asking a grounded model for fuller answers raises the pressure to pad, so the
 # anti-padding clause is not optional decoration — it is what keeps the extra
@@ -197,14 +201,17 @@ _ANSWER_STYLE = (
     "programmes\") and the context lists more than about 15 of them. That asks "
     "for the ones that matter most, not the whole set: give about 12-15, "
     "chosen by what the context states about each. Rank by the seniority of a "
-    "title — the head of the organisation leads whenever the context lists "
-    "one, then those heading an area (senior directors, then directors, then "
-    "associate directors, and the like) — and draw in a few holders of a "
-    "distinction such as a fellowship alongside them, never in their place. "
-    "Keep only those whose role fits the question: a question about "
-    "researchers or experts leaves out posts in administration, human "
+    "title — the head of the organisation (its director general, president, "
+    "chief executive or the like) is always the first bullet whenever the "
+    "context lists one, then those heading an area (senior directors, then "
+    "directors, then associate directors, and the like) — and draw in a few "
+    "holders of a distinction such as a fellowship alongside them, never in "
+    "their place. Keep only those whose role fits the question: a question "
+    "about researchers or experts leaves out posts in administration, human "
     "resources, communications, partnerships, special projects or business "
-    "development. Spread the choice across areas: take the most senior person "
+    "development — but never the head of the organisation, who leads the "
+    "people asked about whatever they are. Spread the choice across areas: "
+    "take the most senior person "
     "the context gives for each distinct area, one per area, before a second "
     "from any area — never simply the first items in the context's order. "
     "Open by naming the reading ('Answer structure') and saying these are "
@@ -577,10 +584,11 @@ SHAPE_REMINDER = (
     "### headings by role, level or area, and no one the context marks as "
     "former;\n"
     "- the top, leading or key members of a set the context lists at length: "
-    "about 12-15 of them, not all — the head of the organisation first, then "
-    "the most senior heads of areas, with a few holders of a distinction such "
-    "as a fellowship beside them — only those whose role fits the question, "
-    "under ### headings by "
+    "about 12-15 of them, not all — the head of the organisation always the "
+    "first bullet when the context lists one, then the most senior heads of "
+    "areas, with a few holders of a distinction such as a fellowship beside "
+    "them — only those whose role fits the question (the head of the "
+    "organisation always fits), under ### headings by "
     "level, then a ### By area section when they span several areas, and one "
     "closing sentence offering the full listing or one area;\n"
     "- \"tell me about X\" / \"what is X\": one or two opening sentences saying "

@@ -251,8 +251,13 @@ Four more rules came from the people questions ("TERI top researchers"):
   partnerships and business development), and the choice goes one per area
   before a second from any area. Each clause fixed a measured miss. Ranked by
   "distinction", six fellows displaced the Director General. Picked in page
-  order, two directors of one area beat an area left out. Asking for all,
-  every or the full list still gets the List shape.
+  order, two directors of one area beat an area left out. The head of the
+  organisation is always the first bullet and is exempt from the role filter
+  by name, because the two rules collided: "researchers leave out
+  administration" read the Director General as an administrative post, and a
+  live "teri top researchers" answer opened with a senior director. With the
+  exemption she led 16 answers in 16. Asking for all, every or the full list
+  still gets the List shape.
 - **A list of more than about 12 items is grouped** into 2–4 sections by
   something the context states for every item (a title's level, a division,
   the listing it came from). The same question once came back as one flat list

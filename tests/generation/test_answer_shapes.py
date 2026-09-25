@@ -318,9 +318,19 @@ def test_a_selection_ranks_by_the_seniority_the_context_states():
     from app.generation.prompts import SHAPE_REMINDER
 
     selection = _selection()
-    assert "the head of the organisation leads whenever the context lists" in selection
+    assert "is always the first bullet whenever the" in selection
     assert "never in their place" in selection
-    assert "the head of the organisation first" in SHAPE_REMINDER
+    assert "the head of the organisation always the first bullet" in SHAPE_REMINDER
+
+
+def test_the_role_filter_never_removes_the_head_of_the_organisation():
+    """Measured in the live chat: "researchers leave out administration" read
+    the Director General as an administrative post, and "teri top researchers"
+    opened with a senior director instead."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "but never the head of the organisation" in _selection()
+    assert "(the head of the organisation always fits)" in SHAPE_REMINDER
 
 
 def test_a_selection_keeps_to_roles_that_fit_and_spreads_across_areas():
