@@ -114,6 +114,40 @@ def test_citations_stay_mandatory():
     assert "Cite the block number [n] for every claim" in _rule_2()
 
 
+def _demonstrated(label: str) -> str:
+    """The answer body of the worked example headed ``label``."""
+    example = GROUNDED_SYSTEM_PROMPT[GROUNDED_SYSTEM_PROMPT.index(label) :]
+    return example.split("Answer:\n", 1)[1].split("\n\nExample", 1)[0]
+
+
+def test_the_first_example_demonstrates_an_overview_in_headed_sections():
+    # The model copies the exemplar's shape; the one-paragraph exemplar that
+    # stood here is the shape every answer came back in.
+    body = _demonstrated("Example:\n")
+    assert body.count("\n### ") >= 2
+    assert body.startswith("According to Org One's")
+    assert "\n- " in body
+
+
+def test_the_list_example_keeps_descriptions_and_cites_its_list_once():
+    body = _demonstrated("Example (a list):")
+    items = [line for line in body.splitlines() if line.startswith("- ")]
+    assert len(items) == 3
+    assert all(line.startswith("- **") and " — " in line for line in items)
+    # One citation on the opening sentence covers the whole list; only the
+    # item described from a different block carries its own.
+    assert body.splitlines()[0].rstrip().endswith("[1]:")
+    assert [line for line in items if "[" in line] == [items[1]]
+    # The truncated teaser is cut at its last complete phrase, not finished.
+    assert "..." not in body
+
+
+def test_the_examples_are_invented():
+    example = GROUNDED_SYSTEM_PROMPT[GROUNDED_SYSTEM_PROMPT.index("Example:") :]
+    assert "Org One" in example
+    assert "TERI" not in example
+
+
 def test_attribution_by_page_name_is_licensed_only_by_the_header_markers():
     structure = _structure()
     assert f"\"{CANONICAL_MARKER}\" or \"{LIVE_MARKER}\"" in structure

@@ -430,13 +430,14 @@ def test_worked_examples_demonstrate_the_depth_the_style_asks_for():
     # The exemplar outweighs the described style for 4o-mini, so a one-sentence
     # demonstration teaches one-sentence answers however thorough the style
     # section above it reads. Cited sentences specifically: the depth being
-    # taught has to be the grounded kind.
+    # taught has to be the grounded kind. A bullet is a unit as much as a
+    # sentence is, so line breaks split too.
     bodies = _demonstrated_answers(GROUNDED_SYSTEM_PROMPT)
     assert bodies
     for body in bodies:
         cited = [
             part
-            for part in re.split(r"(?<=[.!?])\s+", body)
+            for part in re.split(r"(?<=[.!?])\s+|\n", body)
             if re.search(r"\[\d+\]", part)
         ]
         assert len(cited) >= 2, body

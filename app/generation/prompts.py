@@ -172,24 +172,80 @@ _ANSWER_STYLE_SCOPE = (
 )
 
 
-# The demonstration. Deliberately built on a *mixed* context — a website page and
-# a PDF — answered as one flowing passage, because that is the case the model
-# used to split and the shape it copies matters more than anything described to
-# it. The second exemplar demonstrates rule 9's dated-title clause, which is the
-# one rule a model reliably ignores when the block reads like a standing label.
+# The demonstrations, one per shape that most needs showing, because the shape a
+# model copies matters more than anything described to it. The exemplar that
+# stood here until 2026-09-25 was a single three-sentence paragraph, and that is
+# the shape every answer came back in, whatever the style section said.
+#
+# The overview is deliberately built on a *mixed* context — a website page and a
+# PDF — and answered as one set of topic sections, because a mixed context is
+# the case the model used to split by source. The list shows the three things
+# the live list answers got wrong: one item per line, the per-item description
+# kept (a truncated one cut at its last complete phrase), and one citation on the
+# opening sentence instead of one per name. The third exemplar demonstrates rule
+# 9's dated-title clause, which is the one rule a model reliably ignores when
+# the block reads like a standing label.
+#
+# Everything here is invented — an organisation called Org One, a programme and
+# centres that do not exist — so no example can leak a real fact into an answer.
 _ANSWER_EXAMPLE = (
     "Example:\n"
-    "Context: [1] (website · Rooftop Solar Push · published 2023-11-02) The "
-    "rooftop programme added 1.2 GW of capacity in 2023, up from 0.8 GW in "
-    "2022.\n"
-    "[2] (pdf · Annual Energy Report · p.4) Commercial installations accounted "
-    "for 60% of new rooftop capacity, concentrated in five states.\n"
-    "Question: How did rooftop solar grow in 2023?\n"
+    "Context: [1] (website · official page · live page, read 2026-01-10 · "
+    "Clean Cooling Programme) The Clean Cooling Programme works to cut the "
+    "energy use and emissions of cooling in buildings and cold chains. It was "
+    "set up in 2019 with the Ministry of Power. Focus areas: efficient "
+    "air-conditioning standards; passive building design; low-GWP "
+    "refrigerants. Projects: Cool Roofs for Schools; Cold Chain Audit for "
+    "Dairy Cooperatives.\n"
+    "[2] (pdf · Cooling Outlook Report · p.12) A study under the Clean Cooling "
+    "Programme found that cool roofs lowered indoor peak temperatures by "
+    "2-3°C across 40 surveyed schools. It recommends extending them to "
+    "district hospitals.\n"
+    "Question: Tell me about the Clean Cooling Programme.\n"
     "Answer:\n"
-    "The rooftop programme added **1.2 GW of capacity in 2023**, up from 0.8 GW "
-    "the year before [1]. Commercial installations drove most of that growth, "
-    "accounting for 60% of the new capacity [2], and those additions were "
-    "concentrated in five states [2].\n"
+    "According to Org One's Clean Cooling Programme page, the programme works "
+    "to cut the energy use and emissions of cooling in buildings and cold "
+    "chains [1]. It was set up in 2019 with the Ministry of Power [1].\n"
+    "\n"
+    "### Focus areas\n"
+    "The programme concentrates on three areas [1]:\n"
+    "- Efficient air-conditioning standards\n"
+    "- Passive building design\n"
+    "- Low-GWP refrigerants\n"
+    "\n"
+    "### Projects\n"
+    "Its projects are [1]:\n"
+    "- Cool Roofs for Schools\n"
+    "- Cold Chain Audit for Dairy Cooperatives\n"
+    "\n"
+    "### Findings\n"
+    "- A study under the programme found that cool roofs lowered indoor peak "
+    "temperatures by 2-3°C across 40 surveyed schools [2].\n"
+    "- The study recommends extending cool roofs to district hospitals [2].\n"
+    "\n"
+    "In short, the programme pairs standards, building design and refrigerant "
+    "work with projects in schools and cold chains [1].\n"
+    "\n"
+    "Example (a list):\n"
+    "Context: [1] (website · official page · live page, read 2026-01-10 · Org "
+    "One: Home) Our Centres\n"
+    "Centre for Water Reuse\n"
+    "Advancing safe reuse of treated wastewater in cities and industry.\n"
+    "Centre for Coastal Studies\n"
+    "Centre for Green Logistics\n"
+    "Supporting low-carbon freight through rail, cleaner fuels and...\n"
+    "[2] (website · Centre for Coastal Studies · page date 2025-09-18) The "
+    "Centre for Coastal Studies, set up in 2021 in Goa, researches shoreline "
+    "change and coastal livelihoods.\n"
+    "Question: What centres does Org One have?\n"
+    "Answer:\n"
+    "According to Org One's home page, its centres are [1]:\n"
+    "- **Centre for Water Reuse** — advancing safe reuse of treated wastewater "
+    "in cities and industry.\n"
+    "- **Centre for Coastal Studies** — researching shoreline change and "
+    "coastal livelihoods from Goa, where it was set up in 2021 [2].\n"
+    "- **Centre for Green Logistics** — supporting low-carbon freight through "
+    "rail and cleaner fuels.\n"
     "\n"
     "Example (a role, stated at two times):\n"
     "Context: [1] (website · Statement on climate leadership · published "
