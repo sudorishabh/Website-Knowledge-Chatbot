@@ -2,16 +2,14 @@
 
 Companion to ``test_theme_rows.py``, which unit-tests the classifier and the
 statements ``state`` emits. This module asserts the *properties* the storage
-model has to hold — sparseness, hierarchy at arbitrary depth, open vocabulary,
-idempotence — and it does so end to end where that is what makes the test worth
-having.
+model has to hold — sparseness, hierarchy recorded at arbitrary depth, open
+vocabulary, idempotence — and it does so end to end where that is what makes the
+test worth having.
 
-The theme-scope predicate is executed rather than pattern-matched. Asserting
-that the generated SQL "contains LIKE" says nothing about whether a query for
-Energy actually reaches a document tagged only "Mini Grids" three levels down;
-so :func:`_documents_matching` builds the real ``documents_theme`` rows in
-SQLite, runs the real clause from :func:`app.catalog.queries._theme_scope_clause`
-against them, and returns who matched. That is the requirement, checked.
+The theme-scope predicate is executed rather than pattern-matched:
+:func:`_documents_matching` builds the real ``documents_theme`` rows in SQLite,
+runs the real clause from :func:`app.catalog.queries._theme_scope_clause`
+against them, and returns who matched.
 """
 
 from __future__ import annotations
@@ -121,54 +119,42 @@ _CORPUS = {
 
 
 # --------------------------------------------------------------------------- #
-# Requirement: a parent-theme query includes every descendant, at any depth.
+# Requirement: a theme query matches the documents tagged with that theme, and
+# never widens to the themes stored beneath it.
 # --------------------------------------------------------------------------- #
 
-def test_a_parent_theme_query_reaches_every_depth(deep_taxonomy):
-    """"How many documents are in Energy?" has to count the document tagged only
-    "Mini Grids", four levels down. With one `parent` column it could not: the
-    filter was `theme = X OR parent = X`, which stops after one hop."""
-    assert _documents_matching("Energy", _CORPUS) == {
-        "top", "level2", "level3", "level4", "sibling2",
-    }
+def test_a_theme_query_matches_only_documents_tagged_with_it(deep_taxonomy):
+    """"How many documents are in Energy?" counts the documents tagged "Energy".
+    The ones tagged only with a theme nested under it are not folded in."""
+    assert _documents_matching("Energy", _CORPUS) == {"top"}
 
 
-def test_a_mid_level_theme_query_reaches_its_own_descendants_only(deep_taxonomy):
-    """"Energy Access" includes what is under it and excludes its siblings —
-    and it works even though no document is tagged "Energy Access"'s parent."""
-    assert _documents_matching("Energy Access", _CORPUS) == {
-        "level2", "level3", "level4",
-    }
+@pytest.mark.parametrize(
+    "scope,expected",
+    [
+        ("Energy Access", "level2"),
+        ("Rural Energy Access", "level3"),
+        ("Mini Grids", "level4"),
+        ("Energy Efficiency", "sibling2"),
+        ("Adaptation", "other-branch"),
+        # Starts with "Energy" but is a different theme: never merged with it.
+        ("Energy Storage", "prefix-trap"),
+        # Absent from the map, still countable by its own name.
+        ("Green Hydrogen", "unknown"),
+    ],
+)
+def test_every_theme_is_matched_by_its_own_name(deep_taxonomy, scope, expected):
+    assert _documents_matching(scope, _CORPUS) == {expected}
 
 
-def test_an_exact_leaf_query_returns_only_that_leaf(deep_taxonomy):
-    assert _documents_matching("Mini Grids", _CORPUS) == {"level4"}
+def test_a_theme_nobody_is_tagged_with_matches_nothing(deep_taxonomy):
+    """Only "Adaptation" is tagged, so its parent in the map matches nobody."""
+    assert _documents_matching("Climate Change", _CORPUS) == set()
 
 
-def test_a_sibling_sharing_a_name_prefix_is_not_swept_in(deep_taxonomy):
-    """"Energy Storage" starts with "Energy" but is not beneath it. The prefix
-    includes the path separator precisely so this cannot match — a bare
-    `LIKE 'Energy%'` would have counted it under Energy."""
-    assert "prefix-trap" not in _documents_matching("Energy", _CORPUS)
-    assert _documents_matching("Energy Storage", _CORPUS) == {"prefix-trap"}
-
-
-def test_a_separate_branch_is_untouched(deep_taxonomy):
-    assert _documents_matching("Climate Change", _CORPUS) == {"other-branch"}
-    assert _documents_matching("Adaptation", _CORPUS) == {"other-branch"}
-
-
-def test_an_unknown_theme_is_queryable_and_has_no_descendants(deep_taxonomy):
-    """Requirement: a theme absent from the map must still be countable and
-    listable. It expands to itself, because nothing is known to sit under it."""
-    assert _documents_matching("Green Hydrogen", _CORPUS) == {"unknown"}
-
-
-def test_legacy_rows_with_no_path_still_match_by_name_and_parent(deep_taxonomy):
-    """The compatibility branch. A deployment that has not run
-    `reclassify_theme_rows` yet has NULL paths, and those rows must keep the old
-    one-level behaviour instead of silently dropping out of every theme filter.
-    """
+def test_legacy_rows_with_no_path_match_by_name(deep_taxonomy):
+    """Rows written before `theme_path` existed are matched the same way: by
+    the theme's own name, whatever their `parent` says."""
     conn = sqlite3.connect(":memory:")
     conn.execute(
         "CREATE TABLE t (document_id TEXT, theme TEXT, theme_type TEXT,"
@@ -179,9 +165,6 @@ def test_legacy_rows_with_no_path_still_match_by_name_and_parent(deep_taxonomy):
         [
             ("legacy-self", "Energy", "primary", None, "main"),
             ("legacy-child", "Energy Access", "sub", "Energy", "main"),
-            # Pre-path rows were flattened onto the primary tag, so a
-            # grandchild's `parent` said "Energy". That still resolves.
-            ("legacy-grandchild", "Rural Energy Access", "sub", "Energy", "main"),
             ("legacy-elsewhere", "Adaptation", "sub", "Climate Change", "main"),
         ],
     )
@@ -191,9 +174,7 @@ def test_legacy_rows_with_no_path_still_match_by_name_and_parent(deep_taxonomy):
         tuple(params),
     ).fetchall()
     conn.close()
-    assert {r[0] for r in rows} == {
-        "legacy-self", "legacy-child", "legacy-grandchild",
-    }
+    assert {r[0] for r in rows} == {"legacy-self"}
 
 
 # --------------------------------------------------------------------------- #
@@ -359,7 +340,7 @@ def test_several_main_themes(cursor, deep_taxonomy):
 
 def test_a_deep_sub_theme_keeps_its_immediate_parent(cursor, deep_taxonomy):
     """Requirement 7. The row names its own parent, not the primary tag, and the
-    path carries the chain that makes the rollup work."""
+    path carries the full chain."""
     state.upsert(_record(categories=["Mini Grids"]))
 
     assert _theme_rows(cursor) == [

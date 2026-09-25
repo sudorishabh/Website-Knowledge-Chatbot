@@ -23,7 +23,6 @@ import time
 from datetime import datetime
 from typing import Any, Sequence
 
-from app.catalog import theme_taxonomy
 from app.catalog.db import state_table as _table
 from app.catalog.state import StateRecord, _row_to_record
 from app.core.clients import mysql_connection
@@ -43,43 +42,14 @@ def _like(term: str) -> str:
     return f"%{escaped}%"
 
 
-def _escape_like(term: str) -> str:
-    """LIKE-escape without wrapping in wildcards, for a left-anchored pattern."""
-    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-
-
 def _theme_scope_clause(alias: str, name: str) -> tuple[str, list[Any]]:
-    """A theme scope covering ``name`` **and every theme beneath it, at any
-    depth** — the condition behind "how many documents are in Energy?" when the
-    documents are tagged only "Rural Energy Access".
+    """A theme scope: the documents tagged with ``name`` itself.
 
-    Matched on the materialized ``theme_path``: a theme is in scope when its
-    path *is* the theme's path, or begins with it plus the separator. Left
-    anchored, so the prefix index does the work; the separator in the prefix is
-    what keeps "Energy" from also matching a sibling called "Energy Storage"
-    that happens to share the first six characters.
-
-    The path is looked up from the theme map rather than from the rows, so a
-    query for a mid-level theme expands correctly even when no document carries
-    that theme itself. A theme the map does not know has no path to expand, so
-    it matches by name only — which is exactly right: nothing is known to sit
-    beneath it.
-
-    The NULL-path branch is the compatibility path, not a nicety. Rows written
-    before ``theme_path`` existed carry NULL until
-    ``state.reclassify_theme_rows`` (or a re-ingest) fills them in, and without
-    this they would silently drop out of every theme filter — turning a
-    migration that has not been run yet into wrong counts rather than old ones.
-    It reproduces the previous one-level behaviour exactly: exact name, or
-    ``parent`` naming the theme.
+    Exact name only. A theme is never widened to the themes stored beneath it,
+    so "how many documents are in Energy?" counts the documents tagged "Energy"
+    and not those tagged only "Energy Access".
     """
-    path = theme_taxonomy.path_of(name) or name
-    clause = (
-        f"({alias}.theme_path = %s OR {alias}.theme_path LIKE %s"
-        f" OR ({alias}.theme_path IS NULL AND ({alias}.theme = %s OR {alias}.parent = %s)))"
-    )
-    prefix = f"{_escape_like(path)}{_escape_like(theme_taxonomy.PATH_SEPARATOR)}%"
-    return clause, [path, prefix, name, name]
+    return f"{alias}.theme = %s", [name]
 
 
 def _catalog_filters(
@@ -101,12 +71,10 @@ def _catalog_filters(
     ``entity_type`` scopes to one Drupal entity kind — the query layer passes
     "node" so taxonomy-term and block rows never count as content documents.
 
-    ``theme`` matches a theme **and every theme beneath it, at any depth** — see
-    :func:`_theme_scope_clause`. Exact-name rather than substring: the caller
-    canonicalizes the name first (see ``app.retrieval.structured.filters``), and
-    a substring match both misses sub-themes and wrongly merges siblings —
-    "Environment" would sweep in "Environment Education" while missing "Air" and
-    "Water".
+    ``theme`` matches that theme's name exactly — see :func:`_theme_scope_clause`.
+    Exact-name rather than substring: the caller canonicalizes the name first
+    (see ``app.retrieval.structured.filters``), and a substring match wrongly
+    merges siblings — "Environment" would sweep in "Environment Education".
 
     ``tag`` joins ``documents_tag`` separately from the theme join, so a theme
     filter and a tag filter combine as AND rather than collapsing into one
@@ -192,7 +160,7 @@ def count_documents(
     """Count catalog documents (not chunks) matching the given filters.
 
     ``author`` and ``title_contains`` match substrings; ``theme`` and ``tag``
-    match names exactly (``theme`` also matching its sub-themes) — see
+    match names exactly — see
     :func:`_catalog_filters`. Date bounds are a half-open ``[from, to)`` interval
     over ``effective_start_date``. Takes the same filter set as
     ``list_documents``/``distribution`` so a count and a listing of the same
@@ -745,15 +713,13 @@ THEME_SCOPE_DOC_CAP = 2000
 def theme_document_ids(
     theme: str, *, limit: int = THEME_SCOPE_DOC_CAP
 ) -> list[str] | None:
-    """Every document in ``theme``'s scope — the theme and its descendants.
+    """Every document tagged with ``theme``.
 
     The membership half of "MySQL decides who is in the theme, Qdrant ranks
     what they say". The semantic path used to answer this from the chunk
-    payload's ``categories``, which is a flat list of names: it could not
-    express the hierarchy (a chunk tagged only "Energy Access" did not match a
-    scope of "Energy", though the catalog said it should), and it drifted
-    whenever a theme was renamed or reclassified in MySQL without the payloads
-    being rewritten. Two representations of the same fact, disagreeing.
+    payload's ``categories``, which drifted whenever a theme was renamed or
+    reclassified in MySQL without the payloads being rewritten. Two
+    representations of the same fact, disagreeing.
 
     Unlike :func:`document_ids_in_scope` this does **not** restrict to website
     nodes. An attachment inherits its parent page's themes precisely so

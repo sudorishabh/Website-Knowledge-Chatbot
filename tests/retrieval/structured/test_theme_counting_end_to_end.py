@@ -7,8 +7,7 @@ module executes ``app.catalog.queries`` against a small SQLite corpus and checks
 the numbers.
 
 SQLite stands in for MySQL only where the two agree on what is being used here:
-backtick identifiers, ``COUNT(DISTINCT …)``, ``JOIN``, ``LIKE`` with a
-left-anchored pattern, and text date comparison. Nothing here depends on MySQL
+backtick identifiers, ``COUNT(DISTINCT …)``, ``JOIN``, and text date comparison. Nothing here depends on MySQL
 collation behaviour — the case-insensitive facet key is covered by
 ``test_theme_storage_contract.py``, which tests the writer instead.
 """
@@ -165,36 +164,34 @@ def _count(**kw) -> int:
 
 # --------------------------------------------------------------------------- #
 # "How many <content type> are in <theme>?" — the requirement's headline
-# questions, each answered including the theme's descendants.
+# questions, each answered from the documents tagged with that theme.
 # --------------------------------------------------------------------------- #
 
 def test_count_articles_in_a_main_theme(catalog):
-    """art-1 (tagged Climate Change), art-2 (Adaptation), art-3 (Coastal
-    Adaptation, two levels down) and art-4 (Mitigation). Not art-5, art-6 or
-    art-7 — Energy, untagged, and an unrelated unknown theme."""
-    assert _count(bundle="article", theme="Climate Change") == 4
+    """art-1 only: it is the one article tagged Climate Change. art-2, art-3 and
+    art-4 carry themes nested under it in the map and are not folded in."""
+    assert _count(bundle="article", theme="Climate Change") == 1
 
 
 def test_count_events_in_a_main_theme(catalog):
-    assert _count(bundle="events", theme="Climate Change") == 2
+    assert _count(bundle="events", theme="Climate Change") == 1  # evt-2
 
 
 def test_count_ongoing_projects_in_a_main_theme(catalog):
-    """prj-1 only. prj-2 is under Energy, a different branch."""
-    assert _count(bundle="ongoing_projects", theme="Climate Change") == 1
+    """None: prj-1 is tagged Coastal Adaptation, prj-2 Energy."""
+    assert _count(bundle="ongoing_projects", theme="Climate Change") == 0
 
 
 def test_count_across_content_types_for_a_theme(catalog):
-    """"How many documents are in Climate Change, including all its
-    sub-themes?" — 4 articles + 2 events + 1 project."""
-    assert _count(theme="Climate Change") == 7
+    """"How many documents are in Climate Change?" — art-1 and evt-2."""
+    assert _count(theme="Climate Change") == 2
 
 
 def test_a_document_is_counted_once_however_many_matching_themes_it_carries(catalog):
-    """evt-1 is tagged both Adaptation and Mitigation, and both are under
-    Climate Change. The theme join multiplies rows, so without
-    COUNT(DISTINCT document_id) it would be counted twice."""
-    assert _count(bundle="events", theme="Climate Change") == 2
+    """evt-1 carries two main themes, Adaptation and Mitigation. The group join
+    multiplies rows, so without COUNT(DISTINCT document_id) it would be counted
+    twice."""
+    assert _count(bundle="events", theme_group="main") == 2
     rows = catalog.execute(
         "SELECT COUNT(*) FROM `documents_theme` WHERE document_id = 'evt-1'"
     ).fetchone()
@@ -202,17 +199,16 @@ def test_a_document_is_counted_once_however_many_matching_themes_it_carries(cata
 
 
 # --------------------------------------------------------------------------- #
-# Depth.
+# Every theme counts its own documents only, wherever the map nests it.
 # --------------------------------------------------------------------------- #
 
-def test_count_in_an_exact_sub_theme(catalog):
-    """"Climate Change → Adaptation": art-2 and evt-1 tagged Adaptation itself,
-    plus art-3 and prj-1 one level below it. Mitigation is a sibling and is
-    excluded; so are art-1 and evt-2, tagged at the parent."""
-    assert _count(theme="Adaptation") == 4
+def test_a_nested_theme_counts_only_its_own_documents(catalog):
+    """art-2 and evt-1 are tagged Adaptation. art-3 and prj-1 sit below it in
+    the map and are not included."""
+    assert _count(theme="Adaptation") == 2
 
 
-def test_count_in_a_leaf_sub_theme(catalog):
+def test_count_in_a_leaf_theme(catalog):
     assert _count(theme="Coastal Adaptation") == 2
 
 
@@ -220,17 +216,15 @@ def test_a_sibling_branch_is_excluded(catalog):
     assert _count(theme="Mitigation") == 2  # art-4, evt-1
 
 
-def test_counting_the_parent_is_not_the_sum_of_its_children(catalog):
-    """The parent count is a distinct-document count, not a total of the
-    per-child ones — and it is wrong in both directions.
-
-    Summing the children over-counts: evt-1 carries both Adaptation and
-    Mitigation, so it appears in each. It also under-counts: art-1 and evt-2 are
-    tagged Climate Change itself and belong to no child at all.
-    """
-    assert _count(theme="Adaptation") == 4
-    assert _count(theme="Mitigation") == 2
-    assert _count(theme="Climate Change") == 7  # not 4 + 2
+def test_a_parent_theme_does_not_include_the_themes_beneath_it(catalog):
+    ids = {
+        r.document_id
+        for r in queries.list_documents(
+            source_type="website", entity_type="node",
+            theme="Climate Change", limit=50,
+        )
+    }
+    assert ids == {"art-1", "evt-2"}
 
 
 # --------------------------------------------------------------------------- #
@@ -270,16 +264,15 @@ def test_an_unknown_theme_does_not_leak_into_a_curated_theme(catalog):
 def test_theme_and_date_range_combine(catalog):
     """"How many documents belong to this theme between 2024 and 2025?"
 
-    Of the seven documents under Climate Change: art-1, art-2, evt-1, evt-2 and
-    prj-1 fall in 2024. art-4 is 2023, and art-3 is 2025-02-01 — outside,
-    because the interval is half-open at the top."""
+    Of the two documents tagged Coastal Adaptation, prj-1 falls in 2024. art-3
+    is 2025-02-01 — outside, because the interval is half-open at the top."""
     from datetime import datetime
 
     assert _count(
-        theme="Climate Change",
+        theme="Coastal Adaptation",
         effective_from=datetime(2024, 1, 1),
         effective_to=datetime(2025, 1, 1),
-    ) == 5
+    ) == 1
     # The date narrows the theme scope rather than replacing it: without the
     # theme, 2024 holds more.
     assert _count(
@@ -295,32 +288,20 @@ def test_theme_and_bundle_and_date_combine(catalog):
         theme="Climate Change",
         effective_from=datetime(2024, 1, 1),
         effective_to=datetime(2025, 1, 1),
-    ) == 2  # art-1, art-2
+    ) == 1  # art-1
 
 
 # --------------------------------------------------------------------------- #
-# Grouping — "the number of articles across the different Climate Change
-# sub-themes".
+# Grouping.
 # --------------------------------------------------------------------------- #
-
-def test_breakdown_by_theme_within_a_parent(catalog):
-    rows = queries.distribution(
-        "theme", source_type="website", entity_type="node",
-        bundle="article", theme="Climate Change",
-    )
-    assert dict(rows) == {
-        "Climate Change": 1, "Adaptation": 1, "Coastal Adaptation": 1,
-        "Mitigation": 1,
-    }
-
 
 def test_breakdown_by_content_type_for_a_theme(catalog):
-    """"How many events and ongoing projects are associated with Climate
-    Change?" in one query."""
+    """"How many events and ongoing projects are associated with Adaptation?"
+    in one query."""
     rows = queries.distribution(
-        "bundle", source_type="website", entity_type="node", theme="Climate Change",
+        "bundle", source_type="website", entity_type="node", theme="Adaptation",
     )
-    assert dict(rows) == {"article": 4, "events": 2, "ongoing_projects": 1}
+    assert dict(rows) == {"article": 1, "events": 1}
 
 
 # --------------------------------------------------------------------------- #
@@ -335,7 +316,7 @@ def test_the_count_tool_reports_the_catalog_number(catalog, monkeypatch):
         lambda **kw: [{"theme": "Climate Change", "theme_type": "primary",
                        "parent": None, "theme_group": "main",
                        "theme_path": "Climate Change", "depth": 1,
-                       "documents": 7}],
+                       "documents": 2}],
     )
     monkeypatch.setattr("app.catalog.queries.find_tag", lambda name: None)
     monkeypatch.setattr("app.catalog.queries.distinct_authors", lambda **kw: [])
@@ -346,5 +327,5 @@ def test_the_count_tool_reports_the_catalog_number(catalog, monkeypatch):
     result = tools.count_records("article", RecordFilters(theme="Climate Change"))
 
     assert result.ok
-    assert result.data["count"] == 4
-    assert "4" in result.rendered
+    assert result.data["count"] == 1
+    assert "1" in result.rendered

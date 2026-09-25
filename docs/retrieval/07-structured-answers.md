@@ -262,7 +262,7 @@ real?).
 | `list_records` | browse/enumerate | Appends "showing N of TOTAL" whenever the page is full and the topic constraint is active, using the identical filters that produced the rows, so the two numbers can never disagree |
 | `lookup_record` | one specific document by title | Also resolves a `chain_document_id` (`_resolve_chain`) when the title uniquely matches one catalog document *and* the question asks about content ("what does X say") rather than browsing — letting the pipeline chain straight into full-document QA |
 | `aggregate_records` | breakdown per theme/content type/author/year | `secondary_group_by` makes the key the **pair** of dimensions ("which authors write about which themes"), not a repeated single breakdown; ignored when it names the same dimension as the primary (a pair of one thing is the single-dimension question) |
-| `list_themes` | the theme vocabulary itself | Three shapes: top-level only (default), top-level with nested children, or one named parent's children — a theme with no children still appears in the "with children" shape, so the count never silently shrinks between the two |
+| `list_themes` | the theme vocabulary itself | Top-level themes only, split into Main and Other by `theme_scope`; rows stored as sub-themes are never listed, and a named theme does not narrow the listing |
 | `resolve_entity` | "what does X refer to" | The only tool that wraps `resolve.py` rather than a catalog read; renders `ACCEPT`/`AMBIGUOUS`/`MISS` as a resolved name, a "which did you mean?" clarification, or an explicit no-match respectively |
 
 ### Author counts are counts of *names*, not people

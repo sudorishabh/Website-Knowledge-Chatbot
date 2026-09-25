@@ -710,102 +710,13 @@ def test_list_themes_excludes_sub_themes_from_the_default_listing(monkeypatch):
     assert "Green Shipping" not in r.rendered
 
 
-def test_list_themes_children_renders_the_full_tree(monkeypatch):
-    """"...with its children" wants the same themes, annotated — not a different,
-    shorter set. Children nest under their parent; the Main/Other split stays."""
+def test_list_themes_never_lists_sub_theme_rows_even_as_a_table(monkeypatch):
+    """Every shape lists themes only — no sub-theme column, no nesting."""
     monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    r = tools.list_themes(children=True)
-    assert r.ok
-    assert r.data["themes"] == ["Energy"]
-    assert r.data["by_parent"] == {"Energy": ["Energy Access", "Energy Efficiency"]}
-    # One section needs no group heading: a lone "Main themes:" label implies
-    # a second section that is deliberately absent.
-    assert r.rendered == (
-        "The collection covers 1 main themes:\n\n"
-        "- Energy\n"
-        "    - Energy Access\n"
-        "    - Energy Efficiency"
-    )
-
-
-def test_list_themes_children_renders_both_groups_when_scope_is_all(monkeypatch):
-    """Asked for everything, the tree keeps the Main/Other split and labels it."""
-    monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    r = tools.list_themes(children=True, scope="all")
+    r = tools.list_themes(scope="all", output_format="table")
     assert r.data["themes"] == ["Energy", "Green Shipping"]
-    assert r.rendered == (
-        "The collection covers 2 themes:\n\n"
-        "Main themes:\n"
-        "- Energy\n"
-        "    - Energy Access\n"
-        "    - Energy Efficiency\n\n"
-        "Other themes:\n"
-        "- Green Shipping"
-    )
-
-
-def test_list_themes_children_keeps_themes_that_have_none(monkeypatch):
-    """The count must not shrink between "how many themes" and "with their
-    children" — a childless theme still appears, just without a nested list."""
-    monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    plain = tools.list_themes(scope="all")
-    tree = tools.list_themes(children=True, scope="all")
-    assert tree.data["themes"] == plain.data["themes"]
-    assert tree.rendered.startswith("The collection covers 2 themes:")
-    assert "- Green Shipping" in tree.rendered  # no children, still listed
-
-
-def test_list_themes_children_as_a_table_groups_rows_under_one_theme(monkeypatch):
-    """The theme is named on its first row only. Repeating it down the column
-    reads as unrelated pairs instead of one theme owning several sub-themes."""
-    monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    r = tools.list_themes(children=True, scope="all", output_format="table")
-    assert r.rendered == (
-        "The collection covers 2 themes:\n\n"
-        "**Main themes**\n"
-        "| theme | sub-theme |\n"
-        "| --- | --- |\n"
-        "| Energy | Energy Access |\n"
-        "|  | Energy Efficiency |\n\n"     # same theme: cell left blank
-        "**Other themes**\n"
-        "| theme | sub-theme |\n"
-        "| --- | --- |\n"
-        "| Green Shipping | |"             # childless theme keeps its row
-    )
-
-
-def test_list_themes_children_of_one_parent(monkeypatch):
-    monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    r = tools.list_themes(children=True, parent="Energy")
-    assert r.data["parent"] == "Energy"
-    assert r.data["sub_themes"] == ["Energy Access", "Energy Efficiency"]
-    assert r.rendered == (
-        "Energy has 2 sub-themes:\n- Energy Access\n- Energy Efficiency"
-    )
-
-
-def test_list_themes_children_of_one_parent_is_case_insensitive(monkeypatch):
-    monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    r = tools.list_themes(children=True, parent="energy")
-    assert r.ok and r.data["parent"] == "Energy"  # answers with the stored casing
-
-
-def test_list_themes_real_theme_with_no_children_says_so(monkeypatch):
-    """A true statement beats falling through to a vague semantic answer — the
-    theme exists, it just has no children."""
-    monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    r = tools.list_themes(children=True, parent="Green Shipping")
-    assert r.ok is True
-    assert r.data["sub_themes"] == []
-    assert r.rendered == "Green Shipping has no sub-themes."
-
-
-def test_list_themes_children_of_an_unknown_theme_is_a_miss(monkeypatch):
-    """Distinct from the case above: this name is not a theme at all."""
-    monkeypatch.setattr("app.catalog.queries.theme_vocabulary", lambda **kw: _mixed_vocab())
-    r = tools.list_themes(children=True, parent="Quantum Beekeeping")
-    assert r.ok is False and r.error_kind == "unresolved"
-    assert r.rendered == "No theme matching 'Quantum Beekeeping' found."
+    assert "sub_themes" not in r.data and "by_parent" not in r.data
+    assert "sub-theme" not in r.rendered and "Energy Access" not in r.rendered
 
 
 def test_list_themes_no_primary_themes_falls_through(monkeypatch):

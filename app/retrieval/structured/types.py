@@ -84,9 +84,6 @@ class ToolCall:
     # records (None keeps them all).
     offset: int = 0
     fields: list[str] | None = None
-    # list_themes: list sub-themes instead of top-level themes. The parent to
-    # narrow to travels in `filters.theme`.
-    children: bool = False
     # list_themes: which theme groups may be exposed ("main"/"other"/"all").
     # Decided deterministically from the question by
     # `app.retrieval.structured.theme_scope`, and carried on the call so a plan

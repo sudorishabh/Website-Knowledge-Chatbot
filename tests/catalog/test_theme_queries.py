@@ -1,8 +1,7 @@
 """Unit tests for the theme-scoped structured queries and distribution path.
 
 Covers the theme vocabulary reader, the theme filter in the catalog SQL (exact
-name or sub-theme parent), the distribution query shape, and the semantic-path
-theme filter. All SQL runs against scripted fakes; no MySQL, no LLM.
+name), the distribution query shape, and the semantic-path theme filter. All SQL runs against scripted fakes; no MySQL, no LLM.
 """
 
 from __future__ import annotations
@@ -87,8 +86,6 @@ def test_theme_vocabulary_reads_the_facet_with_its_hierarchy(monkeypatch):
     sql, params = cursor.calls[0]
     assert "_theme`" in sql
     assert "GROUP BY theme, theme_type, parent, theme_group, theme_path, depth" in sql
-    # The hierarchy the caller reads back includes the full path, so a listing
-    # can expand a theme to its descendants without a second query.
     assert rows[1]["theme_path"] == "Environment > Air" and rows[1]["depth"] == 2
     assert "theme NOT IN (%s, %s)" in sql  # boolean artefacts excluded in SQL
     assert params == ("False", "True")
@@ -127,24 +124,19 @@ def test_distinct_themes_is_a_names_view_of_the_vocabulary(monkeypatch):
 # Catalog SQL — theme/tag scoping and distribution.
 # --------------------------------------------------------------------------- #
 
-def test_count_by_theme_matches_the_theme_and_its_descendants(monkeypatch):
-    """Exact name OR path prefix: a substring match both missed the sub-themes and
-    wrongly merged siblings ("Environment" sweeping in "Environment Education")."""
+def test_count_by_theme_matches_the_theme_name_exactly(monkeypatch):
+    """Exact name only: a substring match wrongly merged siblings ("Environment"
+    sweeping in "Environment Education"), and themes stored beneath it are not
+    folded in."""
     cursor = _FakeCursor(fetchone_results=[{"n": 625}])
     _patch(monkeypatch, state, cursor)
 
     assert state.count_documents(source_type="website", theme="Environment") == 625
     sql, params = cursor.calls[0]
-    assert "_theme` c" in sql
-    assert "c.theme_path = %s" in sql and "c.theme_path LIKE %s" in sql
-    # Left-anchored prefix only. A leading `%` would be substring matching,
-    # which is what merged siblings ("Environment" sweeping in "Environment
-    # Education") before the path existed.
-    assert "Environment > %" in params and "%Environment" not in params
+    assert "_theme` c" in sql and "c.theme = %s" in sql
+    assert "theme_path" not in sql and "parent" not in sql and "LIKE" not in sql
     assert "COUNT(DISTINCT s.document_id)" in sql
-    assert params == (
-        "website", "Environment", "Environment > %", "Environment", "Environment",
-    )
+    assert params == ("website", "Environment")
 
 
 def test_count_by_tag_uses_its_own_facet(monkeypatch):
@@ -166,9 +158,7 @@ def test_theme_and_tag_are_independent_joins(monkeypatch):
     sql, params = cursor.calls[0]
     assert "_theme` c" in sql and "_tag` t" in sql
     assert sql.count("JOIN") == 2
-    assert params == (
-        "website", "Energy", "Energy > %", "Energy", "Energy", "solar",
-    )
+    assert params == ("website", "Energy", "solar")
 
 
 def test_count_by_title_contains(monkeypatch):
@@ -233,12 +223,10 @@ def test_distribution_scoped_by_theme_and_author(monkeypatch):
     )
     assert rows == [("2024", 4)]
     sql, params = cursor.calls[0]
-    assert "_theme` c" in sql and "c.theme_path" in sql
+    assert "_theme` c" in sql and "c.theme = %s" in sql
     assert "_author` a" in sql and "a.author LIKE %s" in sql
     assert "COUNT(DISTINCT s.document_id)" in sql
-    assert params == (
-        "website", "%Sharma%", "Energy", "Energy > %", "Energy", "Energy",
-    )
+    assert params == ("website", "%Sharma%", "Energy")
 
 
 def test_distribution_by_year_skips_undated(monkeypatch):
@@ -267,10 +255,9 @@ def test_theme_condition_scopes_by_catalog_document_ids(monkeypatch):
     """MySQL decides who is in the theme; Qdrant only ranks inside that set.
 
     The previous version matched the chunk payload's `categories` names, which
-    was a second copy of theme membership: flat (so a document tagged only
-    "Rural Energy Access" never matched a scope of "Energy") and written at
-    index time (so it went stale on a rename). The filter now names document
-    ids, and nothing filters on `categories` at all."""
+    was a second copy of theme membership written at index time (so it went
+    stale on a rename). The filter now names document ids, and nothing filters
+    on `categories` at all."""
     cursor = _FakeCursor(fetchall_results=[[
         {"document_id": "d1"}, {"document_id": "d2"},
     ]])
@@ -281,9 +268,9 @@ def test_theme_condition_scopes_by_catalog_document_ids(monkeypatch):
     assert condition.key == "document_id"
     assert condition.match.any == ["d1", "d2"]
     sql, params = cursor.calls[0]
-    # The descendant expansion, so a parent scope reaches deeper themes.
-    assert "_theme` c" in sql and "c.theme_path LIKE %s" in sql
-    assert "Energy > %" in params
+    # Exact theme name, never widened to the themes beneath it.
+    assert "_theme` c" in sql and "c.theme = %s" in sql
+    assert params == ("Energy",)
     # Not restricted to website nodes: an attachment inherits its page's themes
     # so that theme-scoped retrieval can reach the PDF's text.
     assert "s.source_type = %s" not in sql

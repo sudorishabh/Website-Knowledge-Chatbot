@@ -74,12 +74,10 @@ def test_tag_and_theme_are_two_separate_joins(monkeypatch):
 
     state.count_documents(source_type="website", theme="Energy", tag="solar")
     sql, params = cursor.calls[0]
-    assert "_theme` c" in sql and "c.theme_path" in sql
+    assert "_theme` c" in sql and "c.theme = %s" in sql
     assert "_tag` t" in sql and "t.tag = %s" in sql
     assert sql.count("JOIN") == 2  # two independent joins
-    assert params == (
-        "website", "Energy", "Energy > %", "Energy", "Energy", "solar",
-    )
+    assert params == ("website", "Energy", "solar")
 
 
 def test_list_documents_applies_tag_scope(monkeypatch):

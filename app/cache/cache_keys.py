@@ -22,7 +22,9 @@ def _sha(*parts: str) -> str:
 #: answer at cosine 1.0.
 #: 2026-09-24.1: priority pages read live now lead the context, and the stored
 #: copies of those pages are no longer used.
-PIPELINE_REVISION = "2026-09-24.1"
+#: 2026-09-25.1: sub-themes are gone from question time — no sub-theme
+#: listings, and a theme filter matches its exact name only.
+PIPELINE_REVISION = "2026-09-25.1"
 
 
 def _pref_fingerprint() -> str:

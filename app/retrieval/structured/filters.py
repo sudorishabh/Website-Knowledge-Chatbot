@@ -7,7 +7,7 @@ duplicated across state, catalog, the structured answerer, and query_processor):
   what the catalog stores, so a misspelling filters on the real name;
 - tags are matched by exact name instead (a long-tail vocabulary where fuzzy
   ranking would flag an ambiguity on almost every query);
-- sub-theme expansion is left to SQL (`theme = X OR parent = X`);
+- a theme filters on its exact canonical name, never widened to other themes;
 - dates are a half-open [from, to) interval;
 - resolution failures degrade rather than raise.
 
@@ -141,9 +141,7 @@ def _parse_date(value: str | None, *, field: str = "date") -> datetime | None:
 
 def resolve_theme(theme: str | None) -> str | None:
     """The theme name to filter on, canonicalized against `documents_theme`.
-
-    Sub-theme expansion is the SQL layer's job now (`theme = X OR parent = X`),
-    not a UUID walk here — see `queries._catalog_filters`."""
+    The SQL layer matches it exactly — see `queries._catalog_filters`."""
     return _resolve_name(_THEME, theme).name
 
 

@@ -50,35 +50,17 @@ def test_plan_list_themes_ignores_the_content_row_limit():
         assert call.limit == planner.THEME_VOCABULARY_LIMIT
 
 
-def test_plan_list_themes_defaults_to_top_level_themes():
-    call = planner.plan(_slots(operation="list_themes")).calls[0]
-    assert call.children is False
-
-
-def test_plan_list_themes_honours_the_children_slot():
-    call = planner.plan(_slots(operation="list_themes", theme_children=True)).calls[0]
-    assert call.children is True and call.filters.theme is None
-
-
-def test_plan_list_themes_naming_a_theme_implies_its_children():
-    """"What's under Environment?" is a children question even when the
-    classifier did not set the flag — a theme name in a list-themes request has
-    no other sensible reading."""
-    call = planner.plan(_slots(operation="list_themes", theme="Environment")).calls[0]
-    assert call.children is True
-    assert call.filters.theme == "Environment"  # travels as the parent
-
-
-def test_execute_passes_children_and_parent_to_list_themes(monkeypatch):
+def test_execute_lists_top_level_themes_even_when_a_theme_is_named(monkeypatch):
+    """A named theme does not turn the listing into a sub-theme listing: the
+    tool is only ever asked for the theme vocabulary."""
     seen = {}
 
-    def fake_list_themes(*, children, parent, scope, limit, output_format):
-        seen.update(children=children, parent=parent, scope=scope)
+    def fake_list_themes(*, scope, limit, output_format):
+        seen.update(scope=scope)
         return ToolResult(tool="list_themes")
 
     monkeypatch.setattr(planner, "list_themes", fake_list_themes)
     planner.execute(planner.plan(_slots(operation="list_themes", theme="Energy")))
-    assert seen["children"] is True and seen["parent"] == "Energy"
     # No question was supplied, so the listing stays on the safe side.
     assert seen["scope"] == "main"
 
@@ -150,7 +132,7 @@ def test_execute_routes_to_tool(monkeypatch):
 def test_execute_routes_to_list_themes(monkeypatch):
     monkeypatch.setattr(
         planner, "list_themes",
-        lambda *, children, parent, scope, limit, output_format: ToolResult(
+        lambda *, scope, limit, output_format: ToolResult(
             tool="list_themes", data={"themes": ["Climate"]}
         ),
     )
