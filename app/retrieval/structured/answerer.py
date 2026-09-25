@@ -318,6 +318,21 @@ def answer_structured(
             "lists documents, not people."
         )
         return None
+    # A theme listing enumerates the vocabulary; a question that names one theme
+    # is about that theme. Measured 2026-09-25: "tell me about climate change
+    # theme" came back as the list of all seven themes — the classifier read
+    # "theme" as a request for the vocabulary while extracting
+    # theme="climate change" in the same breath, and the listing ignores its
+    # theme. Declining hands it to passage retrieval, where the theme's own live
+    # page answers it; the same question worded "thematic" had already gone that
+    # way and was answered from that page.
+    if (getattr(slots, "operation", None) == "list_themes"
+            and getattr(slots, "theme", None)):
+        logger.info(
+            "Declining a theme listing for a question about one theme (%r).",
+            slots.theme,
+        )
+        return None
     # A generic "publications / works" ask must count across every content type;
     # drop a bundle the classifier inferred from that collective word so the total
     # is not silently narrowed to one type (see _spans_all_content).
