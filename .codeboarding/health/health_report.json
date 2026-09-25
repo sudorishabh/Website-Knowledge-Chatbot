@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-09-25T04:25:31.562000+00:00",
-  "overall_score": 0.9878277153558053,
+  "timestamp": "2026-09-25T06:44:41.561982+00:00",
+  "overall_score": 0.9841908325537885,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2074,
+      "total_entities_checked": 2070,
       "findings_count": 19,
       "warning_count": 19,
-      "score": 0.9908389585342333,
+      "score": 0.9908212560386473,
       "finding_groups": [
         {
           "severity": "warning",
@@ -212,10 +212,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 10,
-      "findings_count": 10,
-      "warning_count": 2,
-      "score": 0.5,
+      "total_entities_checked": 16,
+      "findings_count": 16,
+      "warning_count": 4,
+      "score": 0.19999999999999996,
       "finding_groups": [
         {
           "severity": "info",
@@ -265,17 +265,45 @@
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_variable] \"_label\" is not accessed",
-              "file_path": "app/catalog/queries.py",
-              "line_start": 457,
-              "line_end": 457,
-              "metric_value": 0.0
-            },
-            {
               "entity_name": "[unused_variable] \"GRAPH_FACTS_KIND\" is not accessed",
               "file_path": "app/generation/prompts.py",
               "line_start": 5,
               "line_end": 5,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"_label\" is not accessed",
+              "file_path": "app/catalog/queries.py",
+              "line_start": 425,
+              "line_end": 425,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"get_settings\" is not accessed",
+              "file_path": "app/retrieval/structured/planner.py",
+              "line_start": 17,
+              "line_end": 17,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"get_settings\" is not accessed",
+              "file_path": "app/retrieval/structured/tools.py",
+              "line_start": 20,
+              "line_end": 20,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"sort\" is not accessed",
+              "file_path": "app/retrieval/structured/tools.py",
+              "line_start": 488,
+              "line_end": 488,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"aggregation\" is not accessed",
+              "file_path": "app/retrieval/structured/tools.py",
+              "line_start": 692,
+              "line_end": 692,
               "metric_value": 0.0
             }
           ]
@@ -298,6 +326,20 @@
               "line_start": 5,
               "line_end": 5,
               "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_import] Import \"get_settings\" is not accessed",
+              "file_path": "app/retrieval/structured/planner.py",
+              "line_start": 17,
+              "line_end": 17,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_import] Import \"get_settings\" is not accessed",
+              "file_path": "app/retrieval/structured/tools.py",
+              "line_start": 20,
+              "line_end": 20,
+              "metric_value": 0.0
             }
           ]
         }
@@ -305,6 +347,12 @@
     }
   ],
   "file_summaries": [
+    {
+      "file_path": "app/retrieval/structured/tools.py",
+      "total_findings": 4,
+      "warning_findings": 1,
+      "composite_risk_score": 45.0
+    },
     {
       "file_path": "ui/script.js",
       "total_findings": 2,
@@ -325,6 +373,12 @@
     },
     {
       "file_path": "app/generation/prompts.py",
+      "total_findings": 2,
+      "warning_findings": 1,
+      "composite_risk_score": 25.0
+    },
+    {
+      "file_path": "app/retrieval/structured/planner.py",
       "total_findings": 2,
       "warning_findings": 1,
       "composite_risk_score": 25.0
@@ -409,18 +463,6 @@
     },
     {
       "file_path": "scripts/backfill_edition_and_titles.py",
-      "total_findings": 1,
-      "warning_findings": 1,
-      "composite_risk_score": 15.0
-    },
-    {
-      "file_path": "scripts/_build_graph_benchmark.py",
-      "total_findings": 1,
-      "warning_findings": 1,
-      "composite_risk_score": 15.0
-    },
-    {
-      "file_path": "app/knowledge/claims/validate.py",
       "total_findings": 1,
       "warning_findings": 1,
       "composite_risk_score": 15.0
