@@ -35,8 +35,7 @@ def _payload(doc_id, text="Some content.", title=None, published="2024-03-15T00:
 # --------------------------------------------------------------------------- #
 
 def test_scope_filters_theme_is_canonicalized_by_name(monkeypatch):
-    """Sub-theme expansion happens in SQL now (theme = X OR parent = X), so the
-    scope carries a single canonical name rather than a UUID set."""
+    """The scope carries a single canonical name, which SQL matches exactly."""
     monkeypatch.setattr(
         "app.catalog.queries.theme_vocabulary",
         lambda **kw: [{"theme": "Climate Change", "theme_type": "primary",

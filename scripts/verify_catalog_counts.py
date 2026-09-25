@@ -70,13 +70,13 @@ check(
         "WHERE s.bundle='article' AND a.author LIKE %s", ("%TERI Web Desk%",)),
 )
 
-# --- 3. theme filter includes sub-themes via parent
+# --- 3. theme filter matches the theme name exactly
 check(
-    "count articles under Energy (incl. sub-themes)",
+    "count articles under Energy",
     q.count_documents(bundle="article", theme="Energy"),
     one("SELECT COUNT(DISTINCT s.document_id) FROM documents s "
         "JOIN documents_theme t ON t.document_id=s.document_id "
-        "WHERE s.bundle='article' AND (t.theme='Energy' OR t.parent='Energy')"),
+        "WHERE s.bundle='article' AND t.theme='Energy'"),
 )
 
 # --- 4. author + theme (two facet joins, must not multiply)
@@ -87,7 +87,7 @@ check(
         "JOIN documents_author a ON a.document_id=s.document_id "
         "JOIN documents_theme  t ON t.document_id=s.document_id "
         "WHERE s.bundle='article' AND a.author LIKE %s "
-        "AND (t.theme='Energy' OR t.parent='Energy')", ("%TERI Web Desk%",)),
+        "AND t.theme='Energy'", ("%TERI Web Desk%",)),
 )
 
 # --- 5. date range, half-open

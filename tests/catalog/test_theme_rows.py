@@ -212,19 +212,6 @@ def test_a_primary_tag_is_its_own_single_segment_path(monkeypatch, tmp_path):
         theme_taxonomy.reload_taxonomy()
 
 
-def test_path_of_reads_the_hierarchy_without_any_document(monkeypatch, tmp_path):
-    """The scope expansion looks a theme's path up from the map, so a query for
-    a mid-level theme works even when no document carries that theme itself."""
-    monkeypatch.setattr(theme_taxonomy, "TAXONOMY_PATH", _deep_map(tmp_path))
-    theme_taxonomy.reload_taxonomy()
-    try:
-        assert theme_taxonomy.path_of("Energy Access") == "Energy > Energy Access"
-        assert theme_taxonomy.path_of("  ENERGY   access ") == "Energy > Energy Access"
-        assert theme_taxonomy.path_of("Nothing Like This") is None
-    finally:
-        theme_taxonomy.reload_taxonomy()
-
-
 def test_two_primary_tags_from_different_buckets_are_distinguishable_by_group():
     """"Energy" and "Green Shipping" are both primary tags with parent=None --
     only theme_group tells them apart as main vs other."""

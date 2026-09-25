@@ -349,17 +349,6 @@ def group_of(name: str) -> str | None:
     return entry.group if entry else None
 
 
-def path_of(name: str) -> str | None:
-    """The full ancestor chain ``name`` sits on, or ``None`` when the map has no
-    entry for it. Matched by the same case-insensitive key :func:`classify`
-    uses. Lets a caller expand a theme to its descendants without reading a
-    document's rows first — the theme listing and the query planner both need
-    the hierarchy of a theme no document may carry yet."""
-    mapping, _ = _load()
-    entry = mapping.get(_key(name))
-    return entry.path if entry else None
-
-
 def themes_by_group() -> dict[str, list[str]]:
     """Every mapped theme name (primary tags and sub-themes), split by which
     top-level bucket it traces back to, each in file order. A diagnostics/docs

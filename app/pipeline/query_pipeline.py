@@ -421,8 +421,8 @@ def _priority_overrides_catalog(targets: list[Any] | None, *, themes_listing: bo
     which cannot see these pages — must not answer it instead."""
     for target in targets or ():
         if themes_listing and target.kind == "theme" and target.reason in ("name", "theme"):
-            # "tell me about the climate change thematic" reads as a listing of
-            # that theme's sub-themes, and the themes are flat: its page answers.
+            # Understanding can read "tell me about the climate change thematic"
+            # as a theme listing; the themes are flat, so that theme's page answers.
             return True
         if target.reason not in _CATALOG_OVERRIDING:
             continue

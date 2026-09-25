@@ -183,7 +183,7 @@ lookup of the same question will not build, so it is not reused — correct, at
 the cost of a cache hit.
 
 `PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature, and to
-`2026-09-25.1` when the list of themes moved to the home page.
+`2026-09-25.2` when the list of themes moved to the home page.
 
 ---
 
