@@ -91,6 +91,29 @@ def test_the_prescribed_wordings_are_exempt_from_the_meta_wording_ban():
     assert "not stated in the available sources" in GROUNDED_SYSTEM_PROMPT
 
 
+def _rule_2() -> str:
+    return _section("\n2. ", "\n3. ")
+
+
+def test_citations_close_the_sentence_or_bullet_not_each_phrase():
+    rule = _rule_2()
+    assert "at the end of the sentence or bullet that makes it" in rule
+    assert "not after each phrase or name inside it" in rule
+    # The wording that produced "[1]" after each of nine names.
+    assert "after every claim it supports" not in GROUNDED_SYSTEM_PROMPT
+
+
+def test_a_list_from_one_block_is_cited_once_on_its_opening_sentence():
+    rule = _rule_2()
+    assert "cite that block once, on the list's opening sentence" in rule
+    assert "an item that comes from a different block carries its own" in rule
+
+
+def test_citations_stay_mandatory():
+    # The sources footer and the faithfulness check both read the markers.
+    assert "Cite the block number [n] for every claim" in _rule_2()
+
+
 def test_attribution_by_page_name_is_licensed_only_by_the_header_markers():
     structure = _structure()
     assert f"\"{CANONICAL_MARKER}\" or \"{LIVE_MARKER}\"" in structure

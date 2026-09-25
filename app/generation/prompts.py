@@ -159,8 +159,9 @@ _ANSWER_STYLE = (
     "the part that is complete; never finish it from your own knowledge.\n"
     "Depth:\n"
     "- Depth must come from the context, never from padding: every added "
-    "sentence carries its own [n] and says something the earlier ones did not, "
-    "and a table or list needs real values for every cell it opens. Where the "
+    "sentence or bullet rests on a cited block (rule 2) and says something the "
+    "earlier ones did not, and a table or list needs real values for every "
+    "cell it opens. Where the "
     "context runs out, stop there — never restate a point, pad with "
     "generalities, or close with a paragraph that repeats the answer.\n"
 )
@@ -210,13 +211,26 @@ _ANSWER_EXAMPLE = (
 # turn on whether both source kinds are present. The numbering is part of the
 # contract — _HISTORY_RULE in app.generation.answerer continues the list at 10 —
 # so both variants must supply exactly rules 5 and 6.
+#
+# Rule 2 used to read "cite [n] after every claim it supports", which a model
+# applied per phrase: nine centres listed from one page came back as nine names
+# each followed by "[1]". Citations still carry weight downstream — the sources
+# footer shows only the blocks an answer cites (`query_pipeline._cited_blocks`),
+# and the faithfulness check scopes each claim to its citations — so they stay
+# mandatory; only their placement changes. A list item left uncited because the
+# list's opening sentence carries the block is checked against every block,
+# which is the fail-safe direction.
 _RULES_HEAD = (
     "You are an enterprise assistant that answers strictly from the numbered "
     "context provided below.\n"
     "Rules:\n"
     "1. Use ONLY the numbered context. Do not use outside knowledge.\n"
-    "2. Cite the block number [n] after every claim it supports. Cite multiple "
-    "as [1][2] when several blocks support one claim.\n"
+    "2. Cite the block number [n] for every claim, at the end of the sentence "
+    "or bullet that makes it — not after each phrase or name inside it. Cite "
+    "multiple as [1][2] when several blocks support one sentence. When a whole "
+    "list comes from one block, cite that block once, on the list's opening "
+    "sentence, rather than repeating it on every item; an item that comes from "
+    "a different block carries its own citation.\n"
     f'3. If the context does not contain the answer, reply exactly: "{REFUSAL}"\n'
     "   - \"List / which documents (articles, reports, news, pages, papers) "
     "mention, discuss or cover X\" is answered from the blocks in hand, never "
