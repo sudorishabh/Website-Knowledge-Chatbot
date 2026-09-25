@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-09-25T06:44:41.561982+00:00",
-  "overall_score": 0.9841908325537885,
+  "timestamp": "2026-09-25T08:34:26.012298+00:00",
+  "overall_score": 0.98422035480859,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2070,
+      "total_entities_checked": 2074,
       "findings_count": 19,
       "warning_count": 19,
-      "score": 0.9908212560386473,
+      "score": 0.9908389585342333,
       "finding_groups": [
         {
           "severity": "warning",
@@ -99,8 +99,8 @@
             {
               "entity_name": "app.pipeline.query_pipeline._prepare",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 516,
-              "line_end": 761,
+              "line_start": 531,
+              "line_end": 776,
               "metric_value": 245
             },
             {
