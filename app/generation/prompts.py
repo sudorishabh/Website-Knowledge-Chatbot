@@ -510,13 +510,22 @@ def grounded_system_prompt() -> str:
 
 # Per-format steering appended to the grounded system prompt when the query
 # understanding stage detected a specific desired shape (see query_processor).
+#
+# Each one is phrased as a named shape from `_ANSWER_STYLE` taken further, not as
+# a second description of it. The list directive used to say "no preamble" and
+# "each bullet leads with its claim and its citation", which contradicted both
+# the list shape (one opening sentence) and rule 2 (the citation closes the
+# bullet, and a single-block list is cited once) — and a directive wins any
+# conflict with the style, so the older wording would have won.
 _FORMAT_DIRECTIVES: dict[str, str] = {
     "list": (
-        "Shape the answer as a bulleted list — one item per line, no preamble. "
-        "Each bullet leads with its claim and its citation, then adds a clause "
-        "of the detail the context gives for that item (a date, a scope, a "
-        "figure) rather than stopping at the bare claim; only omit the clause "
-        "when the context truly offers nothing more for that item."
+        "Shape the answer as the List shape above: one opening sentence, then "
+        "one bullet per item. Each bullet gives the item's name or claim first, "
+        "then a clause of the detail the context gives for that item (a date, "
+        "a scope, a figure) rather than stopping at the bare name; only omit "
+        "the clause when the context truly offers nothing more for that item. "
+        "Cite as rule 2 says: once on the opening sentence when every item "
+        "comes from one block, otherwise at the end of each bullet."
     ),
     "table": (
         "Shape the answer as a GitHub-flavored Markdown table: a header row, a "
@@ -526,15 +535,16 @@ _FORMAT_DIRECTIVES: dict[str, str] = {
         "or beside each row. Add a one-line caption above the table only if needed."
     ),
     "summary": (
-        "Shape the answer as a high-level summary of 4-6 sentences. Cover the "
-        "most important points with the one or two specifics (a figure, a "
-        "date, a scope) that make each concrete, and omit only the minor "
-        "detail."
+        "Shape the answer as a high-level summary of 4-6 sentences, with no "
+        "headings. Cover the most important points with the one or two "
+        "specifics (a figure, a date, a scope) that make each concrete, and "
+        "omit only the minor detail."
     ),
     "detailed": (
-        "Shape the answer as a thorough, in-depth response. Cover the relevant "
-        "points comprehensively using the context, organized into short labeled "
-        "sections or paragraphs, each claim cited."
+        "Shape the answer as the Overview shape above, at its fullest: an "
+        "opening of 2-3 sentences, then as many ### sections as the context "
+        "genuinely supports, each with the bullets its material carries. Cover "
+        "the relevant points comprehensively, every claim cited."
     ),
     "timeline": (
         "Shape the answer as a chronological timeline: order events by date, "

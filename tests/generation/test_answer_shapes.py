@@ -17,6 +17,7 @@ from app.generation.prompts import (
     GROUNDED_SYSTEM_PROMPT,
     LIVE_MARKER,
     REFUSAL,
+    format_directive,
 )
 
 
@@ -146,6 +147,26 @@ def test_the_examples_are_invented():
     example = GROUNDED_SYSTEM_PROMPT[GROUNDED_SYSTEM_PROMPT.index("Example:") :]
     assert "Org One" in example
     assert "TERI" not in example
+
+
+def test_the_list_directive_follows_the_list_shape_and_rule_2():
+    directive = format_directive("list")
+    assert "the List shape above" in directive
+    assert "one opening sentence" in directive
+    assert "once on the opening sentence when every item comes from one block" in directive
+    # The directive wins a conflict with the style, so the old wording would win.
+    assert "no preamble" not in directive
+    assert "leads with its claim and its citation" not in directive
+
+
+def test_the_detailed_directive_is_the_overview_at_its_fullest():
+    directive = format_directive("detailed")
+    assert "the Overview shape above" in directive
+    assert "### sections" in directive
+
+
+def test_a_summary_stays_unsectioned():
+    assert "no headings" in format_directive("summary")
 
 
 def test_attribution_by_page_name_is_licensed_only_by_the_header_markers():
