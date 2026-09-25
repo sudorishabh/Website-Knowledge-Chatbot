@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.core.models.context import GRAPH_FACTS_KIND, is_graph_facts, is_priority_page
+from app.core.models.context import (
+    GRAPH_FACTS_KIND,
+    WEBSITE_SOURCE_TYPES,
+    is_graph_facts,
+    is_priority_page,
+)
 
 if TYPE_CHECKING:
     from app.core.models.context import ContextBlock
@@ -157,6 +162,10 @@ _ANSWER_STYLE = (
     "two points — merge it into a neighbour instead.\n"
     "- When the context's description of an item is cut off mid-sentence, give "
     "the part that is complete; never finish it from your own knowledge.\n"
+    "- A list or an overview that rests mainly on one page whose header gives a "
+    "`link` ends with one line: Read more: [the page's title](that link), the "
+    "address copied exactly from the header. Never write an address the context "
+    "does not show, and never add this line to a direct fact.\n"
     "Depth:\n"
     "- Depth must come from the context, never from padding: every added "
     "sentence or bullet rests on a cited block (rule 2) and says something the "
@@ -191,7 +200,8 @@ _ANSWER_STYLE_SCOPE = (
 _ANSWER_EXAMPLE = (
     "Example:\n"
     "Context: [1] (website · official page · live page, read 2026-01-10 · "
-    "Clean Cooling Programme) The Clean Cooling Programme works to cut the "
+    "Clean Cooling Programme · link https://org-one.example/clean-cooling) The "
+    "Clean Cooling Programme works to cut the "
     "energy use and emissions of cooling in buildings and cold chains. It was "
     "set up in 2019 with the Ministry of Power. Focus areas: efficient "
     "air-conditioning standards; passive building design; low-GWP "
@@ -226,9 +236,11 @@ _ANSWER_EXAMPLE = (
     "In short, the programme pairs standards, building design and refrigerant "
     "work with projects in schools and cold chains [1].\n"
     "\n"
+    "Read more: [Clean Cooling Programme](https://org-one.example/clean-cooling)\n"
+    "\n"
     "Example (a list):\n"
     "Context: [1] (website · official page · live page, read 2026-01-10 · Org "
-    "One: Home) Our Centres\n"
+    "One: Home · link https://org-one.example/) Our Centres\n"
     "Centre for Water Reuse\n"
     "Advancing safe reuse of treated wastewater in cities and industry.\n"
     "Centre for Coastal Studies\n"
@@ -246,6 +258,8 @@ _ANSWER_EXAMPLE = (
     "coastal livelihoods from Goa, where it was set up in 2021 [2].\n"
     "- **Centre for Green Logistics** — supporting low-carbon freight through "
     "rail and cleaner fuels.\n"
+    "\n"
+    "Read more: [Org One: Home](https://org-one.example/)\n"
     "\n"
     "Example (a role, stated at two times):\n"
     "Context: [1] (website · Statement on climate leadership · published "
@@ -668,9 +682,11 @@ def _source_hint(payload: dict) -> str:
     # over-generalising, but enumerating them from the service catalogue is
     # reading the source. Derived from metadata already on the chunk, so it needs
     # no ingest change.
-    if _is_canonical(payload):
+    canonical = _is_canonical(payload)
+    if canonical:
         bits.append(CANONICAL_MARKER)
-    if is_priority_page(payload):
+    live = is_priority_page(payload)
+    if live:
         # When it was read, labelled as that — never a "page date", which the
         # rules below treat as when something went up.
         read = str(payload.get("fetched_at") or "")[:10]
@@ -716,6 +732,19 @@ def _source_hint(payload: dict) -> str:
         bits.append("page date " + page_date)
     if payload.get("doc_version"):
         bits.append(f"v{payload['doc_version']}")
+    # The page's own address, so the "Read more" line the style asks for can be
+    # copied rather than guessed. Only on the organisation's own web pages: they
+    # are what a list or an overview points the reader back to, and an ordinary
+    # article's address is already in the sources footer, where offering it here
+    # would only invite a link per bullet. `faithfulness.strip_unknown_links`
+    # unlinks any address that reaches an answer without having been shown here
+    # or in a block's text.
+    if (
+        (canonical or live)
+        and payload.get("source_type") in WEBSITE_SOURCE_TYPES
+        and payload.get("source_url")
+    ):
+        bits.append(f"link {payload['source_url']}")
     return " · ".join(bits)
 
 

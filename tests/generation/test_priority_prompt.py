@@ -22,7 +22,7 @@ def _header(block):
 def test_a_live_block_is_an_official_page_read_on_a_date():
     header = _header(_live())
     assert header == (f"[1] (website · {CANONICAL_MARKER} · {LIVE_MARKER}, read 2026-09-24 · "
-                      "Climate Change)")
+                      "Climate Change · link https://teriin.org/climate)")
 
 
 def test_a_live_block_never_carries_a_page_date():
@@ -30,7 +30,9 @@ def test_a_live_block_never_carries_a_page_date():
 
 
 def test_a_section_heading_is_shown():
-    assert _header(_live(section_heading="Team")).endswith("· Climate Change · Team)")
+    assert _header(_live(section_heading="Team")).endswith(
+        "· Climate Change · Team · link https://teriin.org/climate)"
+    )
 
 
 def test_a_stale_copy_says_so():

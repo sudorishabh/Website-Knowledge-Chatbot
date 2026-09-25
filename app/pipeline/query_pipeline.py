@@ -1029,6 +1029,18 @@ def stream_answer(
                 "reason": reason,
             }
 
+        # Last, so it reads whatever text the passes above settled on: either
+        # rewrite can itself introduce a link.
+        linked = faithfulness.strip_unknown_links(answer, gen.blocks)
+        if linked != answer:
+            logger.info("Unlinked a URL the context never showed.")
+            answer = linked
+            yield {
+                "type": "correction",
+                "text": f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer,
+                "reason": "unknown_link",
+            }
+
         result = _assemble(answer, gen)
         s.set("answer_chars", len(answer))
         yield {
