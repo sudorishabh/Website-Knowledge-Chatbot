@@ -175,10 +175,9 @@ theme**:
 
 **Depth is not capped.** `parent` names one hop; `theme_path` carries the whole
 chain (`Energy > Energy Access > Rural Energy Access`) and `depth` its segment
-count. The path is what makes a parent-theme query reach a grandchild — one
-`parent` column can only ever answer one level, and this used to reparent
-everything below the first level onto the primary tag, which made a grandchild a
-sibling of its own parent.
+count. These columns record the hierarchy; they are not read at question time.
+A theme filter matches the theme's own name only, so "Energy" does not widen to
+documents tagged only "Energy Access".
 
 Matching is case- and whitespace-insensitive using Unicode `\s`, so Drupal's
 non-breaking spaces are folded too.
@@ -216,15 +215,14 @@ no taxonomy to read.
 
 ### Who owns theme membership
 
-MySQL, alone. `documents_theme` holds the hierarchy, so it is the only side that
-can answer "and everything beneath it", and every count, filter, grouping and
-aggregation reads it. Chunk payloads still carry a `categories` list, but nothing
+MySQL, alone. Every count, filter, grouping and aggregation reads
+`documents_theme`. Chunk payloads still carry a `categories` list, but nothing
 filters on it: the semantic path resolves a theme to document ids via
 `catalog.theme_document_ids` and lets Qdrant rank *within* that set
 (`understanding.filters._theme_condition`). Payload `categories` used to be the
 semantic path's theme filter, which made it a second, independent copy of
-membership — flat, so it never matched a document through its parent theme, and
-written at index time, so it went stale on any rename or reclassification.
+membership — written at index time, so it went stale on any rename or
+reclassification.
 
 ---
 

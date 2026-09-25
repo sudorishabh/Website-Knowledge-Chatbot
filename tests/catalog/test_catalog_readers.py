@@ -80,15 +80,11 @@ def test_ids_in_scope_theme_join_distinct_and_param_order(monkeypatch):
 
     sql, params = cursor.calls[0]
     assert sql.startswith("SELECT DISTINCT s.document_id, s.effective_start_date")
-    assert "_theme` c" in sql and "c.theme_path" in sql
+    assert "_theme` c" in sql and "c.theme = %s" in sql
     assert "_author` a" in sql and "a.author LIKE %s" in sql
     assert "LIMIT 30" in sql
-    # The theme leg is the descendant expansion: the theme's own path, the
-    # prefix covering everything beneath it, then the two legacy NULL-path
-    # fallbacks. "Environment" is a primary tag, so its path is its name.
     assert params == (
-        "website", "node", datetime(2024, 1, 1), "%Sharma%",
-        "Environment", "Environment > %", "Environment", "Environment",
+        "website", "node", datetime(2024, 1, 1), "%Sharma%", "Environment",
     )
 
 

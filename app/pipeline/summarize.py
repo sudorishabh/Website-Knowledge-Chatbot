@@ -111,8 +111,7 @@ def _scope_filters(analysis: QueryAnalysis) -> dict[str, Any] | None:
     count guard); themes fall back to the theme display name."""
     filters: dict[str, Any] = {}
     if analysis.theme:
-        # Canonicalize the name, then let the SQL layer expand it to its
-        # sub-themes (theme = X OR parent = X).
+        # Canonicalize the name; the SQL layer matches it exactly.
         from app.retrieval.structured.filters import resolve_theme
 
         filters["theme"] = resolve_theme(analysis.theme) or analysis.theme

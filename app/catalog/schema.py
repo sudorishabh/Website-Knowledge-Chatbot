@@ -113,12 +113,9 @@ CREATE TABLE IF NOT EXISTS `{table}_{facet}` (
 # sub-theme inherits its primary tag's group.
 #
 # `theme_path` is the whole ancestor chain ("Energy > Energy Access > Rural
-# Energy Access") and `depth` its segment count. `parent` alone answers exactly
-# one level, so a parent-theme query could never reach a grandchild; the
-# materialized path turns "this theme and everything under it" into an indexed
-# prefix match at any depth. Both are NULL on rows written before the columns
-# existed, and every reader falls back to `theme`/`parent` for those -- see
-# `queries._theme_scope_clause`.
+# Energy Access") and `depth` its segment count. Both are NULL on rows written
+# before the columns existed. They are stored for the record only: theme
+# filters match `theme` by name (see `queries._theme_scope_clause`).
 #
 # Values are classified by app.catalog.theme_taxonomy against the theme map;
 # only themes the document is actually tagged with get a row -- a parent is a

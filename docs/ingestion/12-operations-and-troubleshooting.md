@@ -495,7 +495,6 @@ Start from the symptom.
 | Themes include "False" | Legacy rows | `SELECT * FROM documents_theme WHERE theme IN ('False','True','none')` | `_NOT_A_THEME` prevents new ones; reindex to clear |
 | A document is credited with a parent theme it was not tagged with | Legacy rows from before the guard | Compare against `theme_structure.json` | Reindex; only own themes get rows now |
 | Ingest aborts with `TaxonomyUnavailable` | The theme map cannot be read | The message names the resolved path | Restore the file, or point `THEME_TAXONOMY_PATH` at it. Do **not** bypass — the run would rewrite every theme's hierarchy to NULL |
-| A parent-theme count misses documents tagged deeper down | `theme_path` still NULL on rows written before the column | `SELECT COUNT(*) FROM documents_theme WHERE theme_path IS NULL` | `python -m scripts.reclassify_theme_rows` (those rows fall back to one-level `theme`/`parent` matching until then) |
 | A theme renamed in the CMS still counts under its old name | Drupal term renames don't bump referencing nodes' `changed`, so ingestion never sees it | `SELECT DISTINCT theme FROM documents_theme` | `scripts.rename_theme --apply`, then update the theme map, then `scripts.reclassify_theme_rows` |
 | Knowledge tables empty | Layer disabled, or `build_knowledge` never ran | `GET /metrics` → `knowledge` | Enable the flags; run `scripts.build_knowledge` |
 | Graph behind the corpus | Projection not running | Reconciliation `graph_projection`, or `freshness()` | Check `graph_project_after_sweep`; `scripts.project_graph --rebuild` |
