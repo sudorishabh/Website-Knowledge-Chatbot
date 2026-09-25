@@ -11,7 +11,7 @@ from app.core.models.context import ContextBlock
 from app.pipeline import query_pipeline as pipe
 from app.retrieval.priority import evidence as ev
 from app.retrieval.priority.match import GROUP, NAME, THEME_FACET, Target
-from app.retrieval.priority.registry import CENTRE, THEME, PriorityGroup
+from app.retrieval.priority.registry import CENTRE, PAGE, THEME, PriorityGroup, PriorityPage
 from app.retrieval.understanding import query_processor as qp
 
 BLOCK = ContextBlock(n=1, text="corpus text", payload={"source_type": "website", "title": "Doc"})
@@ -36,7 +36,8 @@ class _Evidence:
 
 @pytest.fixture
 def wired(monkeypatch):
-    log = SimpleNamespace(retrieve=[], lookup=[], gather=[], structured=[], targets=[])
+    log = SimpleNamespace(retrieve=[], lookup=[], gather=[], structured=[], targets=[],
+                          listing=[])
     state = SimpleNamespace(pq=_pq(), targets=[], evidence=_Evidence())
 
     monkeypatch.setattr(pipe, "process", lambda q, h: state.pq)
@@ -56,8 +57,9 @@ def wired(monkeypatch):
 
     monkeypatch.setattr("app.cache.semantic_cache.lookup", fake_lookup)
 
-    def fake_targets(question, *, theme=None, registry=None):
+    def fake_targets(question, *, theme=None, themes_listing=False, registry=None):
         log.targets.append((question, theme))
+        log.listing.append(themes_listing)
         return list(state.targets)
 
     def fake_gather(question, *, query_vector, theme=None, explicit=None, **kw):
@@ -150,6 +152,45 @@ def test_only_the_regional_centres_group_overrules_the_catalog(wired, monkeypatc
     wired.state.targets = [Target("g", "group", GROUP, group=group)]
     result, _ = pipe._prepare("which ones", history=None, top_k=None)
     assert (wired.log.structured == []) is overrides
+
+
+HOME = PriorityPage(name="Home", url="https://www.teriin.org", description="", kind=PAGE)
+
+
+def _listing_pq(operation):
+    analysis = qp.QueryAnalysis(search_query="q", intent="structured", operation=operation)
+    return _pq(intent="structured", analysis=analysis)
+
+
+def test_a_theme_listing_is_answered_from_the_home_page(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _listing_pq("list_themes")
+    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
+    result, gen = pipe._prepare("Teri thematic areas", history=None, top_k=None)
+    assert wired.log.listing == [True]
+    assert wired.log.structured == []
+    assert gen is not None and wired.log.retrieve
+
+
+@pytest.mark.parametrize("reason", [NAME, THEME_FACET])
+def test_a_theme_listing_naming_one_theme_is_answered_from_its_page(wired, monkeypatch, reason):
+    _enable(monkeypatch)
+    wired.state.pq = _listing_pq("list_themes")
+    wired.state.targets = [Target("Climate Change Theme", THEME, reason,
+                                  url="https://teriin.org/climate")]
+    result, gen = pipe._prepare("Tell me about climate change thematic", history=None, top_k=None)
+    assert wired.log.structured == []
+    assert gen is not None and wired.log.retrieve
+
+
+def test_the_home_page_does_not_overrule_a_count_over_the_themes(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _listing_pq("distribution")
+    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
+    result, _ = pipe._prepare("how many documents are in each thematic area",
+                              history=None, top_k=None)
+    assert wired.log.listing == [False]
+    assert result["answer"] == "catalog answer"
 
 
 def test_a_question_about_one_edition_skips_priority_pages(wired, monkeypatch):

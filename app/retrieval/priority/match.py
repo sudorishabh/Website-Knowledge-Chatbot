@@ -8,8 +8,13 @@ model call.
 * ``person`` — the question names someone on the people listings; the target
   is that person's profile.
 * ``name`` — the question names a page outright: its own name when that is
-  more than one word ("climate change", "green shipping"), or a phrase curated
-  in the registry ("director general", "tender", "founder").
+  more than one word ("climate change", "green shipping"), a theme's name with
+  "theme" or "thematic" after it ("the water theme"), or a phrase curated in the
+  registry ("director general", "tender", "founder"). The home page is named by
+  the phrases that ask for the list of themes ("TERI's thematic areas"), and
+  also whenever query understanding read the question as a theme listing; it
+  gives way when the question names one theme, since that theme's own page
+  answers it.
 * ``group`` — the question asks for a group's membership ("regional
   centres"); answered from the list itself, nothing fetched.
 * ``theme`` — query understanding resolved a theme facet that is a page on the
@@ -114,8 +119,13 @@ def explicit(
     registry: Registry,
     people: Sequence[Person] = (),
     theme: str | None = None,
+    themes_listing: bool = False,
 ) -> list[Target]:
-    """The deterministic triggers: people, names, groups, the theme facet."""
+    """The deterministic triggers: people, names, groups, the theme facet.
+
+    ``themes_listing`` says query understanding read the question as a request
+    for the list of themes, which names the home page whatever the wording.
+    """
     words = normalize_text(question)
     targets: list[Target] = []
     for person in named_in(question, list(people))[:2]:
@@ -126,11 +136,17 @@ def explicit(
     for page in registry.pages:
         if any(_has(words, alias) for alias in page.aliases):
             targets.append(Target(page.name, page.kind, NAME, url=page.url, page=page))
+    home = registry.home
+    if themes_listing and home is not None:
+        targets.append(Target(home.name, home.kind, NAME, url=home.url, page=home))
     wanted = normalize_text(theme)
     if wanted:
         for page in registry.pages:
-            if page.kind in (THEME, CENTRE) and normalize_text(page.name) == wanted:
+            if page.kind in (THEME, CENTRE) and normalize_text(page.topic) == wanted:
                 targets.append(Target(page.name, page.kind, THEME_FACET, url=page.url, page=page))
+    if any(t.reason == NAME and t.kind == THEME for t in targets):
+        # "the climate change thematic area" is about one theme, not the list.
+        targets = [t for t in targets if not (t.page is not None and t.page.is_home)]
     return ranked(targets)
 
 
@@ -148,8 +164,10 @@ def _default_embed(texts: list[str]) -> list[list[float]]:
 def description_text(page: PriorityPage) -> str:
     """What a page's description is embedded as. The organisation's own name is
     removed: every description mentions it and most questions do too, and left
-    in it pulled "TERI's work on air pollution" towards the Policy page."""
-    return _ORG.sub("", f"{page.name}. {page.description}").strip()
+    in it pulled "TERI's work on air pollution" towards the Policy page. A theme
+    is embedded by its topic, without the file's "Theme": with it, "what are
+    TERI's thematic areas" scored 0.56 against the Environment page."""
+    return _ORG.sub("", f"{page.topic}. {page.description}").strip()
 
 
 def description_vectors(

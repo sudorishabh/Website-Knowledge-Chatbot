@@ -33,19 +33,46 @@ def _hits(question, reg, **kw):
 
 
 @pytest.mark.parametrize("question, page", [
-    ("tell me about climate change theme", "Climate Change"),
+    ("tell me about climate change theme", "Climate Change Theme"),
+    ("Like me about climate change thematic", "Climate Change Theme"),
+    ("tell me about the water theme", "Water Theme"),
+    ("TERI's energy thematic area", "Energy Theme"),
     ("Who is on TERI's governing council?", "people - governing council"),
     ("who is the director general of TERI", "People - committee of directors"),
     ("what does the Goa centre work on", "Goa"),
     ("latest tenders at TERI", "annoucements"),
     ("who founded TERI", "founder"),
     ("TERI FCRA receipts", "FCRA Financials"),
-    ("what is green shipping", "Green Shipping"),
-    ("tell me about the WSDS", "World Sustainable Development Summit"),
-    ("Forest & Biodiversity work", "Forest & Biodiversity"),
+    ("what is green shipping", "Green Shipping Theme"),
+    ("tell me about the WSDS", "World Sustainable Development Summit Theme"),
+    ("Forest & Biodiversity work", "Forest & Biodiversity Theme"),
 ])
 def test_a_named_page_is_found(reg, question, page):
     assert (page, NAME) in _hits(question, reg)
+
+
+@pytest.mark.parametrize("question", [
+    "Themes area Teri works on",
+    "Teri thematic areas",
+    "What are TERI's research areas?",
+    "which themes does TERI work on",
+])
+def test_asking_for_the_themes_names_the_home_page(reg, question):
+    assert _hits(question, reg) == [("Home", NAME)]
+
+
+def test_a_theme_listing_names_the_home_page_whatever_the_wording(reg):
+    assert _hits("what are the main themes", reg) == []
+    assert _hits("what are the main themes", reg, themes_listing=True) == [("Home", NAME)]
+
+
+def test_one_named_theme_takes_the_place_of_the_list(reg):
+    assert _hits("tell me about the climate change thematic area", reg,
+                 themes_listing=True) == [("Climate Change Theme", NAME)]
+
+
+def test_a_count_over_the_themes_does_not_name_the_home_page(reg):
+    assert _hits("which themes have the most publications", reg) == []
 
 
 @pytest.mark.parametrize("question", [
@@ -62,7 +89,10 @@ def test_a_group_is_asked_for_by_what_it_holds(reg):
 
 
 def test_the_theme_facet_names_its_page(reg):
-    assert _hits("what does TERI do here", reg, theme="Water") == [("Water", THEME_FACET)]
+    assert _hits("what does TERI do here", reg, theme="Water") == [("Water Theme", THEME_FACET)]
+    assert _hits("what does TERI do here", reg, theme="climate change") == [
+        ("Climate Change Theme", THEME_FACET)
+    ]
 
 
 def test_a_theme_facet_off_the_list_names_nothing(reg):
@@ -80,7 +110,7 @@ def test_a_named_person_leads_with_their_profile(reg):
 
 def test_one_page_is_kept_once_with_its_strongest_reason(reg):
     targets = explicit("climate change theme", registry=reg, theme="Climate Change")
-    assert [(t.name, t.reason) for t in targets] == [("Climate Change", NAME)]
+    assert [(t.name, t.reason) for t in targets] == [("Climate Change Theme", NAME)]
 
 
 def test_ranking_orders_by_strength_then_score():
@@ -152,3 +182,8 @@ class TestSimilarity:
                                       "Resources Institute."}]).pages[0]
         assert "TERI" not in match.description_text(page)
         assert "Energy and Resources Institute" not in match.description_text(page)
+
+    def test_a_theme_is_embedded_by_its_topic_without_theme(self):
+        page = parse([{"name": "Environment Theme", "page_url": "https://teriin.org/environment",
+                       "description": "Air, water and land."}]).pages[0]
+        assert match.description_text(page) == "Environment. Air, water and land."
