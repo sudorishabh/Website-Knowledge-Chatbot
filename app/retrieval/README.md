@@ -113,8 +113,9 @@ answering), `intent.py`.
 
 ### `priority/` — the organisation's own pages, read live
 
-A fixed list (`data/priority_crawl_pages.json`) of theme, regional-centre,
-people and institutional pages the crawl cannot reproduce. When a question
+A fixed list (`data/priority_crawl_pages.json`) of the home page and the theme,
+regional-centre, people and institutional pages the crawl cannot reproduce; the
+home page gives the list of themes, each theme page its own. When a question
 concerns one, the page is fetched at question time and its sections lead the
 context; the stored copy of any listed page is never used. Not a route of its
 own: the pipeline builds a `PriorityEvidence` and hands it to `retrieve`,
