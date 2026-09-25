@@ -393,4 +393,4 @@ The read path is healthy when, in addition:
 
 ---
 
-Previous: [11 — Observability and Logging](11-observability-and-logging.md) · Back to the [index](README.md)
+Previous: [11 — Observability and Logging](11-observability-and-logging.md) · Next: [13 — Priority Pages](13-priority-pages.md) · Back to the [index](README.md)

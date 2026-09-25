@@ -20,7 +20,9 @@ def _sha(*parts: str) -> str:
 #: did nothing. That is how the fix for "who is X" answering from a 2020 page
 #: was reported as not working three times: each retest matched the cached
 #: answer at cosine 1.0.
-PIPELINE_REVISION = "2026-09-18.3"
+#: 2026-09-24.1: priority pages read live now lead the context, and the stored
+#: copies of those pages are no longer used.
+PIPELINE_REVISION = "2026-09-24.1"
 
 
 def _pref_fingerprint() -> str:

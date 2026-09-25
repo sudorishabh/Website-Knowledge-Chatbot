@@ -6,7 +6,10 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-data/
+# Local data stays out of git, except the priority page list: it is read at
+# question time and is the authority for the theme hierarchy.
+data/*
+!data/priority_crawl_pages.json
 qdrant_storage/
 tools/local_tests/results/
 .vscode/

@@ -16,7 +16,7 @@ from typing import Any, Sequence
 
 from app.config import get_settings
 from app.core.clients.embeddings import embed_query
-from app.core.models.context import ContextBlock
+from app.core.models.context import ContextBlock, is_priority_page
 from app.observability import retrieval_log
 from app.observability.tracing import span
 from app.retrieval.context.builder import build_context
@@ -324,8 +324,16 @@ def retrieve(
     capabilities: set[str] | None = None,
     temporal: Any | None = None,
     subqueries: Sequence[Any] | None = None,
+    priority: Any | None = None,
 ) -> list[ContextBlock]:
-    """``temporal`` is the question's `TemporalIntent`, or None to behave exactly
+    """``priority`` is the question's `PriorityEvidence` (see
+    :mod:`app.retrieval.priority`), or None — the feature off — to behave exactly
+    as before it existed. With it, the stored copy of every listed page is
+    dropped from the ranking (its live copy is the one that counts), a listed page
+    whose stored copy ranked is read live instead, and the live sections lead the
+    context.
+
+    ``temporal`` is the question's `TemporalIntent`, or None to behave exactly
     as before it existed: no temporal ranking, and the UPCOMING gate detecting
     its own mode. The caller passes it only when `temporal_intent_enabled` is
     set, so the flag is honoured in one place rather than three.
@@ -632,10 +640,21 @@ def retrieve(
                 score_before, score_after,
                 "improved" if score_after > score_before else "no gain",
             )
+    if priority is not None:
+        # Before anything is built from the ranking: a listed page's stored copy
+        # must not be admitted, and where it ranked, the live page is read.
+        with span("rag.priority_stored_copies") as s:
+            before = len(ranked)
+            ranked = priority.drop_stored_copies(ranked, top_n=n)
+            s.set("dropped", before - len(ranked))
     if not ranked:
         # Nothing from the corpus. A graph answer still stands on its own, which
-        # is the behaviour this leg has always had when retrieval came up empty.
+        # is the behaviour this leg has always had when retrieval came up empty —
+        # and so do the priority pages.
         _observe_in_shadow(search_query, [])
+        if priority is not None and priority.blocks:
+            return priority.merge(list(graph_blocks), limit=n,
+                                  token_budget=settings.context_token_budget)
         return list(graph_blocks)
     with span("rag.context_build"):
         blocks = build_context(ranked, limit=n, temporal=temporal,
@@ -660,6 +679,13 @@ def retrieve(
             retrieval_log.note(
                 graph_blocks=len(graph_blocks), merged_blocks=len(blocks)
             )
+    if priority is not None and priority.blocks:
+        # Last of the merges, so the live pages lead whatever the corpus and the
+        # graph composed between them; the corpus keeps its reserved slots.
+        with span("rag.priority_merge") as s:
+            blocks = priority.merge(blocks, limit=n,
+                                    token_budget=settings.context_token_budget)
+            s.set("priority_blocks", sum(1 for b in blocks if is_priority_page(b.payload)))
     # Temporal gate, last of all: an "upcoming" question must not be answered
     # from events that have already happened. Applied here rather than as a
     # vector pre-filter because an event's own start date lives in the CMS

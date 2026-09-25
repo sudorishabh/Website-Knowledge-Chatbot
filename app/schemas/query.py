@@ -72,6 +72,8 @@ class SearchBlock(BaseModel):
     document_id: str | None = None
     source_type: str | None = None
     title: str | None = None
+    # The page the block came from — for a priority page, the live URL read.
+    source_url: str | None = None
     page_number: int | None = None
     section_heading: str | None = None
 

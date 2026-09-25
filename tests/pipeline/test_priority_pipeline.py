@@ -1,0 +1,175 @@
+"""The pipeline's two priority-page touch points: triggers before routing, pages
+before the answer cache. Retrieval, embedding and the cache are stubbed."""
+from __future__ import annotations
+
+from types import SimpleNamespace
+
+import pytest
+
+from app.config import get_settings
+from app.core.models.context import ContextBlock
+from app.pipeline import query_pipeline as pipe
+from app.retrieval.priority import evidence as ev
+from app.retrieval.priority.match import GROUP, NAME, THEME_FACET, Target
+from app.retrieval.priority.registry import CENTRE, THEME, PriorityGroup
+from app.retrieval.understanding import query_processor as qp
+
+BLOCK = ContextBlock(n=1, text="corpus text", payload={"source_type": "website", "title": "Doc"})
+
+
+def _pq(intent="qa", **kw):
+    kw.setdefault("original", "q")
+    kw.setdefault("search_query", "q")
+    kw.setdefault("analysis", qp.QueryAnalysis(search_query="q", intent=intent, theme="Climate Change"))
+    return qp.ProcessedQuery(intent=intent, **kw)
+
+
+class _Evidence:
+    def __init__(self, fingerprint=None):
+        self.reads: list = []
+        self.blocks: list = []
+        self._fp = fingerprint or {"priority": ["teriin.org/climate#abc"]}
+
+    def fingerprint(self):
+        return dict(self._fp)
+
+
+@pytest.fixture
+def wired(monkeypatch):
+    log = SimpleNamespace(retrieve=[], lookup=[], gather=[], structured=[], targets=[])
+    state = SimpleNamespace(pq=_pq(), targets=[], evidence=_Evidence())
+
+    monkeypatch.setattr(pipe, "process", lambda q, h: state.pq)
+
+    def fake_retrieve(*a, **kw):
+        log.retrieve.append(kw)
+        return [BLOCK]
+
+    monkeypatch.setattr(pipe, "retrieve", fake_retrieve)
+    monkeypatch.setattr("app.core.clients.embeddings.embed_query", lambda q: [0.1])
+    # A model call otherwise; `[]` is its own no-op result.
+    monkeypatch.setattr("app.generation.answer_plan.extract_requirements", lambda q: [])
+
+    def fake_lookup(*a, **kw):
+        log.lookup.append(kw["fingerprint"])
+        return None
+
+    monkeypatch.setattr("app.cache.semantic_cache.lookup", fake_lookup)
+
+    def fake_targets(question, *, theme=None, registry=None):
+        log.targets.append((question, theme))
+        return list(state.targets)
+
+    def fake_gather(question, *, query_vector, theme=None, explicit=None, **kw):
+        log.gather.append({"question": question, "theme": theme, "explicit": explicit,
+                           "vector": query_vector})
+        return state.evidence
+
+    monkeypatch.setattr(ev, "explicit_targets", fake_targets)
+    monkeypatch.setattr(ev, "gather", fake_gather)
+
+    def fake_structured(question, history, *, analysis):
+        log.structured.append(question)
+        return {"answer": "catalog answer", "citations": [], "intent": "structured",
+                "used_chunks": 0, "conflict": False, "cached": False}
+
+    monkeypatch.setattr("app.retrieval.structured.answerer.answer_structured", fake_structured)
+    monkeypatch.setattr("app.retrieval.structured.tools.resolve_lookup_chain", lambda a, q: None)
+    monkeypatch.setattr(pipe, "_graph_generation", lambda pq, *, top_k: None)
+    return SimpleNamespace(log=log, state=state)
+
+
+def _enable(monkeypatch):
+    monkeypatch.setattr(get_settings(), "priority_pages_enabled", True)
+
+
+def test_with_the_feature_off_nothing_changes(wired):
+    result, gen = pipe._prepare("tell me about climate change", history=None, top_k=None)
+    assert "priority" not in wired.log.retrieve[0]
+    assert wired.log.targets == [] and wired.log.gather == []
+    assert "priority" not in wired.log.lookup[0]
+    assert gen.cache_fingerprint is None
+
+
+def test_pages_are_read_before_the_cache_and_key_it(wired, monkeypatch):
+    _enable(monkeypatch)
+    result, gen = pipe._prepare("tell me about climate change", history=None, top_k=None)
+    assert wired.log.gather[0]["theme"] == "Climate Change"
+    assert wired.log.gather[0]["vector"] == [0.1]
+    assert wired.log.lookup[0]["priority"] == ["teriin.org/climate#abc"]
+    assert wired.log.retrieve[0]["priority"] is wired.state.evidence
+    assert gen.cache_fingerprint["priority"] == ["teriin.org/climate#abc"]
+
+
+def test_the_answer_is_stored_under_the_fingerprint_retrieval_left(wired, monkeypatch):
+    _enable(monkeypatch)
+    stored = []
+    monkeypatch.setattr("app.cache.semantic_cache.store",
+                        lambda *a, **kw: stored.append(kw["fingerprint"]))
+    _, gen = pipe._prepare("tell me about climate change", history=None, top_k=None)
+    wired.state.evidence._fp = {"priority": ["teriin.org/climate#abc", "teriin.org/policy#def"]}
+    gen.cache_fingerprint = {**gen.cache_fingerprint, **wired.state.evidence.fingerprint()}
+    pipe._persist(gen, {"answer": "a"})
+    assert stored[0]["priority"] == ["teriin.org/climate#abc", "teriin.org/policy#def"]
+
+
+def test_a_named_institutional_page_overrules_the_catalog(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _pq(intent="structured")
+    wired.state.targets = [Target("people - governing council", "people", NAME,
+                                  url="https://teriin.org/people/governing-council")]
+    result, gen = pipe._prepare("how many members are on the governing council",
+                                history=None, top_k=None)
+    assert wired.log.structured == []
+    assert gen is not None and wired.log.retrieve
+
+
+def test_a_theme_facet_does_not_overrule_the_catalog(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _pq(intent="structured")
+    wired.state.targets = [Target("Climate Change", THEME, THEME_FACET,
+                                  url="https://teriin.org/climate")]
+    result, gen = pipe._prepare("how many climate change projects are there",
+                                history=None, top_k=None)
+    assert wired.log.structured and result["answer"] == "catalog answer"
+
+
+def test_a_theme_page_named_outright_does_not_overrule_a_count(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _pq(intent="structured")
+    wired.state.targets = [Target("Climate Change", THEME, NAME, url="https://teriin.org/climate")]
+    result, _ = pipe._prepare("how many climate change projects", history=None, top_k=None)
+    assert result["answer"] == "catalog answer"
+
+
+@pytest.mark.parametrize("kind, overrides", [(CENTRE, True), (THEME, False)])
+def test_only_the_regional_centres_group_overrules_the_catalog(wired, monkeypatch, kind, overrides):
+    _enable(monkeypatch)
+    wired.state.pq = _pq(intent="structured")
+    group = PriorityGroup(name="g", description="", kind=kind, members=())
+    wired.state.targets = [Target("g", "group", GROUP, group=group)]
+    result, _ = pipe._prepare("which ones", history=None, top_k=None)
+    assert (wired.log.structured == []) is overrides
+
+
+def test_a_question_about_one_edition_skips_priority_pages(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _pq()
+    wired.state.pq.edition = SimpleNamespace(edition="2023-24", kind="annual_report")
+    pipe._prepare("what does the 2023-24 annual report say", history=None, top_k=None)
+    assert wired.log.targets == [] and "priority" not in wired.log.retrieve[0]
+
+
+def test_the_triggers_read_the_question_and_its_rewrite(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _pq(search_query="TERI governing council members")
+    pipe._prepare("and who chairs it?", history=[{"role": "user", "content": "x"}], top_k=None)
+    question, _ = wired.log.targets[0]
+    assert question == "and who chairs it?\nTERI governing council members"
+
+
+def test_search_blocks_reads_the_same_pages(wired, monkeypatch):
+    _enable(monkeypatch)
+    pipe.search_blocks("tell me about climate change")
+    assert wired.log.retrieve[0]["priority"] is wired.state.evidence
+    assert wired.log.retrieve[0]["query_vector"] == [0.1]

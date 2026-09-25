@@ -31,9 +31,6 @@
         "name": "Environment",
         "children": [
           {
-            "name": "Microbes"
-          },
-          {
             "name": "Water"
           },
           {
@@ -47,6 +44,23 @@
           },
           {
             "name": "Air"
+          },
+          {
+            "name": "Advanced Biofuels & Biochemicals",
+            "children": [
+              {
+                "name": "Pyrolytic Biofuels, Biochar & Green Chemicals"
+              },
+              {
+                "name": "Microbial Biofuels and Biochemicals"
+              }
+            ]
+          },
+          {
+            "name": "Industrial Biotechnology"
+          },
+          {
+            "name": "Marine and Coastal"
           }
         ]
       },
@@ -85,33 +99,16 @@
     "name": "Other Themes",
     "children": [
       {
-        "name": "Green Shipping"
-      },
-      {
-        "name": "Pyrolytic Biofuels, Biochar & Green Chemicals"
-      },
-      {
-        "name": "World Sustainable Development Summit"
+        "name": "TERI Council for Business Sustainability"
       },
       {
         "name": "Corporate Social Responsibility"
       },
       {
-        "name": "Environment Education",
-        "children": [
-          {
-            "name": "Education for Youth Empowerment"
-          },
-          {
-            "name": "Strategic Communication for Sustainability"
-          }
-        ]
+        "name": "Green Shipping"
       },
       {
-        "name": "Himalayan Centre, Mukteshwar, Nainital"
-      },
-      {
-        "name": "TERI Council for Business Sustainability"
+        "name": "World Sustainable Development Summit"
       },
       {
         "name": "TERI Knowledge Resource Centre",
@@ -127,6 +124,17 @@
           },
           {
             "name": "Sustainability Driven Knowledge Projects"
+          }
+        ]
+      },
+      {
+        "name": "Environment Education",
+        "children": [
+          {
+            "name": "Education for Youth Empowerment"
+          },
+          {
+            "name": "Strategic Communication for Sustainability"
           }
         ]
       }

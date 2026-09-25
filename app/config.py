@@ -291,6 +291,36 @@ class Settings(BaseSettings):
     # is the right one, and the blocks are now whichever 5 rank highest.
     # Prefill cost/latency rises only on content-rich queries.
     context_token_budget: int = 9000
+    # --- Priority pages (app.retrieval.priority) ------------------------------
+    # A fixed list of the organisation's own pages (themes, regional centres,
+    # people, institutional pages) that the Drupal crawl cannot reproduce. When a
+    # question concerns one, the page is read from the live site at question
+    # time and its sections lead the context; the stored copy of any listed page
+    # is never used. Off switches the whole feature back to corpus-only answers.
+    priority_pages_enabled: bool = True
+    # The page list. Empty means the shipped `data/priority_crawl_pages.json`,
+    # which is also the authority for the theme hierarchy (see
+    # tests/catalog/test_theme_map_matches_priority_pages.py).
+    priority_pages_path: str = ""
+    # Per-request budget for one page. A page that does not answer in time is
+    # served from its last good copy, or left out.
+    priority_fetch_timeout: float = 4.0
+    # How long a fetched page is reused before it is revalidated. Matches the
+    # `Cache-Control: max-age=300` the site itself sends for these pages.
+    priority_cache_ttl: int = 300
+    # Most pages read for one question, and most of their sections admitted.
+    # Blocks lead the context, so this is also the share of `retrieval_top_k`
+    # the corpus gives up when a priority page applies.
+    priority_max_pages: int = 3
+    priority_max_blocks: int = 3
+    # Description-similarity trigger: cosine of the query against a page's
+    # description, and how far the best page must lead the runner-up. Set from a
+    # small hand-labelled question set on 2026-09-24 (see
+    # docs/retrieval/13-priority-pages.md); recalibrate from the trace's scores.
+    priority_match_threshold: float = 0.48
+    priority_match_margin: float = 0.06
+    # Cosine a section other than the page's lead must reach to be admitted.
+    priority_section_floor: float = 0.40
     faithfulness_check: bool = False
     metrics_log_enabled: bool = True
     # --- Retrieval logging (debugging / evaluation / analysis) ---------------

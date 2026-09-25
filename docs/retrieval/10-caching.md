@@ -71,6 +71,11 @@ Both checks are necessary: proximity alone would risk serving an answer
 scoped to the wrong theme or date range; the fingerprint alone (with no
 vector search) would require an exact rewrite of the question.
 
+When a question draws on a live priority page, the fingerprint also carries
+`priority`: each page's URL with the start of its content hash. The answer is
+then reused only while the page says the same thing, and an ordinary question's
+fingerprint is unchanged. See [13 — Priority Pages](13-priority-pages.md#caching).
+
 ---
 
 ## The partition key: `semantic_partition`
