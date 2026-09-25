@@ -18,13 +18,20 @@ warnings.filterwarnings(
 
 @lru_cache
 def get_llm(temperature: float | None = None, streaming: bool = False) -> AzureChatOpenAI:
+    """The chat client for one (temperature, streaming) pair.
+
+    `temperature` is what the caller wants; it reaches the deployment only when
+    `llm_temperature_supported` says the deployment takes one. Every call in the
+    app comes through here, so this is the one place a model that rejects the
+    parameter has to be accommodated.
+    """
     settings = get_settings()
     return _build_llm(
         endpoint=settings.azure_openai_endpoint,
         api_key=settings.azure_openai_api_key,
         api_version=settings.azure_openai_api_version,
         deployment=settings.azure_openai_model,
-        temperature=temperature,
+        temperature=temperature if settings.llm_temperature_supported else None,
         streaming=streaming,
     )
 

@@ -13,6 +13,14 @@ class Settings(BaseSettings):
     azure_openai_api_version: str = "2024-06-01"
     azure_openai_model: str = ""
     llm_structured_temperature: float | None = None
+    # Whether the chat deployment accepts a `temperature` at all. Some reasoning
+    # models (gpt-6-luna, measured 2026-09-25) reject the parameter outright
+    # with a 400 — and the answer call (0.2), the voted query understanding
+    # (0.7) and the multi-query paraphrases (0.7) all send one, whatever
+    # `llm_structured_temperature` says. False omits it from every call, in
+    # `app.core.clients.llm.get_llm`, so the call sites keep their intent for
+    # a model that does honour it.
+    llm_temperature_supported: bool = True
     azure_openai_embedding_model: str = ""
     azure_openai_embedding_key: str = ""
     azure_openai_embedding_endpoint: str = ""
