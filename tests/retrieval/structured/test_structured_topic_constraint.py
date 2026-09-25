@@ -34,7 +34,7 @@ from app.retrieval.structured.types import RecordFilters
 _SLOT_DEFAULTS = dict(
     operation="list", bundle=None, theme=None, tags=[], author=None,
     title_contains=None, group_by=None, secondary_group_by=None,
-    count_of="records", theme_children=False, limit=10,
+    count_of="records", limit=10,
     date_from=None, date_to=None, year=None, answer_format="default",
 )
 

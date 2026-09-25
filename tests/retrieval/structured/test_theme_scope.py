@@ -137,7 +137,6 @@ def test_asking_for_the_whole_vocabulary_asks_for_all(question):
 class _Slots:
     operation = "list_themes"
     theme = None
-    theme_children = False
     bundle = author = title_contains = group_by = None
     date_from = date_to = year = tags = None
     limit = 10
@@ -263,7 +262,6 @@ class _CountSlots:
     operation = "count"
     bundle = "article"
     theme = None
-    theme_children = False
     author = title_contains = group_by = None
     date_from = date_to = year = tags = None
     limit = 10
