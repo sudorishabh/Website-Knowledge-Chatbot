@@ -524,7 +524,7 @@ def test_an_unflagged_context_leaves_the_human_turn_as_it_was(monkeypatch):
 # --------------------------------------------------------------------------- #
 
 def test_the_prompt_asks_for_one_answer_from_whatever_mix_of_sources():
-    assert "one continuous answer" in GROUNDED_SYSTEM_PROMPT
+    assert "one answer from all the blocks together" in GROUNDED_SYSTEM_PROMPT
     assert "whatever mix of sources" in GROUNDED_SYSTEM_PROMPT
 
 

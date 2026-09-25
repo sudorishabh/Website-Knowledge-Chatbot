@@ -70,49 +70,99 @@ SUPERSEDES_MARKER = "dates an earlier statement here"
 # restating the answer — which is also what the two-block contract this replaced
 # asked for by design, and what left a reader reconciling a website answer
 # against a "From our documents" answer that contradicted it.
+#
+# "One answer" used to read "one continuous answer". It meant "not split by
+# source", but a model reads "continuous" as "prose", and it is one of the reasons
+# an overview came back as four unbroken paragraphs. Sections by *topic* are what
+# the style below asks for; sections by *source* are what this forbids.
+#
+# The meta-wording clause is measured, not anticipated: on 2026-09-25 answers
+# opened "From the individual centre pages in the available sources" and cited
+# "an attached report section". A reader never sees the blocks, so talking about
+# them only tells the reader how the answer was made. Naming the page a statement
+# comes from is different: it is how a person would attribute it, and it is only
+# licensed for the pages the header already marks as the organisation's own.
 _ANSWER_STRUCTURE = (
     "Answer structure (mandatory):\n"
-    "- Write one continuous answer from all the blocks together, whatever mix "
-    "of sources they came from.\n"
-    "- Do not split the answer into sections by source, and do not wrap any part "
+    "- Write one answer from all the blocks together, whatever mix of sources "
+    "they came from. Organise it by topic, never by source: do not split it "
+    "into sections by where the material came from, and do not wrap any part "
     "of it in tags.\n"
     "- Never open the answer, or any part of it, with a bolded label naming "
-    "where the material came from, and never mention what kind of source the "
-    "context came from or that documents were searched.\n"
+    "where the material came from.\n"
+    "- Never write about the material itself. Outside the exact wordings rules "
+    "3 and 9 prescribe, do not write \"the context\", \"the blocks\", \"the "
+    "provided / available / retrieved sources\", \"the documents searched\", "
+    "\"an attached report\" or \"according to the passages\": the reader never "
+    "sees them. Where the answer rests on a block marked "
+    f"\"{CANONICAL_MARKER}\" or \"{LIVE_MARKER}\", you may attribute it to that "
+    "page by name in the opening sentence (\"According to the organisation's "
+    "Climate Change page, ...\"); otherwise state the facts with their "
+    "citations and nothing about where they were found.\n"
     "- When the context does not answer the question, follow rule 3: the refusal "
     "alone.\n"
 )
 
-# Depth and shape of the prose. Rides on every QA call, so it stays compact; the
-# query-specific shaping lives in _FORMAT_DIRECTIVES and takes precedence over
-# this. Asking a grounded model for fuller answers raises the pressure to pad, so
-# the anti-padding clause is not optional decoration — it is what keeps the extra
-# length coming from the context.
+# Depth and shape of the answer. Rides on every QA call; the query-specific
+# shaping lives in _FORMAT_DIRECTIVES and takes precedence over this.
 #
-# The length target is stated as a range rather than "be thorough" because the
-# abstract instruction lost to the model's own pull toward one-line answers: a
-# question worth several sentences of context was coming back as the bare fact.
-# The floor names what to add (the specifics already in the context), so the
-# extra length has somewhere to come from other than filler.
+# The shapes replaced one generic instruction ("structure anything past a couple
+# of sentences ... **bold** for the points that matter most"), which on
+# 2026-09-25 produced: seven themes run into one sentence with their one-line
+# descriptions dropped, nine centres listed inline with "[1]" after each, and an
+# overview of four paragraphs with some forty bold phrases. The model was left to
+# invent a structure per answer and invented none. Naming the four shapes a
+# question actually takes, and what each looks like, gives it one to follow;
+# which one applies is still the model's reading of the question and the
+# material, never a list of questions.
+#
+# Asking a grounded model for fuller answers raises the pressure to pad, so the
+# anti-padding clause is not optional decoration — it is what keeps the extra
+# length coming from the context. The direct-fact floor exists because an
+# abstract "be thorough" lost to the model's own pull toward one-line answers.
 _ANSWER_STYLE = (
     "Answer style:\n"
-    "- Answer at a useful length: lead with the direct answer, then give the "
-    "specifics the context carries around it — the figures, dates, names, "
-    "scope, caveats and limits that make the answer usable. An ordinary "
-    "question is worth roughly 6-10 sentences or 4-8 bullets; a question the "
-    "context covers from several angles is worth more, not capped at this "
-    "floor. Even a one-fact question gets its fact plus two or three sentences "
-    "of surrounding detail, never a bare clause or a single sentence.\n"
-    "- Structure anything past a couple of sentences: short paragraphs, bullets "
-    "for parallel points, numbered steps for sequences, a Markdown table for "
-    "comparisons across two or more dimensions, and **bold** for the points "
-    "that matter most. No walls of text.\n"
+    "Pick the one shape below that fits the question and the material, and "
+    "follow it.\n"
+    "- Direct fact — who, when, where, how many, yes or no, or anything with "
+    "one specific answer. Give the answer in the first sentence, then 2-4 "
+    "sentences or a few bullets of the detail the context carries around it: "
+    "dates, roles, scope, figures, caveats. No headings. Even a one-fact "
+    "question gets its fact plus two or three sentences of surrounding "
+    "detail, never a bare clause or a single sentence.\n"
+    "- List — the question asks what the members of a set are (themes, "
+    "centres, programmes, offices, projects, people, publications). One "
+    "opening sentence saying what the list is, then one bullet per item: the "
+    "item's name in bold, then \" — \" and a one-line description whenever the "
+    "context gives one for that item. Keep every item the context lists, in "
+    "its order. No headings unless the context itself groups the items.\n"
+    "- Overview — \"tell me about X\", \"what is X\", \"what does X work on\", "
+    "or a subject the context covers from several angles. Open with 1-3 "
+    "sentences saying what X is (and who runs it, and since when, where the "
+    "context says so). Then 2-5 sections, each under a short Markdown heading "
+    "(### Heading) naming what that section covers — taken from the material "
+    "itself, such as focus areas, projects, partners or findings, never a "
+    "fixed template and never \"Overview\" or \"Introduction\". Under each "
+    "heading, 2-6 bullets, one point each. An answer of three or more "
+    "sections may close with one sentence that ties them together.\n"
+    "- Comparison — two or more things across two or more dimensions: a "
+    "Markdown table, one row per thing.\n"
+    "Formatting, whatever the shape:\n"
+    "- Bold sparingly: an item's name at the start of a list bullet, and at "
+    "most one or two key terms in a paragraph. Never several bold phrases in "
+    "one sentence.\n"
+    "- A bullet is one point in a line or two, starting with the point itself. "
+    "Paragraphs stay at 2-4 sentences. No walls of text.\n"
+    "- Headings only in an overview, and never over a section with fewer than "
+    "two points — merge it into a neighbour instead.\n"
+    "- When the context's description of an item is cut off mid-sentence, give "
+    "the part that is complete; never finish it from your own knowledge.\n"
+    "Depth:\n"
     "- Depth must come from the context, never from padding: every added "
     "sentence carries its own [n] and says something the earlier ones did not, "
     "and a table or list needs real values for every cell it opens. Where the "
-    "context runs out before the length target does, stop there — never restate "
-    "a point, pad with generalities, or close with a summary of what you just "
-    "said.\n"
+    "context runs out, stop there — never restate a point, pad with "
+    "generalities, or close with a paragraph that repeats the answer.\n"
 )
 
 _ANSWER_STYLE_SCOPE = (
@@ -212,7 +262,7 @@ _RULES_SOURCES = (
     "they said it — never on what kind of source they came from. A website page "
     "does not outrank a PDF, and a PDF does not outrank a website page. Where two "
     "blocks disagree, rule 9 decides.\n"
-    "6. Answer as one continuous response, as described under 'Answer structure' "
+    "6. Answer as one response, as described under 'Answer structure' "
     "below. Always cite [n] for every claim, whichever kind of source it came "
     "from — a single answer may cite website pages, documents and the knowledge "
     "graph together.\n"

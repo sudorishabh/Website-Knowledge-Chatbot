@@ -10,7 +10,7 @@ unchanged — a malformed wrapper from a truncated stream still has to degrade t
 prose rather than lose the answer.
 
 The prompt contract below it is the current one, and it is the opposite shape:
-one continuous answer from one ranked evidence set, with source kind carrying no
+one answer from one ranked evidence set, with source kind carrying no
 precedence at all. Also here: the sources footer, which has to agree with the
 citations above it. No network.
 """
@@ -282,8 +282,11 @@ def _example() -> str:
     return GROUNDED_SYSTEM_PROMPT[GROUNDED_SYSTEM_PROMPT.index("Example:") :]
 
 
-def test_the_prompt_asks_for_one_continuous_answer():
-    assert "one continuous answer" in GROUNDED_SYSTEM_PROMPT
+def test_the_prompt_asks_for_one_answer_organised_by_topic_not_source():
+    assert "one answer from all the blocks together" in GROUNDED_SYSTEM_PROMPT
+    assert "Organise it by topic, never by source" in GROUNDED_SYSTEM_PROMPT
+    # "continuous" read as "prose" and flattened overviews into paragraphs.
+    assert "continuous" not in GROUNDED_SYSTEM_PROMPT
 
 
 def test_the_prompt_never_mentions_the_retired_block_structure():
