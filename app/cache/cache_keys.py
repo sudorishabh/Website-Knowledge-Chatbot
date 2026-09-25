@@ -36,7 +36,9 @@ def _sha(*parts: str) -> str:
 #: listed pages is answered from retrieval instead of by small talk.
 #: 2026-09-25.9: a question for the organisation's people reads its people
 #: listings.
-PIPELINE_REVISION = "2026-09-25.9"
+#: 2026-09-25.10: a broad question is answered on its named reading, a long list
+#: is grouped, and several people listings are named beside the question.
+PIPELINE_REVISION = "2026-09-25.10"
 
 
 def _pref_fingerprint() -> str:

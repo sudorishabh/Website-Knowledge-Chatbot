@@ -232,6 +232,21 @@ a list of questions:
 | Overview | "tell me about X", a subject covered from several angles | 1–3 opening sentences, then 2–5 `###` sections whose headings come from the material, 2–6 bullets each; a three-section answer may close with one tying sentence |
 | Comparison | several things across several dimensions | A Markdown table |
 
+Three more rules came from the people questions ("TERI top researchers"):
+
+- **A broad question is answered on its named reading.** When a word has no
+  measure the context gives ("top", "main", "leading"), the answer takes the
+  likely reading, names it in the opening sentence ("If by … you mean …"), and
+  draws on every list or page in the context that fits it. The first wording
+  ("answer its most likely reading") was read as "pick one set" and dropped a
+  whole listing that fitted.
+- **A list of more than about 12 items is grouped** into 2–4 sections by
+  something the context states for every item (a title's level, a division,
+  the listing it came from). The same question once came back as one flat list
+  of 42 names.
+- **"Former" is honoured**: a list of current people leaves out anyone the
+  context marks as former, past or ended.
+
 Formatting rules ride with them: bold only an item's name and at most one or
 two key terms in a paragraph; headings only in an overview and never over a
 single point; a description cut off mid-sentence in the context (a live page's
@@ -287,9 +302,18 @@ particular call.
 `answerer.py` is deliberately thin: it assembles the system prompt (base +
 history rule + graph-facts rule + format directive + correction + plan
 directive + `today_anchor()`), a `MessagesPlaceholder` for history, and one
-human turn (`"Numbered context:\n{context}\n\n{dates}Question: {question}\n\n{shape}"`),
+human turn (`"Numbered context:\n{context}\n\n{notes}Question: {question}\n\n{shape}"`),
 then invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
 
+- **The people-listings note** (`prompts.staff_note`) joins the dates note in
+  the `{notes}` slot before the question. It is empty unless two or more
+  distinct people listings were read because the question asks for the
+  organisation's people (`priority_reason == "staff"`, see
+  [13](13-priority-pages.md)); then it names them by block number and says the
+  answer draws on each, one group per listing, holding the people who fit the
+  question. With both the Committee of Directors and the Distinguished Fellows
+  in context and the broad-reading rule already in the prompt, three answers in
+  four still named only the fellows; with the note, all four drew on both.
 - **The shape reminder** (`prompts.SHAPE_REMINDER`) fills `{shape}`: the
   answer shapes of `_ANSWER_STYLE` compressed to a few lines, after the
   question. The style section sits in the middle of a system prompt of several
@@ -307,7 +331,7 @@ then invokes or streams it through `get_llm(temperature=0.2, streaming=...)`.
   of four, while the publication-date question kept its labelled parts in four
   of four.
 
-- **The dates note** (`prompts.supersession_note`) fills `{dates}`, and is
+- **The dates note** (`prompts.supersession_note`) is the first of the `{notes}`, and is
   empty for every context the builder did not flag — which is almost all of
   them, so the human turn is then exactly what it was. When
   `flag_supersession` has marked a pair (see

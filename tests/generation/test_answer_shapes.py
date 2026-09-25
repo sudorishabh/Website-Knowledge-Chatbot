@@ -264,6 +264,97 @@ def test_sections_are_headed_by_what_they_hold_not_the_page_section():
     assert "never the name of the page section they appeared in" in _style()
 
 
+def test_a_broad_question_is_answered_on_its_named_reading():
+    """Measured: "TERI top researchers" with the listings in hand opened "The
+    sources do not rank TERI researchers as 'top'" instead of answering."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    structure = _structure()
+    assert "answer its most likely reading and name that reading" in structure
+    assert "Never ask back instead" in structure
+    assert "never open by saying the sources do not define the word" in structure
+    assert "A broad question gets its most likely reading" in SHAPE_REMINDER
+    # Measured: "most likely reading" alone was read as "pick one set" and
+    # dropped a whole listing that fitted.
+    assert "never just the first set that fits" in structure
+    assert "answered from every list or page in the context that fits" in SHAPE_REMINDER
+
+
+def test_a_long_list_is_grouped_by_what_the_context_states():
+    """Measured: the same question came back as one flat list of 42 people."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    style = _style()
+    assert "more than about 12 items is split into 2-4 groups" in style
+    assert "something the context states for every item" in style
+    assert "Headings only in an overview or a grouped long list" in style
+    assert "more than about 12 items grouped under ### headings" in SHAPE_REMINDER
+
+
+def _listing(n, title, reason="staff"):
+    from app.core.models.context import PRIORITY_PAGE_KIND, ContextBlock
+
+    return ContextBlock(n=n, text=f"{title}\nDr A\nDirector", payload={
+        "kind": PRIORITY_PAGE_KIND, "source_type": "website", "title": title,
+        "priority_reason": reason,
+    })
+
+
+def test_several_people_listings_are_named_beside_the_question():
+    """Measured: with both listings in context, three answers in four named
+    only the Distinguished Fellows and dropped the research directors."""
+    from app.generation.prompts import staff_note
+
+    note = staff_note([_listing(1, "Distinguished Fellows"),
+                       _listing(2, "Committee of Directors")])
+    assert "[1] Distinguished Fellows, [2] Committee of Directors" in note
+    assert "draws on each of them" in note
+    assert "rather than choosing one listing as the answer" in note
+
+
+def test_the_note_is_absent_unless_two_listings_were_read_for_people():
+    from app.generation.prompts import staff_note
+
+    assert staff_note([_listing(1, "Distinguished Fellows")]) == ""
+    # A listing named outright ("the governing council") is not this case.
+    assert staff_note([_listing(1, "A", reason="name"), _listing(2, "B", reason="name")]) == ""
+    # One listing split across two blocks is still one listing.
+    assert staff_note([_listing(1, "Committee of Directors"),
+                       _listing(2, "Committee of Directors")]) == ""
+
+
+def test_the_staff_reason_matches_retrieval():
+    from app.generation.prompts import STAFF_REASON
+    from app.retrieval.priority.match import STAFF
+
+    assert STAFF_REASON == STAFF
+
+
+def test_the_note_reaches_the_human_turn_before_the_question(monkeypatch):
+    from langchain_core.runnables import RunnableLambda
+
+    from app.generation import answerer
+
+    seen: dict = {}
+
+    def capture(prompt_value):
+        seen["human"] = prompt_value.to_messages()[-1].content
+        return "an answer"
+
+    monkeypatch.setattr(answerer, "get_llm", lambda **_: RunnableLambda(capture))
+    answerer.generate_answer("TERI top researchers", [
+        _listing(1, "Distinguished Fellows"), _listing(2, "Committee of Directors")])
+    human = seen["human"]
+    assert human.index("People listings in this context") < human.index("Question: TERI top")
+
+
+def test_a_list_of_current_people_leaves_out_the_former_ones():
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "leave out anyone or anything the context marks as former" in _style()
+    assert "no one the context marks as former" in SHAPE_REMINDER
+
+
 def test_attribution_by_page_name_is_licensed_only_by_the_header_markers():
     structure = _structure()
     assert f"\"{CANONICAL_MARKER}\" or \"{LIVE_MARKER}\"" in structure

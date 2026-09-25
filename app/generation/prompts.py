@@ -87,6 +87,16 @@ SUPERSEDES_MARKER = "dates an earlier statement here"
 # them only tells the reader how the answer was made. Naming the page a statement
 # comes from is different: it is how a person would attribute it, and it is only
 # licensed for the pages the header already marks as the organisation's own.
+#
+# The broad-question clause: asked "TERI top researchers" with the directors and
+# fellows listings in hand, the answer opened "The sources do not rank TERI
+# researchers as 'top'" — true, and no use. The reader wanted the obvious
+# reading answered and named ("If by top researchers you mean the senior
+# research leaders, ..."), which is also what keeps the answer honest about the
+# reading it chose. The first wording ("answer its most likely reading") was
+# read as "pick one set": with both listings in context the answer named only
+# the Distinguished Fellows and dropped the Committee of Directors, so the
+# clause now says the reading takes in every list that fits it.
 _ANSWER_STRUCTURE = (
     "Answer structure (mandatory):\n"
     "- Write one answer from all the blocks together, whatever mix of sources "
@@ -106,6 +116,14 @@ _ANSWER_STRUCTURE = (
     "page by name in the opening sentence (\"According to the organisation's "
     "Climate Change page, ...\"); otherwise state the facts with their "
     "citations and nothing about where they were found.\n"
+    "- When the question is broad, or a word in it has no measure the context "
+    "gives (\"top\", \"main\", \"best\", \"leading\"), answer its most likely "
+    "reading and name that reading in the opening sentence (\"If by the main "
+    "programmes you mean the flagship programmes and the centres that run "
+    "them, ...\"). The reading takes in everything the context holds that fits "
+    "it — often more than one of the lists or pages given, each its own "
+    "group — never just the first set that fits. Never ask back instead, and "
+    "never open by saying the sources do not define the word.\n"
     "- When the context does not answer the question, follow rule 3: the refusal "
     "alone.\n"
 )
@@ -122,6 +140,13 @@ _ANSWER_STRUCTURE = (
 # question actually takes, and what each looks like, gives it one to follow;
 # which one applies is still the model's reading of the question and the
 # material, never a list of questions.
+#
+# The long-list clause: the same people question with two listings in context
+# came back as one flat list of 42 names, a former director and a media
+# fellowship's resource persons among them. Grouping by what the context states
+# for every item (a title's level, a division, the listing it came from) is
+# what makes a list that long readable, and "former" is exactly the kind of
+# marker a list of current people must honour.
 #
 # Asking a grounded model for fuller answers raises the pressure to pad, so the
 # anti-padding clause is not optional decoration — it is what keeps the extra
@@ -146,8 +171,13 @@ _ANSWER_STYLE = (
     "bold, then \" — \" and a one-line description whenever the context gives "
     "one for that item. An item the context describes nowhere is its name "
     "alone; never add a note that its description is missing. Keep every item "
-    "the context lists, in its order. No headings unless the context itself "
-    "groups the items.\n"
+    "the context lists, in its order. A list of more than about 12 items is "
+    "split into 2-4 groups by something the context states for every item — a "
+    "role or seniority, a division or area, the page that lists it — each under "
+    "a short ### heading, the items keeping their order within it; a shorter "
+    "list takes no headings unless the context itself groups the items. When "
+    "the question is about who or what is current, leave out anyone or anything "
+    "the context marks as former, past or ended.\n"
     "- Overview — \"tell me about X\", \"what is X\", \"what does X work on\", "
     "or a subject the context covers from several angles. Open with 1-3 "
     "sentences saying what X is (and who runs it, and since when, where the "
@@ -168,8 +198,8 @@ _ANSWER_STYLE = (
     "one sentence.\n"
     "- A bullet is one point in a line or two, starting with the point itself. "
     "Paragraphs stay at 2-4 sentences. No walls of text.\n"
-    "- Headings only in an overview, and never over a section with fewer than "
-    "two points — merge it into a neighbour instead.\n"
+    "- Headings only in an overview or a grouped long list, and never over a "
+    "section with fewer than two points — merge it into a neighbour instead.\n"
     "- Name each item once, even when several blocks list it; cite those "
     "blocks together ([2][3]).\n"
     "- When the context's description of an item is cut off mid-sentence, give "
@@ -501,7 +531,9 @@ SHAPE_REMINDER = (
     "- the members of a set (themes, centres, programmes, people): one "
     "sentence saying what the list is, not naming the items, then one bullet "
     "per item — **name** — the one-line description the context gives it, or "
-    "the name alone when it gives none;\n"
+    "the name alone when it gives none; more than about 12 items grouped under "
+    "### headings by role, level or area, and no one the context marks as "
+    "former;\n"
     "- \"tell me about X\" / \"what is X\": one or two opening sentences saying "
     "what X is, then ### sections of bullets holding the details, none "
     "repeating the opening; head each section by what its items are, never by "
@@ -512,9 +544,11 @@ SHAPE_REMINDER = (
     "edition; page publication date; report publication date), never a page "
     "date given as the day the document was published;\n"
     "- a comparison: a table.\n"
-    "Cite a list that comes from one block once, on its opening sentence. Name "
-    "each item once. Never write about the context, or where on a page "
-    "something was listed."
+    "A broad question gets its most likely reading, named in the opening "
+    "sentence and answered from every list or page in the context that fits "
+    "it. Cite a list that comes from one block once, on its opening "
+    "sentence. Name each item once. Never write about the context, or where on "
+    "a page something was listed."
 )
 
 
@@ -863,6 +897,48 @@ def format_context_blocks(blocks: "list[ContextBlock]") -> str:
         header = f"[{block.n}]" + (f" ({hint})" if hint else "")
         parts.append(f"{header}\n{block.text}")
     return "\n\n".join(parts)
+
+
+#: The priority reason a people listing carries when it was read because the
+#: question asks for the organisation's people
+#: (`app.retrieval.priority.match.STAFF`, pinned equal by a test). A plain string
+#: so generation needs no retrieval import to recognise it.
+STAFF_REASON = "staff"
+
+
+def staff_note(blocks: "list[ContextBlock]") -> str:
+    """A note for the human turn when the context holds several people listings
+    read for a question about the organisation's people.
+
+    Empty unless two or more distinct listings are present, so every other
+    context renders exactly as before. Measured 2026-09-25: with the Committee
+    of Directors and the Distinguished Fellows both in context for "TERI top
+    researchers", three answers in four named only the fellows — "distinguished"
+    read as "top", and a committee that also holds HR and strategy posts read as
+    management — and dropped the research directors the reader wanted. The
+    style rule saying a broad reading takes in every list that fits was already
+    in the prompt. This states the computed fact beside the question instead,
+    as `supersession_note` does for dates: these listings are here because the
+    question asks for people, so each is part of the answer. Every word derives
+    from payload fields retrieval set; nothing names a person.
+    """
+    listings: list[tuple[int, str]] = []
+    for block in blocks:
+        payload = block.payload
+        if payload.get("priority_reason") != STAFF_REASON:
+            continue
+        name = str(payload.get("title") or payload.get("priority_page") or "").strip()
+        if name and name not in {n for _, n in listings}:
+            listings.append((block.n, name))
+    if len(listings) < 2:
+        return ""
+    named = ", ".join(f"[{n}] {name}" for n, name in listings)
+    return (
+        f"People listings in this context: {named}. Each was read because the "
+        "question asks for the organisation's people, so the answer draws on "
+        "each of them — one group per listing, holding the people in it who fit "
+        "the question — rather than choosing one listing as the answer."
+    )
 
 
 def supersession_note(blocks: "list[ContextBlock]") -> str:
