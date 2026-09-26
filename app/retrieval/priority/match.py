@@ -29,6 +29,13 @@ model call.
 A sixth reason, ``surfaced``, is assigned later by retrieval itself: ordinary
 search ranked the stored copy of a listed page, which is evidence enough that
 the live page is relevant.
+
+A seventh, ``staff``, covers the question that asks for the organisation's
+people and names none of them ("TERI's leading researchers", "air quality
+experts"): the people listings are its answer, and they are read — the two whose
+descriptions sit closest to the question, so a question about researchers gets
+the directors and fellows while "the governing council" still gets the council
+by name. Chosen in :func:`staff_listings`, after the query vector exists.
 """
 from __future__ import annotations
 
@@ -42,6 +49,7 @@ from app.config import get_settings
 from app.retrieval.priority.people import Person, named_in
 from app.retrieval.priority.registry import (
     CENTRE,
+    PEOPLE,
     THEME,
     PriorityGroup,
     PriorityPage,
@@ -58,12 +66,29 @@ GROUP = "group"
 THEME_FACET = "theme"
 SIMILAR = "similar"
 SURFACED = "surfaced"
+STAFF = "staff"
 
 #: Lower is stronger. Decides which targets survive the page cap.
-STRENGTH = {PERSON: 0, NAME: 1, GROUP: 1, THEME_FACET: 2, SIMILAR: 3, SURFACED: 4}
+STRENGTH = {PERSON: 0, NAME: 1, GROUP: 1, STAFF: 1, THEME_FACET: 2, SIMILAR: 3, SURFACED: 4}
 #: Reasons that say the question is *about* the page, so its opening section is
 #: admitted whatever it scores.
-ABOUT = frozenset({PERSON, NAME, GROUP, THEME_FACET, SIMILAR})
+ABOUT = frozenset({PERSON, NAME, GROUP, STAFF, THEME_FACET, SIMILAR})
+
+#: People listings read for a question that asks for the organisation's people.
+MAX_STAFF_LISTINGS = 2
+
+#: The nouns that ask for the organisation's people as a group. Narrower than
+#: `app.retrieval.structured.topic.wants_person` on purpose: a bare "who" and
+#: "author" ask about one person or a document's byline ("who wrote the
+#: net-zero paper?"), which the corpus answers, and reading two staff listings
+#: for them would only crowd the right passage out of the context.
+_STAFF_WORDS = frozenset(
+    """
+    researcher researchers scientist scientists expert experts specialist
+    specialists staff team teams people fellow fellows director directors
+    leader leaders leadership employee employees faculty
+    """.split()
+)
 
 PROFILE = "profile"
 GROUP_KIND = "group"
@@ -191,6 +216,56 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
     na = math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(y * y for y in b))
     return dot / (na * nb) if na and nb else 0.0
+
+
+def asks_for_staff(question: str) -> bool:
+    """Whether the question asks for the organisation's people as a group."""
+    return bool(set(normalize_text(question).split()) & _STAFF_WORDS)
+
+
+def staff_listings(
+    question: str,
+    query_vector: Sequence[float],
+    *,
+    registry: Registry,
+    targets: Sequence[Target] = (),
+    embed: Callable[[list[str]], list[list[float]]] | None = None,
+) -> list[Target]:
+    """The people listings a question for the organisation's people needs.
+
+    Measured 2026-09-25: "List TERI's leading researchers" read no people page
+    at all — no curated phrase says "researchers", and the closest listing's
+    description scored 0.428 against a 0.48 bar — so the context was the Mission
+    and Goals page and three "About TERI" brochures, and the answer was the
+    refusal. The Committee of Directors and Distinguished Fellows listings held
+    the answer, name by name.
+
+    Nothing when the question names someone (their profile answers it) or
+    already names a people listing ("the governing council", "director
+    general"). Otherwise the listings ranked by how close their descriptions sit
+    to the question, the best `MAX_STAFF_LISTINGS`; with no vectors, the file's
+    own order. Never raises.
+    """
+    if not asks_for_staff(question):
+        return []
+    if any(t.reason == PERSON or (t.page is not None and t.page.kind == PEOPLE)
+           for t in targets):
+        return []
+    listings = [p for p in registry.pages if p.kind == PEOPLE]
+    if not listings:
+        return []
+    scores: dict[str, float] = {}
+    if query_vector:
+        try:
+            vectors = description_vectors(registry, embed)
+            scores = {p.key: _cosine(query_vector, v) for p, v in zip(registry.pages, vectors)}
+        except Exception:
+            logger.warning("Priority page descriptions could not be embedded; "
+                           "taking the people listings in file order.", exc_info=True)
+    order = {p.key: i for i, p in enumerate(listings)}
+    chosen = sorted(listings, key=lambda p: (-scores.get(p.key, 0.0), order[p.key]))
+    return [Target(p.name, p.kind, STAFF, url=p.url, score=scores.get(p.key, 0.0), page=p)
+            for p in chosen[:MAX_STAFF_LISTINGS]]
 
 
 def similar(

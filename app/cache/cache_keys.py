@@ -26,14 +26,35 @@ def _sha(*parts: str) -> str:
 #: listings, and a theme filter matches its exact name only.
 #: 2026-09-25.2: the list of themes is answered from the live home page, and
 #: the theme pages are a flat list named "<theme> Theme".
-PIPELINE_REVISION = "2026-09-25.2"
+#: 2026-09-25.3: answers take a shape (list, overview, direct fact) with
+#: headings, lighter citations and a "Read more" link; a question naming one
+#: theme is no longer answered with the theme list.
+#: 2026-09-25.5: a compressed shape reminder follows the question.
+#: 2026-09-25.6: a single-source list is cited once, on its opening sentence.
+#: 2026-09-25.7: the shape reminder opens with the context-only rule.
+#: 2026-09-25.8: a bare phrase naming the organisation's people or one of its
+#: listed pages is answered from retrieval instead of by small talk.
+#: 2026-09-25.9: a question for the organisation's people reads its people
+#: listings.
+#: 2026-09-25.10: a broad question is answered on its named reading, a long list
+#: is grouped, and several people listings are named beside the question.
+#: 2026-09-25.11: a question for the top or leading members of a long set is
+#: answered with a selection of them, grouped and indexed by area.
+#: 2026-09-25.12: the head of the organisation always leads a selection.
+PIPELINE_REVISION = "2026-09-25.12"
 
 
 def _pref_fingerprint() -> str:
-    """Hash of the retrieval-preference settings, plus `PIPELINE_REVISION`, so
-    that toggling the feature, tuning its knobs, or shipping a behaviour change
-    self-invalidates the semantic cache (otherwise old-mode answers would be
-    served until TTL and pollute before/after comparisons)."""
+    """Hash of the settings that decide what an answer says, plus
+    `PIPELINE_REVISION`, so that toggling the feature, tuning its knobs,
+    switching the model or shipping a behaviour change self-invalidates the
+    semantic cache (otherwise old-mode answers would be served until TTL and
+    pollute before/after comparisons).
+
+    The chat model and the two knobs that shape its calls are here because a
+    model is the largest single change to an answer there is, and it used to be
+    missing: switching to gpt-6-luna on 2026-09-25 would have kept serving, for
+    a day, every answer the previous model wrote."""
     s = get_settings()
     return _sha(
         PIPELINE_REVISION,
@@ -42,6 +63,10 @@ def _pref_fingerprint() -> str:
         str(s.retrieval_top_k),
         str(s.retrieval_candidate_k),
         str(s.context_token_budget),
+        str(s.priority_own_slots),
+        str(s.azure_openai_model),
+        str(s.llm_temperature_supported),
+        str((s.llm_reasoning_effort or "").strip()),
     )
 
 

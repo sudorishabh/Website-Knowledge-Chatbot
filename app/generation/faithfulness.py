@@ -28,6 +28,49 @@ def validate_markers(answer: str, n_blocks: int) -> str:
     return _MARKER.sub(_keep, answer).replace("  ", " ").strip()
 
 
+# The one link form the frontend turns into an anchor (`renderInline` in
+# ui/script.js), so exactly the set of links a reader can click.
+_LINK = re.compile(r"\[([^\]\n]+)\]\((https?://[^\s)]+)\)")
+# Any address written in a block's text — a live page names the documents it
+# links to as "Title (https://...)" — so a link the model copies from the text
+# is as known as one it copies from the header.
+_URL = re.compile(r"https?://[^\s)\]>\"']+")
+
+
+def _url_key(url: str) -> str:
+    return url.rstrip(".,;:!?/").lower()
+
+
+def _known_urls(blocks: "list[ContextBlock]") -> set[str]:
+    known: set[str] = set()
+    for block in blocks:
+        for field_name in ("source_url", "file_url"):
+            value = block.payload.get(field_name)
+            if value:
+                known.add(_url_key(str(value)))
+        known.update(_url_key(u) for u in _URL.findall(block.text or ""))
+    return known
+
+
+def strip_unknown_links(answer: str, blocks: "list[ContextBlock]") -> str:
+    """Unlink every Markdown link whose address the context never showed.
+
+    The answer style asks a list or an overview to close with a link to the page
+    it came from, and gives the model that page's address in the block header.
+    Rule 4 already forbids inventing a URL, but a model asked for a link will
+    sometimes supply a plausible one, and a plausible link to the wrong page is
+    worse than none. The label survives as plain text, so the sentence still
+    reads; only the anchor goes. Deterministic, like `validate_markers`: this is
+    a checkable fact about the answer, not a judgement.
+    """
+    known = _known_urls(blocks)
+
+    def _keep(match: re.Match) -> str:
+        return match.group(0) if _url_key(match.group(2)) in known else match.group(1)
+
+    return _LINK.sub(_keep, answer)
+
+
 def citation_coverage(answer: str) -> float:
     """Deterministic: fraction of sentences (simple split; bullet/table lines
     count as sentences) carrying at least one [n] marker."""

@@ -108,6 +108,16 @@ def test_blocks_are_capped():
     assert len(got.blocks) == 3
 
 
+def test_a_question_for_the_organisations_people_reads_the_people_listing():
+    """Measured: "List TERI's leading researchers" read no people page and was
+    refused, although the Committee of Directors listing held the answer."""
+    got = _gather("yes leading researchers\nList TERI's leading researchers.")
+    assert [(t.name, t.reason) for t in got.targets] == [
+        ("People - committee of directors", match.STAFF)
+    ]
+    assert got.blocks and "Vibha Dhawan" in got.blocks[0].text
+
+
 def test_a_question_about_nothing_on_the_list_reads_nothing(_pages):
     got = _gather("what is blended finance")
     # Only the people listing is read, to know whose name to look for.
@@ -235,12 +245,43 @@ def _block(text):
     return ContextBlock(n=0, text=text, payload={"source_type": "website"})
 
 
-def test_merge_puts_priority_first_and_keeps_two_corpus_slots():
+def test_merge_puts_priority_first_and_keeps_two_corpus_slots(monkeypatch):
+    monkeypatch.setattr(get_settings(), "priority_own_slots", False)
     got = _gather("climate change", embed=_embed_on("Climate"))
     corpus = [_block(f"corpus {i}") for i in range(5)]
     merged = got.merge(corpus, limit=4, token_budget=100_000)
     assert [is_priority_page(b.payload) for b in merged] == [True, True, False, False]
     assert [b.n for b in merged] == [1, 2, 3, 4]
+
+
+def test_with_own_slots_the_corpus_keeps_every_slot_it_had(monkeypatch):
+    """Measured 2026-09-25: three live pages left "TERI top researchers" three
+    corpus passages of six, in a 1,900-token context of a 9,000 budget."""
+    monkeypatch.setattr(get_settings(), "priority_own_slots", True)
+    got = _gather("climate change", embed=_embed_on("Climate"))
+    assert len(got.blocks) == 3
+    corpus = [_block(f"corpus {i}") for i in range(6)]
+    merged = got.merge(corpus, limit=6, token_budget=100_000)
+    assert [is_priority_page(b.payload) for b in merged] == [True] * 3 + [False] * 6
+    assert [b.text for b in merged[3:]] == [f"corpus {i}" for i in range(6)]
+    assert [b.n for b in merged] == list(range(1, 10))
+
+
+def test_with_own_slots_the_pages_do_not_spend_the_corpus_budget(monkeypatch):
+    from app.retrieval.context.builder import _count_tokens
+
+    monkeypatch.setattr(get_settings(), "priority_own_slots", True)
+    got = _gather("climate change", embed=_embed_on("Climate"))
+    corpus = [_block("word " * 50) for _ in range(2)]
+    corpus[1] = _block("other " * 50)
+    budget = sum(_count_tokens(b.text) for b in corpus)
+    merged = got.merge(corpus, limit=6, token_budget=budget)
+    # Both corpus blocks fit the corpus's own budget, pages or no pages.
+    assert sum(1 for b in merged if not is_priority_page(b.payload)) == 2
+    # Shared, the same budget leaves room for the pages and not the corpus.
+    monkeypatch.setattr(get_settings(), "priority_own_slots", False)
+    shared = got.merge(corpus, limit=6, token_budget=budget)
+    assert sum(1 for b in shared if not is_priority_page(b.payload)) < 2
 
 
 def test_merge_gives_every_slot_to_priority_when_the_corpus_has_none():

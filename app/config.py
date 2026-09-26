@@ -13,6 +13,21 @@ class Settings(BaseSettings):
     azure_openai_api_version: str = "2024-06-01"
     azure_openai_model: str = ""
     llm_structured_temperature: float | None = None
+    # Whether the chat deployment accepts a `temperature` at all. Some reasoning
+    # models (gpt-6-luna, measured 2026-09-25) reject the parameter outright
+    # with a 400 — and the answer call (0.2), the voted query understanding
+    # (0.7) and the multi-query paraphrases (0.7) all send one, whatever
+    # `llm_structured_temperature` says. False omits it from every call, in
+    # `app.core.clients.llm.get_llm`, so the call sites keep their intent for
+    # a model that does honour it.
+    llm_temperature_supported: bool = True
+    # Reasoning effort for a reasoning deployment ("none", "low", "medium", ...;
+    # which values a model accepts varies — gpt-6-luna rejects "minimal"). Unset
+    # sends nothing and the deployment uses its own default. Measured on
+    # gpt-6-luna, same blocks, one long answer: the default waited 9.6 s for the
+    # first token, "low" 4.1 s, "none" 2.7 s, with the refusal and the labelled
+    # publication-date parts intact at both. Applies to every call.
+    llm_reasoning_effort: str | None = None
     azure_openai_embedding_model: str = ""
     azure_openai_embedding_key: str = ""
     azure_openai_embedding_endpoint: str = ""
@@ -309,10 +324,15 @@ class Settings(BaseSettings):
     # `Cache-Control: max-age=300` the site itself sends for these pages.
     priority_cache_ttl: int = 300
     # Most pages read for one question, and most of their sections admitted.
-    # Blocks lead the context, so this is also the share of `retrieval_top_k`
-    # the corpus gives up when a priority page applies.
     priority_max_pages: int = 3
     priority_max_blocks: int = 3
+    # Whether those blocks come on top of the corpus's `retrieval_top_k` slots
+    # and `context_token_budget` (True) or share them, the corpus keeping at
+    # least two slots (False). On since 2026-09-25: sharing left a question
+    # that read three live pages three corpus passages, and a people question
+    # a 1,900-token context of a 9,000-token budget. The extra is bounded by
+    # `priority_max_blocks` sections of ~600 tokens each.
+    priority_own_slots: bool = True
     # Description-similarity trigger: cosine of the query against a page's
     # description, and how far the best page must lead the runner-up. Set from a
     # small hand-labelled question set on 2026-09-24 (see

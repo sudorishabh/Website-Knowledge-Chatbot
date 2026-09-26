@@ -9,8 +9,9 @@ key) and carried into retrieval, which uses it three ways:
    documents and stay;
 2. **extend** it with any listed page whose stored copy ranked near the top,
    since ordinary search just said that page is relevant;
-3. **merge** its blocks in front of the corpus blocks, leaving the corpus at
-   least two slots.
+3. **merge** its blocks in front of the corpus blocks — on top of the corpus's
+   own slots and token budget (``priority_own_slots``), or, with that off,
+   within them, leaving the corpus at least two slots.
 
 Which sections become blocks: the opening section of every page the question
 is *about* (named, a person's profile, the theme facet, a description match),
@@ -134,9 +135,25 @@ class PriorityEvidence:
                               limit=settings.priority_max_blocks, embed=self.embed)
 
     def merge(self, blocks: Sequence[ContextBlock], *, limit: int, token_budget: int) -> list[ContextBlock]:
-        """This question's priority blocks first, then the corpus's, numbered."""
+        """This question's priority blocks first, then the corpus's, numbered.
+
+        With ``priority_own_slots`` on, ``limit`` and ``token_budget`` are the
+        corpus's, and the priority blocks come on top of both: a question that
+        reads the live pages keeps every passage retrieval would have given it
+        without them. Off, the pages take the lead share of ``limit`` and the
+        corpus keeps ``CORPUS_MIN_SLOTS``.
+
+        Why on: "TERI top researchers" read three live pages and kept three
+        corpus slots of a six-block, 1,900-token context against a 9,000-token
+        budget, and the three went to short news items. The pages are bounded
+        (``priority_max_blocks`` sections of ``MAX_SECTION_CHARS`` each), so
+        their own room costs at most ~1,800 tokens of prompt.
+        """
         from app.retrieval.context.builder import _count_tokens
 
+        if get_settings().priority_own_slots:
+            limit += len(self.blocks)
+            token_budget += sum(_count_tokens(b.text) for b in self.blocks)
         reserved = min(CORPUS_MIN_SLOTS, len(blocks))
         lead = self.blocks[: max(0, limit - reserved)]
         merged: list[ContextBlock] = []
@@ -411,6 +428,12 @@ def gather(
         people = [t for t in targets if t.reason == match.PERSON][:MAX_PEOPLE]
         others = [t for t in targets if t.reason != match.PERSON]
         targets = match.ranked([*people, *others])
+        # A question for the organisation's people that names none of them is
+        # answered by the people listings, which no phrase or description match
+        # would otherwise reach (see `match.staff_listings`).
+        staff = match.staff_listings(question, query_vector, registry=registry,
+                                     targets=targets, embed=embed)
+        targets = match.ranked([*targets, *staff])
         # A question for the list of themes is about no one theme, so a
         # description match would only add a page the answer does not need.
         lists_themes = any(t.page is not None and t.page.is_home for t in targets)

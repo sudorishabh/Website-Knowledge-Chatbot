@@ -15,28 +15,32 @@ from app.core.models.context import ContextBlock
 from app.generation.prompts import (
     CHITCHAT_SYSTEM_PROMPT,
     REFUSAL,
+    SHAPE_REMINDER,
     format_context_blocks,
     graph_facts_rule,
     has_graph_facts,
     format_directive,
     grounded_system_prompt,
+    staff_note,
     supersession_note,
     today_anchor,
 )
 
 logger = logging.getLogger(__name__)
 
-#: The human turn. `{dates}` is the supersession note with a blank line after it,
-#: or the empty string, so a context the builder did not flag renders exactly as
-#: it always has. Placed between the context and the question rather than in the
-#: system prompt: it is a per-request fact about *this* evidence, and the end of
-#: the human turn is where the model is looking when it starts to write.
-_HUMAN_TURN = "Numbered context:\n{context}\n\n{dates}Question: {question}"
+#: The human turn. `{notes}` is the per-request notes about this evidence — the
+#: supersession note, the people-listings note — each followed by a blank line,
+#: or the empty string, so a context that triggers neither renders exactly as it
+#: always has. Placed between the context and the question rather than in the
+#: system prompt: they are facts about *this* evidence, and the end of the human
+#: turn is where the model is looking when it starts to write. For the same
+#: reason `{shape}` — `prompts.SHAPE_REMINDER` — follows the question.
+_HUMAN_TURN = "Numbered context:\n{context}\n\n{notes}Question: {question}\n\n{shape}"
 
 
-def _dates(blocks: list[ContextBlock]) -> str:
-    note = supersession_note(blocks)
-    return f"{note}\n\n" if note else ""
+def _notes(blocks: list[ContextBlock]) -> str:
+    notes = (supersession_note(blocks), staff_note(blocks))
+    return "".join(f"{note}\n\n" for note in notes if note)
 
 # Prior turns threaded into the answer prompt so the model can resolve follow-up
 # references ("it", "that one", the original question) that the standalone query
@@ -174,8 +178,9 @@ def generate_answer(
         {
             "history": messages,
             "context": format_context_blocks(blocks),
-            "dates": _dates(blocks),
+            "notes": _notes(blocks),
             "question": question,
+            "shape": SHAPE_REMINDER,
         }
     ).strip()
 
@@ -211,7 +216,8 @@ def generate_stream(
         {
             "history": messages,
             "context": format_context_blocks(blocks),
-            "dates": _dates(blocks),
+            "notes": _notes(blocks),
             "question": question,
+            "shape": SHAPE_REMINDER,
         }
     )

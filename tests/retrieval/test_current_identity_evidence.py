@@ -37,6 +37,7 @@ from app.generation.prompts import (
     GROUNDED_SYSTEM_PROMPT,
     PDF_LEAD,
     PDF_TAG,
+    SHAPE_REMINDER,
     SUPERSEDED_MARKER,
     SUPERSEDES_MARKER,
     WEBSITE_TAG,
@@ -516,6 +517,7 @@ def test_an_unflagged_context_leaves_the_human_turn_as_it_was(monkeypatch):
     human = seen["messages"][-1].content
     assert human == (
         f"Numbered context:\n{format_context_blocks([block])}\n\nQuestion: a question"
+        f"\n\n{SHAPE_REMINDER}"
     )
 
 
@@ -524,7 +526,7 @@ def test_an_unflagged_context_leaves_the_human_turn_as_it_was(monkeypatch):
 # --------------------------------------------------------------------------- #
 
 def test_the_prompt_asks_for_one_answer_from_whatever_mix_of_sources():
-    assert "one continuous answer" in GROUNDED_SYSTEM_PROMPT
+    assert "one answer from all the blocks together" in GROUNDED_SYSTEM_PROMPT
     assert "whatever mix of sources" in GROUNDED_SYSTEM_PROMPT
 
 

@@ -18,14 +18,23 @@ warnings.filterwarnings(
 
 @lru_cache
 def get_llm(temperature: float | None = None, streaming: bool = False) -> AzureChatOpenAI:
+    """The chat client for one (temperature, streaming) pair.
+
+    `temperature` is what the caller wants; it reaches the deployment only when
+    `llm_temperature_supported` says the deployment takes one. Every call in the
+    app comes through here, so this is the one place a model that rejects the
+    parameter has to be accommodated, and the one place a reasoning effort is
+    set.
+    """
     settings = get_settings()
     return _build_llm(
         endpoint=settings.azure_openai_endpoint,
         api_key=settings.azure_openai_api_key,
         api_version=settings.azure_openai_api_version,
         deployment=settings.azure_openai_model,
-        temperature=temperature,
+        temperature=temperature if settings.llm_temperature_supported else None,
         streaming=streaming,
+        reasoning_effort=(settings.llm_reasoning_effort or "").strip() or None,
     )
 
 
@@ -43,6 +52,7 @@ def _build_llm(
     deployment: str,
     temperature: float | None,
     streaming: bool,
+    reasoning_effort: str | None = None,
 ) -> AzureChatOpenAI:
     kwargs = {
         "azure_endpoint": endpoint,
@@ -56,4 +66,8 @@ def _build_llm(
     }
     if temperature is not None:
         kwargs["temperature"] = temperature
+    if reasoning_effort:
+        # The Responses API form; the chat-completions `reasoning_effort` field
+        # is not what `use_responses_api` sends.
+        kwargs["reasoning"] = {"effort": reasoning_effort}
     return AzureChatOpenAI(**kwargs)

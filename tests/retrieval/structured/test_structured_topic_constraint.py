@@ -163,6 +163,36 @@ def test_a_named_author_is_still_answerable(monkeypatch):
     assert called, "a question naming the author must still reach the planner"
 
 
+def test_a_question_about_one_theme_is_not_answered_with_the_theme_list(monkeypatch):
+    """Measured: "tell me about climate change theme" came back as the list of
+    all seven themes. The listing enumerates the vocabulary and ignores the
+    named theme, so the question belongs to the passage path, where the
+    theme's own page answers it."""
+    from app.retrieval.structured import answerer
+
+    monkeypatch.setattr(
+        planner, "plan", lambda *a, **k: pytest.fail("must not list the vocabulary")
+    )
+    result = answerer.answer_structured(
+        "tell me about climate change theme",
+        analysis=slots(operation="list_themes", theme="climate change"),
+    )
+    assert result is None
+
+
+def test_a_question_for_the_theme_list_still_gets_it(monkeypatch):
+    """The decline is about a *named* theme; "what themes are there?" names none."""
+    called: list = []
+    monkeypatch.setattr(planner, "plan", lambda *a, **k: called.append(1) or "plan")
+    monkeypatch.setattr(planner, "execute", lambda *a, **k: [])
+    from app.retrieval.structured import answerer
+
+    answerer.answer_structured(
+        "what themes are there?", analysis=slots(operation="list_themes"),
+    )
+    assert called, "a vocabulary question must still reach the planner"
+
+
 # --------------------------------------------------------------------------- #
 # 3. Project list filtering  &  4. Content-type filtering
 # --------------------------------------------------------------------------- #

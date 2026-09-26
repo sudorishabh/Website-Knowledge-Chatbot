@@ -162,6 +162,8 @@ and defaults; `.env.example` for a starting template). The most relevant:
 | `AZURE_OPENAI_MODEL` / `_API_KEY` / `_ENDPOINT` | — | Standard chat deployment (e.g. `gpt-5-mini`). |
 | `AZURE_OPENAI_EMBEDDING_MODEL` / `_KEY` / `_ENDPOINT` | — | Embedding deployment (e.g. `text-embedding-3-large`). |
 | `LLM_STRUCTURED_TEMPERATURE` | *(unset → omitted)* | Temperature for deterministic/structured calls (query understanding, routing, rerank, faithfulness). **Leave unset for reasoning models** (gpt-5 / o-series reject any value but the default); set `0` for classic chat models. |
+| `LLM_TEMPERATURE_SUPPORTED` | `true` | Whether the chat deployment accepts a temperature at all. **Set `false` for a model that rejects it** (gpt-6-luna answers every call carrying one with a 400): the answer call and the voted query understanding send a temperature whatever `LLM_STRUCTURED_TEMPERATURE` says, so this is the switch that omits it everywhere. |
+| `LLM_REASONING_EFFORT` | *(unset → model default)* | Reasoning effort sent on every chat call (`none`, `low`, `medium`, …; accepted values vary by model — gpt-6-luna rejects `minimal`). On gpt-6-luna, `low` cut the time to the first word of a long answer from ~10 s to ~4 s with grounding intact. |
 | `AZURE_DOCUMENT_INTELLIGENCE_*` | — | Optional OCR/layout for scanned PDFs. |
 | `QDRANT_URL` | `http://localhost:6333` | Qdrant server URL. |
 | `QDRANT_COLLECTION` | `documents` | Collection name. |

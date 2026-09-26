@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.core.models.context import GRAPH_FACTS_KIND, is_graph_facts, is_priority_page
+from app.core.models.context import (
+    GRAPH_FACTS_KIND,
+    WEBSITE_SOURCE_TYPES,
+    is_graph_facts,
+    is_priority_page,
+)
 
 if TYPE_CHECKING:
     from app.core.models.context import ContextBlock
@@ -70,49 +75,195 @@ SUPERSEDES_MARKER = "dates an earlier statement here"
 # restating the answer — which is also what the two-block contract this replaced
 # asked for by design, and what left a reader reconciling a website answer
 # against a "From our documents" answer that contradicted it.
+#
+# "One answer" used to read "one continuous answer". It meant "not split by
+# source", but a model reads "continuous" as "prose", and it is one of the reasons
+# an overview came back as four unbroken paragraphs. Sections by *topic* are what
+# the style below asks for; sections by *source* are what this forbids.
+#
+# The meta-wording clause is measured, not anticipated: on 2026-09-25 answers
+# opened "From the individual centre pages in the available sources" and cited
+# "an attached report section". A reader never sees the blocks, so talking about
+# them only tells the reader how the answer was made. Naming the page a statement
+# comes from is different: it is how a person would attribute it, and it is only
+# licensed for the pages the header already marks as the organisation's own.
+#
+# The broad-question clause: asked "TERI top researchers" with the directors and
+# fellows listings in hand, the answer opened "The sources do not rank TERI
+# researchers as 'top'" — true, and no use. The reader wanted the obvious
+# reading answered and named ("If by top researchers you mean the senior
+# research leaders, ..."), which is also what keeps the answer honest about the
+# reading it chose. The first wording ("answer its most likely reading") was
+# read as "pick one set": with both listings in context the answer named only
+# the Distinguished Fellows and dropped the Committee of Directors, so the
+# clause now says the reading draws on every list that fits it. Drawing on every
+# list is not repeating all of it: "everything the context holds" had the next
+# answer print all fifty people, so a top-or-leading question is handed on to the
+# selection shape.
 _ANSWER_STRUCTURE = (
     "Answer structure (mandatory):\n"
-    "- Write one continuous answer from all the blocks together, whatever mix "
-    "of sources they came from.\n"
-    "- Do not split the answer into sections by source, and do not wrap any part "
+    "- Write one answer from all the blocks together, whatever mix of sources "
+    "they came from. Organise it by topic, never by source: do not split it "
+    "into sections by where the material came from, and do not wrap any part "
     "of it in tags.\n"
     "- Never open the answer, or any part of it, with a bolded label naming "
-    "where the material came from, and never mention what kind of source the "
-    "context came from or that documents were searched.\n"
+    "where the material came from.\n"
+    "- Never write about the material itself. Outside the exact wordings rules "
+    "3 and 9 prescribe, do not write \"the context\", \"the blocks\", \"the "
+    "provided / available / retrieved sources\", \"the documents searched\", "
+    "\"an attached report\" or \"according to the passages\": the reader never "
+    "sees them. Nor say where on a page something appears (\"listed under "
+    "...\", \"the New in X section highlights\", \"linked as a PDF\"): give the "
+    "item, not its position. Where the answer rests on a block marked "
+    f"\"{CANONICAL_MARKER}\" or \"{LIVE_MARKER}\", you may attribute it to that "
+    "page by name in the opening sentence (\"According to the organisation's "
+    "Climate Change page, ...\"); otherwise state the facts with their "
+    "citations and nothing about where they were found.\n"
+    "- When the question is broad, or a word in it has no measure the context "
+    "gives (\"top\", \"main\", \"best\", \"leading\"), answer its most likely "
+    "reading and name that reading in the opening sentence (\"If by the main "
+    "programmes you mean the flagship programmes and the centres that run "
+    "them, ...\"). The reading draws on every list or page in the context that "
+    "fits it, never just the first set that fits; when it asks for the top or "
+    "leading ones, answer it as the Selection shape below says, not with "
+    "everything those lists hold. Never ask back instead, and never open by "
+    "saying the sources do not define the word.\n"
     "- When the context does not answer the question, follow rule 3: the refusal "
     "alone.\n"
 )
 
-# Depth and shape of the prose. Rides on every QA call, so it stays compact; the
-# query-specific shaping lives in _FORMAT_DIRECTIVES and takes precedence over
-# this. Asking a grounded model for fuller answers raises the pressure to pad, so
-# the anti-padding clause is not optional decoration — it is what keeps the extra
-# length coming from the context.
+# Depth and shape of the answer. Rides on every QA call; the query-specific
+# shaping lives in _FORMAT_DIRECTIVES and takes precedence over this.
 #
-# The length target is stated as a range rather than "be thorough" because the
-# abstract instruction lost to the model's own pull toward one-line answers: a
-# question worth several sentences of context was coming back as the bare fact.
-# The floor names what to add (the specifics already in the context), so the
-# extra length has somewhere to come from other than filler.
+# The shapes replaced one generic instruction ("structure anything past a couple
+# of sentences ... **bold** for the points that matter most"), which on
+# 2026-09-25 produced: seven themes run into one sentence with their one-line
+# descriptions dropped, nine centres listed inline with "[1]" after each, and an
+# overview of four paragraphs with some forty bold phrases. The model was left to
+# invent a structure per answer and invented none. Naming the four shapes a
+# question actually takes, and what each looks like, gives it one to follow;
+# which one applies is still the model's reading of the question and the
+# material, never a list of questions.
+#
+# The long-list clause: the same people question with two listings in context
+# came back as one flat list of 42 names, a former director and a media
+# fellowship's resource persons among them. Grouping by what the context states
+# for every item (a title's level, a division, the listing it came from) is
+# what makes a list that long readable, and "former" is exactly the kind of
+# marker a list of current people must honour.
+#
+# The selection shape: grouped, that list was still every fellow and every
+# director, HR and communications posts among them, and the reader who asked for
+# the *top* researchers wanted a dozen. "Top", "leading" and "key" ask for a
+# choice, so the shape says what to choose by — the seniority and fit the
+# context states — and the order that choosing went wrong in: ranked by
+# "distinction" the fellows displaced the Director General, and picked in page
+# order two directors of one area beat an area left out. The closing offer is
+# what keeps a partial answer honest about being one. The head of the
+# organisation is exempted from the role filter by name because the two rules
+# collided: "researchers leave out administration" read the Director General as
+# an administrative post, and one "top researchers" answer in the live chat
+# opened with a senior director instead.
+#
+# Asking a grounded model for fuller answers raises the pressure to pad, so the
+# anti-padding clause is not optional decoration — it is what keeps the extra
+# length coming from the context. The direct-fact floor exists because an
+# abstract "be thorough" lost to the model's own pull toward one-line answers.
 _ANSWER_STYLE = (
     "Answer style:\n"
-    "- Answer at a useful length: lead with the direct answer, then give the "
-    "specifics the context carries around it — the figures, dates, names, "
-    "scope, caveats and limits that make the answer usable. An ordinary "
-    "question is worth roughly 6-10 sentences or 4-8 bullets; a question the "
-    "context covers from several angles is worth more, not capped at this "
-    "floor. Even a one-fact question gets its fact plus two or three sentences "
-    "of surrounding detail, never a bare clause or a single sentence.\n"
-    "- Structure anything past a couple of sentences: short paragraphs, bullets "
-    "for parallel points, numbered steps for sequences, a Markdown table for "
-    "comparisons across two or more dimensions, and **bold** for the points "
-    "that matter most. No walls of text.\n"
+    "Pick the one shape below that fits the question and the material, and "
+    "follow it.\n"
+    "- Direct fact — who, when, where, how many, yes or no, or anything with "
+    "one specific answer. Give the answer in the first sentence, then 2-4 "
+    "sentences or a few bullets of the detail the context carries around it: "
+    "dates, roles, scope, figures, caveats. No headings. Even a one-fact "
+    "question gets its fact plus two or three sentences of surrounding "
+    "detail, never a bare clause or a single sentence. When a document was "
+    "published is the exception: rule 9's labelled parts are that answer, and "
+    "a page date is never the fact to lead with.\n"
+    "- List — the question asks what the members of a set are (themes, "
+    "centres, programmes, offices, projects, people, publications). One "
+    "opening sentence saying what the list is — without naming the items, "
+    "which the bullets do — then one bullet per item: the item's name in "
+    "bold, then \" — \" and a one-line description whenever the context gives "
+    "one for that item. An item the context describes nowhere is its name "
+    "alone; never add a note that its description is missing. Keep every item "
+    "the context lists, in its order, unless the question asks for a "
+    "selection (the next shape). A list of more than about 12 items is "
+    "split into 2-4 groups by something the context states for every item — a "
+    "role or seniority, a division or area, the page that lists it — each under "
+    "a short ### heading, the items keeping their order within it; a shorter "
+    "list takes no headings unless the context itself groups the items. When "
+    "the question is about who or what is current, leave out anyone or anything "
+    "the context marks as former, past or ended.\n"
+    "- Selection — the question asks for the top, leading, key, main, most "
+    "senior or best-known members of a set (\"top researchers\", \"key "
+    "programmes\") and the context lists more than about 15 of them. That asks "
+    "for the ones that matter most, not the whole set: give about 12-15, "
+    "chosen by what the context states about each. Rank by the seniority of a "
+    "title — the head of the organisation (its director general, president, "
+    "chief executive or the like) is always the first bullet whenever the "
+    "context lists one, then those heading an area (senior directors, then "
+    "directors, then associate directors, and the like) — and draw in a few "
+    "holders of a distinction such as a fellowship alongside them, never in "
+    "their place. Keep only those whose role fits the question: a question "
+    "about researchers or experts leaves out posts in administration, human "
+    "resources, communications, partnerships, special projects or business "
+    "development — but never the head of the organisation, who leads the "
+    "people asked about whatever they are. Spread the choice across areas: "
+    "take the most senior person "
+    "the context gives for each distinct area, one per area, before a second "
+    "from any area — never simply the first items in the context's order. "
+    "Open by naming the reading ('Answer structure') and saying these are "
+    "some of the most senior of them. Group them under 2-3 short ### headings "
+    "by level or kind, most senior first, each bullet **name** — role and "
+    "area. When they span several areas, add a ### By area section of 3-5 "
+    "broad areas, each bullet naming two or more of them — **Area:** the "
+    "names — with a lone name folded into the nearest area; it is the one "
+    "place a name appears twice. Close with one sentence offering more, "
+    "naming one or two of those "
+    "areas (\"I can also list the full ..., or the ... in one area such as "
+    "...\"). A question for all, every or the full list is a List, never a "
+    "selection.\n"
+    "- Overview —\"tell me about X\", \"what is X\", \"what does X work on\", "
+    "or a subject the context covers from several angles. Open with 1-3 "
+    "sentences saying what X is (and who runs it, and since when, where the "
+    "context says so); the details belong in the sections. Then 2-5 sections, "
+    "each under a short Markdown heading (### Heading) naming what its items "
+    "are — taken from the material itself, such as focus areas, projects, "
+    "partners or findings, never the name of the page section they appeared "
+    "in, never a fixed template and never \"Overview\" or \"Introduction\". "
+    "Under each "
+    "heading, 2-6 bullets, one point each. The sections add what the opening "
+    "did not: never restate the opening as a section. An answer of three or "
+    "more sections may close with one sentence that ties them together.\n"
+    "- Comparison — two or more things across two or more dimensions: a "
+    "Markdown table, one row per thing.\n"
+    "Formatting, whatever the shape:\n"
+    "- Bold sparingly: an item's name at the start of a list bullet, and at "
+    "most one or two key terms in a paragraph. Never several bold phrases in "
+    "one sentence.\n"
+    "- A bullet is one point in a line or two, starting with the point itself. "
+    "Paragraphs stay at 2-4 sentences. No walls of text.\n"
+    "- Headings only in an overview, a selection or a grouped long list, and "
+    "never over a section with fewer than two points — merge it into a "
+    "neighbour instead.\n"
+    "- Name each item once, even when several blocks list it; cite those "
+    "blocks together ([2][3]). A selection's By area bullets are the one "
+    "exception.\n"
+    "- When the context's description of an item is cut off mid-sentence, give "
+    "the part that is complete; never finish it from your own knowledge.\n"
+    "- A list or an overview that rests mainly on one page whose header gives a "
+    "`link` ends with one line: Read more: [the page's title](that link), the "
+    "address copied exactly from the header. Never write an address the context "
+    "does not show, and never add this line to a direct fact.\n"
+    "Depth:\n"
     "- Depth must come from the context, never from padding: every added "
-    "sentence carries its own [n] and says something the earlier ones did not, "
-    "and a table or list needs real values for every cell it opens. Where the "
-    "context runs out before the length target does, stop there — never restate "
-    "a point, pad with generalities, or close with a summary of what you just "
-    "said.\n"
+    "sentence or bullet rests on a cited block (rule 2) and says something the "
+    "earlier ones did not, and a table or list needs real values for every "
+    "cell it opens. Where the "
+    "context runs out, stop there — never restate a point, pad with "
+    "generalities, or close with a paragraph that repeats the answer.\n"
 )
 
 _ANSWER_STYLE_SCOPE = (
@@ -121,24 +272,85 @@ _ANSWER_STYLE_SCOPE = (
 )
 
 
-# The demonstration. Deliberately built on a *mixed* context — a website page and
-# a PDF — answered as one flowing passage, because that is the case the model
-# used to split and the shape it copies matters more than anything described to
-# it. The second exemplar demonstrates rule 9's dated-title clause, which is the
-# one rule a model reliably ignores when the block reads like a standing label.
+# The demonstrations, one per shape that most needs showing, because the shape a
+# model copies matters more than anything described to it. The exemplar that
+# stood here until 2026-09-25 was a single three-sentence paragraph, and that is
+# the shape every answer came back in, whatever the style section said.
+#
+# The overview is deliberately built on a *mixed* context — a website page and a
+# PDF — and answered as one set of topic sections, because a mixed context is
+# the case the model used to split by source. The list shows the three things
+# the live list answers got wrong: one item per line, the per-item description
+# kept (a truncated one cut at its last complete phrase), and one citation on the
+# opening sentence instead of one per name. The third exemplar demonstrates rule
+# 9's dated-title clause, which is the one rule a model reliably ignores when
+# the block reads like a standing label.
+#
+# Everything here is invented — an organisation called Org One, a programme and
+# centres that do not exist — so no example can leak a real fact into an answer.
 _ANSWER_EXAMPLE = (
     "Example:\n"
-    "Context: [1] (website · Rooftop Solar Push · published 2023-11-02) The "
-    "rooftop programme added 1.2 GW of capacity in 2023, up from 0.8 GW in "
-    "2022.\n"
-    "[2] (pdf · Annual Energy Report · p.4) Commercial installations accounted "
-    "for 60% of new rooftop capacity, concentrated in five states.\n"
-    "Question: How did rooftop solar grow in 2023?\n"
+    "Context: [1] (website · official page · live page, read 2026-01-10 · "
+    "Clean Cooling Programme · link https://org-one.example/clean-cooling) The "
+    "Clean Cooling Programme works to cut the "
+    "energy use and emissions of cooling in buildings and cold chains. It was "
+    "set up in 2019 with the Ministry of Power. Focus areas: efficient "
+    "air-conditioning standards; passive building design; low-GWP "
+    "refrigerants. Projects: Cool Roofs for Schools; Cold Chain Audit for "
+    "Dairy Cooperatives.\n"
+    "[2] (pdf · Cooling Outlook Report · p.12) A study under the Clean Cooling "
+    "Programme found that cool roofs lowered indoor peak temperatures by "
+    "2-3°C across 40 surveyed schools. It recommends extending them to "
+    "district hospitals.\n"
+    "Question: Tell me about the Clean Cooling Programme.\n"
     "Answer:\n"
-    "The rooftop programme added **1.2 GW of capacity in 2023**, up from 0.8 GW "
-    "the year before [1]. Commercial installations drove most of that growth, "
-    "accounting for 60% of the new capacity [2], and those additions were "
-    "concentrated in five states [2].\n"
+    "According to Org One's Clean Cooling Programme page, the programme works "
+    "to cut the energy use and emissions of cooling in buildings and cold "
+    "chains [1]. It was set up in 2019 with the Ministry of Power [1].\n"
+    "\n"
+    "### Focus areas\n"
+    "The programme concentrates on three areas [1]:\n"
+    "- Efficient air-conditioning standards\n"
+    "- Passive building design\n"
+    "- Low-GWP refrigerants\n"
+    "\n"
+    "### Projects\n"
+    "Its projects are [1]:\n"
+    "- Cool Roofs for Schools\n"
+    "- Cold Chain Audit for Dairy Cooperatives\n"
+    "\n"
+    "### Findings\n"
+    "- A study under the programme found that cool roofs lowered indoor peak "
+    "temperatures by 2-3°C across 40 surveyed schools [2].\n"
+    "- The study recommends extending cool roofs to district hospitals [2].\n"
+    "\n"
+    "In short, the programme pairs standards, building design and refrigerant "
+    "work with projects in schools and cold chains [1].\n"
+    "\n"
+    "Read more: [Clean Cooling Programme](https://org-one.example/clean-cooling)\n"
+    "\n"
+    "Example (a list):\n"
+    "Context: [1] (website · official page · live page, read 2026-01-10 · Org "
+    "One: Home · link https://org-one.example/) Our Centres\n"
+    "Centre for Water Reuse\n"
+    "Advancing safe reuse of treated wastewater in cities and industry.\n"
+    "Centre for Coastal Studies\n"
+    "Centre for Green Logistics\n"
+    "Supporting low-carbon freight through rail, cleaner fuels and...\n"
+    "[2] (website · Centre for Coastal Studies · page date 2025-09-18) The "
+    "Centre for Coastal Studies, set up in 2021 in Goa, researches shoreline "
+    "change and coastal livelihoods.\n"
+    "Question: What centres does Org One have?\n"
+    "Answer:\n"
+    "According to Org One's home page, its centres are [1]:\n"
+    "- **Centre for Water Reuse** — advancing safe reuse of treated wastewater "
+    "in cities and industry.\n"
+    "- **Centre for Coastal Studies** — researching shoreline change and "
+    "coastal livelihoods from Goa, where it was set up in 2021 [2].\n"
+    "- **Centre for Green Logistics** — supporting low-carbon freight through "
+    "rail and cleaner fuels.\n"
+    "\n"
+    "Read more: [Org One: Home](https://org-one.example/)\n"
     "\n"
     "Example (a role, stated at two times):\n"
     "Context: [1] (website · Statement on climate leadership · published "
@@ -160,13 +372,26 @@ _ANSWER_EXAMPLE = (
 # turn on whether both source kinds are present. The numbering is part of the
 # contract — _HISTORY_RULE in app.generation.answerer continues the list at 10 —
 # so both variants must supply exactly rules 5 and 6.
+#
+# Rule 2 used to read "cite [n] after every claim it supports", which a model
+# applied per phrase: nine centres listed from one page came back as nine names
+# each followed by "[1]". Citations still carry weight downstream — the sources
+# footer shows only the blocks an answer cites (`query_pipeline._cited_blocks`),
+# and the faithfulness check scopes each claim to its citations — so they stay
+# mandatory; only their placement changes. A list item left uncited because the
+# list's opening sentence carries the block is checked against every block,
+# which is the fail-safe direction.
 _RULES_HEAD = (
     "You are an enterprise assistant that answers strictly from the numbered "
     "context provided below.\n"
     "Rules:\n"
     "1. Use ONLY the numbered context. Do not use outside knowledge.\n"
-    "2. Cite the block number [n] after every claim it supports. Cite multiple "
-    "as [1][2] when several blocks support one claim.\n"
+    "2. Cite the block number [n] for every claim, at the end of the sentence "
+    "or bullet that makes it — not after each phrase or name inside it. Cite "
+    "multiple as [1][2] when several blocks support one sentence. When a whole "
+    "list comes from one block, cite that block once, on the list's opening "
+    "sentence, rather than repeating it on every item; an item that comes from "
+    "a different block carries its own citation.\n"
     f'3. If the context does not contain the answer, reply exactly: "{REFUSAL}"\n'
     "   - \"List / which documents (articles, reports, news, pages, papers) "
     "mention, discuss or cover X\" is answered from the blocks in hand, never "
@@ -212,7 +437,7 @@ _RULES_SOURCES = (
     "they said it — never on what kind of source they came from. A website page "
     "does not outrank a PDF, and a PDF does not outrank a website page. Where two "
     "blocks disagree, rule 9 decides.\n"
-    "6. Answer as one continuous response, as described under 'Answer structure' "
+    "6. Answer as one response, as described under 'Answer structure' "
     "below. Always cite [n] for every claim, whichever kind of source it came "
     "from — a single answer may cite website pages, documents and the knowledge "
     "graph together.\n"
@@ -331,6 +556,59 @@ def _build_grounded_prompt() -> str:
 GROUNDED_SYSTEM_PROMPT = _build_grounded_prompt()
 
 
+# The shapes again, compressed, for the end of the human turn. `_ANSWER_STYLE`
+# says all of this, but it sits in the middle of a system prompt of several
+# thousand tokens, and on 2026-09-25 the small model answering questions ignored
+# it on most of a ten-question run: seven themes still came back as one
+# sentence, nine centres each still carried "[1]", and a yes/no question got one
+# sentence. The same fix as `supersession_note`: the end of the human turn is
+# where the model is looking when it starts to write. Generic by construction —
+# it names shapes, never a question or an organisation — and it defers to the
+# rules that prescribe exact wording, so it cannot talk the model out of a
+# refusal or rule 9's labelled date parts.
+#
+# It opens with grounding for the same reason it exists: the last instruction
+# the model reads outweighs the first. A version that went straight to "the
+# answer first" had "what is the capital of France" answered "Paris" from the
+# model's own knowledge in two of three runs on identical blocks.
+SHAPE_REMINDER = (
+    "Every statement comes only from the numbered context above, never from "
+    "your own knowledge; when the context says nothing about the question, "
+    "the whole answer is rule 3's exact reply.\n"
+    "Otherwise, before writing, choose the shape 'Answer style' gives for "
+    "this question (or the shape requested above, if one was):\n"
+    "- the members of a set (themes, centres, programmes, people): one "
+    "sentence saying what the list is, not naming the items, then one bullet "
+    "per item — **name** — the one-line description the context gives it, or "
+    "the name alone when it gives none; more than about 12 items grouped under "
+    "### headings by role, level or area, and no one the context marks as "
+    "former;\n"
+    "- the top, leading or key members of a set the context lists at length: "
+    "about 12-15 of them, not all — the head of the organisation always the "
+    "first bullet when the context lists one, then the most senior heads of "
+    "areas, with a few holders of a distinction such as a fellowship beside "
+    "them — only those whose role fits the question (the head of the "
+    "organisation always fits), under ### headings by "
+    "level, then a ### By area section when they span several areas, and one "
+    "closing sentence offering the full listing or one area;\n"
+    "- \"tell me about X\" / \"what is X\": one or two opening sentences saying "
+    "what X is, then ### sections of bullets holding the details, none "
+    "repeating the opening; head each section by what its items are, never by "
+    "the page section they came from;\n"
+    "- one fact, or yes or no: the answer first, then 2-4 sentences of the "
+    "detail around it;\n"
+    "- when a document was published: rule 9's labelled parts (report "
+    "edition; page publication date; report publication date), never a page "
+    "date given as the day the document was published;\n"
+    "- a comparison: a table.\n"
+    "A broad question gets its most likely reading, named in the opening "
+    "sentence and answered from every list or page in the context that fits "
+    "it. Cite a list that comes from one block once, on its opening "
+    "sentence. Name each item once, a By area bullet excepted. Never write "
+    "about the context, or where on a page something was listed."
+)
+
+
 def today_anchor() -> str:
     """The one fact rule 9's temporal guidance needs and previously lacked:
     what "today" actually is.
@@ -376,13 +654,23 @@ def grounded_system_prompt() -> str:
 
 # Per-format steering appended to the grounded system prompt when the query
 # understanding stage detected a specific desired shape (see query_processor).
+#
+# Each one is phrased as a named shape from `_ANSWER_STYLE` taken further, not as
+# a second description of it. The list directive used to say "no preamble" and
+# "each bullet leads with its claim and its citation", which contradicted both
+# the list shape (one opening sentence) and rule 2 (the citation closes the
+# bullet, and a single-block list is cited once) — and a directive wins any
+# conflict with the style, so the older wording would have won.
 _FORMAT_DIRECTIVES: dict[str, str] = {
     "list": (
-        "Shape the answer as a bulleted list — one item per line, no preamble. "
-        "Each bullet leads with its claim and its citation, then adds a clause "
-        "of the detail the context gives for that item (a date, a scope, a "
-        "figure) rather than stopping at the bare claim; only omit the clause "
-        "when the context truly offers nothing more for that item."
+        "Shape the answer as the List shape above, or the Selection shape when "
+        "the question asks for the top or leading ones: one opening sentence, "
+        "then one bullet per item. Each bullet gives the item's name or claim first, "
+        "then a clause of the detail the context gives for that item (a date, "
+        "a scope, a figure) rather than stopping at the bare name; only omit "
+        "the clause when the context truly offers nothing more for that item. "
+        "Cite as rule 2 says: once on the opening sentence when every item "
+        "comes from one block, otherwise at the end of each bullet."
     ),
     "table": (
         "Shape the answer as a GitHub-flavored Markdown table: a header row, a "
@@ -392,15 +680,16 @@ _FORMAT_DIRECTIVES: dict[str, str] = {
         "or beside each row. Add a one-line caption above the table only if needed."
     ),
     "summary": (
-        "Shape the answer as a high-level summary of 4-6 sentences. Cover the "
-        "most important points with the one or two specifics (a figure, a "
-        "date, a scope) that make each concrete, and omit only the minor "
-        "detail."
+        "Shape the answer as a high-level summary of 4-6 sentences, with no "
+        "headings. Cover the most important points with the one or two "
+        "specifics (a figure, a date, a scope) that make each concrete, and "
+        "omit only the minor detail."
     ),
     "detailed": (
-        "Shape the answer as a thorough, in-depth response. Cover the relevant "
-        "points comprehensively using the context, organized into short labeled "
-        "sections or paragraphs, each claim cited."
+        "Shape the answer as the Overview shape above, at its fullest: an "
+        "opening of 2-3 sentences, then as many ### sections as the context "
+        "genuinely supports, each with the bullets its material carries. Cover "
+        "the relevant points comprehensively, every claim cited."
     ),
     "timeline": (
         "Shape the answer as a chronological timeline: order events by date, "
@@ -548,9 +837,11 @@ def _source_hint(payload: dict) -> str:
     # over-generalising, but enumerating them from the service catalogue is
     # reading the source. Derived from metadata already on the chunk, so it needs
     # no ingest change.
-    if _is_canonical(payload):
+    canonical = _is_canonical(payload)
+    if canonical:
         bits.append(CANONICAL_MARKER)
-    if is_priority_page(payload):
+    live = is_priority_page(payload)
+    if live:
         # When it was read, labelled as that — never a "page date", which the
         # rules below treat as when something went up.
         read = str(payload.get("fetched_at") or "")[:10]
@@ -596,6 +887,19 @@ def _source_hint(payload: dict) -> str:
         bits.append("page date " + page_date)
     if payload.get("doc_version"):
         bits.append(f"v{payload['doc_version']}")
+    # The page's own address, so the "Read more" line the style asks for can be
+    # copied rather than guessed. Only on the organisation's own web pages: they
+    # are what a list or an overview points the reader back to, and an ordinary
+    # article's address is already in the sources footer, where offering it here
+    # would only invite a link per bullet. `faithfulness.strip_unknown_links`
+    # unlinks any address that reaches an answer without having been shown here
+    # or in a block's text.
+    if (
+        (canonical or live)
+        and payload.get("source_type") in WEBSITE_SOURCE_TYPES
+        and payload.get("source_url")
+    ):
+        bits.append(f"link {payload['source_url']}")
     return " · ".join(bits)
 
 
@@ -651,6 +955,54 @@ def format_context_blocks(blocks: "list[ContextBlock]") -> str:
         header = f"[{block.n}]" + (f" ({hint})" if hint else "")
         parts.append(f"{header}\n{block.text}")
     return "\n\n".join(parts)
+
+
+#: The priority reason a people listing carries when it was read because the
+#: question asks for the organisation's people
+#: (`app.retrieval.priority.match.STAFF`, pinned equal by a test). A plain string
+#: so generation needs no retrieval import to recognise it.
+STAFF_REASON = "staff"
+
+
+def staff_note(blocks: "list[ContextBlock]") -> str:
+    """A note for the human turn when the context holds several people listings
+    read for a question about the organisation's people.
+
+    Empty unless two or more distinct listings are present, so every other
+    context renders exactly as before. Measured 2026-09-25: with the Committee
+    of Directors and the Distinguished Fellows both in context for "TERI top
+    researchers", three answers in four named only the fellows — "distinguished"
+    read as "top", and a committee that also holds HR and strategy posts read as
+    management — and dropped the research directors the reader wanted. The
+    style rule saying a broad reading takes in every list that fits was already
+    in the prompt. This states the computed fact beside the question instead,
+    as `supersession_note` does for dates: these listings are here because the
+    question asks for people, so each is part of the answer. Every word derives
+    from payload fields retrieval set; nothing names a person.
+
+    It once said "one group per listing, holding the people in it who fit", and
+    the answers that followed printed each listing whole, one after the other.
+    A question for the top people is a choice made across the listings, so the
+    note now says that instead.
+    """
+    listings: list[tuple[int, str]] = []
+    for block in blocks:
+        payload = block.payload
+        if payload.get("priority_reason") != STAFF_REASON:
+            continue
+        name = str(payload.get("title") or payload.get("priority_page") or "").strip()
+        if name and name not in {n for _, n in listings}:
+            listings.append((block.n, name))
+    if len(listings) < 2:
+        return ""
+    named = ", ".join(f"[{n}] {name}" for n, name in listings)
+    return (
+        f"People listings in this context: {named}. Each was read because the "
+        "question asks for the organisation's people, so the answer draws on "
+        "all of them rather than choosing one listing as the answer. For the "
+        "top or leading people, choose across all of them by seniority and fit "
+        "to the question, not listing by listing and not everyone they hold."
+    )
 
 
 def supersession_note(blocks: "list[ContextBlock]") -> str:

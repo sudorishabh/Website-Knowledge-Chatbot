@@ -598,6 +598,44 @@ def _looks_like_real_question(question: str) -> bool:
     )
 
 
+def _names_an_organisation_subject(question: str) -> bool:
+    """Whether a turn with no question shape still names something the
+    organisation's own site holds: its people, or one of its listed pages.
+
+    A third probe, for the turn the other two cannot see: a bare noun phrase.
+    Measured 2026-09-25, "TERI top researchers" drew `clarification_needed` at
+    0.91 ("a noun phrase without a clear request"), which collapses onto
+    chitchat, and neither probe fired — it names no gazetteer entity and has no
+    question shape — so the user was asked what they meant instead of being
+    shown TERI's directors and fellows. A request for people ("researchers",
+    "experts", "team") and a page's own name or curated phrase ("green
+    shipping", "centres of excellence") are both specific evidence of a real
+    request; two arbitrary content words are not — "okay cool" and "nice work"
+    have those and are small talk.
+
+    Social and meta phrases are checked first and win, exactly as in
+    `_looks_like_real_question`, so "who are you?" — a person-shaped question
+    about the assistant — stays chitchat. Reads the page registry in memory;
+    no page is fetched.
+    """
+    text = (question or "").strip()
+    if not text or _SOCIAL_OR_META.search(text):
+        return False
+    try:
+        from app.retrieval.structured import topic
+
+        if topic.wants_person(text):
+            return True
+        from app.retrieval.priority import match
+        from app.retrieval.priority.registry import load_registry
+
+        registry = load_registry()
+        return bool(registry.pages and match.explicit(text, registry=registry))
+    except Exception:  # pragma: no cover - a probe must not break understanding
+        logger.debug("Organisation-subject probe failed.", exc_info=True)
+        return False
+
+
 # Counting phrases are the one case where the *route*, not just "is this
 # chitchat", is decidable from wording alone: "how many X are there" has no
 # reliable qa answer (prose does not carry a trustworthy count), and the
@@ -621,12 +659,17 @@ def _corrected_intent(question: str, intent: Intent) -> Intent:
     and 2010?" chitchat twice of five. Both are ordinary questions the corpus can
     answer; on the chitchat draws the user got "I'm here to help…".
 
-    Two independent probes feed the override, combined with OR: naming a known
-    entity and an approved relationship (`_names_entity_and_relationship`), or
-    simply reading as an information request by its wording
-    (`_looks_like_real_question`). Either is sufficient; the second exists
-    because the first alone left Q079/Q091/Q077-shaped questions unrescued —
-    none of them names a resolvable entity, but none of them is small talk.
+    Three independent probes feed the override, combined with OR: naming a known
+    entity and an approved relationship (`_names_entity_and_relationship`),
+    reading as an information request by its wording
+    (`_looks_like_real_question`), or naming the organisation's people or one
+    of its listed pages (`_names_an_organisation_subject`). Any one is
+    sufficient; the second exists because the first alone left
+    Q079/Q091/Q077-shaped questions unrescued, and the third because a bare noun
+    phrase ("TERI top researchers") has neither an entity nor a question shape.
+
+    `clarification_needed` reaches this function as chitchat while the
+    clarification feature is off, so the same override covers it.
 
     A counting question ("how many X are there") is routed to ``structured``
     directly rather than ``qa``, because no prose answer to a "how many" claim
@@ -644,7 +687,8 @@ def _corrected_intent(question: str, intent: Intent) -> Intent:
     if _COUNTING.search(question or ""):
         logger.info("Overriding a chitchat classification: counting question.")
         return "structured"
-    if not (_names_entity_and_relationship(question) or _looks_like_real_question(question)):
+    if not (_names_entity_and_relationship(question) or _looks_like_real_question(question)
+            or _names_an_organisation_subject(question)):
         return intent
     logger.info("Overriding a chitchat classification: the question is relational.")
     return "qa"
