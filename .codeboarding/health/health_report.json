@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-09-25T08:34:26.012298+00:00",
-  "overall_score": 0.98422035480859,
+  "timestamp": "2026-09-26T06:41:57.763841+00:00",
+  "overall_score": 0.9845850718590635,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2074,
-      "findings_count": 19,
-      "warning_count": 19,
-      "score": 0.9908389585342333,
+      "total_entities_checked": 2090,
+      "findings_count": 20,
+      "warning_count": 20,
+      "score": 0.9904306220095693,
       "finding_groups": [
         {
           "severity": "warning",
@@ -188,6 +188,13 @@
               "metric_value": 165
             },
             {
+              "entity_name": "app.pipeline.query_pipeline.stream_answer",
+              "file_path": "app/pipeline/query_pipeline.py",
+              "line_start": 900,
+              "line_end": 1063,
+              "metric_value": 163
+            },
+            {
               "entity_name": "app.knowledge.claims.validate._validate_one",
               "file_path": "app/knowledge/claims/validate.py",
               "line_start": 122,
@@ -212,10 +219,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 16,
-      "findings_count": 16,
-      "warning_count": 4,
-      "score": 0.19999999999999996,
+      "total_entities_checked": 15,
+      "findings_count": 15,
+      "warning_count": 3,
+      "score": 0.25,
       "finding_groups": [
         {
           "severity": "info",
@@ -227,13 +234,6 @@
               "file_path": "app/ingest_main.py",
               "line_start": 18,
               "line_end": 18,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"_principal\" is not accessed",
-              "file_path": "app/api/chat.py",
-              "line_start": 86,
-              "line_end": 86,
               "metric_value": 0.0
             },
             {
@@ -265,10 +265,10 @@
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_variable] \"GRAPH_FACTS_KIND\" is not accessed",
-              "file_path": "app/generation/prompts.py",
-              "line_start": 5,
-              "line_end": 5,
+              "entity_name": "[unused_variable] \"exc\" is not accessed",
+              "file_path": "app/ingestion/reprocess.py",
+              "line_start": 313,
+              "line_end": 313,
               "metric_value": 0.0
             },
             {
@@ -276,13 +276,6 @@
               "file_path": "app/catalog/queries.py",
               "line_start": 425,
               "line_end": 425,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"get_settings\" is not accessed",
-              "file_path": "app/retrieval/structured/planner.py",
-              "line_start": 17,
-              "line_end": 17,
               "metric_value": 0.0
             },
             {
@@ -305,6 +298,20 @@
               "line_start": 692,
               "line_end": 692,
               "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"_principal\" is not accessed",
+              "file_path": "app/api/chat.py",
+              "line_start": 89,
+              "line_end": 89,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"GRAPH_FACTS_KIND\" is not accessed",
+              "file_path": "app/generation/prompts.py",
+              "line_start": 6,
+              "line_end": 6,
+              "metric_value": 0.0
             }
           ]
         },
@@ -321,24 +328,17 @@
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_import] Import \"GRAPH_FACTS_KIND\" is not accessed",
-              "file_path": "app/generation/prompts.py",
-              "line_start": 5,
-              "line_end": 5,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_import] Import \"get_settings\" is not accessed",
-              "file_path": "app/retrieval/structured/planner.py",
-              "line_start": 17,
-              "line_end": 17,
-              "metric_value": 0.0
-            },
-            {
               "entity_name": "[unused_import] Import \"get_settings\" is not accessed",
               "file_path": "app/retrieval/structured/tools.py",
               "line_start": 20,
               "line_end": 20,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_import] Import \"GRAPH_FACTS_KIND\" is not accessed",
+              "file_path": "app/generation/prompts.py",
+              "line_start": 6,
+              "line_end": 6,
               "metric_value": 0.0
             }
           ]
@@ -360,6 +360,12 @@
       "composite_risk_score": 30.0
     },
     {
+      "file_path": "app/pipeline/query_pipeline.py",
+      "total_findings": 2,
+      "warning_findings": 2,
+      "composite_risk_score": 30.0
+    },
+    {
       "file_path": "app/ingestion/pipeline.py",
       "total_findings": 2,
       "warning_findings": 2,
@@ -373,12 +379,6 @@
     },
     {
       "file_path": "app/generation/prompts.py",
-      "total_findings": 2,
-      "warning_findings": 1,
-      "composite_risk_score": 25.0
-    },
-    {
-      "file_path": "app/retrieval/structured/planner.py",
       "total_findings": 2,
       "warning_findings": 1,
       "composite_risk_score": 25.0
@@ -403,12 +403,6 @@
     },
     {
       "file_path": "tools/e2e_ingest_audit/run_audit.py",
-      "total_findings": 1,
-      "warning_findings": 1,
-      "composite_risk_score": 15.0
-    },
-    {
-      "file_path": "app/pipeline/query_pipeline.py",
       "total_findings": 1,
       "warning_findings": 1,
       "composite_risk_score": 15.0
@@ -463,6 +457,12 @@
     },
     {
       "file_path": "scripts/backfill_edition_and_titles.py",
+      "total_findings": 1,
+      "warning_findings": 1,
+      "composite_risk_score": 15.0
+    },
+    {
+      "file_path": "scripts/_build_graph_benchmark.py",
       "total_findings": 1,
       "warning_findings": 1,
       "composite_risk_score": 15.0
