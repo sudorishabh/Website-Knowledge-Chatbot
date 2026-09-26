@@ -223,7 +223,7 @@ def _batch_documents(
 
 
 def _summarize_direct(question: str, docs: list[_Doc]) -> str:
-    from app.core.clients.llm import get_llm
+    from app.core.clients.llm import get_llm, reply_text
     from app.core.models.context import ContextBlock
     from app.generation.prompts import format_context_blocks
 
@@ -244,7 +244,7 @@ def _summarize_direct(question: str, docs: list[_Doc]) -> str:
                       f"Request: {question}"),
         ]
     )
-    return getattr(response, "content", "") or ""
+    return reply_text(response)
 
 
 def _map_batch(batch: list[_Doc]) -> dict[str, list[str]]:
@@ -279,7 +279,7 @@ def _numbered_line(n: int, doc: "_Doc") -> str:
 
 
 def _summarize_map_reduce(question: str, docs: list[_Doc]) -> str:
-    from app.core.clients.llm import get_llm
+    from app.core.clients.llm import get_llm, reply_text
 
     batches = _batch_documents(docs)
     with ThreadPoolExecutor(max_workers=_MAP_WORKERS) as pool:
@@ -299,7 +299,7 @@ def _summarize_map_reduce(question: str, docs: list[_Doc]) -> str:
                       + f"\n\nRequest: {question}"),
         ]
     )
-    return getattr(response, "content", "") or ""
+    return reply_text(response)
 
 
 def summarize_scope(

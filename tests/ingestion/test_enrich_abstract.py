@@ -8,6 +8,7 @@ invalidation. Every model call is stubbed through ``_complete``; no network.
 from __future__ import annotations
 
 import pytest
+from langchain_core.messages import AIMessage
 
 from app.core.models import CanonicalDocument, CanonicalSection
 from app.ingestion import enrich
@@ -163,3 +164,13 @@ def test_resizing_the_map_window_changes_the_version(monkeypatch):
     before = enrich.abstract_version()
     monkeypatch.setattr(enrich, "_MAP_WINDOW_TOKENS", enrich._MAP_WINDOW_TOKENS + 1)
     assert enrich.abstract_version() != before
+
+
+def test_a_model_reply_in_parts_is_read_as_text(monkeypatch):
+    # gpt-6-luna replies over the Responses API with a list of parts, not a string.
+    class Model:
+        def invoke(self, messages):
+            return AIMessage(content=[{"type": "text", "text": "  An abstract.  "}])
+
+    monkeypatch.setattr("app.core.clients.llm.get_llm", lambda *a, **kw: Model())
+    assert enrich._complete("system", "human") == "An abstract."
