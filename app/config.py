@@ -324,10 +324,15 @@ class Settings(BaseSettings):
     # `Cache-Control: max-age=300` the site itself sends for these pages.
     priority_cache_ttl: int = 300
     # Most pages read for one question, and most of their sections admitted.
-    # Blocks lead the context, so this is also the share of `retrieval_top_k`
-    # the corpus gives up when a priority page applies.
     priority_max_pages: int = 3
     priority_max_blocks: int = 3
+    # Whether those blocks come on top of the corpus's `retrieval_top_k` slots
+    # and `context_token_budget` (True) or share them, the corpus keeping at
+    # least two slots (False). On since 2026-09-25: sharing left a question
+    # that read three live pages three corpus passages, and a people question
+    # a 1,900-token context of a 9,000-token budget. The extra is bounded by
+    # `priority_max_blocks` sections of ~600 tokens each.
+    priority_own_slots: bool = True
     # Description-similarity trigger: cosine of the query against a page's
     # description, and how far the best page must lead the runner-up. Set from a
     # small hand-labelled question set on 2026-09-24 (see

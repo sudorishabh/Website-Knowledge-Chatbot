@@ -86,7 +86,7 @@ rather than cached:
 
 | Input | Purpose |
 | --- | --- |
-| `_pref_fingerprint()` | Hash of `PIPELINE_REVISION`, the retrieval-preference knobs (`prefer_website_enabled`, `website_candidate_k`, `retrieval_top_k`, `retrieval_candidate_k`, `context_token_budget`) and the chat model with the two settings that shape its calls (`azure_openai_model`, `llm_temperature_supported`, `llm_reasoning_effort`) — so switching models retires the previous model's answers instead of serving them for the rest of their TTL |
+| `_pref_fingerprint()` | Hash of `PIPELINE_REVISION`, the retrieval-preference knobs (`prefer_website_enabled`, `website_candidate_k`, `retrieval_top_k`, `retrieval_candidate_k`, `context_token_budget`, `priority_own_slots`) and the chat model with the two settings that shape its calls (`azure_openai_model`, `llm_temperature_supported`, `llm_reasoning_effort`) — so switching models retires the previous model's answers instead of serving them for the rest of their TTL |
 | `top_k` | The requested result width |
 | `answer_format` | list/table/summary/detailed/timeline/default |
 | `corpus_revision()` | The indexed corpus's current state — see below |

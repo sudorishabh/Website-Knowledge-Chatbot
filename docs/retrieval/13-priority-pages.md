@@ -158,6 +158,40 @@ text. A block carries `source_type="website"`, `source_authority=1.0` (so the
 prompt calls it an *official page*), the live URL, `fetched_at`,
 `content_hash` and `stale`.
 
+**Merge** (`PriorityEvidence.merge`): the blocks lead the context. With
+`priority_own_slots` on (the default since 2026-09-25) they come on top of the
+corpus's `retrieval_top_k` slots and `context_token_budget`. A question that
+reads live pages keeps every passage retrieval would have given it without
+them. Off, they share the slots and the corpus keeps at least two
+(`CORPUS_MIN_SLOTS`). That is how "TERI top researchers" came to be answered
+from three live pages and three short news items: a 1,900-token context
+against a 9,000-token budget.
+
+Measured on 2026-09-25 with 24 questions (6 people, 5 theme, 6 page, 7 that
+read no live page), both settings, two runs each, all through the full
+pipeline on gpt-6-luna:
+
+| Live-page questions (34 answers each) | Shared | Own slots |
+| --- | --- | --- |
+| Corpus passages | 3.5 | 5.9 |
+| Context tokens | 3,618 | 5,577 |
+| Answer words | 173 | 192 |
+| Corpus passages cited | 1.3 | 1.9 |
+| First token / total | 11.5 s / 14.6 s | 10.5 s / 13.6 s |
+
+The questions that read no live page were unaffected, as they must be. A blind
+pairwise judge (gpt-5.4, each answer shown with its own context, order
+shuffled) scored the 33 pairs whose contexts differed. It found own slots more
+complete (better in 12 pairs, worse in 6), less concise (7 vs 14) and about
+level on accuracy (7 vs 10). Its overall pick was even: 14 own, 15 shared,
+4 ties. None of the differences is significant (sign test, p ≥ 0.19). The
+questions that read no live page set the noise floor. The setting cannot
+change them, yet their retrieval varied between runs and the judge still moved
+one accuracy score from 5 to 2. So the switch buys fuller answers at no
+latency cost, not better answers. Most of the extra unsupported claims the
+judge listed were loose paraphrase of the added passages, and a few were
+peripheral items (a 2022 side event in a climate-theme overview).
+
 ---
 
 ## Conflicts with the corpus
@@ -240,7 +274,8 @@ sections once; a page read itself took 83 ms.
 | `priority_fetch_timeout` | `4.0` | Seconds per page request. |
 | `priority_cache_ttl` | `300` | Seconds a page is reused before revalidation. |
 | `priority_max_pages` | `3` | Pages read per question. |
-| `priority_max_blocks` | `3` | Priority blocks per question (the corpus keeps at least two slots). |
+| `priority_max_blocks` | `3` | Priority blocks per question. |
+| `priority_own_slots` | `true` | The priority blocks come on top of the corpus's `retrieval_top_k` slots and `context_token_budget`. Off = they share them and the corpus keeps at least two slots. |
 | `priority_match_threshold` | `0.48` | Description-similarity floor. |
 | `priority_match_margin` | `0.06` | Lead the best page needs over the next. |
 | `priority_section_floor` | `0.40` | Score a non-opening section needs. |

@@ -141,6 +141,15 @@ def test_retrieval_setting_change_still_invalidates(monkeypatch):
     assert cache_keys.semantic_partition(6, "table") != before
 
 
+def test_giving_the_live_pages_their_own_slots_invalidates(monkeypatch):
+    # It changes which corpus passages a live-page question is answered from.
+    monkeypatch.setattr(cache_keys, "corpus_revision", lambda: "rev-1")
+    settings = cache_keys.get_settings()
+    before = cache_keys.semantic_partition(6, "default")
+    monkeypatch.setattr(settings, "priority_own_slots", not settings.priority_own_slots)
+    assert cache_keys.semantic_partition(6, "default") != before
+
+
 @pytest.mark.parametrize("field, changed", [
     ("azure_openai_model", lambda current: f"{current}-other"),
     ("llm_temperature_supported", lambda current: not current),

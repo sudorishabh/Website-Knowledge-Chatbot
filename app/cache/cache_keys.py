@@ -63,6 +63,7 @@ def _pref_fingerprint() -> str:
         str(s.retrieval_top_k),
         str(s.retrieval_candidate_k),
         str(s.context_token_budget),
+        str(s.priority_own_slots),
         str(s.azure_openai_model),
         str(s.llm_temperature_supported),
         str((s.llm_reasoning_effort or "").strip()),
