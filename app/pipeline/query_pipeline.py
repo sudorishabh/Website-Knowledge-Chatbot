@@ -11,6 +11,7 @@ import paths.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from typing import Any, Iterator
 
@@ -362,7 +363,8 @@ def _capabilities(pq: ProcessedQuery) -> set[str]:
 # lazily so the package is never loaded with the feature off:
 #
 # * before routing, the cheap triggers (a person, a page name, a group) — they
-#   decide whether a catalog answer may stand for a question the live page owns;
+#   decide whether a catalog answer, a catalog section or a scoped summary may
+#   stand for a question the live page owns;
 # * before the answer cache, the pages themselves — their content hashes are
 #   part of the cache key, so a changed page cannot be answered from yesterday.
 
@@ -416,23 +418,57 @@ def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
         return None
 
 
+def _names_a_theme_page(target: Any) -> bool:
+    """Whether ``target`` is a theme's page, named in the question or resolved
+    as its theme facet."""
+    return target.kind == "theme" and target.reason in ("name", "theme")
+
+
 def _priority_overrides_catalog(targets: list[Any] | None, *, themes_listing: bool = False) -> bool:
     """Whether a live page owns this question outright, so the catalog route —
     which cannot see these pages — must not answer it instead."""
     for target in targets or ():
-        if themes_listing and target.kind == "theme" and target.reason in ("name", "theme"):
+        if themes_listing and _names_a_theme_page(target):
             # Understanding can read "tell me about the climate change thematic"
             # as a theme listing; the themes are flat, so that theme's page answers.
             return True
         if target.reason not in _CATALOG_OVERRIDING:
-            continue
-        if target.kind == "group" and getattr(target.group, "kind", None) != "centre":
             continue
         if getattr(target.page, "is_home", False) and not themes_listing:
             continue  # "documents in each thematic area" is a catalog count
         if target.kind in _CATALOG_OVERRIDING_KINDS:
             return True
     return False
+
+
+#: Words that ask for documents rather than for the theme itself: "summarize the
+#: publications on climate change" is a set of documents, which the scoped
+#: summary reads; "summarize the climate change theme" is the theme's page.
+_DOCUMENT_WORDS = re.compile(
+    r"\b(?:publications?|documents?|reports?|papers?|articles?|briefs?|news|"
+    r"press\s+releases?|events?|projects?|studies|books?)\b",
+    re.IGNORECASE,
+)
+
+
+def _priority_overrides_summary(
+    question: str, pq: ProcessedQuery, targets: list[Any] | None
+) -> bool:
+    """Whether a theme's live page owns a scoped summary, which would otherwise
+    answer from the catalog's documents on that theme without reading the page.
+
+    Only when the summary's scope is that theme alone and the question asks for
+    no kind of document. Understanding scopes "summarize the climate change
+    theme", "TERI's work on climate change" and "the publications on climate
+    change" alike — the theme, no content type (measured 2026-09-26) — so the
+    wording decides; a period, an author or a title in the scope makes it a set
+    of documents whatever the wording."""
+    analysis = pq.analysis
+    if analysis is None or not any(_names_a_theme_page(t) for t in targets or ()):
+        return False
+    scoped_further = (analysis.bundle or analysis.author or analysis.title_contains
+                      or analysis.date_from or analysis.date_to)
+    return bool(analysis.theme) and not scoped_further and not _DOCUMENT_WORDS.search(question)
 
 
 def _priority_evidence(
@@ -583,9 +619,18 @@ def _prepare(
         return result, None
 
     caps = _capabilities(pq)
+    # The priority pages' cheap triggers, ahead of routing: a question naming a
+    # page the catalog cannot see ("who is on the governing council", "latest
+    # tenders") must reach that page rather than be answered from the catalog.
+    priority_targets = _priority_targets(question, pq)
+    themes_listing = _lists_themes(pq)
+    page_owned = _priority_overrides_catalog(priority_targets, themes_listing=themes_listing)
     # A query that needs both catalog facts and document content: keep the
     # deterministic catalog answer and prefix it onto the grounded content answer.
-    combined = "database" in caps and bool(caps & _CONTENT_CAPS)
+    # Not for a theme listing a live page owns: the catalog's list of themes
+    # would repeat the home page the answer is built on.
+    combined = ("database" in caps and bool(caps & _CONTENT_CAPS)
+                and not (themes_listing and page_owned))
     chained = False
     # Whether the catalog has already been asked about this query, so the
     # empty-retrieval fallback at the end doesn't re-run a query that just came
@@ -598,13 +643,7 @@ def _prepare(
     # too, so the redundant case costs one query on a path that is already refusing.
     db_consulted = combined
 
-    # The priority pages' cheap triggers, ahead of routing: a question naming a
-    # page the catalog cannot see ("who is on the governing council", "latest
-    # tenders") must reach that page rather than be answered from the catalog.
-    priority_targets = _priority_targets(question, pq)
-    catalog_route = pq.intent == "structured" and not _priority_overrides_catalog(
-        priority_targets, themes_listing=_lists_themes(pq)
-    )
+    catalog_route = pq.intent == "structured" and not page_owned
 
     if catalog_route:
         from app.retrieval.structured.answerer import answer_structured
@@ -648,7 +687,11 @@ def _prepare(
                 structured.setdefault("answer_format", pq.answer_format)
                 return structured, None
 
-    if pq.intent == "scoped_summary":
+    # A summary of one theme is that theme's live page's: it falls through to
+    # retrieval, where the page leads and the theme's documents follow.
+    if pq.intent == "scoped_summary" and not _priority_overrides_summary(
+        question, pq, priority_targets
+    ):
         from app.pipeline.summarize import summarize_scope
 
         with span("rag.scoped_summary"):

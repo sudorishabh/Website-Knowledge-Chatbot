@@ -31,16 +31,7 @@ SAMPLE = [
         "description": "Centres across India.",
         "children": [{"name": "Goa", "site_url": "https://teriin.org/goa", "description": "Goa."}],
     },
-    {
-        "name": "Energy Theme",
-        "page_url": "https://teriin.org/energy",
-        "description": "Energy.",
-        # The file allows a page's children; the themes no longer use them.
-        "children": [
-            {"name": "Energy Efficiency Theme", "page_url": "https://teriin.org/energy-efficiency",
-             "description": "Efficiency."},
-        ],
-    },
+    {"name": "Energy Theme", "page_url": "https://teriin.org/energy", "description": "Energy."},
     {"name": "Climate Change Theme", "page_url": "https://teriin.org/climate",
      "description": "Climate.", "children": []},
 ]
@@ -65,13 +56,12 @@ def test_pages_groups_and_kinds_are_told_apart():
     assert {p.key for p in reg.pages} == {
         "teriin.org/", "teriin.org/policy", "teriin.org/history",
         "teriin.org/people/committee-of-directors", "teriin.org/goa", "teriin.org/energy",
-        "teriin.org/energy-efficiency", "teriin.org/climate",
+        "teriin.org/climate",
     }
     assert _page(reg, "/policy").kind == PAGE
     assert _page(reg, "/people/committee-of-directors").kind == PEOPLE
     assert _page(reg, "/goa").kind == CENTRE
     assert _page(reg, "/climate").kind == THEME
-    assert _page(reg, "/energy-efficiency").kind == THEME
     assert [g.name for g in reg.groups] == ["Regional centers"]
 
 
@@ -79,14 +69,15 @@ def test_site_url_is_read_like_page_url():
     assert _page(parse(SAMPLE), "/goa").url == "https://teriin.org/goa"
 
 
-def test_a_child_page_knows_its_parent_and_group():
-    reg = parse(SAMPLE)
-    assert _page(reg, "/energy-efficiency").parent == "Energy Theme"
-    assert _page(reg, "/goa").group == "Regional centers"
-    assert _page(reg, "/climate").group is None
+def test_a_pages_own_children_are_not_read(caplog):
+    reg = parse([{"name": "Energy Theme", "page_url": "https://teriin.org/energy", "children": [
+        {"name": "Energy Efficiency Theme", "page_url": "https://teriin.org/energy-efficiency"},
+    ]}])
+    assert [p.name for p in reg.pages] == ["Energy Theme"]
+    assert "lists child pages" in caplog.text
 
 
-def test_a_group_lists_only_its_direct_members():
+def test_a_group_lists_its_members():
     (centres,) = parse(SAMPLE).groups
     assert [m.name for m in centres.members] == ["Goa"]
 
@@ -123,7 +114,7 @@ def test_curated_aliases_name_pages_the_file_labels_differently():
 
 def test_a_malformed_entry_is_skipped_not_fatal():
     reg = parse([{"name": "No url"}, "junk", {"page_url": "https://teriin.org/x"}, *SAMPLE])
-    assert len(reg.pages) == 8
+    assert len(reg.pages) == 7
 
 
 def test_a_missing_file_is_an_empty_registry(tmp_path, monkeypatch):
@@ -160,5 +151,5 @@ def test_the_shipped_list_has_only_the_regional_centres_group(shipped):
 def test_the_shipped_themes_are_flat_and_the_home_page_is_listed(shipped):
     themes = [p for p in shipped.pages if p.kind == THEME]
     assert len(themes) == 38
-    assert all(p.parent is None and p.group is None for p in themes)
+    assert not any(m.kind == THEME for g in shipped.groups for m in g.members)
     assert shipped.home is not None and shipped.home.url == "https://www.teriin.org"

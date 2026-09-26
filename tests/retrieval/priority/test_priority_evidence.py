@@ -151,7 +151,9 @@ def test_the_list_of_themes_is_answered_from_the_home_page(_pages):
 
 
 def test_a_theme_listing_reads_the_home_page_whatever_the_wording(_pages):
-    got = _gather("what are the main themes", themes_listing=True)
+    question = "what are the main themes"
+    got = _gather(question, explicit=ev.explicit_targets(question, themes_listing=True,
+                                                         registry=REGISTRY))
     assert [(t.name, t.reason) for t in got.targets] == [("Home", match.NAME)]
     assert "https://www.teriin.org" in _pages
 
@@ -164,7 +166,9 @@ def test_a_theme_listing_adds_no_page_by_description(_pages):
 
 
 def test_one_named_theme_is_answered_from_its_own_page_not_the_list(_pages):
-    got = _gather("tell me about the climate change thematic area", themes_listing=True)
+    question = "tell me about the climate change thematic area"
+    got = _gather(question, explicit=ev.explicit_targets(question, themes_listing=True,
+                                                         registry=REGISTRY))
     assert [t.name for t in got.targets] == ["Climate Change Theme"]
     assert "https://www.teriin.org" not in _pages
 
