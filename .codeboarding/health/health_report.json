@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-09-26T06:41:57.763841+00:00",
-  "overall_score": 0.9845850718590635,
+  "timestamp": "2026-09-26T10:24:18.485350+00:00",
+  "overall_score": 0.9852709587772116,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2090,
+      "total_entities_checked": 2093,
       "findings_count": 20,
       "warning_count": 20,
-      "score": 0.9904306220095693,
+      "score": 0.9904443382704252,
       "finding_groups": [
         {
           "severity": "warning",
@@ -99,9 +99,9 @@
             {
               "entity_name": "app.pipeline.query_pipeline._prepare",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 531,
-              "line_end": 776,
-              "metric_value": 245
+              "line_start": 567,
+              "line_end": 819,
+              "metric_value": 252
             },
             {
               "entity_name": "scripts.shadow_date_prototype.main",
@@ -190,8 +190,8 @@
             {
               "entity_name": "app.pipeline.query_pipeline.stream_answer",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 900,
-              "line_end": 1063,
+              "line_start": 943,
+              "line_end": 1106,
               "metric_value": 163
             },
             {
@@ -219,10 +219,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 15,
-      "findings_count": 15,
+      "total_entities_checked": 14,
+      "findings_count": 14,
       "warning_count": 3,
-      "score": 0.25,
+      "score": 0.29999999999999993,
       "finding_groups": [
         {
           "severity": "info",
@@ -262,13 +262,6 @@
               "file_path": "app/ingestion/field_audit.py",
               "line_start": 168,
               "line_end": 168,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"exc\" is not accessed",
-              "file_path": "app/ingestion/reprocess.py",
-              "line_start": 313,
-              "line_end": 313,
               "metric_value": 0.0
             },
             {
