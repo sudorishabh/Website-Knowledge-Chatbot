@@ -12,6 +12,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+from langchain_core.messages import AIMessage
 
 from app.core.clients import llm
 
@@ -80,3 +81,19 @@ def test_the_default_sends_no_effort():
     from app.config import Settings
 
     assert Settings.model_fields["llm_reasoning_effort"].default is None
+
+
+# A reply as the Responses API returns it: a list of parts, reasoning first.
+PARTS = [{"type": "reasoning", "summary": []},
+         {"type": "text", "text": "Hello ", "annotations": []},
+         {"type": "text", "text": "world", "annotations": []}]
+
+
+def test_a_reply_in_parts_is_read_as_its_text():
+    assert llm.reply_text(AIMessage(content=PARTS)) == "Hello world"
+
+
+def test_a_plain_reply_is_read_unchanged():
+    assert llm.reply_text(AIMessage(content="plain")) == "plain"
+    assert llm.reply_text("plain") == "plain"
+    assert llm.reply_text(None) == ""

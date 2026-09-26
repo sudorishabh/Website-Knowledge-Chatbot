@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from langchain_core.messages import AIMessage
+
 from app.pipeline import summarize as sm
 from app.retrieval.understanding import query_processor as qp
 
@@ -284,3 +286,35 @@ def test_docs_missing_payloads_are_skipped(monkeypatch):
     out = sm.summarize_scope(_analysis(theme="Climate"))
     assert out["used_chunks"] == 2
     assert [c["document_id"] for c in out["citations"]] == ["d1", "d3"]
+
+
+# --------------------------------------------------------------------------- #
+# The model's reply — read as text whatever shape it comes in.
+# --------------------------------------------------------------------------- #
+# Measured 2026-09-26: gpt-6-luna replies over the Responses API with a list of
+# parts, and `answer.strip()` on that list failed every scoped summary, each one
+# falling back to QA. The tests above stub the summarizers whole, so none of
+# them ever saw a reply.
+
+_PARTS = [{"type": "reasoning", "summary": []},
+          {"type": "text", "text": "Overview [1][2].", "annotations": []}]
+
+
+class _Model:
+    def invoke(self, messages):
+        return AIMessage(content=_PARTS)
+
+
+def test_a_summary_reply_in_parts_is_read_as_text(monkeypatch):
+    ids = ["d1", "d2"]
+    _stub_scope(monkeypatch, ids, {i: _payload(i) for i in ids})
+    monkeypatch.setattr("app.core.clients.llm.get_llm", lambda *a, **kw: _Model())
+    out = sm.summarize_scope(_analysis(theme="Climate"))
+    assert out is not None and out["answer"] == "Overview [1][2]."
+
+
+def test_a_reduce_reply_in_parts_is_read_as_text(monkeypatch):
+    monkeypatch.setattr("app.core.clients.llm.get_llm", lambda *a, **kw: _Model())
+    monkeypatch.setattr(sm, "_map_batch", lambda batch: {})
+    docs = [sm._doc_from_payload("d1", _payload("d1"))]
+    assert sm._summarize_map_reduce("summarize", docs) == "Overview [1][2]."

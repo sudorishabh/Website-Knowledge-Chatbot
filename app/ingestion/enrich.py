@@ -104,11 +104,11 @@ def _complete(system: str, human: str) -> str:
     The single seam every model call goes through, so callers and tests have one
     thing to stub.
     """
-    from app.core.clients.llm import get_llm
+    from app.core.clients.llm import get_llm, reply_text
 
     model = get_llm(temperature=get_settings().llm_structured_temperature)
     response = model.invoke([("system", system), ("human", human)])
-    return (getattr(response, "content", "") or "").strip()
+    return reply_text(response).strip()
 
 
 def _windows(text: str, budget: int, enc: Encoder) -> list[str]:

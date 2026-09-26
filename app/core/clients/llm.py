@@ -1,5 +1,6 @@
 import warnings
 from functools import lru_cache
+from typing import Any
 
 from langchain_openai import AzureChatOpenAI
 
@@ -42,6 +43,21 @@ def get_structured_llm(streaming: bool = False) -> AzureChatOpenAI:
     return get_llm(
         temperature=get_settings().llm_structured_temperature, streaming=streaming
     )
+
+
+def reply_text(response: Any) -> str:
+    """The text of a model reply, for a caller that invokes the model directly.
+
+    Over the Responses API a reply's ``content`` is a list of parts —
+    ``[{"type": "text", "text": "..."}]`` — not a string. Read as text, that
+    list crashed every scoped summary from the switch to gpt-6-luna on
+    2026-09-25 until 2026-09-26, each one falling back to ordinary retrieval
+    without a word. The answerer never broke because it reads replies through
+    ``StrOutputParser``; this reads them the same way, and passes a string
+    through unchanged."""
+    from langchain_core.output_parsers import StrOutputParser
+
+    return StrOutputParser().invoke(response) if response is not None else ""
 
 
 def _build_llm(
