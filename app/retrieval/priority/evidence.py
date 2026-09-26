@@ -409,13 +409,14 @@ def gather(
     *,
     query_vector: Sequence[float],
     theme: str | None = None,
-    themes_listing: bool = False,
     explicit: Sequence[Target] | None = None,
     registry: Registry | None = None,
     embed: Embed | None = None,
 ) -> PriorityEvidence:
     """Everything the priority pages contribute to ``question``. Never raises:
-    a failure here costs the priority blocks, never the answer."""
+    a failure here costs the priority blocks, never the answer. ``explicit`` is
+    the triggers the caller already ran (:func:`explicit_targets`), which is how
+    a theme listing reaches the home page."""
     registry = registry or load_registry()
     evidence = PriorityEvidence(registry=registry, query_vector=list(query_vector or []),
                                 embed=embed)
@@ -424,7 +425,7 @@ def gather(
     settings = get_settings()
     try:
         targets = list(explicit) if explicit is not None else explicit_targets(
-            question, theme=theme, themes_listing=themes_listing, registry=registry)
+            question, theme=theme, registry=registry)
         people = [t for t in targets if t.reason == match.PERSON][:MAX_PEOPLE]
         others = [t for t in targets if t.reason != match.PERSON]
         targets = match.ranked([*people, *others])

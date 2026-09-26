@@ -144,14 +144,13 @@ def test_a_theme_page_named_outright_does_not_overrule_a_count(wired, monkeypatc
     assert result["answer"] == "catalog answer"
 
 
-@pytest.mark.parametrize("kind, overrides", [(CENTRE, True), (THEME, False)])
-def test_only_the_regional_centres_group_overrules_the_catalog(wired, monkeypatch, kind, overrides):
+def test_the_regional_centres_group_overrules_the_catalog(wired, monkeypatch):
     _enable(monkeypatch)
     wired.state.pq = _pq(intent="structured")
-    group = PriorityGroup(name="g", description="", kind=kind, members=())
-    wired.state.targets = [Target("g", "group", GROUP, group=group)]
-    result, _ = pipe._prepare("which ones", history=None, top_k=None)
-    assert (wired.log.structured == []) is overrides
+    group = PriorityGroup(name="Regional centers", description="", kind=CENTRE, members=())
+    wired.state.targets = [Target("Regional centers", "group", GROUP, group=group)]
+    result, _ = pipe._prepare("which regional centres does TERI have", history=None, top_k=None)
+    assert wired.log.structured == []
 
 
 HOME = PriorityPage(name="Home", url="https://www.teriin.org", description="", kind=PAGE)
@@ -214,3 +213,101 @@ def test_search_blocks_reads_the_same_pages(wired, monkeypatch):
     pipe.search_blocks("tell me about climate change")
     assert wired.log.retrieve[0]["priority"] is wired.state.evidence
     assert wired.log.retrieve[0]["query_vector"] == [0.1]
+
+
+CLIMATE = Target("Climate Change Theme", THEME, NAME, url="https://teriin.org/climate")
+
+
+@pytest.fixture
+def summaries(monkeypatch):
+    calls = []
+
+    def fake_summary(analysis):
+        calls.append(analysis)
+        return {"answer": "summary of documents", "citations": [], "intent": "scoped_summary",
+                "used_chunks": 3, "conflict": False, "cached": False}
+
+    monkeypatch.setattr("app.pipeline.summarize.summarize_scope", fake_summary)
+    return calls
+
+
+def _summary_pq(**scope):
+    analysis = qp.QueryAnalysis(search_query="q", intent="scoped_summary", **scope)
+    return _pq(intent="scoped_summary", analysis=analysis)
+
+
+@pytest.mark.parametrize("question", [
+    "Summarize the climate change theme",
+    "Give me an overview of TERI's climate change thematic area",
+    "Summarize TERI's work on climate change",
+])
+def test_a_summary_of_one_theme_is_answered_from_its_page(wired, monkeypatch, summaries,
+                                                           question):
+    _enable(monkeypatch)
+    wired.state.pq = _summary_pq(theme="climate change")
+    wired.state.targets = [CLIMATE]
+    result, gen = pipe._prepare(question, history=None, top_k=None)
+    assert summaries == []
+    assert result is None and wired.log.retrieve[0]["priority"] is wired.state.evidence
+
+
+@pytest.mark.parametrize("question, scope", [
+    ("Summarize TERI's publications on climate change", {}),
+    ("Summarize the policy briefs on climate change", {}),
+    ("Summarize climate change work from 2023", {"date_from": "2023-01-01"}),
+    ("Summarize Dr Bhadwal's climate change work", {"author": "Suruchi Bhadwal"}),
+])
+def test_a_summary_of_documents_on_a_theme_stays_a_summary(wired, monkeypatch, summaries,
+                                                           question, scope):
+    _enable(monkeypatch)
+    wired.state.pq = _summary_pq(theme="climate change", **scope)
+    wired.state.targets = [CLIMATE]
+    result, _ = pipe._prepare(question, history=None, top_k=None)
+    assert result["answer"] == "summary of documents"
+
+
+def test_a_summary_no_theme_page_owns_stays_a_summary(wired, monkeypatch, summaries):
+    _enable(monkeypatch)
+    wired.state.pq = _summary_pq(theme="Microbes")
+    result, _ = pipe._prepare("Summarize the microbes work", history=None, top_k=None)
+    assert result["answer"] == "summary of documents"
+
+
+def _combined_pq(operation):
+    pq = _listing_pq(operation)
+    pq.understanding = qp.QueryUnderstanding(query_rewrite="q", intents=[
+        qp.IntentPrediction(label=label, confidence=0.9, rationale="")
+        for label in ("database", "qa")
+    ])
+    return pq
+
+
+@pytest.fixture
+def db_sections(monkeypatch):
+    calls = []
+
+    def fake_db_section(pq, question, history):
+        calls.append(question)
+        return "The collection covers 7 main themes: ..."
+
+    monkeypatch.setattr(pipe, "_db_section", fake_db_section)
+    return calls
+
+
+def test_a_theme_listing_that_asks_for_content_takes_no_catalog_list(wired, monkeypatch,
+                                                                     db_sections):
+    _enable(monkeypatch)
+    wired.state.pq = _combined_pq("list_themes")
+    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
+    _, gen = pipe._prepare("List TERI's themes and explain each one", history=None, top_k=None)
+    assert db_sections == []
+    assert gen.db_prefix == ""
+
+
+def test_other_combined_questions_keep_their_catalog_section(wired, monkeypatch, db_sections):
+    _enable(monkeypatch)
+    wired.state.pq = _combined_pq("count")
+    wired.state.targets = [CLIMATE]
+    _, gen = pipe._prepare("How many climate change projects are there and what do they cover?",
+                           history=None, top_k=None)
+    assert db_sections and gen.db_prefix.startswith("The collection covers")

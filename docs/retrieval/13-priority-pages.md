@@ -53,7 +53,9 @@ question
                                    theme listing
        overrides the catalog route only for a person, an institutional or
        people page, the regional-centres group, or the home page when
-       understanding read a theme listing (operation list_themes)
+       understanding read a theme listing (operation list_themes); such a
+       listing also takes no catalog section on a combined answer; a theme
+       page overrides a scoped summary whose scope is that theme alone
   -> structured / scoped_summary (unchanged unless overridden)
   -> embed_query (unchanged, one vector)
   -> gather()                      + description similarity; read pages;     (rag.priority_pages)
@@ -113,6 +115,17 @@ count — the home page overrules the catalog only for a `list_themes` reading.
 When understanding reads a theme listing *and* names a theme, the home page
 gives way as above and the catalog declines the listing too (see
 [07](07-structured-answers.md#the-tools)), so the named theme's page answers.
+A listing that also asks for content ("list TERI's themes and explain each
+one") is a combined question, and it takes no catalog section: the catalog's
+list of themes would repeat the home page the answer is built on.
+
+A summary of one theme is that theme's page too. Understanding scopes
+"summarize the climate change theme", "TERI's work on climate change" and "the
+publications on climate change" alike — the theme, no content type — so the
+scoped summary, which reads the catalog's documents on the theme, gives way to
+the page when the scope is the theme alone and the question names no kind of
+document (publications, reports, papers, briefs, news, …). A period, an author
+or a title in the scope keeps the summary.
 
 **Calibration** (2026-09-24, 20 questions): most on-topic questions scored
 0.49–0.75 against the right page, every off-list question stayed below 0.46,
@@ -221,8 +234,10 @@ exactly what it was. The key is recomputed after retrieval, because a
 lookup of the same question will not build, so it is not reused — correct, at
 the cost of a cache hit.
 
-`PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature, and to
-`2026-09-25.2` when the list of themes moved to the home page.
+`PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature, to
+`2026-09-25.2` when the list of themes moved to the home page, and to
+`2026-09-26.1` when theme summaries and combined theme listings moved to the
+pages.
 
 ---
 
@@ -254,7 +269,9 @@ sections once; a page read itself took 83 ms.
 ## Operations
 
 - **Adding or changing a page**: edit `data/priority_crawl_pages.json`
-  (tracked in git) and restart. `page_url` and `site_url` are both read.
+  (tracked in git) and restart. `page_url` and `site_url` are both read. Pages
+  are flat: a group's members are read, a page's own `children` are not (the
+  log warns).
 - **The theme names follow the same file.** The file no longer holds a
   hierarchy; `app/theme_structure.json` keeps the Main/Other tree that
   ingestion classifies against, and

@@ -41,7 +41,9 @@ def _sha(*parts: str) -> str:
 #: 2026-09-25.11: a question for the top or leading members of a long set is
 #: answered with a selection of them, grouped and indexed by area.
 #: 2026-09-25.12: the head of the organisation always leads a selection.
-PIPELINE_REVISION = "2026-09-25.12"
+#: 2026-09-26.1: a summary of one theme is answered from its live page, and a
+#: theme listing that also asks for content no longer repeats the catalog's list.
+PIPELINE_REVISION = "2026-09-26.1"
 
 
 def _pref_fingerprint() -> str:

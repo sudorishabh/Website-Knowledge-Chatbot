@@ -7,16 +7,16 @@ from Views, the people listings are Views routes, and their profiles are user
 entities — plus the institutional pages whose stored copy is to be ignored in
 favour of the live one.
 
-The file mixes three shapes, and the parser keeps them apart:
+The file mixes two shapes, and the parser keeps them apart:
 
 * an entry with a URL is a **page** (``page_url``, or ``site_url`` on the
   regional centres — both spellings are in the file);
 * an entry with children and no URL is a **group** ("Regional centers"). A
   group is not fetched: its own description and its members' names already
-  answer "what are the regional centres?";
-* a page's children are pages too, with that page as their parent.
+  answer "what are the regional centres?".
 
-The themes are flat since 2026-09-25: one top-level page each, named "<theme>
+Pages are flat: a page's own children are not read, and a warning says so. The
+themes are flat since 2026-09-25: one top-level page each, named "<theme>
 Theme" ("Climate Change Theme"), with no hierarchy between them. The list of
 themes itself is the home page's to give — its "Thematic Areas" section — so
 the phrases that ask for that list ("TERI's thematic areas") name the home page.
@@ -167,8 +167,6 @@ class PriorityPage:
     url: str
     description: str
     kind: str
-    group: str | None = None
-    parent: str | None = None
     aliases: tuple[str, ...] = ()
     #: The profile URL shape a people listing links to, when the file states one.
     profile_pattern: str | None = None
@@ -253,7 +251,7 @@ def _group_kind(name: str) -> str:
     lowered = name.lower()
     if "centre" in lowered or "center" in lowered:
         return CENTRE
-    return THEME
+    return PAGE
 
 
 def _page_kind(entry: dict[str, Any], group_kind: str | None, url: str) -> str:
@@ -269,32 +267,25 @@ def _aliases(name_forms: tuple[str, ...], key: str) -> tuple[str, ...]:
     return tuple(dict.fromkeys(a for a in (*name_forms, *extra) if a))
 
 
-def _walk(
-    entries: Any,
-    *,
-    group: str | None,
-    group_kind: str | None,
-    parent: str | None,
-    out: list[PriorityPage],
-) -> None:
-    for entry in entries or ():
-        if not isinstance(entry, dict):
-            continue
-        name = str(entry.get("name") or "").strip()
-        url = str(entry.get("page_url") or entry.get("site_url") or "").strip()
-        if name and url:
-            page = PriorityPage(
-                name=name,
-                url=url,
-                description=str(entry.get("description") or "").strip(),
-                kind=_page_kind(entry, group_kind, url),
-                group=group,
-                parent=parent,
-                profile_pattern=entry.get("example-of-people-url"),
-            )
-            out.append(replace(page, aliases=_aliases(page.match_names, page.key)))
-        _walk(entry.get("children"), group=group, group_kind=group_kind,
-              parent=name if url else parent, out=out)
+def _page(entry: Any, *, group_kind: str | None) -> PriorityPage | None:
+    """The page an entry describes, or None when it lacks a name or a URL."""
+    if not isinstance(entry, dict):
+        return None
+    name = str(entry.get("name") or "").strip()
+    url = str(entry.get("page_url") or entry.get("site_url") or "").strip()
+    if not (name and url):
+        return None
+    if entry.get("children"):
+        logger.warning("Priority page %r lists child pages; pages are flat, so they "
+                       "are not read.", name)
+    page = PriorityPage(
+        name=name,
+        url=url,
+        description=str(entry.get("description") or "").strip(),
+        kind=_page_kind(entry, group_kind, url),
+        profile_pattern=entry.get("example-of-people-url"),
+    )
+    return replace(page, aliases=_aliases(page.match_names, page.key))
 
 
 def parse(raw: Any) -> Registry:
@@ -305,24 +296,22 @@ def parse(raw: Any) -> Registry:
     for entry in raw if isinstance(raw, list) else ():
         if not isinstance(entry, dict):
             continue
-        name = str(entry.get("name") or "").strip()
-        has_url = bool(entry.get("page_url") or entry.get("site_url"))
-        if has_url:
-            _walk([entry], group=None, group_kind=None, parent=None, out=pages)
+        if entry.get("page_url") or entry.get("site_url"):
+            page = _page(entry, group_kind=None)
+            if page is not None:
+                pages.append(page)
             continue
         if not entry.get("children"):
             continue
+        name = str(entry.get("name") or "").strip()
         kind = _group_kind(name)
-        members: list[PriorityPage] = []
-        _walk(entry["children"], group=name, group_kind=kind, parent=None, out=members)
+        members = [m for m in (_page(child, group_kind=kind) for child in entry["children"]) if m]
         pages.extend(members)
         groups.append(PriorityGroup(
             name=name,
             description=str(entry.get("description") or "").strip(),
             kind=kind,
-            # Direct members only: a group lists what sits in it, not what sits
-            # beneath its members.
-            members=tuple(m for m in members if m.parent is None),
+            members=tuple(members),
             aliases=_GROUP_ALIASES.get(kind, ()),
         ))
     return Registry(pages=tuple(pages), groups=tuple(groups))

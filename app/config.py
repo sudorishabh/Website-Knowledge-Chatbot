@@ -314,7 +314,7 @@ class Settings(BaseSettings):
     # is never used. Off switches the whole feature back to corpus-only answers.
     priority_pages_enabled: bool = True
     # The page list. Empty means the shipped `data/priority_crawl_pages.json`,
-    # which is also the authority for the theme hierarchy (see
+    # whose theme pages must name the same themes as the theme map (see
     # tests/catalog/test_theme_map_matches_priority_pages.py).
     priority_pages_path: str = ""
     # Per-request budget for one page. A page that does not answer in time is
