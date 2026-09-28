@@ -432,6 +432,24 @@ def test_a_team_beside_the_listings_is_the_base_the_listings_add_to():
         [_team(1, "Climate Change"), _listing(2, "Committee of Directors")])
 
 
+def test_the_projects_naming_a_person_are_named_beside_the_question():
+    from app.core.models.context import ContextBlock
+    from app.generation.prompts import projects_note
+
+    blocks = [ContextBlock(n=n, text="Team: Ms A", payload={"project_of": "Ms A"}) for n in (2, 3)]
+    assert projects_note(blocks) == (
+        "Projects that name Ms A in a role: [2], [3]. For their work, name each of "
+        "these projects with the role the passage gives them.")
+    assert projects_note([_listing(1, "Committee of Directors")]) == ""
+
+
+def test_the_project_field_matches_retrieval():
+    from app.generation.prompts import PROJECT_OF
+    from app.retrieval.priority.projects import PROJECT_OF as RETRIEVAL_PROJECT_OF
+
+    assert PROJECT_OF == RETRIEVAL_PROJECT_OF
+
+
 def test_the_team_field_matches_retrieval():
     from app.generation.prompts import TEAM_OF
     from app.retrieval.priority.evidence import TEAM_OF as RETRIEVAL_TEAM_OF

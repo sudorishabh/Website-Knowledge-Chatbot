@@ -21,6 +21,7 @@ from app.generation.prompts import (
     has_graph_facts,
     format_directive,
     grounded_system_prompt,
+    projects_note,
     staff_note,
     supersession_note,
     today_anchor,
@@ -41,7 +42,7 @@ _HUMAN_TURN = "Numbered context:\n{context}\n\n{notes}Question: {question}\n\n{s
 def _notes(blocks: list[ContextBlock], extra: Sequence[str] = ()) -> str:
     """The block-derived notes, then ``extra``: notes the pipeline knows and the
     blocks cannot say, such as a list it will add after the answer."""
-    notes = (supersession_note(blocks), staff_note(blocks), *extra)
+    notes = (supersession_note(blocks), staff_note(blocks), projects_note(blocks), *extra)
     return "".join(f"{note}\n\n" for note in notes if note)
 
 # Prior turns threaded into the answer prompt so the model can resolve follow-up

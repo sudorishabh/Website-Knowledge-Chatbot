@@ -1041,6 +1041,34 @@ def staff_note(blocks: "list[ContextBlock]") -> str:
     )
 
 
+#: The payload field retrieval sets on a project passage that names a person in
+#: a role (`app.retrieval.priority.projects.PROJECT_OF`, pinned equal by a test).
+PROJECT_OF = "project_of"
+
+
+def projects_note(blocks: "list[ContextBlock]") -> str:
+    """A note for the human turn when the context holds project passages read
+    because they name the person whose work is asked for, in a role.
+
+    They are the only record of which projects someone did: the profile is a
+    biography, and nothing else links people to projects. Placed beside the
+    question so the answer names each project with that role instead of
+    treating the passages as background.
+    """
+    by_person: dict[str, list[int]] = {}
+    for block in blocks:
+        person = str(block.payload.get(PROJECT_OF) or "").strip()
+        if person:
+            by_person.setdefault(person, []).append(block.n)
+    return " ".join(
+        f"Projects that name {person} in a role: "
+        + ", ".join(f"[{n}]" for n in numbers)
+        + ". For their work, name each of these projects with the role the "
+        "passage gives them."
+        for person, numbers in by_person.items()
+    )
+
+
 def publications_note(people: Sequence[str]) -> str:
     """A note for the human turn when the answer will be followed by the latest
     publications of the people it is about, listed from the catalog.

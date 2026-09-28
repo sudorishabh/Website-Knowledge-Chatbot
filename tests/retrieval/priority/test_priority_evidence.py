@@ -66,6 +66,8 @@ def _pages(monkeypatch):
     # Read in the caller, so no roster thread outlives the stubbed fetch.
     monkeypatch.setattr(ev, "ROSTER_IN_BACKGROUND", False)
     ev.clear_roster()
+    # A work question searches the vector store for projects; not here.
+    monkeypatch.setattr(ev, "person_projects", lambda name, **kw: [])
     monkeypatch.setattr(get_settings(), "priority_max_pages", 3)
     monkeypatch.setattr(get_settings(), "priority_max_blocks", 3)
     monkeypatch.setattr(get_settings(), "priority_section_floor", 0.40)
@@ -235,6 +237,27 @@ def test_someone_only_on_a_theme_team_is_found_by_name():
     assert [(t.reason, t.url) for t in got.targets][0] == (
         match.PERSON, "https://teriin.org/profile/prasoon-singh")
     assert got.targets[0].person.listing == "Climate Change Theme"
+
+
+def test_a_named_persons_work_brings_the_projects_naming_them(monkeypatch):
+    asked = []
+
+    def found(name, *, limit=4):
+        asked.append(name)
+        return [ContextBlock(n=0, text=f"Team: {name}", payload={"project_of": name})]
+
+    monkeypatch.setattr(ev, "person_projects", found)
+    got = _gather("Alekhya Datta work")
+    person = got.targets[0].person.name
+    assert asked == [person]
+    merged = got.merge([_block("corpus passage")], limit=6, token_budget=9000)
+    # The profile, then the project, then the corpus.
+    assert "Electrical engineer" in merged[0].text
+    assert [b.text for b in merged[1:]] == [f"Team: {person}", "corpus passage"]
+    assert got.describe()["projects"][0]["person"] == person
+
+    asked.clear()
+    assert _gather("who is Alekhya Datta").projects == [] and asked == []
 
 
 def test_someone_on_a_listing_and_a_team_is_matched_to_the_listing():
