@@ -34,7 +34,7 @@ from app.core.models.context import PRIORITY_PAGE_KIND, ContextBlock, source_kin
 from app.observability import retrieval_log
 from app.retrieval.priority import fetch as fetching
 from app.retrieval.priority import match
-from app.retrieval.priority.extract import PageContent, Section, extract
+from app.retrieval.priority.extract import MAX_SECTION_CHARS, PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.people import Person, people_on
 from app.retrieval.priority.registry import (
@@ -59,6 +59,11 @@ MAX_PEOPLE = 2
 TEAM_HEADING = "team"
 #: The payload field that marks a Team block with whose team it is.
 TEAM_OF = "team_of"
+#: A people listing is kept as one block up to this size. It answers a people
+#: question whole, and cut at `MAX_SECTION_CHARS` its second half would reach
+#: the answer only by score. The Committee of Directors listing was 2,353
+#: characters on 2026-09-28.
+LISTING_MAX_CHARS = 2 * MAX_SECTION_CHARS
 
 Embed = Callable[[list[str]], list[list[float]]]
 
@@ -162,8 +167,9 @@ class PriorityEvidence:
         Why on: "TERI top researchers" read three live pages and kept three
         corpus slots of a six-block, 1,900-token context against a 9,000-token
         budget, and the three went to short news items. The pages are bounded
-        (``priority_max_blocks`` sections of ``MAX_SECTION_CHARS`` each), so
-        their own room costs at most ~1,800 tokens of prompt.
+        (``priority_max_blocks`` sections of ``MAX_SECTION_CHARS`` each, a
+        people listing ``LISTING_MAX_CHARS``), so their own room costs at most
+        ~1,800 tokens of prompt, ~3,600 when all three are listings.
         """
         from app.retrieval.context.builder import _count_tokens
 
@@ -226,7 +232,9 @@ def _read(target: Target, registry: Registry) -> PageRead:
     fetched = fetching.fetch(url, allowed_hosts=registry.hosts, validate=_usable)
     read = PageRead(target, url, fetched=fetched)
     if fetched is not None:
-        content = extract(fetched.html, fetched.final_url or url)
+        listing = target.page is not None and target.page.kind == PEOPLE
+        content = extract(fetched.html, fetched.final_url or url,
+                          max_chars=LISTING_MAX_CHARS if listing else MAX_SECTION_CHARS)
         if len(content.text) >= MIN_PAGE_CHARS:
             read.content = content
     read.ms = (time.monotonic() - started) * 1000

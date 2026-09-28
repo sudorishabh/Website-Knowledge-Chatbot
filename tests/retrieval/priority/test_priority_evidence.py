@@ -174,6 +174,23 @@ def test_a_team_question_on_a_page_with_no_team_reads_the_listings(monkeypatch):
     assert "Vibha Dhawan" in got.blocks[1].text
 
 
+def test_a_people_listing_is_read_as_one_block_past_the_section_cut(monkeypatch):
+    """The Committee of Directors listing was 2,353 characters against a 2,400
+    cut; split, its second half would reach the answer only by score."""
+    people = "".join(f"<h4><a href='/profile/p{i}'>Dr Person Number {i}</a></h4>"
+                     f"<div>Director, Area of Research Number {i}</div>" for i in range(60))
+    html = f"<div class='region-content'><h1>Committee of Directors</h1>{people}</div>"
+    monkeypatch.setattr(fetching, "fetch", lambda url, **kw: fetching.FetchedPage(
+        url=url, final_url=url, html=html,
+        fetched_at=datetime(2026, 9, 24, 10, 0, tzinfo=timezone.utc)))
+    committee = next(p for p in REGISTRY.pages if p.name.startswith("People"))
+    read = ev._read(match.Target(committee.name, committee.kind, match.STAFF,
+                                 url=committee.url, page=committee), REGISTRY)
+    assert len(read.content.text) > ev.MAX_SECTION_CHARS
+    assert len(read.content.sections) == 1
+    assert "Dr Person Number 59" in read.content.sections[0].text
+
+
 def test_a_question_about_a_theme_itself_still_leads_with_its_introduction():
     got = _gather("what does the climate change theme work on")
     assert "post-Paris agreement era" in got.blocks[0].text
