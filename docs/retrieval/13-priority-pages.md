@@ -87,7 +87,7 @@ Strongest first; none costs a model call.
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
 | `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
 | `group` | "regional centres", … → one block built from the list itself; nothing fetched | — |
-| `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named. Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
+| `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named, and held back when the question asks for a theme's or centre's team as it stands (see **Teams** below). Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
 | `theme` | understanding resolved a theme facet that is a page on the list | yes |
 | `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next | yes |
 | `surfaced` | retrieval ranked a listed page's stored copy within the top `n` | no — sections by score only |
@@ -127,6 +127,32 @@ honorific and only when unique ("Dr Mathur" matches nobody: there are two).
 Someone on two listings is one person, and the committee listing's profile is
 used. A question naming nobody listed goes to the corpus, as before.
 
+**Teams**: 36 of the 38 theme pages (not Environment or the World Sustainable
+Development Summit), and the Mukteshwar centre page, end with a
+Team section — the page's own list of its people, each with a post (surveyed
+2026-09-28; the largest, Climate Change, is 8 people in 562 characters). A
+question that asks for people (a `staff` word, or "member(s)") and is about a
+theme or centre page gets that page's Team section as its opening block
+instead of its introduction. Before this, "climate change theme team" read the
+Climate Change page and both staff listings, the three openings filled the
+three blocks, and the team never reached the answer.
+
+What else it reads depends on the wording:
+
+| Question | Blocks |
+| --- | --- |
+| a team as it stands — "the climate change team", "members of the water theme" | the Team section; the staff listings are held back, since they would pad the team with people who are not on it, and read after all when the page shows no team |
+| a choice among people — "top climate change researchers", "who leads the climate team", "climate change experts" | the Team section, then the two staff listings |
+| people with no theme or centre named | the two staff listings, as before |
+
+A choice is told from a team by its words: "top", "leading", "senior", "key",
+"head", "chief", "main" and the like (`match._RANKING_WORDS`). The Team block
+carries `team_of` (the page's title), and the answer's people note
+(`prompts.staff_note`) names it: asked for the team, the answer names every
+one of its people with their post; asked for the top people, it starts from
+the team, adds from the listings only those whose post names that area, and
+orders them by seniority.
+
 ---
 
 ## What is read, and what becomes a block
@@ -146,12 +172,14 @@ with no `h1` — only the home page — also opens a section at the first headin
 of each `<section>` element, begins at its first section ("Thematic Areas",
 past the banner carousel of headlines), and is titled by its document title.
 Long sections are cut at line boundaries to ≤ 2,400 characters, each piece led
-by its heading. Linked documents stay in the text as `label (URL)` — a PDF
+by its heading; a people listing is cut at 4,800, so it stays one block (the
+Committee of Directors listing was 2,353 characters on 2026-09-28). Linked documents stay in the text as `label (URL)` — a PDF
 behind "Read more" is labelled with its item's title — so the answer can hand
 the link over.
 
 **Selection** (`evidence.py`): the opening section of every page the question
-is about, then any other section scoring ≥ `priority_section_floor` (0.40)
+is about (for a people question, a theme or centre page's Team section, as
+above), then any other section scoring ≥ `priority_section_floor` (0.40)
 against the question, best first, up to `priority_max_blocks` (3) from at most
 `priority_max_pages` (3) pages. Section vectors are embedded once per distinct
 text. A block carries `source_type="website"`, `source_authority=1.0` (so the
@@ -221,8 +249,9 @@ exactly what it was. The key is recomputed after retrieval, because a
 lookup of the same question will not build, so it is not reused — correct, at
 the cost of a cache hit.
 
-`PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature, and to
-`2026-09-25.2` when the list of themes moved to the home page.
+`PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature, to
+`2026-09-25.2` when the list of themes moved to the home page, and to
+`2026-09-28.1` when people questions about a theme moved to its Team section.
 
 ---
 
