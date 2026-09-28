@@ -613,10 +613,16 @@ def _names_an_organisation_subject(question: str) -> bool:
     request; two arbitrary content words are not — "okay cool" and "nice work"
     have those and are small talk.
 
+    A person on the people pages, named, is the same evidence: measured
+    2026-09-28, "Prasoon Singh work" was answered as small talk ("What would you
+    like to know about Prasoon Singh?") although his profile and publications
+    answer it. With priority pages on, the names are read from the people
+    index, which every question that reaches retrieval reads too, so the
+    listings are nearly always already cached; otherwise from nothing.
+
     Social and meta phrases are checked first and win, exactly as in
     `_looks_like_real_question`, so "who are you?" — a person-shaped question
-    about the assistant — stays chitchat. Reads the page registry in memory;
-    no page is fetched.
+    about the assistant — stays chitchat.
     """
     text = (question or "").strip()
     if not text or _SOCIAL_OR_META.search(text):
@@ -630,7 +636,14 @@ def _names_an_organisation_subject(question: str) -> bool:
         from app.retrieval.priority.registry import load_registry
 
         registry = load_registry()
-        return bool(registry.pages and match.explicit(text, registry=registry))
+        if not registry.pages:
+            return False
+        people = []
+        if get_settings().priority_pages_enabled:
+            from app.retrieval.priority.evidence import listed_people
+
+            people = listed_people(registry)
+        return bool(match.explicit(text, registry=registry, people=people))
     except Exception:  # pragma: no cover - a probe must not break understanding
         logger.debug("Organisation-subject probe failed.", exc_info=True)
         return False
