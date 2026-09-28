@@ -290,7 +290,7 @@
         bubble.innerHTML = renderAnswer(answer);
         linkCitations(bubble, (sources && sources.citations) || []);
       } else bubble.textContent = "(no response)";
-      if (sources) renderSources(bubble, sources);
+      if (sources) renderNumericWarning(bubble, sources);
       history.push({ role: "user", content: text });
       history.push({ role: "assistant", content: answer });
     } catch (err) {
@@ -914,68 +914,22 @@
     return labels[labels.length - 1] || "source";
   }
 
-  function renderSources(bubble, sources) {
-    // The deterministic numeric check flagged a figure the cited sources don't
-    // support: warn the reader without altering the answer. Shown even when
-    // there are no citations to list.
-    if (sources.numeric_mismatch) {
-      const warn = document.createElement("div");
-      warn.className = "answer-warn";
-      warn.textContent =
-        "⚠ Some figures in this answer could not be verified against the cited sources.";
-      bubble.appendChild(warn);
-    }
-    const citations = Array.isArray(sources.citations) ? sources.citations : [];
-    if (!citations.length) return;
-
-    // Segregate sources by kind so web pages and PDFs read as distinct groups.
-    // The knowledge graph is its own kind: it is not a document, and the
-    // "everything that isn't a website is a PDF" split used to file it under
-    // PDFs and label the chip with the literal string "pdf_attachment".
-    const graph = citations.filter((c) => c.type === "knowledge_graph");
-    const webPages = citations.filter((c) => c.type === "website");
-    const pdfs = citations.filter(
-      (c) => c.type !== "website" && c.type !== "knowledge_graph",
-    );
-
-    // A self-contained reference block pinned to the bottom of the answer.
-    const section = document.createElement("div");
-    section.className = "sources";
-
-    // const title = document.createElement("div");
-    // title.className = "sources__title";
-    // title.textContent = "Sources";
-    // section.appendChild(title);
-
-    renderSourceGroup(section, "Knowledge graph", graph);
-    renderSourceGroup(section, "Web pages", webPages);
-    renderSourceGroup(section, "PDFs", pdfs);
-    bubble.appendChild(section);
-  }
-
-  function renderSourceGroup(container, label, items) {
-    if (!items.length) return;
-    const group = document.createElement("div");
-    group.className = "citation-group";
-
-    const heading = document.createElement("span");
-    heading.className = "citation-group__label";
-    heading.textContent = label;
-    group.appendChild(heading);
-
-    const chips = document.createElement("div");
-    chips.className = "citation-group__chips";
-    for (const c of items) chips.appendChild(renderCitation(c));
-    group.appendChild(chips);
-
-    container.appendChild(group);
+  // The deterministic numeric check flagged a figure the cited sources don't
+  // support: warn the reader without altering the answer.
+  function renderNumericWarning(bubble, sources) {
+    if (!sources.numeric_mismatch) return;
+    const warn = document.createElement("div");
+    warn.className = "answer-warn";
+    warn.textContent =
+      "⚠ Some figures in this answer could not be verified against the cited sources.";
+    bubble.appendChild(warn);
   }
 
   // Citation links are absolute today: a web page cites its own URL and a PDF
   // cites the attachment URL it was downloaded from. The root-relative branch
   // stays as a generic resolver in case the backend ever emits one. Anything
-  // else — including a citation with no URL at all — resolves to "" so
-  // linkOrText renders plain text rather than a dead or hostile link.
+  // else — including a citation with no URL at all — resolves to "", and gets
+  // no chip rather than a dead or hostile link.
   function resolveUrl(url) {
     if (!url) return "";
     // Absolute http(s) or protocol-relative — safe to open as-is.
@@ -983,67 +937,12 @@
     // Root-relative backend links resolve against the API origin.
     if (url.charAt(0) === "/") return API_BASE + url;
     // Reject anything else (javascript:, data:, mailto:, bare relative) so a
-    // hostile citation URL renders as plain text instead of a live link.
+    // hostile citation URL gets no chip instead of a live link.
     return "";
   }
 
-  function linkOrText(label, url) {
-    let node;
-    const href = resolveUrl(url);
-    if (href) {
-      node = document.createElement("a");
-      node.href = href;
-      node.target = "_blank";
-      node.rel = "noopener noreferrer";
-    } else {
-      node = document.createElement("span");
-    }
-    node.textContent = label;
-    return node;
-  }
-
-  function renderCitation(c) {
-    const chip = document.createElement("div");
-    chip.className = "citation";
-
-    const marker = document.createElement("span");
-    marker.className = "citation__marker";
-    marker.textContent = "[" + c.n + "]";
-    chip.appendChild(marker);
-
-    const body = document.createElement("div");
-    body.className = "citation__body";
-
-    // Row 1: the title (always), truncated to a single line with a hover tip.
-    const label = c.title || c.document_id || c.type || "source";
-    const title = linkOrText(label, c.url);
-    title.classList.add("citation__title");
-    title.title = label;
-    body.appendChild(title);
-
-    // Row 2: supporting detail — page/section, or the site host for web pages.
-    const meta = [];
-    if (c.page != null) meta.push("Page " + c.page);
-    if (c.section) meta.push(c.section);
-    if (!meta.length && c.type === "website") {
-      const host = hostLabel(c.url);
-      if (host) meta.push(host);
-    }
-    if (meta.length) {
-      const detail = meta.join(" · ");
-      const m = document.createElement("span");
-      m.className = "citation__meta";
-      m.textContent = detail;
-      m.title = detail;
-      body.appendChild(m);
-    }
-
-    chip.appendChild(body);
-    return chip;
-  }
-
-  // Short, human-friendly host (no "www.") for a citation URL, used as
-  // second-row detail when a web page carries no page/section label.
+  // Short, human-friendly host (no "www.") for a citation URL: what a chip's
+  // site name is cut from, and its tooltip when the source has no title.
   function hostLabel(url) {
     if (!url) return "";
     try {
@@ -1524,50 +1423,7 @@
       color: var(--teri-green-dark);
     }
 
-    /* ---- Sources ---- */
-    /* A reference block that sits at the bottom of the answer bubble,
-       separated by a hairline rule. Web pages and PDFs are split into
-       labelled groups of compact, wrapping chips (no horizontal scroll). */
-    .sources {
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid var(--teri-border);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .sources__title {
-      font-size: .68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--teri-dim);
-    }
-    /* One row per source kind: a fixed-width caption column keeps every
-       group's chips aligned on the same left edge. */
-    .citation-group {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-    .citation-group__label {
-      flex: 0 0 68px;
-      padding-top: 7px;
-      font-size: .66rem;
-      font-weight: 600;
-      line-height: 1.4;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      color: var(--teri-dim);
-    }
-    .citation-group__chips {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    /* Unverified-figures notice: same amber token, sits above the sources. */
+    /* Unverified-figures notice: the amber token, under the answer. */
     .answer-warn {
       margin-top: 6px;
       font-size: .78rem;
@@ -1576,58 +1432,6 @@
       gap: 6px;
       align-items: flex-start;
     }
-    /* Chip: [n] marker + a two-row body (title, then supporting detail). */
-    .citation {
-      display: flex;
-      align-items: flex-start;
-      gap: 7px;
-      max-width: 260px;
-      font-size: .78rem;
-      background: var(--teri-surface);
-      border: 1px solid var(--teri-border);
-      border-radius: 10px;
-      padding: 6px 10px;
-      transition: border-color .15s ease, box-shadow .15s ease;
-    }
-    .citation:hover {
-      border-color: var(--teri-green-dark);
-      box-shadow: 0 1px 5px rgba(0, 0, 0, .07);
-    }
-    .citation__marker {
-      color: var(--teri-green-dark);
-      font-weight: 600;
-      line-height: 1.4;
-      flex-shrink: 0;
-    }
-    .citation__body {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      min-width: 0;
-    }
-    /* Row 1 — title, one line with ellipsis. */
-    .citation__title {
-      color: var(--teri-ink);
-      font-weight: 500;
-      line-height: 1.4;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-    a.citation__title { color: var(--teri-green-dark); text-decoration: none; }
-    a.citation__title:hover { text-decoration: underline; }
-    /* Row 2 — supporting detail. */
-    .citation__meta {
-      color: var(--teri-dim);
-      font-size: .7rem;
-      line-height: 1.3;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
     /* ---- Composer: a floating rounded box with the send button inside ---- */
     .composer {
       padding: 12px;
