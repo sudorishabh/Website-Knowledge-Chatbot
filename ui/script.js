@@ -978,8 +978,10 @@
   }
 
   // Above the chip, or below it when there is no room above; centred on it.
-  // Bounded by the message list, so the card never covers the header.
-  const POP_GAP = 8;
+  // Bounded by the message list, so the card never covers the header. The
+  // caret keeps pointing at the chip when an edge pushes the card aside.
+  const POP_GAP = 10;
+  const CARET_INSET = 16; // keeps the caret clear of the rounded corners
   function placeCitePop(chip) {
     const pop = el.citePop;
     const r = chip.getBoundingClientRect();
@@ -987,12 +989,15 @@
     const w = pop.offsetWidth;
     const h = pop.offsetHeight;
     const below = r.top - h - POP_GAP < bounds.top + POP_GAP;
+    const center = r.left + r.width / 2;
     const left = Math.max(
       bounds.left + POP_GAP,
-      Math.min(r.left + r.width / 2 - w / 2, bounds.right - w - POP_GAP),
+      Math.min(center - w / 2, bounds.right - w - POP_GAP),
     );
+    const caret = Math.max(CARET_INSET, Math.min(center - left, w - CARET_INSET));
     pop.style.top = (below ? r.bottom + POP_GAP : r.top - h - POP_GAP) + "px";
     pop.style.left = left + "px";
+    pop.style.setProperty("--caret-x", caret + "px");
     pop.dataset.placement = below ? "below" : "above";
   }
 
@@ -1582,6 +1587,28 @@
       transition: opacity .14s ease, transform .14s ease, visibility 0s linear .14s;
     }
     .cite-pop[data-placement="below"] { transform: translateY(-4px); }
+    /* Caret: a rotated square showing two bordered edges toward the chip;
+       its white half covers the card's border so the two read as one shape. */
+    .cite-pop::before {
+      content: "";
+      position: absolute;
+      left: var(--caret-x, 50%);
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border: 1px solid var(--teri-border);
+      transform: translateX(-50%) rotate(45deg);
+    }
+    .cite-pop[data-placement="above"]::before {
+      bottom: -6px;
+      border-top: none;
+      border-left: none;
+    }
+    .cite-pop[data-placement="below"]::before {
+      top: -6px;
+      border-bottom: none;
+      border-right: none;
+    }
     .cite-pop.is-open {
       opacity: 1;
       visibility: visible;
