@@ -97,8 +97,8 @@ def publications_section(person: str, records: Sequence[StateRecord], total: int
     """The records as a closing section of the answer, or '' when there are none."""
     if not records:
         return ""
-    lines = ["### Latest publications"]
+    lines = [f"### Latest publications by {person}"]
     if total > len(records):
-        lines.append(f"The {len(records)} most recent of {total} by {person}:")
+        lines.append(f"The {len(records)} most recent of {total}:")
     lines += [_line(r) for r in records]
     return "\n".join(lines)

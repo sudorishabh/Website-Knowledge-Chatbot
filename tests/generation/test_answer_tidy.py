@@ -161,7 +161,7 @@ def test_the_stream_emits_the_tidied_answer_as_a_correction(monkeypatch):
     monkeypatch.setattr(pipe, "_prepare", lambda q, **kw: (None, gen))
     monkeypatch.setattr(
         pipe, "generate_stream",
-        lambda q, b, history=None, answer_format=None, plan_directive="":
+        lambda q, b, history=None, answer_format=None, plan_directive="", notes=():
             iter(["The centres are [1]:\n- **A** — [1]\n- **B** — [1]"]),
     )
     monkeypatch.setattr(pipe, "get_settings", lambda: SimpleNamespace(faithfulness_check=False))

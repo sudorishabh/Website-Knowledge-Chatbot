@@ -72,8 +72,8 @@ def test_the_section_lists_each_with_its_type_and_date():
                _record("COP30: Who is the enemy?", bundle="feature_articles", day="2025-11-22")]
     section = authored.publications_section("Dr Manish Kumar Shrivastava", records, 15)
     assert section.splitlines() == [
-        "### Latest publications",
-        "The 2 most recent of 15 by Dr Manish Kumar Shrivastava:",
+        "### Latest publications by Dr Manish Kumar Shrivastava",
+        "The 2 most recent of 15:",
         "- [Modeling for Climate Finance](https://teriin.org/policy-brief/m) — policy brief, 14 May 2026",
         "- [COP30: Who is the enemy?](https://teriin.org/x) — feature article, 22 November 2025",
     ]

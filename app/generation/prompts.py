@@ -10,6 +10,8 @@ from app.core.models.context import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from app.core.models.context import ContextBlock
 
 REFUSAL = "I don't have information on that in the available sources."
@@ -1139,6 +1141,22 @@ def contacts_note(blocks: "list[ContextBlock]") -> str:
         "its address, telephone, email and contact person beneath it as "
         "sub-bullets, written as the block gives them. Then the headquarters, "
         "the same way."
+    )
+
+
+def publications_note(people: Sequence[str]) -> str:
+    """A note for the human turn when the answer will be followed by the latest
+    publications of the people it is about, listed from the catalog.
+
+    Without it the answer lists some of the same titles from the passages that
+    happen to name them, and the reader gets the list twice.
+    """
+    if not people:
+        return ""
+    return (
+        f"The latest publications by {' and '.join(people)} are listed after this "
+        "answer, so leave their publications out of it and write about the rest "
+        "of their work."
     )
 
 

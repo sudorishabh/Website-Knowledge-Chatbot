@@ -112,7 +112,7 @@ def _wire(monkeypatch, draft, persisted):
     monkeypatch.setattr(pipe, "_prepare", lambda q, **kw: (None, gen))
     monkeypatch.setattr(
         pipe, "generate_stream",
-        lambda q, b, history=None, answer_format=None, plan_directive="": iter([draft]),
+        lambda q, b, history=None, answer_format=None, plan_directive="", notes=(): iter([draft]),
     )
     monkeypatch.setattr(pipe, "get_settings", lambda: SimpleNamespace(faithfulness_check=False))
     monkeypatch.setattr(pipe, "_persist", lambda gen, result: persisted.update(result))
