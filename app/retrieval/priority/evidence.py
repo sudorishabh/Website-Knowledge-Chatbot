@@ -16,7 +16,8 @@ key) and carried into retrieval, which uses it three ways:
 Which sections become blocks: the opening section of every page the question
 is *about* (named, a person's profile, the theme facet, a description match),
 then the other sections that score at least ``priority_section_floor`` against
-the question, best first, up to ``priority_max_blocks`` in all.
+the question, best first, up to ``priority_max_blocks`` in all. For a question
+asking for people, a theme or centre page opens with its Team section instead.
 """
 from __future__ import annotations
 
@@ -36,7 +37,14 @@ from app.retrieval.priority import match
 from app.retrieval.priority.extract import PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.people import Person, people_on
-from app.retrieval.priority.registry import PEOPLE, Registry, load_registry, normalize_url
+from app.retrieval.priority.registry import (
+    CENTRE,
+    PEOPLE,
+    THEME,
+    Registry,
+    load_registry,
+    normalize_url,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +55,8 @@ CORPUS_MIN_SLOTS = 2
 MIN_PAGE_CHARS = 80
 #: People named in one question whose profiles are read.
 MAX_PEOPLE = 2
+#: The section title a theme or centre page gives its list of people.
+TEAM_HEADING = "team"
 
 Embed = Callable[[list[str]], list[list[float]]]
 
@@ -85,6 +95,9 @@ class PriorityEvidence:
     similar_top: list[dict] = field(default_factory=list)
     suppressed: int = 0
     embed: Embed | None = None
+    #: The question asks for people, so a theme or centre page leads with its
+    #: Team section rather than its introduction.
+    people: bool = False
 
     # -- the cache key -------------------------------------------------------------
     def fingerprint(self) -> dict[str, Any]:
@@ -132,7 +145,8 @@ class PriorityEvidence:
         reads = _read_all(new, self.registry)
         self.reads.extend(reads)
         self.blocks = _select(self.targets, self.reads, self.query_vector,
-                              limit=settings.priority_max_blocks, embed=self.embed)
+                              limit=settings.priority_max_blocks, embed=self.embed,
+                              people=self.people)
 
     def merge(self, blocks: Sequence[ContextBlock], *, limit: int, token_budget: int) -> list[ContextBlock]:
         """This question's priority blocks first, then the corpus's, numbered.
@@ -342,6 +356,29 @@ def _group_block(target: Target) -> ContextBlock:
     )
 
 
+def team_index(content: PageContent) -> int | None:
+    """Where a page's Team section is, if it has one."""
+    return next((i for i, s in enumerate(content.sections)
+                 if (s.heading or "").strip().lower() == TEAM_HEADING), None)
+
+
+def _opening(read: PageRead, *, people: bool) -> int:
+    """The section a page the question is about leads with: its introduction,
+    or, for a question asking for people, a theme or centre page's Team.
+
+    Measured 2026-09-28: "climate change theme team" read the Climate Change
+    page and both staff listings, and the three opening sections filled the
+    three blocks, so the Team section, the page's list of its people, never
+    reached the answer. A page with no Team section keeps its introduction.
+    """
+    page = read.target.page
+    if people and page is not None and page.kind in (THEME, CENTRE):
+        team = team_index(read.content)
+        if team is not None:
+            return team
+    return 0
+
+
 def _select(
     targets: Sequence[Target],
     reads: Sequence[PageRead],
@@ -349,6 +386,7 @@ def _select(
     *,
     limit: int,
     embed: Embed | None,
+    people: bool = False,
 ) -> list[ContextBlock]:
     settings = get_settings()
     usable = [r for r in reads if r.content is not None and r.fetched is not None]
@@ -371,9 +409,10 @@ def _select(
         read = by_key.get(target.key)
         if read is None or target.reason not in ABOUT:
             continue
-        section = read.content.sections[0]
-        chosen.append(_page_block(read, section, 0, scores.get((id(read), 0), 0.0)))
-        taken.add((id(read), 0))
+        index = _opening(read, people=people)
+        section = read.content.sections[index]
+        chosen.append(_page_block(read, section, index, scores.get((id(read), index), 0.0)))
+        taken.add((id(read), index))
     # Then whatever else on those pages answers the question best.
     rest = sorted(
         ((scores.get((id(r), i), 0.0), r, i, s) for r, i, s in flat if (id(r), i) not in taken),
@@ -418,7 +457,7 @@ def gather(
     a failure here costs the priority blocks, never the answer."""
     registry = registry or load_registry()
     evidence = PriorityEvidence(registry=registry, query_vector=list(query_vector or []),
-                                embed=embed)
+                                embed=embed, people=match.asks_for_people(question))
     if not registry.pages:
         return evidence
     settings = get_settings()
@@ -445,7 +484,8 @@ def gather(
         evidence.targets = match.ranked([*pages, *groups])
         evidence.reads = _read_all(pages, registry)
         evidence.blocks = _select(evidence.targets, evidence.reads, evidence.query_vector,
-                                  limit=settings.priority_max_blocks, embed=embed)
+                                  limit=settings.priority_max_blocks, embed=embed,
+                                  people=evidence.people)
     except Exception:
         logger.warning("Priority pages failed for this question; answering from "
                        "the corpus alone.", exc_info=True)

@@ -89,6 +89,11 @@ _STAFF_WORDS = frozenset(
     leader leaders leadership employee employees faculty
     """.split()
 )
+#: The nouns that ask for a theme's or centre's own people: the Team its page
+#: shows. "Members" is here and not above, because "which countries are members
+#: of the ISA" is no reason to read two staff listings, while "the members of
+#: the climate change theme" is that page's team.
+_TEAM_WORDS = frozenset({"team", "teams", "member", "members"})
 
 PROFILE = "profile"
 GROUP_KIND = "group"
@@ -221,6 +226,12 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
 def asks_for_staff(question: str) -> bool:
     """Whether the question asks for the organisation's people as a group."""
     return bool(set(normalize_text(question).split()) & _STAFF_WORDS)
+
+
+def asks_for_people(question: str) -> bool:
+    """Whether the question asks for people at all — the organisation's, or a
+    theme's or centre's team — so a theme page answers with its Team section."""
+    return bool(set(normalize_text(question).split()) & (_STAFF_WORDS | _TEAM_WORDS))
 
 
 def staff_listings(

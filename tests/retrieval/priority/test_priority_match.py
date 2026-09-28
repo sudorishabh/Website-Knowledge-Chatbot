@@ -271,6 +271,16 @@ class TestStaffListings:
         assert [t.name for t in found] == ["People - committee of directors",
                                            "people - governing council"]
 
+    @pytest.mark.parametrize("question, people, staff", [
+        ("who are the members of the climate change theme", True, False),
+        ("climate change theme team", True, True),
+        ("top climate change researchers", True, True),
+        ("what does the climate change theme work on", False, False),
+    ])
+    def test_members_ask_for_a_team_but_not_for_the_staff_listings(self, question, people, staff):
+        assert match.asks_for_people(question) is people
+        assert match.asks_for_staff(question) is staff
+
     def test_staff_is_an_about_reason(self):
         # So each listing's opening section is admitted whatever it scores.
         assert match.STAFF in match.ABOUT

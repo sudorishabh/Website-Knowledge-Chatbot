@@ -118,6 +118,37 @@ def test_a_question_for_the_organisations_people_reads_the_people_listing():
     assert got.blocks and "Vibha Dhawan" in got.blocks[0].text
 
 
+@pytest.mark.parametrize("question", [
+    "climate change theme team",
+    "who are the members of the climate change theme",
+    "top climate change theme researchers",
+])
+def test_a_people_question_about_a_theme_leads_with_its_team(question):
+    """Measured 2026-09-28: the theme's introduction and the listings' openings
+    filled the three blocks, and the Team section never reached the answer."""
+    got = _gather(question)
+    lead = got.blocks[0]
+    assert lead.payload["priority_page"] == "Climate Change Theme"
+    assert lead.payload["section_heading"] == "Team"
+    assert "Suruchi Bhadwal" in lead.text and "K Venkatramana" in lead.text
+    assert not any("post-Paris agreement era" in b.text for b in got.blocks)
+
+
+def test_a_question_about_a_theme_itself_still_leads_with_its_introduction():
+    got = _gather("what does the climate change theme work on")
+    assert "post-Paris agreement era" in got.blocks[0].text
+
+
+def test_a_page_with_no_team_keeps_its_introduction():
+    content = ev.extract("<html><body><h1>Goa</h1><p>Coastal ecology work.</p></body></html>",
+                         "https://teriin.org/goa")
+    goa = next(p for p in REGISTRY.pages if p.name == "Goa")
+    read = ev.PageRead(match.Target(goa.name, goa.kind, match.NAME, url=goa.url, page=goa),
+                       goa.url, content=content)
+    assert ev.team_index(content) is None
+    assert ev._opening(read, people=True) == 0
+
+
 def test_a_question_about_nothing_on_the_list_reads_nothing(_pages):
     got = _gather("what is blended finance")
     # Only the people listing is read, to know whose name to look for.
