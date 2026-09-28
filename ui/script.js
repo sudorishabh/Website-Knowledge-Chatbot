@@ -286,8 +286,10 @@
       stopLoader();
       if (epoch !== chatEpoch) return; // conversation was reset mid-flight
       bubble.classList.remove("bubble--pending");
-      if (answer) bubble.innerHTML = renderAnswer(answer);
-      else bubble.textContent = "(no response)";
+      if (answer) {
+        bubble.innerHTML = renderAnswer(answer);
+        linkCitations(bubble, (sources && sources.citations) || []);
+      } else bubble.textContent = "(no response)";
       if (sources) renderSources(bubble, sources);
       history.push({ role: "user", content: text });
       history.push({ role: "assistant", content: answer });
@@ -826,7 +828,92 @@
 
   /* ---------------------------------------------------------------- *
    * Citations / sources
+   *
+   * The answer cites its evidence with [n] markers (`_MARKER` in
+   * app/generation/faithfulness.py). Once the answer settles, each run of
+   * markers becomes a chip naming the site it links to, so the source sits
+   * beside the claim it supports. A citation a reader cannot open — the
+   * knowledge graph, a catalog lookup — gets no chip: its marker is dropped
+   * rather than left as a number pointing nowhere.
    * ---------------------------------------------------------------- */
+  // A run of markers with the whitespace before it ("chains [1][2]."), so a
+  // run that yields no chip leaves "chains." behind.
+  const MARKER_RUN_RE = /\s*\[\d+\](?:\s*\[\d+\])*/g;
+  const MARKER_RE = /\[(\d+)\]/g;
+  // Punctuation closing the claim moves ahead of its chips — "chains. teriin"
+  // — so a chip never splits a sentence from its full stop. Commas stay put.
+  const CLOSING_PUNCT_RE = /^[.;:!?]+/;
+  // Second-level labels that name a registry, not a site: "mnre.gov.in".
+  const GENERIC_SLD = new Set(["ac", "co", "com", "edu", "gov", "net", "nic", "org", "res"]);
+
+  function linkCitations(container, citations) {
+    const byNumber = new Map(citations.map((c) => [c.n, c]));
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      // Code shows its text verbatim, and a link cannot hold another link.
+      if (node.parentElement.closest("pre, code, a")) continue;
+      linkMarkersIn(node, byNumber);
+    }
+  }
+
+  function linkMarkersIn(node, byNumber) {
+    const text = node.data;
+    const frag = document.createDocumentFragment();
+    let cursor = 0;
+    for (const run of text.matchAll(MARKER_RUN_RE)) {
+      const end = run.index + run[0].length;
+      const punct = (text.slice(end).match(CLOSING_PUNCT_RE) || [""])[0];
+      frag.append(text.slice(cursor, run.index) + punct);
+      for (const source of runSources(run[0], byNumber))
+        frag.append(citationChip(source));
+      cursor = end + punct.length;
+    }
+    if (!cursor) return; // no markers in this node
+    frag.append(text.slice(cursor));
+    node.replaceWith(frag);
+  }
+
+  // The openable sources a marker run cites, one per distinct link: two
+  // passages of the same page are one source to a reader.
+  function runSources(run, byNumber) {
+    const seen = new Set();
+    const sources = [];
+    for (const m of run.matchAll(MARKER_RE)) {
+      const citation = byNumber.get(Number(m[1]));
+      const href = citation && resolveUrl(citation.url);
+      if (!href || seen.has(href)) continue;
+      seen.add(href);
+      sources.push({ citation, href });
+    }
+    return sources;
+  }
+
+  function citationChip({ citation, href }) {
+    const chip = document.createElement("a");
+    chip.className = "cite";
+    chip.href = href;
+    chip.target = "_blank";
+    chip.rel = "noopener noreferrer";
+    chip.textContent = siteName(href);
+    const detail = [citation.title || hostLabel(href)];
+    if (citation.page != null) detail.push("Page " + citation.page);
+    if (citation.section) detail.push(citation.section);
+    chip.title = detail.filter(Boolean).join(" · ");
+    return chip;
+  }
+
+  // The site a link belongs to, as a reader would name it: "www.teriin.org"
+  // → "teriin", "mnre.gov.in" → "mnre".
+  function siteName(href) {
+    const labels = hostLabel(href).split(".");
+    if (labels.length > 1) labels.pop();
+    if (labels.length > 1 && GENERIC_SLD.has(labels[labels.length - 1]))
+      labels.pop();
+    return labels[labels.length - 1] || "source";
+  }
+
   function renderSources(bubble, sources) {
     // The deterministic numeric check flagged a figure the cited sources don't
     // support: warn the reader without altering the answer. Shown even when
@@ -1410,6 +1497,32 @@
     /* Markdown blocks carry their own bottom margin; drop the last one so the
        container's padding sets the gap. */
     .answer-block--pdf > :last-child { margin-bottom: 0; }
+
+    /* ---- Inline citations ---- */
+    /* A site-name pill after the claim it supports; its tooltip carries the
+       title and page. Muted so a cited paragraph still reads as prose, and
+       brand green on hover. The .bubble prefix outranks ".bubble a". */
+    .bubble .cite {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 0 7px;
+      border: 1px solid var(--teri-border);
+      border-radius: 999px;
+      background: var(--teri-surface);
+      color: var(--teri-dim);
+      font-size: .7rem;
+      font-weight: 500;
+      line-height: 1.6;
+      vertical-align: 1px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .bubble .cite:hover {
+      background: var(--teri-green-soft);
+      border-color: var(--teri-green);
+      color: var(--teri-green-dark);
+    }
 
     /* ---- Sources ---- */
     /* A reference block that sits at the bottom of the answer bubble,
