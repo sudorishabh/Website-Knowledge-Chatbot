@@ -304,7 +304,7 @@ def _page_block(read: PageRead, section: Section, index: int, score: float) -> C
     content, fetched = read.content, read.fetched
     assert content is not None and fetched is not None
     key = normalize_url(read.url)
-    return ContextBlock(
+    block = ContextBlock(
         n=0,
         text=section.text,
         score=score,
@@ -326,6 +326,11 @@ def _page_block(read: PageRead, section: Section, index: int, score: float) -> C
             "stale": fetched.stale,
         },
     )
+    page = read.target.page
+    if page is not None and page.kind in (THEME, CENTRE) and _is_team(section):
+        # Whose team this is, for the answer's note on people.
+        block.payload["team_of"] = content.title or read.target.name
+    return block
 
 
 def _group_block(target: Target) -> ContextBlock:
@@ -356,10 +361,19 @@ def _group_block(target: Target) -> ContextBlock:
     )
 
 
+def _is_team(section: Section) -> bool:
+    return (section.heading or "").strip().lower() == TEAM_HEADING
+
+
 def team_index(content: PageContent) -> int | None:
     """Where a page's Team section is, if it has one."""
-    return next((i for i, s in enumerate(content.sections)
-                 if (s.heading or "").strip().lower() == TEAM_HEADING), None)
+    return next((i for i, s in enumerate(content.sections) if _is_team(s)), None)
+
+
+def _team_pages(targets: Sequence[Target]) -> list[Target]:
+    """The theme and centre pages the question is about."""
+    return [t for t in targets if t.reason in ABOUT
+            and t.page is not None and t.page.kind in (THEME, CENTRE)]
 
 
 def _opening(read: PageRead, *, people: bool) -> int:
@@ -472,7 +486,11 @@ def gather(
         # would otherwise reach (see `match.staff_listings`).
         staff = match.staff_listings(question, query_vector, registry=registry,
                                      targets=targets, embed=embed)
-        targets = match.ranked([*targets, *staff])
+        # "The climate change team" is the theme page's own list of its people,
+        # and the listings would only pad it with people who are not on it. They
+        # are held back, and read after all if the page shows no team.
+        held = staff if match.asks_for_team(question) and _team_pages(targets) else []
+        targets = match.ranked([*targets, *([] if held else staff)])
         # A question for the list of themes is about no one theme, so a
         # description match would only add a page the answer does not need.
         lists_themes = any(t.page is not None and t.page.is_home for t in targets)
@@ -486,6 +504,8 @@ def gather(
         evidence.blocks = _select(evidence.targets, evidence.reads, evidence.query_vector,
                                   limit=settings.priority_max_blocks, embed=embed,
                                   people=evidence.people)
+        if held and not any(b.payload.get("team_of") for b in evidence.blocks):
+            evidence.extend(held)
     except Exception:
         logger.warning("Priority pages failed for this question; answering from "
                        "the corpus alone.", exc_info=True)

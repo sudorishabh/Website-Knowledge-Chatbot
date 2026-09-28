@@ -94,6 +94,15 @@ _STAFF_WORDS = frozenset(
 #: of the ISA" is no reason to read two staff listings, while "the members of
 #: the climate change theme" is that page's team.
 _TEAM_WORDS = frozenset({"team", "teams", "member", "members"})
+#: Words that ask for a choice among people. "The top climate change
+#: researchers" is a choice by seniority, which the staff listings' titles give,
+#: so it reads them beside the theme's team; "the climate change team" does not.
+_RANKING_WORDS = frozenset(
+    """
+    top leading lead leads senior key best prominent eminent notable renowned
+    head heads chief main leader leaders leadership
+    """.split()
+)
 
 PROFILE = "profile"
 GROUP_KIND = "group"
@@ -232,6 +241,13 @@ def asks_for_people(question: str) -> bool:
     """Whether the question asks for people at all — the organisation's, or a
     theme's or centre's team — so a theme page answers with its Team section."""
     return bool(set(normalize_text(question).split()) & (_STAFF_WORDS | _TEAM_WORDS))
+
+
+def asks_for_team(question: str) -> bool:
+    """Whether the question asks for a team as it stands ("the climate change
+    team", "members of the water theme") rather than for a choice among people."""
+    words = set(normalize_text(question).split())
+    return bool(words & _TEAM_WORDS) and not words & _RANKING_WORDS
 
 
 def staff_listings(

@@ -281,6 +281,16 @@ class TestStaffListings:
         assert match.asks_for_people(question) is people
         assert match.asks_for_staff(question) is staff
 
+    @pytest.mark.parametrize("question, team", [
+        ("climate change theme team", True),
+        ("who are the members of the water theme", True),
+        ("top climate change theme team", False),   # a choice, by seniority
+        ("who leads the climate change team", False),
+        ("climate change researchers", False),
+    ])
+    def test_a_team_as_it_stands_is_told_from_a_choice_among_people(self, question, team):
+        assert match.asks_for_team(question) is team
+
     def test_staff_is_an_about_reason(self):
         # So each listing's opening section is admitted whatever it scores.
         assert match.STAFF in match.ABOUT

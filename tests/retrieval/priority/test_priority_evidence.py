@@ -134,6 +134,46 @@ def test_a_people_question_about_a_theme_leads_with_its_team(question):
     assert not any("post-Paris agreement era" in b.text for b in got.blocks)
 
 
+def test_a_team_question_is_answered_by_the_team_alone():
+    """The page's Team section is the team; the staff listings would pad it
+    with people who are not on it."""
+    got = _gather("climate change theme team")
+    assert [(t.name, t.reason) for t in got.targets] == [("Climate Change Theme", match.NAME)]
+    assert got.blocks[0].payload["team_of"] == "Climate Change"
+
+
+def test_a_question_for_the_top_people_reads_the_listings_beside_the_team():
+    got = _gather("top climate change theme researchers")
+    assert [(t.name, t.reason) for t in got.targets] == [
+        ("Climate Change Theme", match.NAME),
+        ("People - committee of directors", match.STAFF),
+    ]
+    assert got.blocks[0].payload["team_of"] == "Climate Change"
+    assert "Vibha Dhawan" in got.blocks[1].text
+    assert "team_of" not in got.blocks[1].payload
+
+
+def test_a_team_question_on_a_page_with_no_team_reads_the_listings(monkeypatch):
+    serve = fetching.fetch
+
+    def fetch(url, **kw):
+        if url != "https://teriin.org/goa":
+            return serve(url, **kw)
+        return fetching.FetchedPage(
+            url=url, final_url=url, fetched_at=datetime(2026, 9, 24, 10, 0, tzinfo=timezone.utc),
+            html="<html><body><div class='region-content'><h1>Goa</h1><p>The Western "
+                 "Regional Centre works on coastal ecology, marine resources and water "
+                 "management.</p></div></body></html>",
+        )
+
+    monkeypatch.setattr(fetching, "fetch", fetch)
+    got = _gather("goa team")
+    assert [(t.name, t.reason) for t in got.targets] == [
+        ("Goa", match.NAME), ("People - committee of directors", match.STAFF),
+    ]
+    assert "Vibha Dhawan" in got.blocks[1].text
+
+
 def test_a_question_about_a_theme_itself_still_leads_with_its_introduction():
     got = _gather("what does the climate change theme work on")
     assert "post-Paris agreement era" in got.blocks[0].text
