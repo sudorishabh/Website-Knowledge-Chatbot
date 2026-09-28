@@ -1075,13 +1075,18 @@ def publications_note(people: Sequence[str]) -> str:
 
     Without it the answer lists some of the same titles from the passages that
     happen to name them, and the reader gets the list twice.
+
+    It said "are listed after this answer, so leave their publications out",
+    and on 2026-09-28 two answers in nine told the reader so ("publications are
+    left out", "the activities listed below exclude publications"). Worded as
+    what the reader sees and what not to refer to, 0 in 8 on the same blocks.
     """
     if not people:
         return ""
     return (
-        f"The latest publications by {' and '.join(people)} are listed after this "
-        "answer, so leave their publications out of it and write about the rest "
-        "of their work."
+        f"The reader is shown a list of the latest publications by "
+        f"{' and '.join(people)} straight after this answer. Write about the rest "
+        "of their work: do not list their publications, and do not refer to that list."
     )
 
 

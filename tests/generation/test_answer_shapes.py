@@ -501,9 +501,11 @@ def test_a_pipeline_note_reaches_the_human_turn_beside_the_block_notes(monkeypat
     answerer.generate_answer("Suruchi Bhadwal work", [_listing(1, "Profile")], notes=(note,))
     human = seen["human"]
     assert human.index(note) < human.index("Question: Suruchi Bhadwal work")
-    assert note == ("The latest publications by Ms Suruchi Bhadwal are listed after this "
-                    "answer, so leave their publications out of it and write about the "
-                    "rest of their work.")
+    # What the reader sees, not an instruction to leave something out, which
+    # two answers in nine repeated to the reader.
+    assert note == ("The reader is shown a list of the latest publications by Ms Suruchi "
+                    "Bhadwal straight after this answer. Write about the rest of their "
+                    "work: do not list their publications, and do not refer to that list.")
     assert publications_note([]) == ""
 
 
