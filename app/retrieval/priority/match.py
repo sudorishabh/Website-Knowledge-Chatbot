@@ -104,6 +104,17 @@ _RANKING_WORDS = frozenset(
     """.split()
 )
 
+#: Words that ask what a named person has done ("Suruchi Bhadwal work", "what
+#: has Dr Dhawan published"), which their latest publications help answer.
+#: "Who is X" has none of them and gets the profile alone.
+_WORK_WORDS = frozenset(
+    """
+    work works worked working project projects publication publications
+    publish published paper papers research researched contribution
+    contributions article articles writing writings wrote written
+    """.split()
+)
+
 PROFILE = "profile"
 GROUP_KIND = "group"
 
@@ -241,6 +252,11 @@ def asks_for_people(question: str) -> bool:
     """Whether the question asks for people at all — the organisation's, or a
     theme's or centre's team — so a theme page answers with its Team section."""
     return bool(set(normalize_text(question).split()) & (_STAFF_WORDS | _TEAM_WORDS))
+
+
+def asks_for_work(question: str) -> bool:
+    """Whether the question asks what someone has done or written."""
+    return bool(set(normalize_text(question).split()) & _WORK_WORDS)
 
 
 def asks_for_team(question: str) -> bool:

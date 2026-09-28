@@ -38,8 +38,10 @@ logger = logging.getLogger(__name__)
 _HUMAN_TURN = "Numbered context:\n{context}\n\n{notes}Question: {question}\n\n{shape}"
 
 
-def _notes(blocks: list[ContextBlock]) -> str:
-    notes = (supersession_note(blocks), staff_note(blocks))
+def _notes(blocks: list[ContextBlock], extra: Sequence[str] = ()) -> str:
+    """The block-derived notes, then ``extra``: notes the pipeline knows and the
+    blocks cannot say, such as a list it will add after the answer."""
+    notes = (supersession_note(blocks), staff_note(blocks), *extra)
     return "".join(f"{note}\n\n" for note in notes if note)
 
 # Prior turns threaded into the answer prompt so the model can resolve follow-up
@@ -151,6 +153,7 @@ def generate_answer(
     correction: str | None = None,
     answer_format: str | None = None,
     plan_directive: str = "",
+    notes: Sequence[str] = (),
 ) -> str:
     from langchain_core.output_parsers import StrOutputParser
     from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -178,7 +181,7 @@ def generate_answer(
         {
             "history": messages,
             "context": format_context_blocks(blocks),
-            "notes": _notes(blocks),
+            "notes": _notes(blocks, notes),
             "question": question,
             "shape": SHAPE_REMINDER,
         }
@@ -192,6 +195,7 @@ def generate_stream(
     history: Sequence[dict[str, str]] | None = None,
     answer_format: str | None = None,
     plan_directive: str = "",
+    notes: Sequence[str] = (),
 ) -> Iterator[str]:
     from langchain_core.output_parsers import StrOutputParser
     from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -216,7 +220,7 @@ def generate_stream(
         {
             "history": messages,
             "context": format_context_blocks(blocks),
-            "notes": _notes(blocks),
+            "notes": _notes(blocks, notes),
             "question": question,
             "shape": SHAPE_REMINDER,
         }

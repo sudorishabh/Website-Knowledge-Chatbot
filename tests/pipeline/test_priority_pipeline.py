@@ -6,11 +6,14 @@ from types import SimpleNamespace
 
 import pytest
 
+from app.catalog.models import StateRecord
 from app.config import get_settings
 from app.core.models.context import ContextBlock
+from app.generation.prompts import publications_note
 from app.pipeline import query_pipeline as pipe
 from app.retrieval.priority import evidence as ev
-from app.retrieval.priority.match import GROUP, NAME, THEME_FACET, Target
+from app.retrieval.priority.match import GROUP, NAME, PERSON, THEME_FACET, Target
+from app.retrieval.priority.people import Person
 from app.retrieval.priority.registry import CENTRE, PAGE, THEME, PriorityGroup, PriorityPage
 from app.retrieval.understanding import query_processor as qp
 
@@ -214,3 +217,66 @@ def test_search_blocks_reads_the_same_pages(wired, monkeypatch):
     pipe.search_blocks("tell me about climate change")
     assert wired.log.retrieve[0]["priority"] is wired.state.evidence
     assert wired.log.retrieve[0]["query_vector"] == [0.1]
+
+
+# -- a named person's work -------------------------------------------------------
+
+SURUCHI = Person("Ms Suruchi Bhadwal", "https://teriin.org/profile/suruchi-bhadwal",
+                 "People - committee of directors")
+
+
+@pytest.fixture
+def publications(wired, monkeypatch):
+    """The catalog's side, stubbed: who was asked for, and what it holds."""
+    state = SimpleNamespace(asked=[], found=[_publication()], total=18, error=None)
+
+    def latest(person, *, limit=5):
+        state.asked.append(person)
+        if state.error:
+            raise state.error
+        return list(state.found), state.total
+
+    monkeypatch.setattr("app.retrieval.structured.authored.latest_publications", latest)
+    _enable(monkeypatch)
+    wired.state.pq = _pq(intent="structured")
+    wired.state.targets = [Target(SURUCHI.name, "profile", PERSON,
+                                  url=SURUCHI.profile_url, person=SURUCHI)]
+    return state
+
+
+def _publication():
+    return StateRecord(document_id="d", source_type="website", source_key="d", fingerprint="f",
+                       bundle="policy_brief", title="A Transformative Global Goal on Adaptation",
+                       url="https://teriin.org/policy-brief/t", effective_start_date="2024-11-12")
+
+
+def test_a_named_persons_work_lists_their_publications_after_the_answer(wired, publications):
+    """Measured 2026-09-28: her profile overruled the catalog, and the answer
+    listed none of her 22 publications."""
+    _, gen = pipe._prepare("Suruchi Bhadwal work", history=None, top_k=None)
+    assert wired.log.structured == []  # the profile still overrules the catalog
+    assert publications.asked == ["Ms Suruchi Bhadwal"]
+    assert gen.db_suffix.startswith("### Latest publications by Ms Suruchi Bhadwal\n"
+                                    "The 1 most recent of 18:\n"
+                                    "- [A Transformative Global Goal on Adaptation]")
+    assert gen.notes == (publications_note(["Ms Suruchi Bhadwal"]),)
+    assert gen.compose("Her work [1].") == f"Her work [1].\n\n{gen.db_suffix}"
+
+
+def test_who_a_person_is_is_answered_from_the_profile_alone(wired, publications):
+    _, gen = pipe._prepare("who is Suruchi Bhadwal", history=None, top_k=None)
+    assert publications.asked == [] and gen.db_suffix == "" and gen.notes == ()
+
+
+@pytest.mark.parametrize("found, error", [([], None), ([_publication()], RuntimeError("db"))])
+def test_no_publications_or_no_catalog_costs_only_the_list(wired, publications, found, error):
+    publications.found, publications.error = found, error
+    _, gen = pipe._prepare("Suruchi Bhadwal work", history=None, top_k=None)
+    assert gen is not None and gen.db_suffix == "" and gen.notes == ()
+
+
+def test_with_nothing_retrieved_the_publications_still_answer(wired, publications, monkeypatch):
+    monkeypatch.setattr(pipe, "retrieve", lambda *a, **kw: [])
+    result, gen = pipe._prepare("Suruchi Bhadwal work", history=None, top_k=None)
+    assert gen is None
+    assert result["answer"].startswith("### Latest publications by Ms Suruchi Bhadwal")

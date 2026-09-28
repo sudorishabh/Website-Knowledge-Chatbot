@@ -17,7 +17,7 @@ from typing import Any, Iterator
 from app.config import get_settings
 from app.core.models.context import ContextBlock
 from app.generation.answerer import chitchat, generate_answer, generate_stream
-from app.generation.prompts import REFUSAL
+from app.generation.prompts import REFUSAL, publications_note
 from app.observability import retrieval_log
 from app.observability.metrics import collect_into, component_totals
 from app.observability.tracing import record_query_metrics, span
@@ -66,6 +66,17 @@ class _Generation:
     # fingerprint plus the content of any priority page it stands on. None means
     # the facet fingerprint alone.
     cache_fingerprint: dict[str, Any] | None = None
+    # Deterministic catalog section after the answer: the latest publications of
+    # the people a question for their work names; "" otherwise.
+    db_suffix: str = ""
+    # Notes for the answer beside the question that the blocks cannot give
+    # (see `app.generation.answerer._notes`).
+    notes: tuple[str, ...] = ()
+
+    def compose(self, answer: str) -> str:
+        """The answer as the reader sees it, with the catalog sections around
+        it. The checks read the grounded answer alone."""
+        return "\n\n".join(part for part in (self.db_prefix, answer, self.db_suffix) if part)
 
 
 # Content capabilities that pair with a database lookup into a combined answer.
@@ -451,6 +462,47 @@ def _priority_evidence(
     return evidence
 
 
+def _work_people(question: str, pq: ProcessedQuery, targets: list[Any] | None) -> list[str]:
+    """The people whose latest publications follow the answer: those the
+    question names by their profile, when it asks for their work.
+
+    Measured 2026-09-28: "Suruchi Bhadwal work" read her profile, which
+    overruled the catalog, and listed none of her 22 publications; "Prasoon
+    Singh work" found no profile and was answered with his publications alone.
+    """
+    people = [t.person.name for t in targets or ()
+              if t.reason == "person" and getattr(t, "person", None) is not None]
+    if not people:
+        return []
+    from app.retrieval.priority.match import asks_for_work
+
+    return people if asks_for_work(_priority_text(question, pq)) else []
+
+
+def _publications(people: list[str]) -> tuple[str, list[str]]:
+    """The latest publications of each of ``people`` as one section to follow
+    the answer, and the people it lists; ('', []) when the catalog holds none.
+    Fail-open: a catalog error costs the list, never the answer."""
+    from app.retrieval.structured.authored import latest_publications, publications_section
+
+    sections: list[str] = []
+    listed: list[str] = []
+    with span("rag.publications") as s:
+        for person in people:
+            try:
+                records, total = latest_publications(person)
+            except Exception:
+                logger.warning("Publications of %s could not be read; answering "
+                               "without them.", person, exc_info=True)
+                continue
+            section = publications_section(person, records, total)
+            if section:
+                sections.append(section)
+                listed.append(person)
+        s.set("people", len(listed))
+    return "\n\n".join(sections), listed
+
+
 def _db_section(
     pq: ProcessedQuery, question: str, history: list[dict[str, str]] | None
 ) -> str:
@@ -605,6 +657,9 @@ def _prepare(
     catalog_route = pq.intent == "structured" and not _priority_overrides_catalog(
         priority_targets, themes_listing=_lists_themes(pq)
     )
+    # A named person's profile overrules the catalog, so a question for their
+    # work gets the catalog's part, their latest publications, after the answer.
+    work_people = _work_people(question, pq, priority_targets)
 
     if catalog_route:
         from app.retrieval.structured.answerer import answer_structured
@@ -706,9 +761,13 @@ def _prepare(
 
     from app.generation.answer_plan import build_plan, extract_requirements, plan_directive
 
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         requirements_future = pool.submit(
             copy_context().run, extract_requirements, pq.search_query
+        )
+        publications_future = (
+            pool.submit(copy_context().run, _publications, work_people)
+            if work_people else None
         )
         # Sub-query planning is the one thing that needs the requirements
         # *before* retrieval rather than after it, so with the feature on the
@@ -729,12 +788,15 @@ def _prepare(
             db_prefix = ""
             blocks = _run_retrieve(subqueries)
         requirements = requirements_future.result()
+        db_suffix, listed = (publications_future.result() if publications_future
+                             else ("", []))
 
     if not blocks:
         # Combined query whose content retrieval came up empty: still return the
         # deterministic catalog answer rather than a blanket refusal.
-        if db_prefix:
-            return _empty(pq.intent, db_prefix, answer_format=pq.answer_format), None
+        catalog = "\n\n".join(part for part in (db_prefix, db_suffix) if part)
+        if catalog:
+            return _empty(pq.intent, catalog, answer_format=pq.answer_format), None
         # Retrieval found nothing to ground an answer. Ask the catalog — which
         # indexes titles and facets rather than passages — but only when it hasn't
         # already answered nothing for this query.
@@ -773,6 +835,8 @@ def _prepare(
             {**semantic_cache.facet_fingerprint(pq), **priority.fingerprint()}
             if priority is not None else None
         ),
+        db_suffix=db_suffix,
+        notes=(publications_note(listed),) if listed else (),
     )
 
 
@@ -812,9 +876,10 @@ def _assemble(answer: str, gen: _Generation) -> dict[str, Any]:
     mismatches = faithfulness.numeric_mismatches(body, gen.blocks)
     if mismatches:
         logger.info("Numeric claims not found in cited blocks: %s", mismatches)
-    # The catalog section is deterministic (not from the blocks), so faithfulness
-    # and numeric checks run on the grounded content only; compose for display.
-    final = f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer
+    # The catalog sections are deterministic (not from the blocks), so
+    # faithfulness and numeric checks run on the grounded content only; compose
+    # for display.
+    final = gen.compose(answer)
     return {
         "answer": final,
         "citations": [
@@ -939,6 +1004,7 @@ def stream_answer(
             )
             retrieval_log.note(
                 db_prefix_chars=len(gen.db_prefix),
+                db_suffix_chars=len(gen.db_suffix),
                 plan_directive=bool(gen.plan_directive),
             )
         # Cache hit, chit-chat, structured lookup, or refusal — already complete.
@@ -952,16 +1018,19 @@ def stream_answer(
 
         parts: list[str] = []
         # Combined answer: stream the deterministic catalog section first, then
-        # the grounded content answer.
+        # the grounded content answer, then any catalog section that follows it.
+        # A correction below replaces all three with `gen.compose`.
         if gen.db_prefix:
             yield {"type": "token", "text": gen.db_prefix + "\n\n"}
         for token in generate_stream(
             gen.pq.search_query, gen.blocks,
             history=history, answer_format=gen.pq.answer_format,
-            plan_directive=gen.plan_directive,
+            plan_directive=gen.plan_directive, notes=gen.notes,
         ):
             parts.append(token)
             yield {"type": "token", "text": token}
+        if gen.db_suffix:
+            yield {"type": "token", "text": "\n\n" + gen.db_suffix}
         answer = faithfulness.validate_markers("".join(parts), len(gen.blocks))
 
         if get_settings().faithfulness_check:
@@ -980,6 +1049,7 @@ def stream_answer(
                         correction=report.correction_note(),
                         answer_format=gen.pq.answer_format,
                         plan_directive=gen.plan_directive,
+                        notes=gen.notes,
                     )
                     corrected = faithfulness.validate_markers(retry, len(gen.blocks))
                 except Exception:
@@ -990,7 +1060,7 @@ def stream_answer(
                     answer = corrected
                     yield {
                         "type": "correction",
-                        "text": f"{gen.db_prefix}\n\n{corrected}" if gen.db_prefix else corrected,
+                        "text": gen.compose(corrected),
                         "reason": "faithfulness",
                     }
 
@@ -1013,6 +1083,7 @@ def stream_answer(
                     correction=date_report.correction_note(),
                     answer_format=gen.pq.answer_format,
                     plan_directive=gen.plan_directive,
+                    notes=gen.notes,
                 )
                 corrected = faithfulness.validate_markers(retry, len(gen.blocks))
             except Exception:
@@ -1027,12 +1098,9 @@ def stream_answer(
                 # offending sentences outright.
                 answer = date_claims.safe_rewrite(answer, recheck)
                 reason = 'date_claim_fallback'
-            corrected_text = (
-                gen.db_prefix + "\n\n" + answer if gen.db_prefix else answer
-            )
             yield {
                 "type": "correction",
-                "text": corrected_text,
+                "text": gen.compose(answer),
                 "reason": reason,
             }
 
@@ -1050,7 +1118,7 @@ def stream_answer(
             answer = tidied
             yield {
                 "type": "correction",
-                "text": f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer,
+                "text": gen.compose(answer),
                 "reason": reason,
             }
 

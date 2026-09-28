@@ -113,6 +113,17 @@ def test_one_page_is_kept_once_with_its_strongest_reason(reg):
     assert [(t.name, t.reason) for t in targets] == [("Climate Change Theme", NAME)]
 
 
+@pytest.mark.parametrize("question, work", [
+    ("Suruchi Bhadwal work", True),
+    ("what has Dr Vibha Dhawan published", True),
+    ("Prasoon Singh research papers", True),
+    ("who is Suruchi Bhadwal", False),   # the profile alone answers it
+    ("Dr Dhawan's email", False),
+])
+def test_a_question_for_someones_work_is_told_from_one_about_them(question, work):
+    assert match.asks_for_work(question) is work
+
+
 def test_ranking_orders_by_strength_then_score():
     weak = Target("A", "theme", SIMILAR, url="https://teriin.org/a", score=0.9)
     strong = Target("B", "page", NAME, url="https://teriin.org/b")

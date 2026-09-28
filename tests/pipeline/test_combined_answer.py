@@ -107,6 +107,40 @@ def test_assemble_no_prefix_is_content_only():
     assert out["answer"] == "Rooftop solar grew 1.2 GW in 2023 [1]."
 
 
+_PUBLICATIONS = "### Latest publications by Dr A\n- [Solar in India](https://teriin.org/s)"
+
+
+def test_assemble_places_the_publications_after_the_content():
+    gen = _gen()
+    gen.db_suffix = _PUBLICATIONS
+    out = pipe._assemble("Dr A works on solar [1].", gen)
+    assert out["answer"] == f"Dr A works on solar [1].\n\n{_PUBLICATIONS}"
+
+
+def test_the_stream_sends_the_publications_after_the_answer(monkeypatch):
+    from types import SimpleNamespace
+
+    gen = _gen()
+    gen.db_suffix, gen.notes = _PUBLICATIONS, ("the publications follow",)
+    seen: dict = {}
+    persisted: dict = {}
+
+    def stream(q, b, history=None, answer_format=None, plan_directive="", notes=()):
+        seen["notes"] = notes
+        return iter(["Dr A works on solar [1]."])
+
+    monkeypatch.setattr(pipe, "_prepare", lambda q, **kw: (None, gen))
+    monkeypatch.setattr(pipe, "generate_stream", stream)
+    monkeypatch.setattr(pipe, "get_settings", lambda: SimpleNamespace(faithfulness_check=False))
+    monkeypatch.setattr(pipe, "_persist", lambda gen, result: persisted.update(result))
+
+    events = list(pipe.stream_answer("q"))
+    assert [e["type"] for e in events] == ["token", "token", "sources", "done"]
+    assert events[1]["text"] == f"\n\n{_PUBLICATIONS}"
+    assert persisted["answer"] == f"Dr A works on solar [1].\n\n{_PUBLICATIONS}"
+    assert seen["notes"] == ("the publications follow",)
+
+
 # --------------------------------------------------------------------------- #
 # Empty-retrieval catalog fallback: asked only when the catalog hasn't already
 # answered nothing for this query.

@@ -464,6 +464,31 @@ def test_the_note_reaches_the_human_turn_before_the_question(monkeypatch):
     assert human.index("People listings in this context") < human.index("Question: TERI top")
 
 
+def test_a_pipeline_note_reaches_the_human_turn_beside_the_block_notes(monkeypatch):
+    """The publications list is added after the answer by the pipeline, which
+    the blocks cannot say; without the note the answer lists them too."""
+    from langchain_core.runnables import RunnableLambda
+
+    from app.generation import answerer
+    from app.generation.prompts import publications_note
+
+    seen: dict = {}
+
+    def capture(prompt_value):
+        seen["human"] = prompt_value.to_messages()[-1].content
+        return "an answer"
+
+    monkeypatch.setattr(answerer, "get_llm", lambda **_: RunnableLambda(capture))
+    note = publications_note(["Ms Suruchi Bhadwal"])
+    answerer.generate_answer("Suruchi Bhadwal work", [_listing(1, "Profile")], notes=(note,))
+    human = seen["human"]
+    assert human.index(note) < human.index("Question: Suruchi Bhadwal work")
+    assert note == ("The latest publications by Ms Suruchi Bhadwal are listed after this "
+                    "answer, so leave their publications out of it and write about the "
+                    "rest of their work.")
+    assert publications_note([]) == ""
+
+
 def test_a_list_of_current_people_leaves_out_the_former_ones():
     from app.generation.prompts import SHAPE_REMINDER
 
