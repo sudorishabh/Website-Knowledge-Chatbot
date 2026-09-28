@@ -69,6 +69,8 @@ MAX_GROUPS = 2
 MEMBER_CONTACTS = "member_contacts"
 #: The section title a theme or centre page gives its list of people.
 TEAM_HEADING = "team"
+#: The payload field that marks a Team block with whose team it is.
+TEAM_OF = "team_of"
 
 Embed = Callable[[list[str]], list[list[float]]]
 
@@ -358,7 +360,7 @@ def _page_block(read: PageRead, section: Section, index: int, score: float) -> C
     page = read.target.page
     if page is not None and page.kind in (THEME, CENTRE) and _is_team(section):
         # Whose team this is, for the answer's note on people.
-        block.payload["team_of"] = content.title or read.target.name
+        block.payload[TEAM_OF] = content.title or read.target.name
     return block
 
 
@@ -588,7 +590,7 @@ def gather(
         evidence.blocks = _select(evidence.targets, evidence.reads, evidence.query_vector,
                                   limit=settings.priority_max_blocks, embed=embed,
                                   people=evidence.people)
-        if held and not any(b.payload.get("team_of") for b in evidence.blocks):
+        if held and not any(b.payload.get(TEAM_OF) for b in evidence.blocks):
             evidence.extend(held)
     except Exception:
         logger.warning("Priority pages failed for this question; answering from "
