@@ -112,6 +112,22 @@
     '<path d="M14 3v5h5"/>' +
     "</svg>";
 
+  // Hover-card marks: a globe for a web page (a PDF takes DOC_ICON), and an
+  // arrow saying the chip opens in a new tab.
+  const WEB_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="9"/>' +
+    '<path d="M3 12h18"/>' +
+    '<path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/>' +
+    "</svg>";
+  const OPEN_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M7 17 17 7"/>' +
+    '<path d="M8 7h9v9"/>' +
+    "</svg>";
+
   // Guard against double-injection.
   if (document.getElementById("teri-rag-widget")) return;
 
@@ -136,6 +152,7 @@
   function closePanel() {
     isOpen = false;
     host.classList.remove("open");
+    hideCitePop(); // Escape can close the panel with a chip still hovered
   }
   function toggleExpand() {
     const expanded = host.classList.toggle("expanded");
@@ -900,11 +917,83 @@
     chip.target = "_blank";
     chip.rel = "noopener noreferrer";
     chip.textContent = siteName(href);
-    const detail = [citation.title || hostLabel(href)];
+    // What the hover card shows (showCitePop). The card is visual only, so the
+    // label spells the same source out for a screen reader.
+    const detail = [];
     if (citation.page != null) detail.push("Page " + citation.page);
     if (citation.section) detail.push(citation.section);
-    chip.title = detail.filter(Boolean).join(" · ");
+    chip.dataset.host = hostLabel(href);
+    chip.dataset.title = citation.title || "";
+    chip.dataset.detail = detail.join(" · ");
+    chip.dataset.kind = citation.type === "website" ? "page" : "document";
+    chip.setAttribute(
+      "aria-label",
+      [chip.textContent, citation.title, chip.dataset.detail]
+        .filter(Boolean)
+        .join(", "),
+    );
     return chip;
+  }
+
+  // The hover card for a citation chip: the site, the source's title, and
+  // where in it the claim sits. One shared card, fixed-positioned so neither
+  // the scrolling message list nor a table's overflow clips it.
+  let popChip = null;
+  function showCitePop(chip) {
+    if (chip === popChip) return;
+    popChip = chip;
+    const { host, title, detail, kind } = chip.dataset;
+    const pop = el.citePop;
+    pop.textContent = "";
+
+    const site = document.createElement("div");
+    site.className = "cite-pop__site";
+    // Icons are our own constants, never model text.
+    site.innerHTML =
+      '<span class="cite-pop__icon">' +
+      (kind === "page" ? WEB_ICON : DOC_ICON) +
+      '</span><span class="cite-pop__host"></span>' +
+      '<span class="cite-pop__open">' +
+      OPEN_ICON +
+      "</span>";
+    site.querySelector(".cite-pop__host").textContent = host;
+    pop.appendChild(site);
+    if (title) pop.appendChild(popLine("cite-pop__title", title));
+    if (detail) pop.appendChild(popLine("cite-pop__meta", detail));
+
+    placeCitePop(chip);
+    pop.classList.add("is-open");
+  }
+
+  function popLine(className, text) {
+    const line = document.createElement("div");
+    line.className = className;
+    line.textContent = text;
+    return line;
+  }
+
+  function hideCitePop() {
+    popChip = null;
+    el.citePop.classList.remove("is-open");
+  }
+
+  // Above the chip, or below it when there is no room above; centred on it.
+  // Bounded by the message list, so the card never covers the header.
+  const POP_GAP = 8;
+  function placeCitePop(chip) {
+    const pop = el.citePop;
+    const r = chip.getBoundingClientRect();
+    const bounds = el.messages.getBoundingClientRect();
+    const w = pop.offsetWidth;
+    const h = pop.offsetHeight;
+    const below = r.top - h - POP_GAP < bounds.top + POP_GAP;
+    const left = Math.max(
+      bounds.left + POP_GAP,
+      Math.min(r.left + r.width / 2 - w / 2, bounds.right - w - POP_GAP),
+    );
+    pop.style.top = (below ? r.bottom + POP_GAP : r.top - h - POP_GAP) + "px";
+    pop.style.left = left + "px";
+    pop.dataset.placement = below ? "below" : "above";
   }
 
   // The site a link belongs to, as a reader would name it: "www.teriin.org"
@@ -998,6 +1087,7 @@
       cards: $("#cards"),
       input: $("#input"),
       send: $("#send"),
+      citePop: $("#cite-pop"),
     };
 
     el.launcher.addEventListener("click", () =>
@@ -1017,6 +1107,24 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && isOpen) closePanel();
     });
+
+    // Citation hover cards, delegated: chips arrive with every answer. Focus
+    // opens one too, so a keyboard reader sees the same card.
+    const chipOf = (e) => e.target.closest && e.target.closest(".cite");
+    const showFor = (e) => {
+      const chip = chipOf(e);
+      if (chip) showCitePop(chip);
+    };
+    const hideFor = (e) => {
+      const chip = chipOf(e);
+      if (chip && !chip.contains(e.relatedTarget)) hideCitePop();
+    };
+    el.messages.addEventListener("mouseover", showFor);
+    el.messages.addEventListener("mouseout", hideFor);
+    el.messages.addEventListener("focusin", showFor);
+    el.messages.addEventListener("focusout", hideFor);
+    // The card is placed once, so a scroll would leave it behind.
+    el.messages.addEventListener("scroll", hideCitePop, { passive: true });
 
     renderCards();
     autoGrow();
@@ -1075,6 +1183,8 @@
             </button>
           </div>
         </footer>
+
+        <div id="cite-pop" class="cite-pop" aria-hidden="true"></div>
       </section>
     `;
   }
@@ -1421,8 +1531,8 @@
     .answer-block--pdf > :last-child { margin-bottom: 0; }
 
     /* ---- Inline citations ---- */
-    /* A site-name pill after the claim it supports; its tooltip carries the
-       title and page. Muted so a cited paragraph still reads as prose, and
+    /* A site-name pill after the claim it supports; its hover card carries
+       the title and page. Muted so a cited paragraph still reads as prose, and
        brand green on hover. The .bubble prefix outranks ".bubble a". */
     .bubble .cite {
       display: inline-block;
@@ -1440,10 +1550,84 @@
       white-space: nowrap;
       transition: background .15s ease, border-color .15s ease, color .15s ease;
     }
-    .bubble .cite:hover {
+    .bubble .cite:hover,
+    .bubble .cite:focus-visible {
       background: var(--teri-green-soft);
       border-color: var(--teri-green);
       color: var(--teri-green-dark);
+      outline: none;
+    }
+
+    /* Hover card: a white card lifted off the answer by a soft two-layer
+       shadow. The site row names where the link goes, the title leads, and
+       the page/section sits beneath it. Never takes the pointer, so moving
+       across it cannot flicker it or swallow the chip's click. */
+    .cite-pop {
+      position: fixed;
+      z-index: 10;
+      width: max-content;
+      max-width: 280px;
+      padding: 10px 12px 11px;
+      background: #fff;
+      border: 1px solid var(--teri-border);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, .14), 0 2px 6px rgba(15, 23, 42, .06);
+      color: var(--teri-ink);
+      font-size: .8rem;
+      line-height: 1.4;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(4px);
+      transition: opacity .14s ease, transform .14s ease, visibility 0s linear .14s;
+    }
+    .cite-pop[data-placement="below"] { transform: translateY(-4px); }
+    .cite-pop.is-open {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition-delay: 0s;
+    }
+    .cite-pop__site {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--teri-dim);
+      font-size: .72rem;
+      font-weight: 500;
+    }
+    .cite-pop__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      border-radius: 6px;
+      background: var(--teri-green-soft);
+      color: var(--teri-green);
+    }
+    .cite-pop__icon svg { width: 12px; height: 12px; }
+    .cite-pop__host { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cite-pop__open { display: inline-flex; color: var(--teri-green); }
+    .cite-pop__open svg { width: 13px; height: 13px; }
+    .cite-pop__title {
+      margin-top: 7px;
+      font-size: .86rem;
+      font-weight: 600;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+    .cite-pop__meta {
+      margin-top: 4px;
+      color: var(--teri-dim);
+      font-size: .72rem;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cite-pop, .cite-pop[data-placement="below"] { transform: none; transition: none; }
     }
 
     /* Unverified-figures notice: the amber token, under the answer. */
