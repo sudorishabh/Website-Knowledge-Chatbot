@@ -208,6 +208,38 @@ def test_a_person_word_in_small_talk_is_not_rescued(question):
     assert qp._names_an_organisation_subject(question) is False
 
 
+def _people_index(monkeypatch, *, enabled):
+    """The people index, stubbed to one name; returns how often it was read."""
+    from app.config import get_settings
+    from app.retrieval.priority import evidence
+    from app.retrieval.priority.people import Person
+
+    reads: list = []
+
+    def listed_people(registry):
+        reads.append(registry)
+        return [Person("Dr Prasoon Singh", "https://teriin.org/profile/prasoon-singh",
+                       "Climate Change Theme")]
+
+    monkeypatch.setattr(get_settings(), "priority_pages_enabled", enabled)
+    monkeypatch.setattr(evidence, "listed_people", listed_people)
+    return reads
+
+
+def test_a_named_person_on_the_people_pages_is_a_real_request(monkeypatch):
+    """Measured 2026-09-28: "Prasoon Singh work" was answered as small talk."""
+    _people_index(monkeypatch, enabled=True)
+    assert qp._corrected_intent("Prasoon Singh work", "chitchat") == "qa"
+    # Small talk names nobody, whatever the index holds.
+    assert qp._corrected_intent("nice work", "chitchat") == "chitchat"
+
+
+def test_without_priority_pages_no_name_is_read(monkeypatch):
+    reads = _people_index(monkeypatch, enabled=False)
+    assert qp._corrected_intent("Prasoon Singh work", "chitchat") == "chitchat"
+    assert reads == []
+
+
 def test_the_subject_probe_never_raises_on_odd_input():
     for text in (None, "", "?" * 50, "a" * 5000):
         qp._names_an_organisation_subject(text)  # must not raise
