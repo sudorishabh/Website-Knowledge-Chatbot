@@ -526,6 +526,15 @@ def test_uncited_answer_keeps_every_source():
     assert _cited(_web("The programme added capacity.")) == [1, 2]
 
 
+@pytest.mark.parametrize(
+    "answer",
+    [REFUSAL, f"**{REFUSAL}**", REFUSAL.replace("'", "’"), _web(REFUSAL)],
+)
+def test_refusal_lists_no_sources(answer):
+    # A reply saying the sources hold nothing must not list them beneath it.
+    assert _cited(answer) == []
+
+
 def test_used_chunks_still_counts_what_retrieval_supplied():
     out = pipe._assemble(_web("Added 1.2 GW [1]."), _generation())
     assert out["used_chunks"] == 2

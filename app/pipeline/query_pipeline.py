@@ -784,9 +784,16 @@ def _cited_blocks(body: str, blocks: list[ContextBlock]) -> list[ContextBlock]:
     dropped, say — must not resurface as a chip contradicting the answer above
     it. Falls back to every block when the answer cites nothing (or cites only
     blocks that are somehow absent), so provenance is never silently lost.
+
+    A refusal is the exception: it claims nothing, so it has no provenance to
+    lose, and the fallback would list every retrieved block beneath a reply
+    saying none of them held the answer.
     """
     from app.generation.faithfulness import extract_markers
+    from app.generation.sections import is_refusal
 
+    if is_refusal(body):
+        return []
     cited = extract_markers(body)
     if not cited:
         return blocks
