@@ -21,6 +21,10 @@ asking for people, a theme or centre page opens with its Team section instead.
 A group is one block listing its members; for the regional centres the contact
 page is read too, and each centre's entry carries its office's address and
 contacts.
+
+For a question about a named person's work, the evidence also carries the
+project passages that name them in a role (``projects``), merged after the
+pages and before the corpus.
 """
 from __future__ import annotations
 
@@ -48,6 +52,7 @@ from app.retrieval.priority.people import (
     team_index,
     team_people,
 )
+from app.retrieval.priority.projects import person_projects
 from app.retrieval.priority.registry import (
     CENTRE,
     PEOPLE,
@@ -122,6 +127,10 @@ class PriorityEvidence:
     #: The question asks for people, so a theme or centre page leads with its
     #: Team section rather than its introduction.
     people: bool = False
+    #: For a question about a named person's work, the project passages that
+    #: name them in a role (`projects.person_projects`). Kept apart from
+    #: `blocks`, which `extend` reselects from the pages read.
+    projects: list[ContextBlock] = field(default_factory=list)
 
     # -- the cache key -------------------------------------------------------------
     def fingerprint(self) -> dict[str, Any]:
@@ -173,7 +182,8 @@ class PriorityEvidence:
                               people=self.people)
 
     def merge(self, blocks: Sequence[ContextBlock], *, limit: int, token_budget: int) -> list[ContextBlock]:
-        """This question's priority blocks first, then the corpus's, numbered.
+        """This question's priority blocks first, then its project passages,
+        then the corpus's, numbered.
 
         With ``priority_own_slots`` on, ``limit`` and ``token_budget`` are the
         corpus's, and the priority blocks come on top of both: a question that
@@ -190,11 +200,12 @@ class PriorityEvidence:
         """
         from app.retrieval.context.builder import _count_tokens
 
+        own = [*self.blocks, *self.projects]
         if get_settings().priority_own_slots:
-            limit += len(self.blocks)
-            token_budget += sum(_count_tokens(b.text) for b in self.blocks)
+            limit += len(own)
+            token_budget += sum(_count_tokens(b.text) for b in own)
         reserved = min(CORPUS_MIN_SLOTS, len(blocks))
-        lead = self.blocks[: max(0, limit - reserved)]
+        lead = own[: max(0, limit - reserved)]
         merged: list[ContextBlock] = []
         spent = 0
         texts: set[str] = set()
@@ -227,6 +238,11 @@ class PriorityEvidence:
                 for b in self.blocks
             ],
             "stored_copies_dropped": self.suppressed,
+            "projects": [
+                {"person": b.payload.get("project_of"), "role": b.payload.get("project_role"),
+                 "title": b.payload.get("title"), "url": b.payload.get("source_url")}
+                for b in self.projects
+            ],
         }
 
     def _note(self) -> None:
@@ -679,6 +695,9 @@ def gather(
                                   people=evidence.people)
         if held and not any(b.payload.get(TEAM_OF) for b in evidence.blocks):
             evidence.extend(held)
+        if match.asks_for_work(question):
+            evidence.projects = [block for t in people if t.person is not None
+                                 for block in person_projects(t.person.name)]
     except Exception:
         logger.warning("Priority pages failed for this question; answering from "
                        "the corpus alone.", exc_info=True)
