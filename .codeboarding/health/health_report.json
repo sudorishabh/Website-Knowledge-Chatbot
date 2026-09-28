@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-09-26T10:24:18.485350+00:00",
-  "overall_score": 0.9852709587772116,
+  "timestamp": "2026-09-28T10:00:24.937468+00:00",
+  "overall_score": 0.9853321033210332,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -10,10 +10,10 @@
         "javascript"
       ],
       "check_type": "standard",
-      "total_entities_checked": 52,
+      "total_entities_checked": 61,
       "findings_count": 2,
       "warning_count": 2,
-      "score": 0.9615384615384616,
+      "score": 0.9672131147540983,
       "finding_groups": [
         {
           "severity": "warning",
@@ -24,15 +24,15 @@
               "entity_name": "ui.script.<function>",
               "file_path": "ui/script.js",
               "line_start": 3,
-              "line_end": 1578,
-              "metric_value": 1575
+              "line_end": 1729,
+              "metric_value": 1726
             },
             {
               "entity_name": "ui.script.<function>.STYLES",
               "file_path": "ui/script.js",
-              "line_start": 1077,
-              "line_end": 1577,
-              "metric_value": 500
+              "line_start": 1201,
+              "line_end": 1728,
+              "metric_value": 527
             }
           ]
         }
@@ -190,8 +190,8 @@
             {
               "entity_name": "app.pipeline.query_pipeline.stream_answer",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 943,
-              "line_end": 1106,
+              "line_start": 950,
+              "line_end": 1113,
               "metric_value": 163
             },
             {
