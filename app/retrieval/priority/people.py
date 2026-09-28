@@ -4,7 +4,9 @@ The three listings (Committee of Directors, Governing Council, Distinguished
 Fellows) are read first; a question naming someone on them is answered from
 that person's own profile — ``/profile/<slug>`` for staff and fellows,
 ``/governing-council/<slug>`` for council members, whichever the listing links.
-A question naming nobody on them is left to the ingested corpus.
+The Team sections of the theme and centre pages name more people, with a link
+each: 68 on 2026-09-28, 29 of them on no listing. A question naming nobody on
+any of them is left to the ingested corpus.
 
 Names are matched conservatively, because a false match puts a stranger's
 biography at the head of the answer:
@@ -37,7 +39,8 @@ import re
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
-from app.retrieval.priority.extract import PageContent
+from app.retrieval.priority.extract import PageContent, Section
+from app.retrieval.priority.fetch import is_document_url
 from app.retrieval.priority.registry import normalize_text
 
 _HONORIFICS = ("dr", "mr", "ms", "mrs", "prof", "professor", "shri", "smt", "sir")
@@ -75,6 +78,9 @@ _PAST = frozenset("""
     resigned succeeded preceded history
 """.split())
 _YEAR = re.compile(r"\b(?:19|20)\d\d\b")
+
+#: The section title a theme or centre page gives its list of people.
+TEAM_HEADING = "team"
 
 
 @dataclass(frozen=True)
@@ -236,6 +242,44 @@ def _reading(
         if rivals == {parts}:
             return _Reading(person, frozenset({word}), cost, partial=True)
     return None
+
+
+def is_team_section(section: Section) -> bool:
+    return (section.heading or "").strip().lower() == TEAM_HEADING
+
+
+def team_index(content: PageContent) -> int | None:
+    """Where a page's Team section is, if it has one."""
+    return next((i for i, s in enumerate(content.sections) if is_team_section(s)), None)
+
+
+def team_people(content: PageContent, page: str) -> list[Person]:
+    """Everyone a theme or centre page's Team section names, once each, in the
+    section's order, each with the post printed beneath the name.
+
+    Linked to whatever page the site gives them rather than by the listings'
+    profile pattern: five of the 68 Team links on 2026-09-28 were not
+    ``/profile/<slug>`` ("/Manish-Kumar-Shrivastava", "/user/15680"), and a
+    guessed ``/profile/manish-kumar-shrivastava`` is a 404."""
+    lines = [line for section in content.sections if is_team_section(section)
+             for line in section.text.splitlines()[1:]]
+    hrefs: dict[str, str] = {}
+    for link in content.links:
+        if not is_document_url(link.href):
+            hrefs.setdefault(link.text, link.href)
+    seen: dict[str, Person] = {}
+    for at, line in enumerate(lines):
+        key = normalize_text(line)
+        # A name is a link; the post beneath it is plain text.
+        if line not in hrefs or not key or key in seen:
+            continue
+        title = lines[at + 1] if at + 1 < len(lines) else None
+        seen[key] = Person(line, hrefs[line], page, title)
+    return list(seen.values())
+
+
+def _has(words: str, phrase: str) -> bool:
+    return re.search(rf"(?<!\w){re.escape(phrase)}(?!\w)", words) is not None
 
 
 def named_in(question: str, people: list[Person]) -> list[Person]:
