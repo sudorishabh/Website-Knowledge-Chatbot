@@ -962,14 +962,30 @@ def format_context_blocks(blocks: "list[ContextBlock]") -> str:
 #: (`app.retrieval.priority.match.STAFF`, pinned equal by a test). A plain string
 #: so generation needs no retrieval import to recognise it.
 STAFF_REASON = "staff"
+#: The payload field retrieval sets on a theme or centre page's Team section,
+#: naming the page whose team it is (`app.retrieval.priority.evidence.TEAM_OF`,
+#: pinned equal by a test).
+TEAM_OF = "team_of"
+
+
+def _named_blocks(blocks: "list[ContextBlock]", name_of) -> list[tuple[int, str]]:
+    """``(n, name)`` for each distinct non-empty ``name_of(payload)``, first
+    block kept: one listing split across two blocks is still one listing."""
+    named: list[tuple[int, str]] = []
+    for block in blocks:
+        name = str(name_of(block.payload) or "").strip()
+        if name and name not in {n for _, n in named}:
+            named.append((block.n, name))
+    return named
 
 
 def staff_note(blocks: "list[ContextBlock]") -> str:
-    """A note for the human turn when the context holds several people listings
-    read for a question about the organisation's people.
+    """A note for the human turn when the context holds a theme's or centre's
+    team, or several people listings read for a question about the
+    organisation's people.
 
-    Empty unless two or more distinct listings are present, so every other
-    context renders exactly as before. Measured 2026-09-25: with the Committee
+    Empty unless a team or two or more distinct listings are present, so every
+    other context renders exactly as before. Measured 2026-09-25: with the Committee
     of Directors and the Distinguished Fellows both in context for "TERI top
     researchers", three answers in four named only the fellows — "distinguished"
     read as "top", and a committee that also holds HR and strategy posts read as
@@ -984,18 +1000,36 @@ def staff_note(blocks: "list[ContextBlock]") -> str:
     the answers that followed printed each listing whole, one after the other.
     A question for the top people is a choice made across the listings, so the
     note now says that instead.
+
+    A team (2026-09-28) is the people one area's page lists, so it is the
+    answer for that area: whole when the team is asked for, and the base that
+    the listings only add to when its top people are. The listings hold every
+    area's directors and fellows, and the Selection shape's "head of the
+    organisation first, one per area" would otherwise fill a climate change
+    answer with people who do not work on it.
     """
-    listings: list[tuple[int, str]] = []
-    for block in blocks:
-        payload = block.payload
-        if payload.get("priority_reason") != STAFF_REASON:
-            continue
-        name = str(payload.get("title") or payload.get("priority_page") or "").strip()
-        if name and name not in {n for _, n in listings}:
-            listings.append((block.n, name))
+    teams = _named_blocks(blocks, lambda p: p.get(TEAM_OF))
+    listings = _named_blocks(blocks, lambda p: (p.get("title") or p.get("priority_page"))
+                             if p.get("priority_reason") == STAFF_REASON else None)
+    named = ", ".join(f"[{n}] {name}" for n, name in listings)
+    if teams:
+        note = (
+            "Teams in this context: "
+            + ", ".join(f"[{n}] the {name} page's team" for n, name in teams)
+            + ". Each is the organisation's own list of the people in that area, "
+            "with each person's post. Asked for a team, name every one of its "
+            "people with their post, in the page's order."
+        )
+        if listings:
+            note += (
+                f" People listings in this context: {named}. For the people in "
+                "an area, start from its team and add from the listings only "
+                "those whose post names that area; for the top or leading ones, "
+                "order them by the seniority of their posts."
+            )
+        return note
     if len(listings) < 2:
         return ""
-    named = ", ".join(f"[{n}] {name}" for n, name in listings)
     return (
         f"People listings in this context: {named}. Each was read because the "
         "question asks for the organisation's people, so the answer draws on "

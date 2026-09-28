@@ -397,6 +397,48 @@ def test_the_note_is_absent_unless_two_listings_were_read_for_people():
                        _listing(2, "Committee of Directors")]) == ""
 
 
+def _team(n, page):
+    from app.core.models.context import PRIORITY_PAGE_KIND, ContextBlock
+
+    return ContextBlock(n=n, text="Team\nDr A\nDirector, Climate", payload={
+        "kind": PRIORITY_PAGE_KIND, "source_type": "website", "title": page,
+        "priority_reason": "name", "section_heading": "Team", "team_of": page,
+    })
+
+
+def test_a_team_is_named_beside_the_question_as_the_whole_answer():
+    """Measured 2026-09-28: "climate change theme team" was answered without
+    the Climate Change page's Team section, which lists its people."""
+    from app.generation.prompts import staff_note
+
+    note = staff_note([_team(1, "Climate Change")])
+    assert "[1] the Climate Change page's team" in note
+    assert "name every one of its people with their post" in note
+    assert "People listings" not in note
+
+
+def test_a_team_beside_the_listings_is_the_base_the_listings_add_to():
+    from app.generation.prompts import staff_note
+
+    note = staff_note([_team(1, "Climate Change"), _listing(2, "Distinguished Fellows"),
+                       _listing(3, "Committee of Directors")])
+    assert note.startswith("Teams in this context: [1] the Climate Change page's team.")
+    assert "People listings in this context: [2] Distinguished Fellows, " \
+           "[3] Committee of Directors." in note
+    assert "start from its team and add from the listings only those whose " \
+           "post names that area" in note
+    # One listing is enough beside a team: it is still only an addition to it.
+    assert "[2] Committee of Directors" in staff_note(
+        [_team(1, "Climate Change"), _listing(2, "Committee of Directors")])
+
+
+def test_the_team_field_matches_retrieval():
+    from app.generation.prompts import TEAM_OF
+    from app.retrieval.priority.evidence import TEAM_OF as RETRIEVAL_TEAM_OF
+
+    assert TEAM_OF == RETRIEVAL_TEAM_OF
+
+
 def test_the_staff_reason_matches_retrieval():
     from app.generation.prompts import STAFF_REASON
     from app.retrieval.priority.match import STAFF
