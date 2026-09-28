@@ -15,9 +15,10 @@ the sections read from them as `ContextBlock`s, and the content fingerprint the
 answer cache keys on.
 
 **Components.** `app/retrieval/priority/` (`registry`, `fetch`, `extract`,
-`people`, `match`, `evidence`), two touch points in
+`people`, `match`, `evidence`, `projects`), two touch points in
 `app/pipeline/query_pipeline.py`, one argument on `retriever.retrieve`, and the
-`live page` header and rule in `app/generation/prompts.py`.
+`live page` header and rule in `app/generation/prompts.py`. A person's latest
+publications come from `app/retrieval/structured/authored.py`.
 
 ---
 
@@ -125,7 +126,17 @@ page). A name matches when every significant part appears as a whole word —
 honorifics ignored, single initials optional; a surname alone only after an
 honorific and only when unique ("Dr Mathur" matches nobody: there are two).
 Someone on two listings is one person, and the committee listing's profile is
-used. A question naming nobody listed goes to the corpus, as before.
+used. The Team sections below name more people (68 on 2026-09-28, 29 of them on
+no listing), each linked to whatever page the site gives them: five of those
+links are not `/profile/<slug>`, and a guessed `/profile/` address is a 404. They
+are matched after the listings, so the listing's profile wins for someone on
+both. The Team sections span 45 pages, which cost 2.4 s cold to read, so they
+are read off the question path (`evidence.team_roster`): a stale roster is
+re-read in a background thread and the question uses the last one. The first
+question after a start knows only the listings. A question naming nobody on any
+of them goes to the corpus, as before. Understanding's small-talk override
+reads the same names, so a bare "Prasoon Singh work" is a question, not small
+talk.
 
 **Teams**: 36 of the 38 theme pages (not Environment or the World Sustainable
 Development Summit), and the Mukteshwar centre page, end with a
@@ -152,6 +163,39 @@ carries `team_of` (the page's title), and the answer's people note
 one of its people with their post; asked for the top people, it starts from
 the team, adds from the listings only those whose post names that area, and
 orders them by seniority.
+
+**A person's work**: a question that names someone with a profile and asks
+about their work (a word such as "work", "projects", "publications",
+"research", "papers" or "wrote"; `match.asks_for_work`) gets three things. "Who
+is X" gets the profile alone.
+
+| Part | Source | Where it goes |
+| --- | --- | --- |
+| what they work on | the profile, a biography; nothing on it lists projects or publications | the first block, as for any named person |
+| projects they had a role in | project passages (`completed_projects`, `ongoing_projects`) that name them as principal investigator, co-investigator, team member or contact (`projects.person_projects`), one block per project, the latest 4 | after the profile, before the corpus, on their own slots |
+| their latest publications | the catalog: the 5 newest website pages recording them as an author, and how many in all (`structured.authored`) | a section after the answer, written by the pipeline and not the model |
+
+No record links a person to a project: a project page is a title, two dates and
+a PDF, and the knowledge graph links people to organisations only. The project
+text does name them, so a mention counts only with a role heading shortly
+before the name and no sentence end between. A reviewer, a moderator, a radio
+guest or anyone an acknowledgement thanks did not do the project.
+
+The catalog records authors as each document printed them, so one person is
+often several strings: Manish Kumar Shrivastava was 18 documents under his full
+name and five more as "Shrivastava Manish Kumar", "Mr Manish Shrivastava" and
+"Shrivastava M K". A variant counts as theirs only when it fits them and no
+other author sharing their surname, so "Datta A", which fits Alekhya and Arindam
+Datta, is neither's. Only website pages are listed, as in every catalog
+listing: an attached PDF carries its page's title and authors and would list
+each publication twice.
+
+The profile overrules the catalog route, as before. Before this, "Suruchi
+Bhadwal work" was answered from her profile and listed none of her 22
+publications, while "Prasoon Singh work" found no profile and got his
+publications alone. The model is told the list follows and not to refer to it
+(`prompts.publications_note`); it never writes the list, so titles, dates and
+links are the catalog's. A catalog or search failure costs that part only.
 
 ---
 
@@ -250,8 +294,10 @@ lookup of the same question will not build, so it is not reused — correct, at
 the cost of a cache hit.
 
 `PIPELINE_REVISION` was bumped to `2026-09-24.1` with this feature, to
-`2026-09-25.2` when the list of themes moved to the home page, and to
-`2026-09-28.1` when people questions about a theme moved to its Team section.
+`2026-09-25.2` when the list of themes moved to the home page, to
+`2026-09-28.1` when people questions about a theme moved to its Team section,
+and to `2026-09-28.2` when a question for a person's work gained their projects
+and publications.
 
 ---
 
@@ -263,6 +309,14 @@ embedded), the whole feature costs ~40 ms per question (`rag.priority_targets`
 paid ~3.7 s, almost all of it embedding the 59 descriptions (60 since the home
 page joined) and the page's
 sections once; a page read itself took 83 ms.
+
+The people index (2026-09-28) reads the three listings on the question path, as
+before, and the 45 theme and centre pages for their Team sections in the
+background. With every page extracted once per distinct HTML
+(`evidence._extract`), the whole index costs 1–13 ms warm, against ~150 ms when
+each read extracted afresh. A work question adds one vector-store scroll for
+the projects and two catalog queries for the publications, which run beside
+retrieval.
 
 ---
 

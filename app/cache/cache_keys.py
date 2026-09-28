@@ -44,7 +44,10 @@ def _sha(*parts: str) -> str:
 #: 2026-09-28.1: a people question about a theme or centre is answered from
 #: that page's Team section, with the staff listings only for a choice among
 #: people, and a people listing stays one block.
-PIPELINE_REVISION = "2026-09-28.1"
+#: 2026-09-28.2: people on the theme and centre Team sections are recognised by
+#: name, and a question for a named person's work adds the projects that name
+#: them in a role and, after the answer, their latest publications.
+PIPELINE_REVISION = "2026-09-28.2"
 
 
 def _pref_fingerprint() -> str:
