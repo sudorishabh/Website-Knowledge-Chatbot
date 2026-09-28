@@ -230,6 +230,12 @@ def _cached_author_names() -> tuple[str, ...]:
     return tuple(queries.distinct_authors())
 
 
+def known_authors() -> tuple[str, ...]:
+    """Every distinct author string in the catalog, fetched once per process
+    (see `reload_authors`)."""
+    return _cached_author_names()
+
+
 def reload_authors() -> None:
     """Drop the cached author list (tests / after ingesting new authors). A
     failed fetch is never cached — `functools.lru_cache` does not cache
