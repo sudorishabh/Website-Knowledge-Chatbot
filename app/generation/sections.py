@@ -80,7 +80,7 @@ def _normalize(text: str) -> str:
 _REFUSAL_NORM = _normalize(REFUSAL)
 
 
-def _is_refusal(text: str) -> bool:
+def is_refusal(text: str) -> bool:
     """True when the text is the refusal and nothing besides.
 
     The PDF lead is a caption rather than content, so a block holding the
@@ -140,12 +140,12 @@ def split_sections(answer: str) -> list[Section]:
     pdf_text = _clean("\n\n".join(grouped[PDF]))
 
     parts = (leading_text, website_text, pdf_text, trailing_text)
-    if any(text and not _is_refusal(text) for text in parts):
+    if any(text and not is_refusal(text) for text in parts):
         # Something real was found, so every refusal beside it is a block the
         # model filled rather than dropped. Left in, it contradicts the content
         # next to it and counts as a website answer the PDF block must defer to.
         leading_text, website_text, pdf_text, trailing_text = (
-            "" if _is_refusal(text) else text for text in parts
+            "" if is_refusal(text) else text for text in parts
         )
     else:
         # Refusals and blanks only: the refusal is the whole answer, said once

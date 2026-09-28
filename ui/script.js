@@ -112,6 +112,22 @@
     '<path d="M14 3v5h5"/>' +
     "</svg>";
 
+  // Hover-card marks: a globe for a web page (a PDF takes DOC_ICON), and an
+  // arrow saying the chip opens in a new tab.
+  const WEB_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="9"/>' +
+    '<path d="M3 12h18"/>' +
+    '<path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/>' +
+    "</svg>";
+  const OPEN_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M7 17 17 7"/>' +
+    '<path d="M8 7h9v9"/>' +
+    "</svg>";
+
   // Guard against double-injection.
   if (document.getElementById("teri-rag-widget")) return;
 
@@ -136,6 +152,7 @@
   function closePanel() {
     isOpen = false;
     host.classList.remove("open");
+    hideCitePop(); // Escape can close the panel with a chip still hovered
   }
   function toggleExpand() {
     const expanded = host.classList.toggle("expanded");
@@ -286,9 +303,11 @@
       stopLoader();
       if (epoch !== chatEpoch) return; // conversation was reset mid-flight
       bubble.classList.remove("bubble--pending");
-      if (answer) bubble.innerHTML = renderAnswer(answer);
-      else bubble.textContent = "(no response)";
-      if (sources) renderSources(bubble, sources);
+      if (answer) {
+        bubble.innerHTML = renderAnswer(answer);
+        linkCitations(bubble, (sources && sources.citations) || []);
+      } else bubble.textContent = "(no response)";
+      if (sources) renderNumericWarning(bubble, sources);
       history.push({ role: "user", content: text });
       history.push({ role: "assistant", content: answer });
     } catch (err) {
@@ -334,6 +353,7 @@
     let pending = "";
     let raf = 0;
     const filterTags = createTagFilter();
+    const filterMarkers = createMarkerFilter();
     const flush = () => {
       raf = 0;
       if (pending && textNode) {
@@ -366,9 +386,10 @@
 
           if (event.type === "token") {
             answer += event.text;
-            // An opening tag carries no visible text: keep the loader up until
-            // real prose lands rather than flashing an empty bubble.
-            const visible = filterTags(event.text);
+            // An opening tag or a marker carries no visible text: keep the
+            // loader up until real prose lands rather than flashing an empty
+            // bubble.
+            const visible = filterMarkers(filterTags(event.text));
             if (!visible) continue;
             if (!textNode) {
               stopLoader();
@@ -391,7 +412,8 @@
               cancelAnimationFrame(raf);
               raf = 0;
             }
-            const visible = filterTags(event.text);
+            // Whole text, so no marker can be part-way through.
+            const visible = stripMarkers(filterTags(event.text));
             stopLoader();
             bubble.classList.remove("bubble--pending");
             bubble.textContent = "";
@@ -826,69 +848,205 @@
 
   /* ---------------------------------------------------------------- *
    * Citations / sources
+   *
+   * The answer cites its evidence with [n] markers (`_MARKER` in
+   * app/generation/faithfulness.py). Once the answer settles, each run of
+   * markers becomes a chip naming the site it links to, so the source sits
+   * beside the claim it supports. A citation a reader cannot open — the
+   * knowledge graph, a catalog lookup — gets no chip: its marker is dropped
+   * rather than left as a number pointing nowhere.
    * ---------------------------------------------------------------- */
-  function renderSources(bubble, sources) {
-    // The deterministic numeric check flagged a figure the cited sources don't
-    // support: warn the reader without altering the answer. Shown even when
-    // there are no citations to list.
-    if (sources.numeric_mismatch) {
-      const warn = document.createElement("div");
-      warn.className = "answer-warn";
-      warn.textContent =
-        "⚠ Some figures in this answer could not be verified against the cited sources.";
-      bubble.appendChild(warn);
+  // A run of markers with the whitespace before it ("chains [1][2]."), so a
+  // run that yields no chip leaves "chains." behind.
+  const MARKER_RUN_RE = /\s*\[\d+\](?:\s*\[\d+\])*/g;
+  const MARKER_RE = /\[(\d+)\]/g;
+  // Punctuation closing the claim moves ahead of its chips — "chains. teriin"
+  // — so a chip never splits a sentence from its full stop. Commas stay put.
+  const CLOSING_PUNCT_RE = /^[.;:!?]+/;
+  // Second-level labels that name a registry, not a site: "mnre.gov.in".
+  const GENERIC_SLD = new Set(["ac", "co", "com", "edu", "gov", "net", "nic", "org", "res"]);
+
+  function linkCitations(container, citations) {
+    const byNumber = new Map(citations.map((c) => [c.n, c]));
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      // Code shows its text verbatim, and a link cannot hold another link.
+      if (node.parentElement.closest("pre, code, a")) continue;
+      linkMarkersIn(node, byNumber);
     }
-    const citations = Array.isArray(sources.citations) ? sources.citations : [];
-    if (!citations.length) return;
-
-    // Segregate sources by kind so web pages and PDFs read as distinct groups.
-    // The knowledge graph is its own kind: it is not a document, and the
-    // "everything that isn't a website is a PDF" split used to file it under
-    // PDFs and label the chip with the literal string "pdf_attachment".
-    const graph = citations.filter((c) => c.type === "knowledge_graph");
-    const webPages = citations.filter((c) => c.type === "website");
-    const pdfs = citations.filter(
-      (c) => c.type !== "website" && c.type !== "knowledge_graph",
-    );
-
-    // A self-contained reference block pinned to the bottom of the answer.
-    const section = document.createElement("div");
-    section.className = "sources";
-
-    // const title = document.createElement("div");
-    // title.className = "sources__title";
-    // title.textContent = "Sources";
-    // section.appendChild(title);
-
-    renderSourceGroup(section, "Knowledge graph", graph);
-    renderSourceGroup(section, "Web pages", webPages);
-    renderSourceGroup(section, "PDFs", pdfs);
-    bubble.appendChild(section);
   }
 
-  function renderSourceGroup(container, label, items) {
-    if (!items.length) return;
-    const group = document.createElement("div");
-    group.className = "citation-group";
+  function linkMarkersIn(node, byNumber) {
+    const text = node.data;
+    const frag = document.createDocumentFragment();
+    let cursor = 0;
+    for (const run of text.matchAll(MARKER_RUN_RE)) {
+      const end = run.index + run[0].length;
+      const punct = (text.slice(end).match(CLOSING_PUNCT_RE) || [""])[0];
+      frag.append(text.slice(cursor, run.index) + punct);
+      for (const source of runSources(run[0], byNumber))
+        frag.append(citationChip(source));
+      cursor = end + punct.length;
+    }
+    if (!cursor) return; // no markers in this node
+    frag.append(text.slice(cursor));
+    node.replaceWith(frag);
+  }
 
-    const heading = document.createElement("span");
-    heading.className = "citation-group__label";
-    heading.textContent = label;
-    group.appendChild(heading);
+  // The openable sources a marker run cites, one per distinct link: two
+  // passages of the same page are one source to a reader.
+  function runSources(run, byNumber) {
+    const seen = new Set();
+    const sources = [];
+    for (const m of run.matchAll(MARKER_RE)) {
+      const citation = byNumber.get(Number(m[1]));
+      const href = citation && resolveUrl(citation.url);
+      if (!href || seen.has(href)) continue;
+      seen.add(href);
+      sources.push({ citation, href });
+    }
+    return sources;
+  }
 
-    const chips = document.createElement("div");
-    chips.className = "citation-group__chips";
-    for (const c of items) chips.appendChild(renderCitation(c));
-    group.appendChild(chips);
+  function citationChip({ citation, href }) {
+    const chip = document.createElement("a");
+    chip.className = "cite";
+    chip.href = href;
+    chip.target = "_blank";
+    chip.rel = "noopener noreferrer";
+    chip.textContent = siteName(href);
+    // What the hover card shows (showCitePop). The card is visual only, so the
+    // label spells the same source out for a screen reader.
+    const detail = [];
+    if (citation.page != null) detail.push("Page " + citation.page);
+    if (citation.section) detail.push(citation.section);
+    chip.dataset.host = hostLabel(href);
+    chip.dataset.title = citation.title || "";
+    chip.dataset.detail = detail.join(" · ");
+    chip.dataset.kind = citation.type === "website" ? "page" : "document";
+    chip.setAttribute(
+      "aria-label",
+      [chip.textContent, citation.title, chip.dataset.detail]
+        .filter(Boolean)
+        .join(", "),
+    );
+    return chip;
+  }
 
-    container.appendChild(group);
+  // The hover card for a citation chip: the site, the source's title, and
+  // where in it the claim sits. One shared card, fixed-positioned so neither
+  // the scrolling message list nor a table's overflow clips it.
+  let popChip = null;
+  function showCitePop(chip) {
+    if (chip === popChip) return;
+    popChip = chip;
+    const { host, title, detail, kind } = chip.dataset;
+    const pop = el.citePop;
+    pop.textContent = "";
+
+    const site = document.createElement("div");
+    site.className = "cite-pop__site";
+    // Icons are our own constants, never model text.
+    site.innerHTML =
+      '<span class="cite-pop__icon">' +
+      (kind === "page" ? WEB_ICON : DOC_ICON) +
+      '</span><span class="cite-pop__host"></span>' +
+      '<span class="cite-pop__open">' +
+      OPEN_ICON +
+      "</span>";
+    site.querySelector(".cite-pop__host").textContent = host;
+    pop.appendChild(site);
+    if (title) pop.appendChild(popLine("cite-pop__title", title));
+    if (detail) pop.appendChild(popLine("cite-pop__meta", detail));
+
+    placeCitePop(chip);
+    pop.classList.add("is-open");
+  }
+
+  function popLine(className, text) {
+    const line = document.createElement("div");
+    line.className = className;
+    line.textContent = text;
+    return line;
+  }
+
+  function hideCitePop() {
+    popChip = null;
+    el.citePop.classList.remove("is-open");
+  }
+
+  // Above the chip, or below it when there is no room above; centred on it.
+  // Bounded by the message list, so the card never covers the header. The
+  // caret keeps pointing at the chip when an edge pushes the card aside.
+  const POP_GAP = 10;
+  const CARET_INSET = 16; // keeps the caret clear of the rounded corners
+  function placeCitePop(chip) {
+    const pop = el.citePop;
+    const r = chip.getBoundingClientRect();
+    const bounds = el.messages.getBoundingClientRect();
+    const w = pop.offsetWidth;
+    const h = pop.offsetHeight;
+    const below = r.top - h - POP_GAP < bounds.top + POP_GAP;
+    const center = r.left + r.width / 2;
+    const left = Math.max(
+      bounds.left + POP_GAP,
+      Math.min(center - w / 2, bounds.right - w - POP_GAP),
+    );
+    const caret = Math.max(CARET_INSET, Math.min(center - left, w - CARET_INSET));
+    pop.style.top = (below ? r.bottom + POP_GAP : r.top - h - POP_GAP) + "px";
+    pop.style.left = left + "px";
+    pop.style.setProperty("--caret-x", caret + "px");
+    pop.dataset.placement = below ? "below" : "above";
+  }
+
+  // The site a link belongs to, as a reader would name it: "www.teriin.org"
+  // → "teriin", "mnre.gov.in" → "mnre".
+  function siteName(href) {
+    const labels = hostLabel(href).split(".");
+    if (labels.length > 1) labels.pop();
+    if (labels.length > 1 && GENERIC_SLD.has(labels[labels.length - 1]))
+      labels.pop();
+    return labels[labels.length - 1] || "source";
+  }
+
+  function stripMarkers(text) {
+    return text.replace(MARKER_RUN_RE, "");
+  }
+
+  // Live-stream marker suppressor: markers become chips only once the answer
+  // settles, so they must not flash on screen as bare numbers first. A run can
+  // be split across tokens ("[1" + "][2]"), and the whitespace before it goes
+  // with it, so a trailing fragment that could still become one is held back
+  // until it cannot. Text held when the stream ends is not lost — the caller
+  // re-renders the whole answer from the raw text.
+  const MARKER_TAIL_RE = /\s*(?:\[\d*)?$/;
+  function createMarkerFilter() {
+    let held = "";
+    return function (chunk) {
+      const text = stripMarkers(held + chunk);
+      held = text.match(MARKER_TAIL_RE)[0];
+      return text.slice(0, text.length - held.length);
+    };
+  }
+
+  // The deterministic numeric check flagged a figure the cited sources don't
+  // support: warn the reader without altering the answer.
+  function renderNumericWarning(bubble, sources) {
+    if (!sources.numeric_mismatch) return;
+    const warn = document.createElement("div");
+    warn.className = "answer-warn";
+    warn.textContent =
+      "⚠ Some figures in this answer could not be verified against the cited sources.";
+    bubble.appendChild(warn);
   }
 
   // Citation links are absolute today: a web page cites its own URL and a PDF
   // cites the attachment URL it was downloaded from. The root-relative branch
   // stays as a generic resolver in case the backend ever emits one. Anything
-  // else — including a citation with no URL at all — resolves to "" so
-  // linkOrText renders plain text rather than a dead or hostile link.
+  // else — including a citation with no URL at all — resolves to "", and gets
+  // no chip rather than a dead or hostile link.
   function resolveUrl(url) {
     if (!url) return "";
     // Absolute http(s) or protocol-relative — safe to open as-is.
@@ -896,67 +1054,12 @@
     // Root-relative backend links resolve against the API origin.
     if (url.charAt(0) === "/") return API_BASE + url;
     // Reject anything else (javascript:, data:, mailto:, bare relative) so a
-    // hostile citation URL renders as plain text instead of a live link.
+    // hostile citation URL gets no chip instead of a live link.
     return "";
   }
 
-  function linkOrText(label, url) {
-    let node;
-    const href = resolveUrl(url);
-    if (href) {
-      node = document.createElement("a");
-      node.href = href;
-      node.target = "_blank";
-      node.rel = "noopener noreferrer";
-    } else {
-      node = document.createElement("span");
-    }
-    node.textContent = label;
-    return node;
-  }
-
-  function renderCitation(c) {
-    const chip = document.createElement("div");
-    chip.className = "citation";
-
-    const marker = document.createElement("span");
-    marker.className = "citation__marker";
-    marker.textContent = "[" + c.n + "]";
-    chip.appendChild(marker);
-
-    const body = document.createElement("div");
-    body.className = "citation__body";
-
-    // Row 1: the title (always), truncated to a single line with a hover tip.
-    const label = c.title || c.document_id || c.type || "source";
-    const title = linkOrText(label, c.url);
-    title.classList.add("citation__title");
-    title.title = label;
-    body.appendChild(title);
-
-    // Row 2: supporting detail — page/section, or the site host for web pages.
-    const meta = [];
-    if (c.page != null) meta.push("Page " + c.page);
-    if (c.section) meta.push(c.section);
-    if (!meta.length && c.type === "website") {
-      const host = hostLabel(c.url);
-      if (host) meta.push(host);
-    }
-    if (meta.length) {
-      const detail = meta.join(" · ");
-      const m = document.createElement("span");
-      m.className = "citation__meta";
-      m.textContent = detail;
-      m.title = detail;
-      body.appendChild(m);
-    }
-
-    chip.appendChild(body);
-    return chip;
-  }
-
-  // Short, human-friendly host (no "www.") for a citation URL, used as
-  // second-row detail when a web page carries no page/section label.
+  // Short, human-friendly host (no "www.") for a citation URL: what a chip's
+  // site name is cut from, and its tooltip when the source has no title.
   function hostLabel(url) {
     if (!url) return "";
     try {
@@ -989,6 +1092,7 @@
       cards: $("#cards"),
       input: $("#input"),
       send: $("#send"),
+      citePop: $("#cite-pop"),
     };
 
     el.launcher.addEventListener("click", () =>
@@ -1008,6 +1112,24 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && isOpen) closePanel();
     });
+
+    // Citation hover cards, delegated: chips arrive with every answer. Focus
+    // opens one too, so a keyboard reader sees the same card.
+    const chipOf = (e) => e.target.closest && e.target.closest(".cite");
+    const showFor = (e) => {
+      const chip = chipOf(e);
+      if (chip) showCitePop(chip);
+    };
+    const hideFor = (e) => {
+      const chip = chipOf(e);
+      if (chip && !chip.contains(e.relatedTarget)) hideCitePop();
+    };
+    el.messages.addEventListener("mouseover", showFor);
+    el.messages.addEventListener("mouseout", hideFor);
+    el.messages.addEventListener("focusin", showFor);
+    el.messages.addEventListener("focusout", hideFor);
+    // The card is placed once, so a scroll would leave it behind.
+    el.messages.addEventListener("scroll", hideCitePop, { passive: true });
 
     renderCards();
     autoGrow();
@@ -1066,6 +1188,8 @@
             </button>
           </div>
         </footer>
+
+        <div id="cite-pop" class="cite-pop" aria-hidden="true"></div>
       </section>
     `;
   }
@@ -1411,50 +1535,129 @@
        container's padding sets the gap. */
     .answer-block--pdf > :last-child { margin-bottom: 0; }
 
-    /* ---- Sources ---- */
-    /* A reference block that sits at the bottom of the answer bubble,
-       separated by a hairline rule. Web pages and PDFs are split into
-       labelled groups of compact, wrapping chips (no horizontal scroll). */
-    .sources {
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid var(--teri-border);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .sources__title {
-      font-size: .68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
+    /* ---- Inline citations ---- */
+    /* A site-name pill after the claim it supports; its hover card carries
+       the title and page. Muted so a cited paragraph still reads as prose, and
+       brand green on hover. The .bubble prefix outranks ".bubble a". */
+    .bubble .cite {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 0 7px;
+      border: 1px solid var(--teri-border);
+      border-radius: 999px;
+      background: var(--teri-surface);
       color: var(--teri-dim);
+      font-size: .7rem;
+      font-weight: 500;
+      line-height: 1.6;
+      vertical-align: 1px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
     }
-    /* One row per source kind: a fixed-width caption column keeps every
-       group's chips aligned on the same left edge. */
-    .citation-group {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
+    .bubble .cite:hover,
+    .bubble .cite:focus-visible {
+      background: var(--teri-green-soft);
+      border-color: var(--teri-green);
+      color: var(--teri-green-dark);
+      outline: none;
     }
-    .citation-group__label {
-      flex: 0 0 68px;
-      padding-top: 7px;
-      font-size: .66rem;
-      font-weight: 600;
+
+    /* Hover card: a white card lifted off the answer by a soft two-layer
+       shadow. The site row names where the link goes, the title leads, and
+       the page/section sits beneath it. Never takes the pointer, so moving
+       across it cannot flicker it or swallow the chip's click. */
+    .cite-pop {
+      position: fixed;
+      z-index: 10;
+      width: max-content;
+      max-width: 280px;
+      padding: 10px 12px 11px;
+      background: #fff;
+      border: 1px solid var(--teri-border);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, .14), 0 2px 6px rgba(15, 23, 42, .06);
+      color: var(--teri-ink);
+      font-size: .8rem;
       line-height: 1.4;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      color: var(--teri-dim);
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(4px);
+      transition: opacity .14s ease, transform .14s ease, visibility 0s linear .14s;
     }
-    .citation-group__chips {
-      flex: 1;
-      min-width: 0;
+    .cite-pop[data-placement="below"] { transform: translateY(-4px); }
+    /* Caret: a rotated square showing two bordered edges toward the chip;
+       its white half covers the card's border so the two read as one shape. */
+    .cite-pop::before {
+      content: "";
+      position: absolute;
+      left: var(--caret-x, 50%);
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border: 1px solid var(--teri-border);
+      transform: translateX(-50%) rotate(45deg);
+    }
+    .cite-pop[data-placement="above"]::before {
+      bottom: -6px;
+      border-top: none;
+      border-left: none;
+    }
+    .cite-pop[data-placement="below"]::before {
+      top: -6px;
+      border-bottom: none;
+      border-right: none;
+    }
+    .cite-pop.is-open {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition-delay: 0s;
+    }
+    .cite-pop__site {
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+      align-items: center;
+      gap: 7px;
+      color: var(--teri-dim);
+      font-size: .72rem;
+      font-weight: 500;
     }
-    /* Unverified-figures notice: same amber token, sits above the sources. */
+    .cite-pop__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      border-radius: 6px;
+      background: var(--teri-green-soft);
+      color: var(--teri-green);
+    }
+    .cite-pop__icon svg { width: 12px; height: 12px; }
+    .cite-pop__host { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cite-pop__open { display: inline-flex; color: var(--teri-green); }
+    .cite-pop__open svg { width: 13px; height: 13px; }
+    .cite-pop__title {
+      margin-top: 7px;
+      font-size: .86rem;
+      font-weight: 600;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+    .cite-pop__meta {
+      margin-top: 4px;
+      color: var(--teri-dim);
+      font-size: .72rem;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cite-pop, .cite-pop[data-placement="below"] { transform: none; transition: none; }
+    }
+
+    /* Unverified-figures notice: the amber token, under the answer. */
     .answer-warn {
       margin-top: 6px;
       font-size: .78rem;
@@ -1463,58 +1666,6 @@
       gap: 6px;
       align-items: flex-start;
     }
-    /* Chip: [n] marker + a two-row body (title, then supporting detail). */
-    .citation {
-      display: flex;
-      align-items: flex-start;
-      gap: 7px;
-      max-width: 260px;
-      font-size: .78rem;
-      background: var(--teri-surface);
-      border: 1px solid var(--teri-border);
-      border-radius: 10px;
-      padding: 6px 10px;
-      transition: border-color .15s ease, box-shadow .15s ease;
-    }
-    .citation:hover {
-      border-color: var(--teri-green-dark);
-      box-shadow: 0 1px 5px rgba(0, 0, 0, .07);
-    }
-    .citation__marker {
-      color: var(--teri-green-dark);
-      font-weight: 600;
-      line-height: 1.4;
-      flex-shrink: 0;
-    }
-    .citation__body {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      min-width: 0;
-    }
-    /* Row 1 — title, one line with ellipsis. */
-    .citation__title {
-      color: var(--teri-ink);
-      font-weight: 500;
-      line-height: 1.4;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-    a.citation__title { color: var(--teri-green-dark); text-decoration: none; }
-    a.citation__title:hover { text-decoration: underline; }
-    /* Row 2 — supporting detail. */
-    .citation__meta {
-      color: var(--teri-dim);
-      font-size: .7rem;
-      line-height: 1.3;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
     /* ---- Composer: a floating rounded box with the send button inside ---- */
     .composer {
       padding: 12px;

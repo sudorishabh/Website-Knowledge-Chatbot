@@ -27,7 +27,7 @@ Drop a single tag onto any page — that's the whole install:
 
 The widget self-injects a launcher button (bottom-right), a welcome screen with
 TERI-relevant suggestion prompts, a **New chat** button (which also cancels any
-in-flight answer), streamed answers, and citations. All markup and styles live
+in-flight answer), streamed answers, and inline source chips. All markup and styles live
 inside a Shadow DOM, so the host site's CSS can't leak in and the widget's
 styles can't leak out. On phones (≤480px) it expands to full screen.
 
@@ -89,12 +89,16 @@ CORS_ALLOW_ORIGINS=https://teriin.org,https://www.teriin.org,http://localhost:55
 | --- | --- |
 | `POST /chat` | Streamed answer (SSE: `token` / `sources` / `done`; a terminal `error` event when generation fails mid-stream) |
 
-Citation links are absolute and point at the source site: a web page cites its
-own URL, a PDF cites the attachment URL it was downloaded from (plus `#page=N`).
-A citation with no resolvable URL renders as plain text, not a dead link.
+Sources render inline: each `[n]` marker in the answer becomes a chip naming the
+site it links to (`teriin`); hovering or focusing it opens a card with the
+source's site, title and page. Citation
+links are absolute and point at the source site: a web page cites its own URL, a
+PDF cites the attachment URL it was downloaded from (plus `#page=N`). A citation
+with no resolvable URL — the knowledge graph, a catalog lookup — gets no chip at
+all, and a refusal shows no sources.
 
 ## Files
 
-- `script.js` — **embeddable widget**: self-contained launcher + Shadow-DOM panel, streaming, citations (the Drupal drop-in)
+- `script.js` — **embeddable widget**: self-contained launcher + Shadow-DOM panel, streaming, inline source chips (the Drupal drop-in)
 - `index.html` — mock host page for local preview
 - `Screenshot 2026-07-01 155054.png` — backdrop image used by `index.html`
