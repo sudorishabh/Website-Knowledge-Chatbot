@@ -336,6 +336,7 @@
     let pending = "";
     let raf = 0;
     const filterTags = createTagFilter();
+    const filterMarkers = createMarkerFilter();
     const flush = () => {
       raf = 0;
       if (pending && textNode) {
@@ -368,9 +369,10 @@
 
           if (event.type === "token") {
             answer += event.text;
-            // An opening tag carries no visible text: keep the loader up until
-            // real prose lands rather than flashing an empty bubble.
-            const visible = filterTags(event.text);
+            // An opening tag or a marker carries no visible text: keep the
+            // loader up until real prose lands rather than flashing an empty
+            // bubble.
+            const visible = filterMarkers(filterTags(event.text));
             if (!visible) continue;
             if (!textNode) {
               stopLoader();
@@ -393,7 +395,8 @@
               cancelAnimationFrame(raf);
               raf = 0;
             }
-            const visible = filterTags(event.text);
+            // Whole text, so no marker can be part-way through.
+            const visible = stripMarkers(filterTags(event.text));
             stopLoader();
             bubble.classList.remove("bubble--pending");
             bubble.textContent = "";
@@ -912,6 +915,26 @@
     if (labels.length > 1 && GENERIC_SLD.has(labels[labels.length - 1]))
       labels.pop();
     return labels[labels.length - 1] || "source";
+  }
+
+  function stripMarkers(text) {
+    return text.replace(MARKER_RUN_RE, "");
+  }
+
+  // Live-stream marker suppressor: markers become chips only once the answer
+  // settles, so they must not flash on screen as bare numbers first. A run can
+  // be split across tokens ("[1" + "][2]"), and the whitespace before it goes
+  // with it, so a trailing fragment that could still become one is held back
+  // until it cannot. Text held when the stream ends is not lost — the caller
+  // re-renders the whole answer from the raw text.
+  const MARKER_TAIL_RE = /\s*(?:\[\d*)?$/;
+  function createMarkerFilter() {
+    let held = "";
+    return function (chunk) {
+      const text = stripMarkers(held + chunk);
+      held = text.match(MARKER_TAIL_RE)[0];
+      return text.slice(0, text.length - held.length);
+    };
   }
 
   // The deterministic numeric check flagged a figure the cited sources don't
