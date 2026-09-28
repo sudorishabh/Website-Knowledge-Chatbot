@@ -106,3 +106,31 @@ def test_only_profile_paths_count_as_people():
     assert [(p.name, p.profile_url, p.title) for p in found] == [
         ("Dr Jane Doe", "https://teriin.org/profile/jane-doe", "Fellow")
     ]
+
+
+def _team():
+    from app.retrieval.priority.people import team_people
+
+    content = extract((FIXTURES / "climate.html").read_text(encoding="utf-8"),
+                      "https://teriin.org/climate")
+    return team_people(content, "Climate Change Theme")
+
+
+def test_a_team_section_names_its_people_with_their_posts():
+    team = _team()
+    # The section's order, although two of them are bylined earlier on the page.
+    assert _names(team) == [
+        "Dr Prodipto Ghosh", "Mr Dipak Dasgupta", "Mr R R Rashmi", "Ms Leena Nandan",
+        "Ms Suruchi Bhadwal", "Dr Manish Kumar Shrivastava", "Dr Prasoon Singh",
+        "Mr K Venkatramana",
+    ]
+    prasoon = next(p for p in team if p.name == "Dr Prasoon Singh")
+    assert prasoon.profile_url == "https://teriin.org/profile/prasoon-singh"
+    assert prasoon.title == "Area Convenor, Center for Climate Change Research"
+    assert prasoon.listing == "Climate Change Theme"
+
+
+def test_a_team_member_is_linked_wherever_the_site_puts_their_page():
+    """His page is /Manish-Kumar-Shrivastava; a guessed /profile/ URL is a 404."""
+    manish = next(p for p in _team() if "Shrivastava" in p.name)
+    assert manish.profile_url == "https://teriin.org/Manish-Kumar-Shrivastava"

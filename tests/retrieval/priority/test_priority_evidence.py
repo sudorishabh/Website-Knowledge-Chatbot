@@ -63,6 +63,9 @@ def _pages(monkeypatch):
         )
 
     monkeypatch.setattr(fetching, "fetch", fake_fetch)
+    # Read in the caller, so no roster thread outlives the stubbed fetch.
+    monkeypatch.setattr(ev, "ROSTER_IN_BACKGROUND", False)
+    ev.clear_roster()
     monkeypatch.setattr(get_settings(), "priority_max_pages", 3)
     monkeypatch.setattr(get_settings(), "priority_max_blocks", 3)
     monkeypatch.setattr(get_settings(), "priority_section_floor", 0.40)
@@ -72,6 +75,7 @@ def _pages(monkeypatch):
     match.clear_vectors()
     yield calls
     ev.clear_vectors()
+    ev.clear_roster()
     match.clear_vectors()
 
 
@@ -208,8 +212,11 @@ def test_a_page_with_no_team_keeps_its_introduction():
 
 def test_a_question_about_nothing_on_the_list_reads_nothing(_pages):
     got = _gather("what is blended finance")
-    # Only the people listing is read, to know whose name to look for.
-    assert _pages == ["https://teriin.org/people/committee-of-directors"]
+    # Only the pages that name people are read, to know whose name to look for.
+    assert set(_pages) == {"https://teriin.org/people/committee-of-directors",
+                           "https://teriin.org/goa", "https://teriin.org/mumbai",
+                           "https://teriin.org/climate"}
+    assert got.reads == []
     assert got.targets == [] and got.blocks == [] and got.fingerprint() == {}
 
 
@@ -221,12 +228,48 @@ def test_a_named_person_is_answered_from_their_profile(_pages):
     assert got.blocks[0].payload["source_url"] == "https://teriin.org/profile/alekhya-datta"
 
 
-def test_a_group_is_answered_from_the_list_without_a_fetch(_pages):
+def test_someone_only_on_a_theme_team_is_found_by_name():
+    """Measured 2026-09-28: "Prasoon Singh work" read no profile, because he is
+    on the Climate Change page's Team and on none of the three listings."""
+    got = _gather("Prasoon Singh work")
+    assert [(t.reason, t.url) for t in got.targets][0] == (
+        match.PERSON, "https://teriin.org/profile/prasoon-singh")
+    assert got.targets[0].person.listing == "Climate Change Theme"
+
+
+def test_someone_on_a_listing_and_a_team_is_matched_to_the_listing():
+    person = ev.explicit_targets("Suruchi Bhadwal work", registry=REGISTRY)[0].person
+    assert person.listing == "People - committee of directors"
+
+
+def test_the_team_roster_is_read_off_the_question_path(monkeypatch):
+    import threading
+
+    monkeypatch.setattr(ev, "ROSTER_IN_BACKGROUND", True)
+    release = threading.Event()
+    read = ev._read_roster
+
+    def held(registry, roster):
+        release.wait(timeout=10)
+        read(registry, roster)
+
+    monkeypatch.setattr(ev, "_read_roster", held)
+    # The first question after a start knows only the listings...
+    assert ev.team_roster(REGISTRY) == []
+    release.set()
+    for thread in threading.enumerate():
+        if thread.name == "team-roster":
+            thread.join(timeout=10)
+    # ...and the next one knows the teams too.
+    assert "Dr Prasoon Singh" in [p.name for p in ev.team_roster(REGISTRY)]
+
+
+def test_a_group_is_answered_from_the_list_without_a_fetch():
     got = _gather("which regional centres are there")
     block = got.blocks[0]
     assert block.payload["title"] == "Regional centers"
     assert "- Goa: Coastal work. (https://teriin.org/goa)" in block.text
-    assert "https://teriin.org/goa" not in _pages
+    assert got.reads == []
 
 
 def test_the_list_of_themes_is_answered_from_the_home_page(_pages):
