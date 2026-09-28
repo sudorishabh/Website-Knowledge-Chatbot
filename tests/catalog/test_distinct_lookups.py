@@ -130,3 +130,15 @@ def test_find_tag_blank_issues_no_query(monkeypatch):
     _patch(monkeypatch, cursor)
     assert state.find_tag("") is None and state.find_tag("   ") is None
     assert cursor.calls == []
+
+
+def test_a_list_by_several_author_strings_matches_each_exactly(monkeypatch):
+    cursor = _FakeCursor(fetchall_results=[[]])
+    _patch(monkeypatch, cursor)
+
+    state.list_documents(source_type="website", entity_type="node",
+                         authors=["Dr Manish Kumar Shrivastava", "Shrivastava M  K"], limit=5)
+    sql, params = cursor.calls[0]
+    assert sql.startswith("SELECT DISTINCT s.* FROM")
+    assert "n.author IN (%s, %s)" in sql and "LIKE" not in sql
+    assert list(params) == ["website", "node", "Dr Manish Kumar Shrivastava", "Shrivastava M  K"]

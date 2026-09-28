@@ -60,6 +60,7 @@ def _catalog_filters(
     title_contains: str | None = None,
     topic_terms: Sequence[str] | None = None,
     author: str | None = None,
+    authors: Sequence[str] | None = None,
     theme: str | None = None,
     theme_group: str | None = None,
     tag: str | None = None,
@@ -70,6 +71,10 @@ def _catalog_filters(
 
     ``entity_type`` scopes to one Drupal entity kind — the query layer passes
     "node" so taxonomy-term and block rows never count as content documents.
+
+    ``authors`` matches any of these stored author strings exactly: the names
+    one person is recorded under ("Dr Manish Kumar Shrivastava", "Shrivastava
+    Manish Kumar"), chosen by the caller. ``author`` is one substring.
 
     ``theme`` matches that theme's name exactly — see :func:`_theme_scope_clause`.
     Exact-name rather than substring: the caller canonicalizes the name first
@@ -118,6 +123,11 @@ def _catalog_filters(
         clauses.append("a.author LIKE %s")
         params.append(_like(author))
         distinct = True
+    if authors:
+        joins.append(f" JOIN `{table}_author` n ON n.document_id = s.document_id")
+        clauses.append(f"n.author IN ({', '.join(['%s'] * len(authors))})")
+        params.extend(authors)
+        distinct = True
     if theme:
         joins.append(f" JOIN `{table}_theme` c ON c.document_id = s.document_id")
         clause, args = _theme_scope_clause("c", theme)
@@ -151,6 +161,7 @@ def count_documents(
     title_contains: str | None = None,
     topic_terms: Sequence[str] | None = None,
     author: str | None = None,
+    authors: Sequence[str] | None = None,
     theme: str | None = None,
     theme_group: str | None = None,
     tag: str | None = None,
@@ -159,8 +170,8 @@ def count_documents(
 ) -> int:
     """Count catalog documents (not chunks) matching the given filters.
 
-    ``author`` and ``title_contains`` match substrings; ``theme`` and ``tag``
-    match names exactly — see
+    ``author`` and ``title_contains`` match substrings; ``authors``, ``theme``
+    and ``tag`` match names exactly — see
     :func:`_catalog_filters`. Date bounds are a half-open ``[from, to)`` interval
     over ``effective_start_date``. Takes the same filter set as
     ``list_documents``/``distribution`` so a count and a listing of the same
@@ -168,7 +179,7 @@ def count_documents(
     table = _table()
     joins, clauses, params, distinct = _catalog_filters(
         source_type, bundle, entity_type=entity_type, title_contains=title_contains,
-        topic_terms=topic_terms, author=author, theme=theme,
+        topic_terms=topic_terms, author=author, authors=authors, theme=theme,
         theme_group=theme_group, tag=tag,
         effective_from=effective_from, effective_to=effective_to,
     )
@@ -189,6 +200,7 @@ def list_documents(
     title_contains: str | None = None,
     topic_terms: Sequence[str] | None = None,
     author: str | None = None,
+    authors: Sequence[str] | None = None,
     theme: str | None = None,
     theme_group: str | None = None,
     tag: str | None = None,
@@ -207,7 +219,7 @@ def list_documents(
     joins, clauses, params, needs_distinct = _catalog_filters(
         source_type, bundle, entity_type=entity_type,
         title_contains=title_contains, topic_terms=topic_terms, author=author,
-        theme=theme, theme_group=theme_group, tag=tag,
+        authors=authors, theme=theme, theme_group=theme_group, tag=tag,
         effective_from=effective_from, effective_to=effective_to,
     )
     distinct = "DISTINCT " if needs_distinct else ""
