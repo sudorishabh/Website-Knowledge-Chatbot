@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated_at": "2026-09-28T10:01:16.398260+00:00",
-    "source_tree_hash": "30d6eeb463f7eef340a7a1498f223be23b02444f6d7b1690e180ce0fa777e584",
+    "generated_at": "2026-10-01T06:39:35.293788+00:00",
+    "source_tree_hash": "f4a062b90c6f78860ebfcf8d5fe723faf47e2f5ad8ee685df6b4734fbaeec47c",
     "repo_name": ".codeboarding-target",
     "depth_level": 2,
     "depth_cap": 2,
@@ -36830,419 +36830,6 @@
           ]
         },
         {
-          "relation": "instruments queries with",
-          "src_name": "Core Clients and Data Models",
-          "dst_name": "Observability and Retrieval Logging",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings._record_response",
-              "target": "app/observability/metrics.py|app.observability.metrics.record_event",
-              "call_sites": [
-                {
-                  "line": 100,
-                  "column": 9
-                },
-                {
-                  "line": 108,
-                  "column": 9
-                },
-                {
-                  "line": 110,
-                  "column": 9
-                }
-              ],
-              "description": "Embedding client records operational metrics for API calls."
-            }
-          ],
-          "src_id": "1.6",
-          "dst_id": "1.7",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
-              "target": "app/observability/retrieval_log/sql.py|app.observability.retrieval_log.sql.instrument",
-              "call_sites": [
-                {
-                  "line": 145,
-                  "column": 27
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings._record_response",
-              "target": "app/observability/metrics.py|app.observability.metrics.record_event",
-              "call_sites": [
-                {
-                  "line": 100,
-                  "column": 9
-                },
-                {
-                  "line": 108,
-                  "column": 9
-                },
-                {
-                  "line": 110,
-                  "column": 9
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "configures client pools using settings from",
-          "src_name": "Core Clients and Data Models",
-          "dst_name": "Application Configuration and Bootstrap",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/core/clients/database.py|app.core.clients.database.get_mysql_pool",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 127,
-                  "column": 16
-                }
-              ],
-              "description": "Database client initializes connection pools using application settings."
-            }
-          ],
-          "src_id": "1.6",
-          "dst_id": "1.8",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 30,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 44,
-                  "column": 21
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/cache.py|app.core.clients.cache.get_redis",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 14,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/database.py|app.core.clients.database.get_mysql_pool",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 127,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/database.py|app.core.clients.database.new_mysql_connection",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 17,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings._record_response",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 95,
-                  "column": 20
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings.embedding_version",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 158,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 115,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/graph.py|app.core.clients.graph.get_graph_driver",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 45,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/graph.py|app.core.clients.graph.read_session",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 58,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/graph.py|app.core.clients.graph.write_session",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 70,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.configured_dimension",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 117,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.delete_document",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 275,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.ensure_collection",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 214,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 20,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.refresh_document_title",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 313,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "reads telemetry configuration from",
-          "src_name": "Observability and Retrieval Logging",
-          "dst_name": "Application Configuration and Bootstrap",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.enabled",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 55,
-                  "column": 21
-                }
-              ],
-              "description": "Retrieval logger checks configuration settings to determine logging state."
-            }
-          ],
-          "src_id": "1.7",
-          "dst_id": "1.8",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/observability/retrieval_log/naming.py|app.observability.retrieval_log.naming.local_zone",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 76,
-                  "column": 28
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder._Limits.__init__",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 71,
-                  "column": 20
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder._merge",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 453,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.enabled",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 55,
-                  "column": 21
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/observability/retrieval_log/sink.py|app.observability.retrieval_log.sink.log_root",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 66,
-                  "column": 19
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/observability/retrieval_log/sink.py|app.observability.retrieval_log.sink.write",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 168,
-                  "column": 8
-                },
-                {
-                  "line": 193,
-                  "column": 29
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/observability/tracing.py|app.observability.tracing.init_observability",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 110,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/observability/tracing.py|app.observability.tracing.record_query_metrics",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 58,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "initializes tracing in",
-          "src_name": "Application Configuration and Bootstrap",
-          "dst_name": "Observability and Retrieval Logging",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/app_factory.py|app.app_factory.create_base_app",
-              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
-              "call_sites": [
-                {
-                  "line": 60,
-                  "column": 5
-                }
-              ],
-              "description": "Application factory initializes telemetry and tracing infrastructure."
-            }
-          ],
-          "src_id": "1.8",
-          "dst_id": "1.7",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/app_factory.py|app.app_factory.create_base_app",
-              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
-              "call_sites": [
-                {
-                  "line": 60,
-                  "column": 5
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
           "relation": "uses schemas and triggers retrieval in",
           "src_name": "API and Workflow Orchestration",
           "dst_name": "Retrieval and Search Engine",
@@ -39011,6 +38598,384 @@
           ]
         },
         {
+          "relation": "instruments queries with",
+          "src_name": "Core Clients and Data Models",
+          "dst_name": "Observability and Retrieval Logging",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings._record_response",
+              "target": "app/observability/metrics.py|app.observability.metrics.record_event",
+              "call_sites": [
+                {
+                  "line": 100,
+                  "column": 9
+                },
+                {
+                  "line": 108,
+                  "column": 9
+                },
+                {
+                  "line": 110,
+                  "column": 9
+                }
+              ],
+              "description": "Embedding client records operational metrics for API calls."
+            }
+          ],
+          "src_id": "1.6",
+          "dst_id": "1.7",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
+              "target": "app/observability/retrieval_log/sql.py|app.observability.retrieval_log.sql.instrument",
+              "call_sites": [
+                {
+                  "line": 145,
+                  "column": 27
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings._record_response",
+              "target": "app/observability/metrics.py|app.observability.metrics.record_event",
+              "call_sites": [
+                {
+                  "line": 100,
+                  "column": 9
+                },
+                {
+                  "line": 108,
+                  "column": 9
+                },
+                {
+                  "line": 110,
+                  "column": 9
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "configures client pools using settings from",
+          "src_name": "Core Clients and Data Models",
+          "dst_name": "Application Configuration and Bootstrap",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/core/clients/database.py|app.core.clients.database.get_mysql_pool",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 127,
+                  "column": 16
+                }
+              ],
+              "description": "Database client initializes connection pools using application settings."
+            }
+          ],
+          "src_id": "1.6",
+          "dst_id": "1.8",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 30,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 44,
+                  "column": 21
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/cache.py|app.core.clients.cache.get_redis",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 14,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/database.py|app.core.clients.database.get_mysql_pool",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 127,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/database.py|app.core.clients.database.new_mysql_connection",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 17,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings._record_response",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 95,
+                  "column": 20
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings.embedding_version",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 158,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 115,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/graph.py|app.core.clients.graph.get_graph_driver",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 45,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/graph.py|app.core.clients.graph.read_session",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 58,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/graph.py|app.core.clients.graph.write_session",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 70,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.configured_dimension",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 117,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.delete_document",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 275,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.ensure_collection",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 214,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 20,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/core/clients/vector_store.py|app.core.clients.vector_store.refresh_document_title",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 313,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "reads telemetry configuration from",
+          "src_name": "Observability and Retrieval Logging",
+          "dst_name": "Application Configuration and Bootstrap",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.enabled",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 55,
+                  "column": 21
+                }
+              ],
+              "description": "Retrieval logger checks configuration settings to determine logging state."
+            }
+          ],
+          "src_id": "1.7",
+          "dst_id": "1.8",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/observability/retrieval_log/naming.py|app.observability.retrieval_log.naming.local_zone",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 76,
+                  "column": 28
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder._Limits.__init__",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 71,
+                  "column": 20
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder._merge",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 453,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.enabled",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 55,
+                  "column": 21
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/observability/retrieval_log/sink.py|app.observability.retrieval_log.sink.log_root",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 66,
+                  "column": 19
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/observability/retrieval_log/sink.py|app.observability.retrieval_log.sink.write",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 168,
+                  "column": 8
+                },
+                {
+                  "line": 193,
+                  "column": 29
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/observability/tracing.py|app.observability.tracing.init_observability",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 110,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/observability/tracing.py|app.observability.tracing.record_query_metrics",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 58,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
           "relation": "manages worker lifecycle of",
           "src_name": "Application Configuration and Bootstrap",
           "dst_name": "API and Workflow Orchestration",
@@ -39050,6 +39015,41 @@
                 {
                   "line": 24,
                   "column": 15
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "initializes tracing in",
+          "src_name": "Application Configuration and Bootstrap",
+          "dst_name": "Observability and Retrieval Logging",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/app_factory.py|app.app_factory.create_base_app",
+              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
+              "call_sites": [
+                {
+                  "line": 60,
+                  "column": 5
+                }
+              ],
+              "description": "Application factory initializes telemetry and tracing infrastructure."
+            }
+          ],
+          "src_id": "1.8",
+          "dst_id": "1.7",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/app_factory.py|app.app_factory.create_base_app",
+              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
+              "call_sites": [
+                {
+                  "line": 60,
+                  "column": 5
                 }
               ],
               "description": ""
