@@ -331,17 +331,40 @@ def test_how_many_authors_counts_author_names_not_documents(monkeypatch):
     )
 
 
-def test_how_many_themes_counts_themes_not_documents(monkeypatch):
+def test_how_many_themes_is_answered_from_the_theme_list(monkeypatch):
     """Measured: "How many themes are there?" was answered "There are 5524
-    items"."""
-    seen = _count_distinct_spy(monkeypatch, n=7)
+    items". A distinct count over the theme facet would say 26, because it
+    includes sub-theme rows; the listing says 7, as the home page does."""
+    _count_distinct_spy(monkeypatch)
+    monkeypatch.setattr(
+        state, "theme_vocabulary",
+        lambda **kw: [
+            {"theme": name, "theme_type": "primary", "parent": None,
+             "theme_group": "main", "documents": 3}
+            for name in ("Climate Change", "Energy")
+        ] + [{"theme": "Air", "theme_type": "sub", "parent": "Environment",
+              "theme_group": "main", "documents": 3}],
+    )
     analysis = qp.QueryAnalysis(
         search_query="How many themes are there?", intent="structured",
         operation="count",
     )
     out = dr.answer_structured("How many themes are there?", analysis=analysis)
+    assert out["answer"].startswith("The collection covers 2 main themes")
+    assert "Air" not in out["answer"]
+
+
+def test_a_scoped_theme_count_counts_distinct_themes(monkeypatch):
+    seen = _count_distinct_spy(monkeypatch, n=4)
+    question = "How many themes does Meena Sehgal publish in?"
+    analysis = qp.QueryAnalysis(
+        search_query=question, intent="structured", operation="count",
+        author="Meena Sehgal",
+    )
+    out = dr.answer_structured(question, analysis=analysis)
     assert seen["dimension"] == "theme"
-    assert out["answer"].startswith("There are 7 themes")
+    # The name is whatever author resolution canonicalised it to.
+    assert out["answer"].startswith("There are 4 themes by ")
 
 
 def test_a_counted_noun_does_not_override_a_deliberate_count_of(monkeypatch):

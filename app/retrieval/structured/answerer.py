@@ -198,6 +198,25 @@ def _counted_noun(question: str) -> str | None:
     return None
 
 
+# Slots that narrow a count to part of the catalog.
+_SCOPE_SLOTS = ("bundle", "theme", "tags", "author", "title_contains",
+                "date_from", "date_to", "year")
+
+
+def _recount(slots: Any, counted: str) -> None:
+    """Point a count at the facet its noun names.
+
+    An unscoped theme count is the theme listing's question ("How many themes
+    are there?" -> list_themes, as the catalog prompt's own example has it): a
+    distinct count over the theme facet includes sub-theme rows and answered 26
+    where the listing and the home page both say 7. Scoped ("how many themes
+    does Meena Sehgal publish in") it stays a distinct count."""
+    if counted == "theme" and not any(getattr(slots, s, None) for s in _SCOPE_SLOTS):
+        slots.operation = "list_themes"
+        return
+    slots.count_of = counted
+
+
 # One calendar year stated as the period ("in 2030", "during 2019"). The year
 # alone is not enough — "the 2030 Agenda" names a subject, not a period.
 _IN_YEAR = re.compile(r"\b(?:in|during)\s+(?:the\s+year\s+)?((?:19|20)\d{2})\b", re.I)
@@ -392,16 +411,17 @@ def answer_structured(
     )
     if slots is None:
         return None
+    # The year first: it scopes the count, which decides how a theme count is read.
+    year = _stated_year(question, slots)
+    if year is not None:
+        logger.info("Restoring the year %s the question states as its period.", year)
+        _restore_year(slots, year)
     if getattr(slots, "operation", None) == "count" and getattr(
         slots, "count_of", "records"
     ) in (None, "records"):
         counted = _counted_noun(question)
         if counted is not None:
-            slots.count_of = counted
-    year = _stated_year(question, slots)
-    if year is not None:
-        logger.info("Restoring the year %s the question states as its period.", year)
-        _restore_year(slots, year)
+            _recount(slots, counted)
     # A question about people is not a question about documents. The catalog
     # stores authorship, which is a different claim from "works on" — so unless
     # the question named the person to look up, listing documents at it produces
