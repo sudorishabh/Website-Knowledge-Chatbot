@@ -163,6 +163,42 @@ def test_a_named_author_is_still_answerable(monkeypatch):
     assert called, "a question naming the author must still reach the planner"
 
 
+@pytest.mark.parametrize(
+    "question, over",
+    [
+        ("Which authors have published the most on climate change?",
+         dict(operation="distribution", group_by="author", theme="climate change")),
+        ("Which researchers have written the most papers?",
+         dict(operation="distribution", group_by="author")),
+        ("How many authors are there?", dict(operation="count", count_of="author")),
+    ],
+)
+def test_an_authorship_question_is_answered_from_the_catalog(monkeypatch, question, over):
+    """Authorship is exactly what the catalog records. Measured: the first
+    question was declined as a person question and refused."""
+    called: list = []
+    monkeypatch.setattr(planner, "plan", lambda *a, **k: called.append(1) or "plan")
+    monkeypatch.setattr(planner, "execute", lambda *a, **k: [])
+    from app.retrieval.structured import answerer
+
+    answerer.answer_structured(question, analysis=slots(**over))
+    assert called, "an authorship question must reach the planner"
+
+
+def test_a_work_question_grouped_by_author_is_still_declined(monkeypatch):
+    """Grouping by author answers who *wrote*; "who works on X" is not that claim."""
+    monkeypatch.setattr(
+        planner, "plan", lambda *a, **k: pytest.fail("must not plan a work question")
+    )
+    from app.retrieval.structured import answerer
+
+    result = answerer.answer_structured(
+        "Which researchers work on AI and sustainability?",
+        analysis=slots(operation="distribution", group_by="author"),
+    )
+    assert result is None
+
+
 def test_a_question_about_one_theme_is_not_answered_with_the_theme_list(monkeypatch):
     """Measured: "tell me about climate change theme" came back as the list of
     all seven themes. The listing enumerates the vocabulary and ignores the

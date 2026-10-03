@@ -172,6 +172,34 @@ def _spans_all_content(question: str, bundle: str | None) -> bool:
     return not (label_words & question_words)
 
 
+# Words that ask about authorship itself, which the catalog records exactly.
+_AUTHORSHIP_WORDS = re.compile(
+    r"\b(?:authors?|authored|wrote|written|writers?|writing|publish(?:ed|es|ing)?|"
+    r"contributors?|contributed)\b",
+    re.I,
+)
+
+
+def _asks_about_authorship(question: str, slots: Any) -> bool:
+    """Whether a person question is answered by the catalog's authorship facet.
+
+    "Which authors have published the most on climate change?" is a breakdown by
+    author, and "how many authors are there?" a count of author names — both
+    are exactly what the catalog stores, and declining them as person questions
+    left the first refused and the second answered from an unrelated book.
+    "Which researchers work on X" asks about work, not authorship, and is still
+    declined (see `answer_structured`)."""
+    if not _AUTHORSHIP_WORDS.search(question):
+        return False
+    operation = getattr(slots, "operation", None)
+    if operation == "count":
+        return getattr(slots, "count_of", None) == "author"
+    if operation == "distribution":
+        return "author" in (getattr(slots, "group_by", None),
+                            getattr(slots, "secondary_group_by", None))
+    return False
+
+
 # error_kind values that mean "the filter was understood but could not be
 # honored" — the answer is the result's `rendered` message, not a cue to guess
 # via semantic search. Every other ok=False (unknown entity, no matching
@@ -312,7 +340,8 @@ def answer_structured(
     # hands it to the layer that can use them.
     if (topic.enabled()
             and topic.wants_person(question)
-            and not getattr(slots, "author", None)):
+            and not getattr(slots, "author", None)
+            and not _asks_about_authorship(question, slots)):
         logger.info(
             "Declining the structured path for a person question; the catalog "
             "lists documents, not people."
