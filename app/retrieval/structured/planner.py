@@ -37,6 +37,7 @@ from app.retrieval.structured.tools import (
     lookup_record,
     resolve_entity,
 )
+from app.retrieval.structured import detail as structured_detail
 from app.retrieval.structured import theme_scope
 from app.retrieval.structured import topic
 from app.retrieval.structured.types import (
@@ -403,11 +404,12 @@ def plan_multi(question: str, *, output_format: str = "default") -> DatabasePlan
 
 
 def _run(call: ToolCall, question: str | None) -> ToolResult:
+    detail = call.detail and structured_detail.enabled()
     if call.tool == "count_records":
         # The question decides whether a zero under a title substring is the
         # answer or a guess to fall through on (see tools._title_guess_zero).
         return count_records(call.entity, call.filters, question=question,
-                             count_of=call.count_of)
+                             count_of=call.count_of, detail=detail)
     if call.tool == "list_records":
         return list_records(call.entity, call.filters, sort=call.sort,
                             limit=call.limit, offset=call.offset,

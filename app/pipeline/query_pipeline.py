@@ -523,7 +523,9 @@ def _db_section(
             return ""
         from app.retrieval.structured.answerer import answer_structured
 
-        structured = answer_structured(question, history, analysis=pq.analysis)
+        # The headline alone: the grounded answer that follows is the detail.
+        structured = answer_structured(question, history, analysis=pq.analysis,
+                                       detail=False)
         return structured["answer"] if structured else ""
 
 

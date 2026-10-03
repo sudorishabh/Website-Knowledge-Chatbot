@@ -154,7 +154,7 @@ def test_answer_structured_zero_for_a_title_question_is_answered(monkeypatch):
     )
     out = dr.answer_structured(question, analysis=analysis)
     assert out["answer"] == (
-        "There are 0 items with 'Solar' in the title matching your query."
+        "There are no items with 'Solar' in the title matching your query."
     )
 
 

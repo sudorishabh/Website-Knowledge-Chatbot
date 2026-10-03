@@ -277,7 +277,7 @@ def test_count_records_resolved_theme_with_no_rows_is_an_honest_zero(monkeypatch
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 0)
     r = tools.count_records("news", RecordFilters(theme="Climate Change"))
     assert r.ok is True and r.data["count"] == 0
-    assert r.rendered == "There are 0 news items on 'Climate Change' matching your query."
+    assert r.rendered == "There are no news items on 'Climate Change' matching your query."
 
 
 @pytest.fixture
@@ -414,7 +414,7 @@ def test_zero_is_honest_when_the_question_is_about_titles(monkeypatch):
         )
         assert r.ok, question
         assert r.rendered == (
-            "There are 0 reports with 'Solar' in the title matching your query."
+            "There are no reports with 'Solar' in the title matching your query."
         )
 
 
@@ -428,7 +428,7 @@ def test_zero_without_a_title_filter_stays_an_honest_zero(monkeypatch):
         question="how many reports in 2023?",
     )
     assert r.ok
-    assert r.rendered == "There are 0 reports in 2023 matching your query."
+    assert r.rendered == "There are no reports in 2023 matching your query."
 
 
 def test_nonzero_title_count_is_unaffected_by_the_guard(monkeypatch):

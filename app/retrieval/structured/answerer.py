@@ -315,6 +315,16 @@ def _terminal_result(results: list[ToolResult], *, strict: bool) -> ToolResult |
     return None
 
 
+def _gate_detail(calls: Sequence[Any], *, allowed: bool) -> None:
+    """Detail only for a plan with one real question in it. A `resolve_entity`
+    step only names who or what the other call filters on, so it does not
+    count; two counts side by side are a comparison, and each part following
+    itself with spreads and recent items would bury it."""
+    substantive = [c for c in calls if getattr(c, "tool", None) != "resolve_entity"]
+    for call in calls:
+        call.detail = allowed and len(substantive) == 1
+
+
 def _compose(results: list[ToolResult]) -> dict[str, Any]:
     """Merge the successful tool results into one structured answer: stack the
     rendered sections and renumber citations sequentially across them. A single
@@ -389,8 +399,14 @@ def answer_structured(
     history: Sequence[dict[str, str]] | None = None,
     *,
     analysis: QueryAnalysis | None = None,
+    detail: bool = True,
 ) -> dict[str, Any] | None:
     """Answer a catalog (database-intent) query via the Database Planner + tools.
+
+    ``detail`` lets a single-call answer follow its headline with what the same
+    scope shows (see `app.retrieval.structured.detail`). A combined answer passes
+    False — its prose says the rest — and a multi-call plan never gets it, so a
+    comparison stays a set of headlines rather than several stacked reports.
 
     The unified analysis already extracted the structured slots — reuse it and let
     the planner pick the tool; parse only when no usable analysis came. Returns
@@ -467,6 +483,7 @@ def answer_structured(
         db_plan = planner.plan(
             slots, output_format=output_format, question=question
         )
+    _gate_detail(getattr(db_plan, "calls", None) or [], allowed=detail)
     results = planner.execute(db_plan, question=question)
     ok = [r for r in results if r.ok]
     if not ok:

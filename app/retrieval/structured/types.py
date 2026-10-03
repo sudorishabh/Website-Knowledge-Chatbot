@@ -91,6 +91,10 @@ class ToolCall:
     theme_scope: str = "main"
     # rendering shape for list/aggregate output (table/timeline/list/default)
     output_format: str = "default"
+    # Whether the answer may follow its headline with detail sections (see
+    # `app.retrieval.structured.detail`). Cleared for a part of a multi-call
+    # plan or a combined answer, where the parts or the prose say the rest.
+    detail: bool = True
     # resolve_entity
     query: str | None = None
     resolve_type: ResolveType | None = None

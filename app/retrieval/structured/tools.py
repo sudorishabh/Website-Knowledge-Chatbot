@@ -30,6 +30,7 @@ from app.retrieval.structured.entities import (
     is_known,
     normalize_entity,
 )
+from app.retrieval.structured import detail as structured_detail
 from app.retrieval.structured import topic
 from app.retrieval.structured.filters import AmbiguousFilter, _parse_date, resolve_filters
 from app.retrieval.structured.rendering import item_line, md_link, record_date
@@ -374,7 +375,7 @@ def _project_fields(
 
 def count_records(
     entity: str | None, filters: RecordFilters, *, question: str | None = None,
-    count_of: str = "records",
+    count_of: str = "records", detail: bool = False,
 ) -> ToolResult:
     """How many catalog documents match. Unknown entity returns ok=False (fall
     through, never a misleading zero). Names are canonicalized first, so the
@@ -390,7 +391,10 @@ def count_records(
     facet within the same scope. "How many authors work on Energy" and "how
     many articles are under Energy" share every filter and differ only
     here — and answering one with the other's number is the failure this
-    parameter exists to prevent."""
+    parameter exists to prevent.
+
+    ``detail`` follows the headline with what the same scope shows (see
+    `app.retrieval.structured.detail`); off, the headline stands alone."""
     guarded = _entity_guard("count_records", entity)
     if guarded is not None:
         return guarded
@@ -458,7 +462,27 @@ def count_records(
     # identity resolution nobody has done; "955 distinct author names recorded
     # in the source data" is what the query actually established.
     tail = "recorded in the source data." if source_labels else "matching your query."
-    rendered = f"There {verb} {total} {noun}{phrase} {tail}"
+    rendered = f"There {verb} {total or 'no'} {noun}{phrase} {tail}"
+    citations: list[dict[str, Any]] = []
+    if detail:
+        if dimension:
+            extra = structured_detail.for_distinct(
+                total, dimension=dimension, common=common
+            )
+        elif total:
+            extra = structured_detail.for_count(
+                total, common=common, bundle=bundle, filters=scope.effective
+            )
+        else:
+            extra = structured_detail.for_zero(
+                common=common, bundle=bundle, filters=scope.effective,
+                noun=lambda n: entity_label(bundle or "items", n),
+                scope_without_period=_scope_phrase(
+                    replace(scope.effective, date_from=None, date_to=None)),
+                scope_without_type=phrase,
+            )
+        rendered = extra.render_onto(rendered)
+        citations = extra.citations
     data: dict[str, Any] = {
         "count": total, "applied": _applied_filters(bundle, scope.effective),
     }
@@ -474,7 +498,8 @@ def count_records(
             else f"distinct_{count_of}"
         )
     return ToolResult(
-        tool="count_records", entity=bundle, ok=True, data=data, rendered=rendered,
+        tool="count_records", entity=bundle, ok=True, data=data,
+        citations=citations, rendered=rendered,
     )
 
 

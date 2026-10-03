@@ -57,6 +57,22 @@ def _priority_pages_off_by_default(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _catalog_answer_detail_off_by_default(monkeypatch):
+    """Keep the catalog answers' detail queries out of unrelated tests.
+
+    The feature ships on, and with it on every test that drives a catalog tool
+    would issue the follow-up SELECTs its stubs never anticipated — reaching
+    the developer's MySQL, or failing open and testing nothing. A test of the
+    feature turns it on for itself and stubs the queries.
+    """
+    from app.config import get_settings
+
+    monkeypatch.setattr(
+        get_settings(), "catalog_answer_detail_enabled", False, raising=False
+    )
+
+
+@pytest.fixture(autouse=True)
 def _knowledge_stage_off_by_default(monkeypatch):
     """Keep the ingest-path knowledge stage out of unrelated ingestion tests.
 
