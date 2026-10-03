@@ -144,6 +144,40 @@ def test_a_theme_page_named_outright_does_not_overrule_a_count(wired, monkeypatc
     assert result["answer"] == "catalog answer"
 
 
+def _person_pq(operation):
+    analysis = qp.QueryAnalysis(search_query="q", intent="structured",
+                                operation=operation, author="Suneel Pandey")
+    return _pq(intent="structured", analysis=analysis)
+
+
+PERSON_TARGET = Target("Dr Suneel Pandey", "profile", "person",
+                       url="https://teriin.org/profile/suneel-pandey")
+
+
+@pytest.mark.parametrize("operation", ["count", "distribution"])
+def test_a_persons_page_does_not_overrule_a_count_of_their_publications(
+    wired, monkeypatch, operation,
+):
+    """Measured: the profile page took "how many publications by Suneel Pandey",
+    listed none, and the answer was a refusal while the catalog holds 35."""
+    _enable(monkeypatch)
+    wired.state.pq = _person_pq(operation)
+    wired.state.targets = [PERSON_TARGET]
+    result, _ = pipe._prepare("how many publications by Suneel Pandey",
+                              history=None, top_k=None)
+    assert result["answer"] == "catalog answer"
+
+
+def test_a_persons_page_still_owns_a_question_about_them(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _person_pq("list")
+    wired.state.targets = [PERSON_TARGET]
+    result, gen = pipe._prepare("what does Suneel Pandey work on",
+                                history=None, top_k=None)
+    assert wired.log.structured == []
+    assert gen is not None
+
+
 def test_the_regional_centres_group_overrules_the_catalog(wired, monkeypatch):
     _enable(monkeypatch)
     wired.state.pq = _pq(intent="structured")

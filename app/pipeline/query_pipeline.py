@@ -424,15 +424,39 @@ def _names_a_theme_page(target: Any) -> bool:
     return target.kind == "theme" and target.reason in ("name", "theme")
 
 
-def _priority_overrides_catalog(targets: list[Any] | None, *, themes_listing: bool = False) -> bool:
+#: Catalog operations that report numbers. A page can describe a person, but it
+#: cannot count what they authored.
+_COUNTING_OPERATIONS = frozenset({"count", "distribution"})
+
+
+def _counts_authorship(pq: ProcessedQuery) -> bool:
+    """Whether the catalog route is counting one named author's documents —
+    "how many publications by Suneel Pandey" is a count of authorship, which the
+    catalog records and the person's profile page does not."""
+    analysis = pq.analysis
+    return (analysis is not None
+            and getattr(analysis, "operation", None) in _COUNTING_OPERATIONS
+            and bool(getattr(analysis, "author", None)))
+
+
+def _priority_overrides_catalog(
+    targets: list[Any] | None, *, themes_listing: bool = False,
+    counts_authorship: bool = False,
+) -> bool:
     """Whether a live page owns this question outright, so the catalog route —
-    which cannot see these pages — must not answer it instead."""
+    which cannot see these pages — must not answer it instead.
+
+    A named person's page gives way to a count of what that person authored:
+    measured 2026-10-04, "how many publications by Suneel Pandey" was taken by
+    his profile page, which lists none, and refused, while the catalog holds 35."""
     for target in targets or ():
         if themes_listing and _names_a_theme_page(target):
             # Understanding can read "tell me about the climate change thematic"
             # as a theme listing; the themes are flat, so that theme's page answers.
             return True
         if target.reason not in _CATALOG_OVERRIDING:
+            continue
+        if counts_authorship and target.reason == "person":
             continue
         if getattr(target.page, "is_home", False) and not themes_listing:
             continue  # "documents in each thematic area" is a catalog count
@@ -624,7 +648,10 @@ def _prepare(
     # tenders") must reach that page rather than be answered from the catalog.
     priority_targets = _priority_targets(question, pq)
     themes_listing = _lists_themes(pq)
-    page_owned = _priority_overrides_catalog(priority_targets, themes_listing=themes_listing)
+    page_owned = _priority_overrides_catalog(
+        priority_targets, themes_listing=themes_listing,
+        counts_authorship=_counts_authorship(pq),
+    )
     # A query that needs both catalog facts and document content: keep the
     # deterministic catalog answer and prefix it onto the grounded content answer.
     # Not for a theme listing a live page owns: the catalog's list of themes
