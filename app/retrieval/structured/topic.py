@@ -64,6 +64,7 @@ _STOP = frozenset(
     find finds found look looks looking want wants need needs came come comes
     coming released release releases issued issue issues produced produce
     down mention mentions mentioned mentioning
+    title titles titled called named headline headlines
     """.split()
 )
 

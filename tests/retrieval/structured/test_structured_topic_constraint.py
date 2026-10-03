@@ -217,6 +217,21 @@ def test_the_content_type_alone_leaves_nothing_to_constrain(no_taxonomy):
     assert call.filters.topic_terms == ()
 
 
+def test_naming_a_title_is_not_a_topic(no_taxonomy):
+    """Measured: "Find the article titled Coastal Blue Carbon in Practice" kept
+    "titled" as a topic word, so the lookup also required the title to contain
+    "titled", matched nothing, and fell through to an answer with the wrong link."""
+    for question in (
+        "Find the article titled Coastal Blue Carbon in Practice",
+        "Show the article called Coastal Blue Carbon in Practice",
+        "Which article is named Coastal Blue Carbon in Practice?",
+        "Article with the title Coastal Blue Carbon in Practice",
+    ):
+        call = plan_for(question, operation="lookup", bundle="article",
+                        title_contains="Coastal Blue Carbon in Practice")
+        assert call.filters.topic_terms == (), question
+
+
 def test_a_collective_noun_is_not_a_topic(no_taxonomy):
     """"publications" names no subject whether or not a bundle was resolved."""
     assert "publications" not in topic.residual_topic(
