@@ -304,6 +304,120 @@ def test_answer_structured_skips_parse_when_analysis_provided(monkeypatch):
     assert out["answer"] == "There are 5 events in 2024 matching your query."
 
 
+def _count_distinct_spy(monkeypatch, n=7):
+    seen: dict = {}
+
+    def fake(dimension, **kw):
+        seen.update(kw, dimension=dimension)
+        return n
+
+    monkeypatch.setattr(state, "count_distinct_values", fake)
+    monkeypatch.setattr(state, "count_documents", _forbid_count)
+    return seen
+
+
+def test_how_many_authors_counts_author_names_not_documents(monkeypatch):
+    """Measured: the analysis carried count_of="records" for this question, so
+    it would have been answered with the number of documents."""
+    seen = _count_distinct_spy(monkeypatch, n=955)
+    analysis = qp.QueryAnalysis(
+        search_query="How many authors are there?", intent="structured",
+        operation="count",
+    )
+    out = dr.answer_structured("How many authors are there?", analysis=analysis)
+    assert seen["dimension"] == "author"
+    assert out["answer"].startswith(
+        "There are 955 distinct author names recorded in the source data."
+    )
+
+
+def test_how_many_themes_counts_themes_not_documents(monkeypatch):
+    """Measured: "How many themes are there?" was answered "There are 5524
+    items"."""
+    seen = _count_distinct_spy(monkeypatch, n=7)
+    analysis = qp.QueryAnalysis(
+        search_query="How many themes are there?", intent="structured",
+        operation="count",
+    )
+    out = dr.answer_structured("How many themes are there?", analysis=analysis)
+    assert seen["dimension"] == "theme"
+    assert out["answer"].startswith("There are 7 themes")
+
+
+def test_a_counted_noun_does_not_override_a_deliberate_count_of(monkeypatch):
+    seen = _count_distinct_spy(monkeypatch)
+    analysis = qp.QueryAnalysis(
+        search_query="q", intent="structured", operation="count", count_of="year",
+    )
+    dr.answer_structured("How many themes cover years of work?", analysis=analysis)
+    assert seen["dimension"] == "year"
+
+
+def test_counted_noun_reads_only_facet_nouns():
+    assert dr._counted_noun("How many distinct authors wrote on energy?") == "author"
+    assert dr._counted_noun("how many main themes are there") == "theme"
+    assert dr._counted_noun("How many thematic areas does TERI have?") == "theme"
+    assert dr._counted_noun("How many content types are there?") == "content_type"
+    # Documents, and nouns the catalog does not record as a facet, stay as they were.
+    assert dr._counted_noun("How many articles on climate change?") is None
+    assert dr._counted_noun("How many people work at TERI?") is None
+    assert dr._counted_noun("How many years of reports are there?") is None
+
+
+def test_a_year_the_classifier_dropped_is_restored(monkeypatch):
+    """Measured: "How many events were held in 2030?" arrived without dates — the
+    coverage directive tells the classifier to drop a period the catalog does not
+    reach — and was answered with the all-time total of 1082 events."""
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 0)
+    analysis = qp.QueryAnalysis(
+        search_query="How many events were held in 2030?", intent="structured",
+        operation="count", bundle="events",
+    )
+    out = dr.answer_structured("How many events were held in 2030?", analysis=analysis)
+    assert seen["effective_from"] == datetime(2030, 1, 1)
+    assert seen["effective_to"] == datetime(2031, 1, 1)
+    assert "in 2030" in out["answer"]
+
+
+def test_a_year_restores_through_the_parse_fallback(monkeypatch):
+    monkeypatch.setattr(
+        dr, "parse_structured",
+        lambda q, h=None: dr.StructuredQuery(operation="count", bundle="events"),
+    )
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 0)
+    dr.answer_structured("How many events were held during 2019?")
+    assert seen["effective_from"] == datetime(2019, 1, 1)
+
+
+def test_a_year_that_names_a_subject_is_not_a_period(monkeypatch):
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 4)
+    for question in ("How many reports are there on the 2030 Agenda?",
+                     "How many reports compare 2020 with 2030?",
+                     "How many reports are titled Energy in 2030?"):
+        seen.clear()
+        analysis = qp.QueryAnalysis(
+            search_query=question, intent="structured", operation="count",
+            bundle="report",
+            title_contains="Energy in 2030" if "titled" in question else None,
+        )
+        dr.answer_structured(question, analysis=analysis)
+        assert "effective_from" not in seen, question
+
+
+def test_a_year_the_classifier_kept_is_left_alone(monkeypatch):
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 5)
+    analysis = qp.QueryAnalysis(
+        search_query="q", intent="structured", operation="count", bundle="events",
+        date_from="2024-03-01", date_to="2024-04-01",
+    )
+    dr.answer_structured("How many events were held in 2024?", analysis=analysis)
+    assert seen["effective_from"] == datetime(2024, 3, 1)
+
+
 def test_answer_structured_falls_back_to_parse_without_operation(monkeypatch):
     monkeypatch.setattr(
         dr, "parse_structured",

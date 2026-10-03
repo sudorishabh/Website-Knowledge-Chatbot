@@ -172,6 +172,68 @@ def _spans_all_content(question: str, bundle: str | None) -> bool:
     return not (label_words & question_words)
 
 
+# The noun after "how many" names what is counted. The unified analysis has no
+# guidance for `count_of` and leaves it at "records": measured 2026-10-04, "how
+# many authors are there?" and "how many themes are there?" both arrived that
+# way, and the second was answered "There are 5524 items". Only nouns that name
+# a catalog facet unambiguously are read here; "people" or "years" can mean
+# something the catalog does not record, so they are left to the classifier.
+_QUALIFIER = r"(?:different\s+|distinct\s+|unique\s+|main\s+|other\s+)*"
+_COUNTED_NOUNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(rf"\bhow\s+many\s+{_QUALIFIER}(?:authors?|writers?|contributors?)\b", re.I),
+     "author"),
+    (re.compile(rf"\bhow\s+many\s+{_QUALIFIER}(?:themes?|thematic\s+areas?)\b", re.I),
+     "theme"),
+    (re.compile(rf"\bhow\s+many\s+{_QUALIFIER}(?:content\s+types?|(?:types|kinds)\s+of\s+content)\b",
+                re.I),
+     "content_type"),
+)
+
+
+def _counted_noun(question: str) -> str | None:
+    """The facet a "how many <noun>" question counts, when the noun names one."""
+    for pattern, count_of in _COUNTED_NOUNS:
+        if pattern.search(question):
+            return count_of
+    return None
+
+
+# One calendar year stated as the period ("in 2030", "during 2019"). The year
+# alone is not enough — "the 2030 Agenda" names a subject, not a period.
+_IN_YEAR = re.compile(r"\b(?:in|during)\s+(?:the\s+year\s+)?((?:19|20)\d{2})\b", re.I)
+_ANY_YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
+
+
+def _stated_year(question: str, slots: Any) -> int | None:
+    """A year the question states as its period but the slots dropped.
+
+    The catalog-coverage directive tells the classifier to leave the dates null
+    for a period the catalog does not reach, which suits passage retrieval and
+    answers a count wrongly: "how many events were held in 2030?" came back as
+    "There are 1082 events", the all-time total. Restoring the year makes the
+    count an honest zero instead. Only one distinct year, stated with "in" or
+    "during", and not part of a title the question names."""
+    if any(getattr(slots, name, None) for name in ("date_from", "date_to", "year")):
+        return None
+    if len(set(_ANY_YEAR.findall(question))) != 1:
+        return None
+    match = _IN_YEAR.search(question)
+    if match is None:
+        return None
+    if match.group(1) in (getattr(slots, "title_contains", None) or ""):
+        return None
+    return int(match.group(1))
+
+
+def _restore_year(slots: Any, year: int) -> None:
+    # The parse fallback carries a `year` shorthand (its `date_to` is derived);
+    # the unified analysis carries the bounds themselves, `date_to` exclusive.
+    if "year" in getattr(type(slots), "model_fields", {}):
+        slots.year = year
+    else:
+        slots.date_from, slots.date_to = f"{year:04d}-01-01", f"{year + 1:04d}-01-01"
+
+
 # Words that ask about authorship itself, which the catalog records exactly.
 _AUTHORSHIP_WORDS = re.compile(
     r"\b(?:authors?|authored|wrote|written|writers?|writing|publish(?:ed|es|ing)?|"
@@ -330,6 +392,16 @@ def answer_structured(
     )
     if slots is None:
         return None
+    if getattr(slots, "operation", None) == "count" and getattr(
+        slots, "count_of", "records"
+    ) in (None, "records"):
+        counted = _counted_noun(question)
+        if counted is not None:
+            slots.count_of = counted
+    year = _stated_year(question, slots)
+    if year is not None:
+        logger.info("Restoring the year %s the question states as its period.", year)
+        _restore_year(slots, year)
     # A question about people is not a question about documents. The catalog
     # stores authorship, which is a different claim from "works on" — so unless
     # the question named the person to look up, listing documents at it produces
