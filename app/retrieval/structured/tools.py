@@ -32,6 +32,7 @@ from app.retrieval.structured.entities import (
 )
 from app.retrieval.structured import topic
 from app.retrieval.structured.filters import AmbiguousFilter, _parse_date, resolve_filters
+from app.retrieval.structured.rendering import item_line, md_link, record_date
 from app.retrieval.structured.types import GroupBy, RecordFilters, ToolResult
 from app.schemas.query import Citation
 
@@ -250,9 +251,9 @@ def _applied_filters(bundle: str | None, filters: RecordFilters) -> dict[str, st
 def _render_list_table(records: Sequence[StateRecord]) -> str:
     lines = ["| Title | Published | Type |", "| --- | --- | --- |"]
     for r in records:
-        title = _md_cell(r.title or r.document_id)
-        cell = f"[{title}]({r.url})" if r.url else title
-        lines.append(f"| {cell} | {(r.effective_start_date or '')[:10]} | {r.bundle or ''} |")
+        cell = _md_cell(md_link(r.title or r.document_id, r.url))
+        kind = entity_label(r.bundle, 1) if r.bundle else ""
+        lines.append(f"| {cell} | {record_date(r)} | {kind} |")
     return "\n".join(lines)
 
 
@@ -267,24 +268,41 @@ def _render_list_timeline(records: Sequence[StateRecord]) -> str:
                 lines.append("")
             lines.append(f"{y}:")
             year = y
-        label = (r.effective_start_date or "")[:7] or "n.d."
-        title = r.title or r.document_id
-        lines.append(f"- {label}: {title} ({r.url})" if r.url else f"- {label}: {title}")
+        label = record_date(r) or "n.d."
+        lines.append(f"- {label}: {md_link(r.title or r.document_id, r.url)}")
     return "\n".join(lines)
 
 
-def _default_list_line(r: StateRecord) -> str:
-    """One bullet, with its date attached whenever the record carries one — a
-    bare title-and-link tells the reader nothing they could not get from the
-    citation list, whereas the date is real record data already on hand."""
-    title = r.title or r.document_id
-    date = (r.effective_start_date or "")[:10]
-    head = f"{title} — {date}" if date else title
-    return f"- {head} ({r.url})" if r.url else f"- {head}"
+def _topic_phrase(topic_terms: Sequence[str]) -> str:
+    """The title words a topic-constrained list was narrowed by, stated so the
+    reader can see why these rows and not others (any one word qualifies)."""
+    if not topic_terms:
+        return ""
+    words = " or ".join(f"'{term}'" for term in topic_terms)
+    return f" mentioning {words} in the title"
+
+
+def _list_lead(
+    shown: int, total: int | None, bundle: str | None, filters: RecordFilters,
+    *, ranked: bool,
+) -> str:
+    """The sentence above a list: how many rows, of how many, in which scope.
+
+    When the page is a cut of a larger set the total leads, rather than trailing
+    the list where it was easy to miss. Rows ranked by topic match are not
+    "the most recent", so they are not called that."""
+    scope = _scope_phrase(filters) + _topic_phrase(filters.topic_terms)
+    if total and total > shown:
+        noun = entity_label(bundle or "items", total)
+        if ranked:
+            return f"Here are {shown} of the {total} {noun}{scope}, closest matches first:"
+        return f"Here are the {shown} most recent of {total} {noun}{scope}:"
+    return f"Found {shown} {entity_label(bundle or 'items', shown)}{scope}:"
 
 
 def _render_records(
-    records: Sequence[StateRecord], output_format: str, *, bundle: str | None, filters: RecordFilters
+    records: Sequence[StateRecord], output_format: str, *, bundle: str | None,
+    filters: RecordFilters, total: int | None = None, ranked: bool = False,
 ) -> tuple[str, list[dict], list[dict]]:
     """Body + structured records + citations, in one consistent order (timeline
     sorts newest-first; citations follow the rendered order)."""
@@ -296,7 +314,8 @@ def _render_records(
         body = _render_list_table(ordered)
     else:
         ordered = list(records)
-        body = "\n".join(_default_list_line(r) for r in ordered)
+        # The kind of each item is only news when the list spans several kinds.
+        body = "\n".join(item_line(r, with_type=bundle is None) for r in ordered)
     citations = [
         Citation(
             n=i, type="website", title=r.title, url=r.url,
@@ -314,8 +333,7 @@ def _render_records(
     # Named the scope actually matched, not a generic "here is what I found" —
     # the same information `count_records` already states in its own sentence,
     # so a list answer is no less specific than a count of the same query.
-    noun = entity_label(bundle or "items", len(ordered))
-    lead = f"Found {len(ordered)} {noun}{_scope_phrase(filters)}:"
+    lead = _list_lead(len(ordered), total, bundle, filters, ranked=ranked)
     return lead + "\n" + body, data, citations
 
 
@@ -525,9 +543,6 @@ def list_records(
             return missed
         return ToolResult(tool="list_records", entity=bundle, ok=False,
                           error="no matching records")
-    rendered, data, citations = _render_records(
-        records, output_format, bundle=bundle, filters=scope.effective
-    )
     # A list cut off at `limit` says nothing about how much it cut off, so a
     # user cannot tell ten from six hundred. Count the same scope and say so
     # whenever the page is full — the count is over exactly the filters that
@@ -535,11 +550,12 @@ def list_records(
     total = None
     if len(records) >= limit and topic.enabled():
         total = _scope_total(ent, bundle, scope)
-        if total and total > len(records):
-            rendered = (
-                f"{rendered}\n\nShowing the {len(records)} most recent of "
-                f"{total} {entity_label(bundle or 'record', total)}."
-            )
+    rendered, data, citations = _render_records(
+        records, output_format, bundle=bundle, filters=scope.effective, total=total,
+        # A topic ranks rows by match before recency, and a later page is not
+        # the most recent either.
+        ranked=bool(scope.topic_terms) or offset > 0,
+    )
     return ToolResult(
         tool="list_records", entity=bundle, ok=True,
         data={"records": _project_fields(data, fields),

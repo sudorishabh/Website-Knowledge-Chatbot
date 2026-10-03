@@ -505,7 +505,7 @@ def test_list_records_plain(monkeypatch):
     assert r.ok
     assert r.data["records"][0]["document_id"] == "d1"
     assert r.citations[0]["title"] == "A"
-    assert r.rendered == "Found 1 news item:\n- A — 2024-05-01 (http://a)"
+    assert r.rendered == "Found 1 news item:\n- [A](http://a) — 1 May 2024"
     assert r.data["applied"] == {"entity": "news"}
 
 
@@ -514,7 +514,7 @@ def test_list_records_applied_names_author(monkeypatch):
     r = tools.list_records("news", RecordFilters(author="Rishabh Negi"))
     assert r.data["applied"] == {"entity": "news", "author": "Rishabh Negi"}
     # the record list itself is the evidence; the prose names the same scope
-    assert r.rendered == "Found 1 news item by Rishabh Negi:\n- A — 2024-05-01 (http://a)"
+    assert r.rendered == "Found 1 news item by Rishabh Negi:\n- [A](http://a) — 1 May 2024"
 
 
 def test_list_records_table(monkeypatch):
@@ -565,7 +565,7 @@ def test_list_records_projects_requested_fields(monkeypatch):
     r = tools.list_records("news", RecordFilters(), fields=["title", "url"])
     assert r.data["records"] == [{"title": "A", "url": "http://a"}]
     # rendered stays the normal human-readable answer, unaffected by fields
-    assert r.rendered == "Found 1 news item:\n- A — 2024-05-01 (http://a)"
+    assert r.rendered == "Found 1 news item:\n- [A](http://a) — 1 May 2024"
 
 
 def test_list_records_unknown_fields_do_not_empty_the_records(monkeypatch):
@@ -600,7 +600,7 @@ def test_list_records_timeline_groups_by_year(monkeypatch):
     r = tools.list_records("news", RecordFilters(), output_format="timeline")
     a = r.rendered
     assert a.index("2024:") < a.index("2023:") < a.index("Undated:")
-    assert "- 2024-05: New (http://new)" in a
+    assert "- 20 May 2024: [New](http://new)" in a
     assert "- n.d.: NoDate" in a
     # citations follow the rendered (newest-first) order
     assert [c["title"] for c in r.citations] == ["New", "Old", "NoDate"]
