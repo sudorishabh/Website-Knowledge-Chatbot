@@ -292,7 +292,7 @@ headline used**, so the extra lines cannot disagree with the number above them:
 | A distinct count | The values themselves — all of them when few, else the five largest (for authors, the names that appear most often) |
 | A breakdown | The scope's total in the lead, the year span and peak or the leading group, and a note when a document can sit in several groups |
 | A list | Bylines on each item (only the co-authors in a list by one author); one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; under one author, the other types they published (a list of one type) or the type mix (a cut list across types); a cut list offers the dimensions still open |
-| The theme listing | How many items each theme holds, counted as a theme count counts them, and each theme's newest item |
+| The theme listing | How many items each theme holds, counted as a theme count counts them, and each theme's newest item; the home page's list also says what each theme covers (below) |
 
 #### How it is laid out
 
@@ -330,11 +330,36 @@ That counts every kind of publication; only 1 of them is filed under
 *You can ask me to list them, or to break them down by year or content type.*
 ```
 
-The home page answers "what themes do you cover" itself (it describes each
-theme), so the catalog cannot lead that answer. `tools.theme_digest` gives the
-same figures as a section that follows the generated answer
-(`_Generation.db_suffix`, run alongside retrieval in `query_pipeline._prepare`);
-it is left off when the listing names one theme, whose own page answers.
+The list of themes is the home page's to give: its "Thematic Areas" section
+names seven, while the catalog's main group holds more ("Green Shipping",
+"Corporate Social Responsibility"). A request for that list and nothing more
+("tell me about all the thematic areas") is answered whole by
+`query_pipeline._theme_overview`, with no model call — written by the model
+from the page, one of the seven was described and the rest named, because the
+page cuts each teaser mid-sentence. `priority.evidence.thematic_areas` reads
+the live page for the names (`priority.themes.areas_on`) and describes each
+from the page list (`data/priority_crawl_pages.json`, the theme page's
+`description`; the teaser only for a theme with no page there), and
+`tools.theme_overview` adds what the catalog holds on each:
+
+```
+There are **7 thematic areas**:
+
+- **[Climate Change](https://teriin.org/climate)** — Covers climate science, ...
+  - 1,220 items · Latest: [Nepal: A wake-up call](...) · 7 Sep 2026
+- ...
+
+*You can ask me about the work under any of these — ...*
+```
+
+A listing that also asks for content ("the thematic areas and their key
+projects") is the page's and the model's; `tools.theme_digest` follows it with
+the same figures for the page's themes (`_Generation.db_suffix`, run alongside
+retrieval in `query_pipeline._prepare`). Only `theme_scope.asks_for_other` —
+"other themes", "besides the main ones" — reaches past the page's themes: "all
+the thematic areas" read as `SCOPE_ALL` once followed the seven with six more.
+Neither is given when the listing names one theme, whose own page answers, or
+when the home page cannot be read.
 
 No model call, and every read is fail-open: a query that fails costs its own
 section and nothing else. Detail is given to a plan with **one** real question
@@ -442,6 +467,8 @@ existing refusal in place.
 | A period the question states ("in 2030") arrives without dates | `answerer._stated_year` | The year is restored, so the count is an honest zero rather than the all-time total | — |
 | A named person's profile page would take a count or list of their publications | `query_pipeline._asks_for_authorship` | The page gives way to the catalog for a count or breakdown with an author, or a list or lookup naming a kind of writing ("list articles by X"); "what does X work on" stays the page's | — |
 | A person's "articles" read as the Article category alone | `answerer._reads_article_as_writing` | Counted and listed across every type, with the Article category's share stated | Ask for "the article category" for the narrow count |
+| "All the thematic areas" read as every theme group | `theme_scope.asks_for_other` | The home page's themes only; the other group needs "other themes" | — |
+| The home page cannot be read for a theme listing | `priority.evidence.thematic_areas` returns `None` | No overview and no figures; the question goes to retrieval and the model, as before them | — |
 | `count_of` / `group_by` names an unsupported dimension | `_dimension_or_reject` / a `_GROUP_DIMENSIONS` miss | Refused with an explicit error, never a silent default | Fix the caller/plan |
 | Title substring was guessed from the question's subject, count is zero | `_title_guess_zero` | Falls through instead of reporting a corpus-wide zero | Semantic retrieval answers instead |
 | Catalog query raises | `except Exception` around every `state.*` call | `ok=False, error="query failed"`, logged | Falls through |
