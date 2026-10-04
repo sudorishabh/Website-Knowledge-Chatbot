@@ -26,8 +26,9 @@ from app.schemas.query import Citation
 logger = logging.getLogger(__name__)
 
 # Documents shown beneath a count — enough to make the number concrete, few
-# enough that the answer stays a count rather than becoming a list.
-RECENT_ITEMS = 3
+# enough that the answer stays a count rather than becoming a list. Five since
+# 2026-10-04: three read as a teaser beside a type mix and a span of years.
+RECENT_ITEMS = 5
 # Values a distinct count names beneath its number.
 LEADING_VALUES = 5
 
@@ -119,23 +120,62 @@ def year_sentence(
     return f"They date from {first} to {last}{_peak(years)}."
 
 
-def type_sentence(common: dict[str, Any], total: int) -> str:
-    """The content-type mix of a count that spans every type: "a publication
-    count" means little until it says how many are papers and how many news."""
+def _type_rows(common: dict[str, Any], *, limit: int) -> list[tuple[str, int]]:
+    """(content type, documents) for the scope, largest first."""
     rows = _safe(
-        "types",
-        lambda: state.distribution("bundle", **common, limit=LEADING_VALUES + 1),
-        [],
+        "types", lambda: state.distribution("bundle", **common, limit=limit), []
     )
-    rows = [(bundle, n) for bundle, n in rows if bundle]
-    if len(rows) < 2:
-        return ""
+    return [(bundle, int(n)) for bundle, n in rows if bundle]
+
+
+def _mix(rows: Sequence[tuple[str, int]], total: int) -> str:
+    """"31 feature articles, 7 research papers and 2 policy briefs" — the
+    largest types by name, the remainder of ``total`` folded into one figure."""
     shown = rows[:LEADING_VALUES]
     parts = [f"{n} {entity_label(bundle, n)}" for bundle, n in shown]
     rest = total - sum(n for _, n in shown)
     if len(rows) > LEADING_VALUES and rest > 0:
         parts.append(f"{rest} of other types")
-    return f"By type: {_join(parts)}."
+    return _join(parts)
+
+
+def type_sentence(common: dict[str, Any], total: int) -> str:
+    """The content-type mix of a count that spans every type: "a publication
+    count" means little until it says how many are papers and how many news."""
+    rows = _type_rows(common, limit=LEADING_VALUES + 1)
+    if len(rows) < 2:
+        return ""
+    return f"By type: {_mix(rows, total)}."
+
+
+def _has_subject(filters: RecordFilters) -> bool:
+    """Whether the scope is about someone or something — an author, a theme or
+    a tag — rather than the catalog at large."""
+    return bool(filters.author or filters.theme or filters.tag)
+
+
+def other_types_sentence(
+    total: int, *, common: dict[str, Any], bundle: str | None,
+    filters: RecordFilters, scope: str,
+) -> str:
+    """What else the same person, theme or tag has, beneath a count or list of
+    one content type: "10 research papers by Suneel Pandey" reads better beside
+    the 12 feature articles, 11 articles and 2 policy briefs that make up the
+    rest of the 35. ``scope`` is the headline's phrase (" by Dr Suneel Pandey").
+    Nothing for an unscoped count, or when the type is all there is."""
+    if not bundle or not _has_subject(filters):
+        return ""
+    wider = {**common, "bundle": None}
+    everything = _safe("all types", lambda: state.count_documents(**wider), 0)
+    if not everything or everything <= total:
+        return ""
+    others = [(b, n) for b, n in _type_rows(wider, limit=LEADING_VALUES + 2) if b != bundle]
+    if not others:
+        return ""
+    rest = everything - total
+    noun = entity_label(scope_noun(None, by_author=bool(filters.author)), everything)
+    return (f"Beyond these, there {'is' if rest == 1 else 'are'} {_mix(others, rest)}"
+            f"{scope} — {everything} {noun} in all.")
 
 
 def named_type_sentence(named_type: str, n: int | None, *, of: str) -> str:
@@ -153,20 +193,38 @@ def named_type_sentence(named_type: str, n: int | None, *, of: str) -> str:
 
 
 def recent_items(
-    common: dict[str, Any], *, total: int, with_type: bool
+    common: dict[str, Any], *, total: int, with_type: bool,
+    listed_by: str | None = None,
 ) -> tuple[str, list[dict[str, Any]]]:
-    """The newest documents in the scope, as linked items with citations. All
-    of them when there are no more than `RECENT_ITEMS`."""
-    records = _safe(
-        "recent", lambda: state.list_documents(**common, limit=RECENT_ITEMS), []
+    """The newest documents in the scope, as linked items with their authors
+    and citations — only the co-authors when the scope is one author's
+    (``listed_by``). All of them when there are no more than `RECENT_ITEMS`."""
+    # A few spare rows, because the site publishes some pages twice under one
+    # title (71 titles, the copy's URL ending "-0"), and a short list naming
+    # the same paper twice reads as a mistake.
+    fetched = _safe(
+        "recent", lambda: state.list_documents(**common, limit=RECENT_ITEMS + 3), []
     )
+    seen: set[str] = set()
+    records = []
+    for r in fetched:
+        key = (r.title or r.document_id or "").casefold()
+        if key not in seen:
+            seen.add(key)
+            records.append(r)
+    records = records[:RECENT_ITEMS]
     if not records:
         return "", []
     if total <= len(records):
         lead = "Here it is:" if total == 1 else "Here they are:"
     else:
         lead = "The most recent:"
-    lines = [item_line(r, with_type=with_type) for r in records]
+    found = facets(records)
+    lines = [
+        item_line(r, with_type=with_type, listed_by=listed_by,
+                  authors=found.get(r.document_id, {}).get("authors", ()))
+        for r in records
+    ]
     citations = [
         Citation(
             n=i, type="website", title=r.title, url=r.url,
@@ -205,31 +263,15 @@ def _count_followup(
 # Entry points, one per headline shape.
 # --------------------------------------------------------------------------- #
 
-def all_types_sentence(
-    total: int, *, common: dict[str, Any], bundle: str | None,
-    filters: RecordFilters, scope: str,
-) -> str:
-    """A person's total across every content type, beneath a count of one:
-    "7 research papers by Vibha Dhawan" is better read beside the 41
-    publications they belong to. Nothing when the type is all there is."""
-    if not bundle or not filters.author:
-        return ""
-    n = _safe("all types", lambda: state.count_documents(**{**common, "bundle": None}), 0)
-    if not n or n <= total:
-        return ""
-    return (f"Across all content types there are {n} "
-            f"{entity_label(scope_noun(None, by_author=True), n)}{scope}.")
-
-
 def for_count(
     total: int, *, common: dict[str, Any], bundle: str | None, filters: RecordFilters,
     named_type: str | None = None, scope: str = "",
 ) -> Detail:
     """Beneath "There are N <items>": how many are of the type the question
     named, when the count was widened past it; when they date from; their type
-    mix (when the count spans types), or a person's total across types (when it
-    does not); the most recent few; and what to ask next. ``scope`` is the
-    headline's own scope phrase (" by Dr Vibha Dhawan in 2024")."""
+    mix (when the count spans types), or what else the same person, theme or
+    tag has (when it does not); the most recent few; and what to ask next.
+    ``scope`` is the headline's own scope phrase (" by Dr Vibha Dhawan in 2024")."""
     detail = Detail()
     if total <= 0:
         return detail
@@ -244,11 +286,12 @@ def for_count(
         year_sentence(years, total=total,
                       period_fixed=bool(filters.date_from or filters.date_to)),
         type_sentence(common, total) if bundle is None and total > 1 else "",
-        all_types_sentence(total, common=common, bundle=bundle, filters=filters,
-                           scope=scope),
+        other_types_sentence(total, common=common, bundle=bundle, filters=filters,
+                             scope=scope),
     ]
     detail.add(" ".join(s for s in sentences if s))
-    items, citations = recent_items(common, total=total, with_type=bundle is None)
+    items, citations = recent_items(common, total=total, with_type=bundle is None,
+                                    listed_by=filters.author)
     detail.add(items)
     detail.citations = citations
     detail.add(_count_followup(total, years=years, bundle=bundle, filters=filters))
@@ -281,14 +324,22 @@ def for_zero(
         return detail
     if bundle and (filters.author or filters.theme or filters.tag
                    or filters.title_contains):
-        n = _safe("all types",
-                  lambda: state.count_documents(**{**common, "bundle": None}), 0)
+        wider = {**common, "bundle": None}
+        n = _safe("all types", lambda: state.count_documents(**wider), 0)
         if n:
+            # What the scope does hold, and the newest of it: "no reports by
+            # Vibha Dhawan" is better followed by the 41 publications there are.
             kind = scope_noun(None, by_author=bool(filters.author))
+            rows = _type_rows(wider, limit=LEADING_VALUES + 1)
+            mix = f": {_mix(rows, n)}" if rows else ""
             detail.add(
                 f"Across all content types there {'is' if n == 1 else 'are'} {n} "
-                f"{entity_label(kind, n)}{scope_without_type}."
+                f"{entity_label(kind, n)}{scope_without_type}{mix}."
             )
+            items, citations = recent_items(wider, total=n, with_type=True,
+                                            listed_by=filters.author)
+            detail.add(items)
+            detail.citations = citations
     return detail
 
 

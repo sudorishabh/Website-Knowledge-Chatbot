@@ -31,6 +31,7 @@ def _offline_catalog(monkeypatch):
     monkeypatch.setattr(
         "app.catalog.queries.available_bundles", lambda **kw: DEFAULT_BUNDLES
     )
+    monkeypatch.setattr("app.catalog.queries.facets_for", lambda ids: {})
 
 
 @pytest.fixture
@@ -98,10 +99,16 @@ def test_a_count_says_when_its_documents_date_from_and_shows_the_newest(catalog)
 
 
 def test_every_detail_query_shares_the_headlines_scope(catalog):
+    """Every query beneath the headline uses its filters. The one let go is the
+    content type, to say what else the same subject holds."""
+    catalog.wider_total = 500
+    catalog.types = [("article", 68), ("news", 300), ("events", 132)]
     _count(theme="Climate Change")
     headline = catalog.calls[0][1]
     for name, kw in catalog.calls[1:]:
         shared = {k: v for k, v in kw.items() if k != "limit"}
+        if shared["bundle"] is None:
+            shared["bundle"] = headline["bundle"]
         assert shared == headline, name
 
 
@@ -117,24 +124,62 @@ def test_a_count_across_content_types_gives_its_mix(catalog):
     )
 
 
-def test_a_persons_count_of_one_type_gives_their_total_across_types(catalog):
+def test_a_persons_count_of_one_type_names_what_else_they_published(catalog):
     catalog.total, catalog.wider_total = 7, 41
+    catalog.types = [("feature_articles", 31), ("research_papers", 7),
+                     ("policy_brief", 2), ("article", 1)]
     r = _count("research_papers", author="Dr Vibha Dhawan")
     assert r.rendered.split("\n\n")[:2] == [
         "There are 7 research papers by Dr Vibha Dhawan matching your query.",
         "They date from 2018 to 2026, with the most (13) in 2025. "
-        "Across all content types there are 41 publications by Dr Vibha Dhawan.",
+        "Beyond these, there are 31 feature articles, 2 policy briefs and 1 article "
+        "by Dr Vibha Dhawan — 41 publications in all.",
     ]
 
 
-def test_a_type_that_is_all_a_person_wrote_adds_no_total(catalog):
+def test_a_themes_count_of_one_type_names_what_else_it_holds(catalog, monkeypatch):
+    monkeypatch.setattr(
+        "app.catalog.queries.theme_vocabulary",
+        lambda **kw: [{"theme": "Climate Change", "theme_type": "primary", "parent": None,
+                       "theme_group": "main", "documents": 3}],
+    )
+    catalog.wider_total = 500
+    catalog.types = [("news", 300), ("events", 132), ("article", 68)]
+    r = _count(theme="Climate Change")
+    assert ("Beyond these, there are 300 news items and 132 events on "
+            "'Climate Change' — 500 items in all.") in r.rendered
+
+
+def test_a_type_that_is_all_a_person_wrote_names_nothing_else(catalog):
     catalog.total, catalog.wider_total = 7, 7
-    assert "Across all" not in _count("research_papers", author="Dr A").rendered
+    assert "Beyond these" not in _count("research_papers", author="Dr A").rendered
 
 
-def test_a_type_count_without_a_person_adds_no_total(catalog):
+def test_a_type_count_without_a_subject_names_nothing_else(catalog):
     catalog.wider_total = 5000
-    assert "Across all" not in _count("research_papers").rendered
+    catalog.types = [("news", 1667), ("research_papers", 68)]
+    assert "Beyond these" not in _count("research_papers").rendered
+
+
+def test_recent_items_skip_a_page_published_twice(catalog):
+    twin = _row(1)
+    twin.title, twin.document_id = "Title 0", "d0-copy"
+    catalog.rows = [_row(0), twin, _row(2)]
+    r = _count()
+    assert r.rendered.count("[Title 0]") == 1
+    assert "[Title 2]" in r.rendered
+
+
+def test_recent_items_name_the_co_authors_of_one_persons_work(catalog, monkeypatch):
+    monkeypatch.setattr("app.catalog.queries.facets_for", lambda ids: {
+        "d0": {"authors": ["Dr Vibha Dhawan", "Mr Sharif Qamar"], "themes": []},
+        "d1": {"authors": ["Dr Vibha Dhawan"], "themes": []},
+    })
+    r = _count("research_papers", author="Dr Vibha Dhawan")
+    assert "— 20 Apr 2026 · with Mr Sharif Qamar\n" in r.rendered
+    assert "[Title 1](https://teriin.org/a/1) — 20 Apr 2026\n" in r.rendered
+    other = _count(theme="Energy")
+    assert "· by Dr Vibha Dhawan and Mr Sharif Qamar" in other.rendered
 
 
 def _article_share(monkeypatch, *, articles, everything):
@@ -263,7 +308,35 @@ def test_a_zero_under_a_content_type_looks_across_types(catalog, monkeypatch):
     )
     catalog.total, catalog.wider_total = 0, 40
     r = _count("events", theme="Waste")
-    assert r.rendered.endswith("Across all content types there are 40 items on 'Waste'.")
+    assert "Across all content types there are 40 items on 'Waste'." in r.rendered
+
+
+def test_a_persons_zero_says_what_they_did_publish_and_shows_the_newest(
+    catalog, monkeypatch,
+):
+    """"How many reports by Vibha Dhawan" was "none" and a bare total."""
+    from app.retrieval.structured import resolve
+
+    monkeypatch.setattr("app.catalog.queries.distinct_authors",
+                        lambda **kw: ["Dr Vibha Dhawan"])
+    resolve.reload_authors()
+    catalog.total, catalog.wider_total = 0, 41
+    catalog.types = [("feature_articles", 31), ("research_papers", 7),
+                     ("policy_brief", 2), ("article", 1)]
+    catalog.rows = [_row(0, bundle="feature_articles"), _row(1, bundle="research_papers")]
+    try:
+        r = _count("report", author="Dr Vibha Dhawan")
+    finally:
+        resolve.reload_authors()
+    assert r.rendered.split("\n\n") == [
+        "There are no reports by Dr Vibha Dhawan matching your query.",
+        "Across all content types there are 41 publications by Dr Vibha Dhawan: "
+        "31 feature articles, 7 research papers, 2 policy briefs and 1 article.",
+        "The most recent:\n"
+        "- [Title 0](https://teriin.org/a/0) — feature article, 20 Apr 2026\n"
+        "- [Title 1](https://teriin.org/a/1) — research paper, 20 Apr 2026",
+    ]
+    assert len(r.citations) == 2
 
 
 def test_a_zero_with_nothing_nearby_stays_a_bare_zero(catalog):
