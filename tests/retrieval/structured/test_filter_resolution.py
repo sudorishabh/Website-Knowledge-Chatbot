@@ -197,7 +197,7 @@ def test_misspelled_author_reaches_sql_as_the_canonical_name(monkeypatch, resolu
     )
     r = tools.count_records(None, RecordFilters(author="rishab negi"))
     assert seen["author"] == "Rishabh Negi"
-    assert r.rendered == "There are 12 items by Rishabh Negi matching your query."
+    assert r.rendered == "There are 12 publications by Rishabh Negi matching your query."
     assert r.data["applied"]["author"] == "Rishabh Negi"
 
 

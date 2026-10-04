@@ -63,6 +63,7 @@ _BUNDLE_LABELS: dict[str, tuple[str, str]] = {
     "page": ("page", "pages"),
     "carousel": ("carousel", "carousels"),
     "items": ("item", "items"),
+    "publications": ("publication", "publications"),
 }
 
 
@@ -76,6 +77,17 @@ def entity_label(scope: str, n: int) -> str:
     if n == 1:
         return human[:-1] if human.endswith("s") else human
     return human if human.endswith("s") else f"{human}s"
+
+
+def scope_noun(bundle: str | None, *, by_author: bool) -> str:
+    """The scope word for a set of documents: its content type when it has one,
+    else "publications" for one author's documents and "items" otherwise. Only
+    publications carry authors in the catalog — feature articles, research
+    papers, articles, policy briefs and reports (measured 2026-10-04) — so
+    everything by a person is one, and "41 items by" undersold it."""
+    if bundle:
+        return bundle
+    return "publications" if by_author else "items"
 
 
 @dataclass(frozen=True)

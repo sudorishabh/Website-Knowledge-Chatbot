@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
 from app.catalog import queries as state
-from app.retrieval.structured.entities import entity_label
+from app.retrieval.structured.entities import entity_label, scope_noun
 from app.retrieval.structured.rendering import item_line, record_date
 from app.retrieval.structured.types import RecordFilters
 from app.schemas.query import Citation
@@ -242,9 +242,10 @@ def for_zero(
         n = _safe("all types",
                   lambda: state.count_documents(**{**common, "bundle": None}), 0)
         if n:
+            kind = scope_noun(None, by_author=bool(filters.author))
             detail.add(
                 f"Across all content types there {'is' if n == 1 else 'are'} {n} "
-                f"{entity_label('items', n)}{scope_without_type}."
+                f"{entity_label(kind, n)}{scope_without_type}."
             )
     return detail
 

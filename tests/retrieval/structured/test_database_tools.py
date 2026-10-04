@@ -464,8 +464,24 @@ def test_count_and_list_pass_the_same_filter_set(monkeypatch):
 def test_count_records_names_author_in_rendered_answer(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 21)
     r = tools.count_records(None, RecordFilters(author="Dr Suneel Pandey"))
-    assert r.rendered == "There are 21 items by Dr Suneel Pandey matching your query."
+    assert r.rendered == "There are 21 publications by Dr Suneel Pandey matching your query."
     assert r.data["applied"] == {"author": "Dr Suneel Pandey"}
+
+
+def test_one_authors_documents_are_publications_in_a_list_and_a_breakdown(monkeypatch):
+    """Only publications carry authors, so a person's documents of every type
+    are publications; without an author they stay items."""
+    monkeypatch.setattr("app.catalog.queries.list_documents", lambda **k: [_rec()])
+    monkeypatch.setattr(
+        "app.catalog.queries.distribution", lambda group_by, **k: [("2024", 5)]
+    )
+    by_author = RecordFilters(author="Rishabh Negi")
+    assert tools.list_records(None, by_author).rendered.startswith(
+        "Found 1 publication by Rishabh Negi:")
+    assert tools.aggregate_records(None, "year", by_author).rendered.startswith(
+        "Distribution of publications by Rishabh Negi by year:")
+    assert tools.aggregate_records(None, "year", RecordFilters()).rendered.startswith(
+        "Distribution of items by year:")
 
 
 def test_count_records_combines_author_theme_tag_and_period(monkeypatch, resolve_theme_ok):

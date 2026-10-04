@@ -250,7 +250,7 @@ def test_answer_structured_generic_publications_spans_all_types(monkeypatch):
         "tell me overall number of publications from Dr Suneel Pandey", analysis=analysis
     )
     assert seen["bundle"] is None  # spans all content types, not just papers
-    assert out["answer"] == "There are 21 items by Dr Suneel Pandey matching your query."
+    assert out["answer"] == "There are 21 publications by Dr Suneel Pandey matching your query."
 
 
 def test_answer_structured_named_type_keeps_bundle(monkeypatch):

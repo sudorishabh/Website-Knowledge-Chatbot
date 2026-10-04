@@ -29,6 +29,7 @@ from app.retrieval.structured.entities import (
     is_available,
     is_known,
     normalize_entity,
+    scope_noun,
 )
 from app.retrieval.structured import detail as structured_detail
 from app.retrieval.structured import topic
@@ -293,12 +294,13 @@ def _list_lead(
     the list where it was easy to miss. Rows ranked by topic match are not
     "the most recent", so they are not called that."""
     scope = _scope_phrase(filters) + _topic_phrase(filters.topic_terms)
+    kind = scope_noun(bundle, by_author=bool(filters.author))
     if total and total > shown:
-        noun = entity_label(bundle or "items", total)
+        noun = entity_label(kind, total)
         if ranked:
             return f"Here are {shown} of the {total} {noun}{scope}, closest matches first:"
         return f"Here are the {shown} most recent of {total} {noun}{scope}:"
-    return f"Found {shown} {entity_label(bundle or 'items', shown)}{scope}:"
+    return f"Found {shown} {entity_label(kind, shown)}{scope}:"
 
 
 def _render_records(
@@ -481,11 +483,12 @@ def count_records(
     phrase = _scope_phrase(scope.effective)
     verb = "is" if total == 1 else "are"
     source_labels = count_of in _SOURCE_LABEL_DIMENSIONS
+    kind = scope_noun(bundle, by_author=bool(scope.effective.author))
     if dimension:
         singular, plural = _COUNT_OF_NOUNS[count_of]
         noun = singular if total == 1 else plural
     else:
-        noun = entity_label(bundle or "items", total)
+        noun = entity_label(kind, total)
     # A count of labels says where the labels come from. "955 authors" claims an
     # identity resolution nobody has done; "955 distinct author names recorded
     # in the source data" is what the query actually established.
@@ -504,7 +507,7 @@ def count_records(
         else:
             extra = structured_detail.for_zero(
                 common=common, bundle=bundle, filters=scope.effective,
-                noun=lambda n: entity_label(bundle or "items", n),
+                noun=lambda n: entity_label(kind, n),
                 scope_without_period=_scope_phrase(
                     replace(scope.effective, date_from=None, date_to=None)),
                 scope_without_type=phrase,
@@ -911,14 +914,15 @@ def aggregate_records(
         body += (f"\n\nShowing the {cap} {'pairs' if second else label + 's'} "
                  "with the most items.")
     scope_text = _scope_phrase(scope.effective)
+    kind = scope_noun(bundle, by_author=bool(scope.effective.author))
     total = structured_detail.scope_total(common) if detail else None
     if total:
-        noun = entity_label(bundle or "items", total)
+        noun = entity_label(kind, total)
         verb = "breaks" if total == 1 else "break"
         rendered = f"Here's how the {total} {noun}{scope_text} {verb} down {by}:\n" + body
     else:
         rendered = (
-            f"Distribution of {entity_label(bundle or 'items', 2)}{scope_text} "
+            f"Distribution of {entity_label(kind, 2)}{scope_text} "
             f"{by}:\n" + body
         )
     if detail and not second:
