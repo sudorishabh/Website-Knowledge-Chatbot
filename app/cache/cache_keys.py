@@ -55,7 +55,9 @@ def _sha(*parts: str) -> str:
 #: with bold figures, titled sections, an italic follow-up.
 #: 2026-10-04.13: a request for the list of themes is answered theme by theme —
 #: what each covers and holds — and only the home page's themes get figures.
-PIPELINE_REVISION = "2026-10-04.13"
+#: 2026-10-04.14: a listed person named with a misspelling ("PK bhatacharia")
+#: is answered from their profile.
+PIPELINE_REVISION = "2026-10-04.14"
 
 
 def _pref_fingerprint() -> str:

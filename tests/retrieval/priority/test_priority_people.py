@@ -82,6 +82,47 @@ def test_a_short_one_word_name_is_too_weak_to_match():
     assert named_in("anu", [person]) == []
 
 
+def test_a_name_written_as_it_sounds_is_found(people):
+    """Measured 2026-10-04: "tell me about PK bhatacharia" read no profile and
+    was answered from old event listings that gave a former title."""
+    assert _names(named_in("tell me about PK bhatacharia", people)) == ["Dr P K Bhattacharya"]
+    assert _names(named_in("who is vibha dhavan", people)) == ["Dr Vibha Dhawan"]
+    assert _names(named_in("what does Sunil Pandey work on", people)) == ["Dr Suneel Pandey"]
+    assert _names(named_in("what does Dr Dhavan do", people)) == ["Dr Vibha Dhawan"]
+
+
+def test_a_fuller_name_may_be_a_letter_out(people):
+    assert _names(named_in("suneel pande", people)) == ["Dr Suneel Pandey"]
+    assert _names(named_in("PK bhatacharaya", people)) == ["Dr P K Bhattacharya"]
+
+
+def test_a_lone_word_must_sound_like_the_name(people):
+    """One word is too little to read past a letter out: without the initials
+    "bhatacharaya" names nobody, and "Mr Malik" is not Mr Mullick."""
+    assert named_in("bhatacharaya", people) == []
+    assert named_in("who is Mr Malik", people) == []
+
+
+def test_a_listed_spelling_is_not_a_misspelling_of_another(people):
+    assert _names(named_in("Dr Bhattacharjya", people)) == ["Mr Souvik Bhattacharjya"]
+    assert _names(named_in("Dr Bhattacharya", people)) == ["Dr P K Bhattacharya"]
+    assert named_in("bhattacharjya", people) == []
+
+
+def test_the_reading_that_explains_more_of_the_name_wins(people):
+    """"Bhattacharya" alone is Dr P K Bhattacharya, but beside "Souvik" it is
+    Mr Souvik Bhattacharjya's surname misspelt."""
+    assert _names(named_in("souvik bhattacharya", people)) == ["Mr Souvik Bhattacharjya"]
+
+
+def test_initials_are_read_together_or_apart():
+    pk = Person("Dr P K Bhattacharya", "https://teriin.org/profile/p-k-bhattacharya", "Committee")
+    assert pk.initials == "pk"
+    for question in ("PK Bhatacharya", "P K Bhatacharya", "Dr P.K. Bhatacharya"):
+        assert named_in(question, [pk]) == [pk]
+    assert Person("Mr S Vijay Kumar", "https://teriin.org/profile/s", "X").initials == ""
+
+
 def test_one_person_on_two_listings_is_one_profile():
     a = Person("Mr R R Rashmi", "https://teriin.org/profile/rr-rashmi", "Committee")
     b = Person("Mr R R Rashmi", "https://teriin.org/profile/rr-rashmi", "Fellows")
