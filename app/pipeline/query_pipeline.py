@@ -299,6 +299,24 @@ def _series_blocks(documents: Any) -> list[ContextBlock]:
     ]
 
 
+def _series_count(documents: Any, blocks: list[ContextBlock]) -> str:
+    """How many editions there are, which span they cover, and which is the
+    latest — cited, so it gets a chip like any other source. The editions come
+    newest first (see `series_documents`)."""
+    if not documents:
+        return "There are no annual reports available."
+    latest, block = documents[0], blocks[0]
+    name = latest.title or f"Annual Report {latest.edition}"
+    if len(documents) == 1:
+        return f"There is 1 annual report available: {name} [{block.n}]."
+    return (
+        f"There are {len(documents)} annual reports available, from the "
+        f"{documents[-1].edition} edition to {latest.edition}. The latest is "
+        f"{name} [{block.n}].\n\n"
+        'Ask for "the list of annual reports" to see every edition.'
+    )
+
+
 def _series_result(pq: ProcessedQuery) -> dict[str, Any]:
     """List or count the annual-report series, from the catalogue.
 
@@ -321,8 +339,7 @@ def _series_result(pq: ProcessedQuery) -> dict[str, Any]:
     from app.retrieval.understanding.annual_report_editions import COUNT
 
     if series.kind == COUNT:
-        noun = "annual report" if len(documents) == 1 else "annual reports"
-        answer = f"There are {len(documents)} {noun} available."
+        answer = _series_count(documents, blocks)
     else:
         lines = "\n".join(
             f"- {doc.title or f'Annual Report {doc.edition}'} [{block.n}]"
