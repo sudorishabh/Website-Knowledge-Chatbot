@@ -845,3 +845,23 @@ def test_count_and_aggregate_scope_the_same_entity_identically(monkeypatch):
 
     for key in ("source_type", "entity_type", "bundle"):
         assert counted[key] == grouped[key], (key, counted[key], grouped[key])
+
+
+def test_compose_drops_a_resolution_step_beside_its_answer():
+    """The count names the canonical author itself; the step that found the name
+    is plumbing."""
+    out = dr._compose([
+        ToolResult(tool="resolve_entity", ok=True,
+                   rendered="'rishab negi' resolves to Rishabh Negi (author)."),
+        ToolResult(tool="count_records", ok=True,
+                   rendered="There are 12 items by Rishabh Negi matching your query."),
+    ])
+    assert out["answer"] == "There are 12 items by Rishabh Negi matching your query."
+
+
+def test_compose_keeps_a_resolution_that_is_the_whole_answer():
+    out = dr._compose([
+        ToolResult(tool="resolve_entity", ok=True,
+                   rendered="'rishab negi' resolves to Rishabh Negi (author)."),
+    ])
+    assert out["answer"] == "'rishab negi' resolves to Rishabh Negi (author)."

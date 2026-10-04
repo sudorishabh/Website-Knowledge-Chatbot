@@ -332,7 +332,13 @@ def _compose(results: list[ToolResult]) -> dict[str, Any]:
     bodies: list[str] = []
     citations: list[dict[str, Any]] = []
     used_chunks = 0
+    # A resolution step only names what the next call filters on, and that call
+    # already states the canonical name in its own sentence — so "'rishab negi'
+    # resolves to Rishabh Negi (author)." is plumbing, unless it is all there is.
+    answered = any(r.tool != "resolve_entity" and r.rendered for r in results)
     for result in results:
+        if result.tool == "resolve_entity" and answered:
+            continue
         if result.rendered:
             bodies.append(result.rendered)
         for citation in result.citations:
