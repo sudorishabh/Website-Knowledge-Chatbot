@@ -421,7 +421,7 @@ def _run(call: ToolCall, question: str | None) -> ToolResult:
         return aggregate_records(call.entity, call.group_by, call.filters,
                                  secondary_group_by=call.secondary_group_by,
                                  aggregation=call.aggregation,
-                                 output_format=call.output_format)
+                                 output_format=call.output_format, detail=detail)
     if call.tool == "list_themes":
         return list_themes(scope=call.theme_scope, limit=call.limit,
                            output_format=call.output_format)

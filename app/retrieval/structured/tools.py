@@ -707,6 +707,19 @@ VALID_DIMENSIONS: frozenset[str] = frozenset(_GROUP_DIMENSIONS)
 VALID_COUNT_OF: frozenset[str] = VALID_DIMENSIONS | {COUNT_RECORDS}
 
 
+# Groups a single-dimension breakdown shows, pairs a two-dimension one shows,
+# and the ceiling for years (all of them; the corpus spans about 35).
+_GROUP_LIMIT = 20
+_PAIR_LIMIT = 50
+_YEAR_LIMIT = 100
+
+
+def _group_value(dimension: str | None, value: Any) -> str:
+    """A group's display name: a content type reads as what it is called
+    ("feature articles"), not as its bundle key ("feature_articles")."""
+    return entity_label(str(value), 2) if dimension == "bundle" else str(value)
+
+
 def _dimension_or_reject(value: Any, *, allow_records: bool) -> tuple[str | None, bool]:
     """Resolve a dimension name to its catalog column. Returns (column, ok).
 
@@ -732,6 +745,7 @@ def aggregate_records(
     secondary_group_by: GroupBy | None = None,
     aggregation: str = "count",
     output_format: str = "default",
+    detail: bool = False,
 ) -> ToolResult:
     """Grouped counts (per theme / content type / author / year). Only the
     'count' aggregation is backed today. Filter-resolution semantics match
@@ -741,7 +755,10 @@ def aggregate_records(
     "which authors write about which themes" is one question whose answer is
     a set of author-theme pairs, not a per-author breakdown repeated. Ignored
     when it names the same dimension as ``group_by`` — a pair of one thing is
-    the single-dimension question, and refusing would be pedantry."""
+    the single-dimension question, and refusing would be pedantry.
+
+    ``detail`` leads with the scope's total and follows the groups with what
+    they show (see `app.retrieval.structured.detail.for_breakdown`)."""
     # Unset groups by theme, which is the documented default. An unrecognised
     # name is refused instead: "group_by='Author'" quietly becoming a theme
     # breakdown is a wrong answer wearing a right one's shape.
@@ -794,11 +811,19 @@ def aggregate_records(
         title_contains=scope.title_contains,
         **scope.as_kwargs(),
     )
+    # Years are few and read as a timeline, so all of them come back; any other
+    # dimension shows its largest groups, and one row past the cap says whether
+    # the cap cut anything off.
+    if second:
+        cap: int | None = _PAIR_LIMIT
+    else:
+        cap = None if dimension == "year" else _GROUP_LIMIT
     try:
         rows = (
-            state.cross_distribution(dimension, second, **common)
+            state.cross_distribution(dimension, second, **common, limit=cap + 1)
             if second
-            else state.distribution(dimension, **common)
+            else state.distribution(dimension, **common,
+                                    limit=_YEAR_LIMIT if cap is None else cap + 1)
         )
     except Exception:
         logger.warning("aggregate_records query failed.", exc_info=True)
@@ -809,17 +834,25 @@ def aggregate_records(
             return missed
         return ToolResult(tool="aggregate_records", entity=bundle, ok=False,
                           error="no matching records")
+    truncated = cap is not None and len(rows) > cap
+    rows = rows[:cap] if cap is not None else rows
+    if dimension == "year" and not second:
+        rows = sorted(rows, key=lambda row: str(row[0]))
     if second:
         if output_format == "table":
             body = "\n".join(
                 [f"| {label} | {second_label} | count |", "| --- | --- | --- |"]
                 + [
-                    f"| {_md_cell(str(a))} | {_md_cell(str(b))} | {n} |"
+                    f"| {_md_cell(_group_value(dimension, a))} | "
+                    f"{_md_cell(_group_value(second, b))} | {n} |"
                     for a, b, n in rows
                 ]
             )
         else:
-            body = "\n".join(f"- {a} — {b}: {n}" for a, b, n in rows)
+            body = "\n".join(
+                f"- {_group_value(dimension, a)} — {_group_value(second, b)}: {n}"
+                for a, b, n in rows
+            )
         by = f"by {label} and {second_label}"
         groups = [[a, b, n] for a, b, n in rows]
         dimensions = [group_by or "theme", secondary_group_by]
@@ -827,19 +860,34 @@ def aggregate_records(
         if output_format == "table":
             body = "\n".join(
                 [f"| {label} | count |", "| --- | --- |"]
-                + [f"| {_md_cell(str(value))} | {n} |" for value, n in rows]
+                + [f"| {_md_cell(_group_value(dimension, value))} | {n} |"
+                   for value, n in rows]
             )
         else:
-            body = "\n".join(f"- {value}: {n}" for value, n in rows)
+            body = "\n".join(f"- {_group_value(dimension, value)}: {n}" for value, n in rows)
         by = f"by {label}"
         groups = [[value, n] for value, n in rows]
         # What was grouped on, not what was requested: a dropped secondary must
         # not leave a caller parsing pairs out of single-dimension rows.
         dimensions = [group_by or "theme"]
-    rendered = (
-        f"Distribution of {entity_label(bundle or 'items', 2)}{_scope_phrase(scope.effective)} "
-        f"{by}:\n" + body
-    )
+    if truncated:
+        body += (f"\n\nShowing the {cap} {'pairs' if second else label + 's'} "
+                 "with the most items.")
+    scope_text = _scope_phrase(scope.effective)
+    total = structured_detail.scope_total(common) if detail else None
+    if total:
+        noun = entity_label(bundle or "items", total)
+        verb = "breaks" if total == 1 else "break"
+        rendered = f"Here's how the {total} {noun}{scope_text} {verb} down {by}:\n" + body
+    else:
+        rendered = (
+            f"Distribution of {entity_label(bundle or 'items', 2)}{scope_text} "
+            f"{by}:\n" + body
+        )
+    if detail and not second:
+        rendered = structured_detail.for_breakdown(
+            rows, dimension=dimension, label=label, total=total,
+        ).render_onto(rendered)
     return ToolResult(
         tool="aggregate_records", entity=bundle, ok=True,
         data={

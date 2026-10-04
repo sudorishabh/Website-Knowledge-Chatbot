@@ -249,6 +249,59 @@ def for_zero(
     return detail
 
 
+def scope_total(common: dict[str, Any]) -> int | None:
+    """How many documents a breakdown's scope holds, or None when unknown —
+    the total a breakdown leads with, counted over the same filters."""
+    return _safe("total", lambda: state.count_documents(**common), None) or None
+
+
+def _leader(rows: Sequence[tuple[Any, int]], dimension: str) -> str:
+    """"Energy is the largest (40), followed by ..." — nothing when the top two
+    tie, since then nothing leads. An author "has the most" rather than being
+    the largest of anything."""
+    if len(rows) < 2 or rows[0][1] == rows[1][1]:
+        return ""
+
+    def name(value: Any) -> str:
+        return entity_label(str(value), 2) if dimension == "bundle" else str(value)
+
+    followers = _join([f"{name(value)} ({n})" for value, n in rows[1:3]])
+    top, n = name(rows[0][0]), rows[0][1]
+    if dimension == "author":
+        return f"{top} has the most ({n}), followed by {followers}."
+    return f"The largest is {top} ({n}), followed by {followers}."
+
+
+def for_breakdown(
+    rows: Sequence[tuple[Any, int]], *, dimension: str, label: str,
+    total: int | None,
+) -> Detail:
+    """Beneath a one-dimension breakdown: what it shows at a glance — the span
+    and peak of a year breakdown, the leading group of any other — and, for a
+    facet a document can carry several of, why the groups outnumber the total."""
+    detail = Detail()
+    if not rows:
+        return detail
+    if dimension == "year":
+        years: list[tuple[int, int]] = []
+        for value, n in rows:
+            try:
+                years.append((int(value), int(n)))
+            except (TypeError, ValueError):
+                continue
+        detail.add(year_sentence(sorted(years), total=total or sum(n for _, n in years),
+                                 period_fixed=False))
+    else:
+        sentences = [_leader(rows, dimension)]
+        if (total and dimension in ("theme", "author")
+                and sum(n for _, n in rows) > total):
+            sentences.append(f"An item can carry more than one {label}, so these "
+                             f"add up to more than {total}.")
+        detail.add(" ".join(s for s in sentences if s))
+    detail.add("You can ask me to list the items behind any of these.")
+    return detail
+
+
 def for_distinct(
     total: int, *, dimension: str, common: dict[str, Any]
 ) -> Detail:

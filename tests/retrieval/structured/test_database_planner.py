@@ -201,7 +201,7 @@ def test_execute_runs_multiple_calls(monkeypatch):
     monkeypatch.setattr(
         planner, "aggregate_records",
         lambda entity, group_by, filters, secondary_group_by=None,
-        aggregation="count", output_format="default":
+        aggregation="count", output_format="default", detail=False:
             ToolResult(tool="aggregate_records", entity=entity),
     )
     plan_obj = DatabasePlan(calls=[
@@ -405,7 +405,7 @@ def test_execute_forwards_both_dimensions_to_the_tool(monkeypatch):
     seen = {}
 
     def fake_aggregate(entity, group_by, filters, *, secondary_group_by=None,
-                       aggregation="count", output_format="default"):
+                       aggregation="count", output_format="default", detail=False):
         seen.update(group_by=group_by, secondary_group_by=secondary_group_by)
         return ToolResult(tool="aggregate_records", entity=entity)
 

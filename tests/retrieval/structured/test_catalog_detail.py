@@ -297,3 +297,96 @@ def test_join_reads_as_prose():
     assert detail._join(["a"]) == "a"
     assert detail._join(["a", "b"]) == "a and b"
     assert detail._join(["a", "b", "c"]) == "a, b and c"
+
+
+# --------------------------------------------------------------------------- #
+# A breakdown.
+# --------------------------------------------------------------------------- #
+
+def test_a_content_type_breakdown_names_types_as_people_say_them(catalog):
+    catalog.types = [("feature_articles", 1547), ("press_release", 724)]
+    r = tools.aggregate_records(None, "content_type", RecordFilters())
+    assert r.rendered == (
+        "Distribution of items by content type:\n"
+        "- feature articles: 1547\n- press releases: 724"
+    )
+    # The payload keeps the keys a caller filters on.
+    assert r.data["groups"] == [["feature_articles", 1547], ["press_release", 724]]
+
+
+def test_a_year_breakdown_reads_as_a_timeline_and_asks_for_every_year(catalog):
+    catalog.years = [("2025", 13), ("2020", 12), ("2018", 10)]
+    r = tools.aggregate_records("article", "year", RecordFilters())
+    assert r.rendered.endswith("- 2018: 10\n- 2020: 12\n- 2025: 13")
+    [(name, kw)] = [c for c in catalog.calls if c[0] == "distribution:year"]
+    assert kw["limit"] == 100
+
+
+def test_a_cut_breakdown_says_so(catalog):
+    catalog.values = [(f"Author {i}", 100 - i) for i in range(21)]
+    r = tools.aggregate_records(None, "author", RecordFilters())
+    assert "Author 19" in r.rendered and "Author 20" not in r.rendered
+    assert r.rendered.endswith("Showing the 20 authors with the most items.")
+    assert len(r.data["groups"]) == 20
+
+
+def test_a_whole_breakdown_does_not_claim_a_cut(catalog):
+    catalog.values = [(f"Author {i}", 100 - i) for i in range(20)]
+    r = tools.aggregate_records(None, "author", RecordFilters())
+    assert "Showing" not in r.rendered
+
+
+def test_a_cut_pair_breakdown_says_so(catalog, monkeypatch):
+    monkeypatch.setattr(
+        "app.catalog.queries.cross_distribution",
+        lambda first, second, **kw: [(f"A{i}", "Energy", 60 - i)
+                                     for i in range(kw["limit"])],
+    )
+    r = tools.aggregate_records(None, "author", RecordFilters(),
+                                secondary_group_by="theme")
+    assert r.rendered.endswith("Showing the 50 pairs with the most items.")
+
+
+def test_a_year_breakdown_with_detail_leads_with_its_total(catalog):
+    catalog.years = [("2025", 13), ("2020", 12), ("2018", 10)]
+    r = tools.aggregate_records("article", "year", RecordFilters(theme="Climate Change"),
+                                detail=True)
+    assert r.rendered.split("\n\n") == [
+        "Here's how the 68 articles on 'Climate Change' break down by year:\n"
+        "- 2018: 10\n- 2020: 12\n- 2025: 13",
+        "They date from 2018 to 2025, with the most (13) in 2025.",
+        "You can ask me to list the items behind any of these.",
+    ]
+
+
+def test_a_theme_breakdown_with_detail_names_its_leader_and_overlap(catalog):
+    catalog.total = 50
+    catalog.values = [("Energy", 40), ("Climate Change", 32), ("Water", 12)]
+    r = tools.aggregate_records(None, "theme", RecordFilters(), detail=True)
+    assert r.rendered.startswith("Here's how the 50 items break down by theme:")
+    assert ("The largest is Energy (40), followed by Climate Change (32) and "
+            "Water (12). An item can carry more than one theme, so these add up to "
+            "more than 50.") in r.rendered
+
+
+def test_an_author_breakdown_names_who_has_the_most(catalog):
+    catalog.values = [("Mr R R Rashmi", 36), ("Dr Shailly Kedia", 22), ("Mr Ajay Shankar", 15)]
+    r = tools.aggregate_records(None, "author", RecordFilters(), detail=True)
+    assert ("Mr R R Rashmi has the most (36), followed by Dr Shailly Kedia (22) and "
+            "Mr Ajay Shankar (15).") in r.rendered
+
+
+def test_a_tied_lead_names_no_leader(catalog):
+    catalog.values = [("Energy", 40), ("Climate Change", 40)]
+    r = tools.aggregate_records(None, "theme", RecordFilters(), detail=True)
+    assert "largest" not in r.rendered
+
+
+def test_a_breakdown_without_a_total_keeps_its_plain_lead(catalog, monkeypatch):
+    def boom(**kw):
+        raise RuntimeError("db blip")
+
+    monkeypatch.setattr("app.catalog.queries.count_documents", boom)
+    catalog.values = [("Energy", 40), ("Climate Change", 32)]
+    r = tools.aggregate_records(None, "theme", RecordFilters(), detail=True)
+    assert r.rendered.startswith("Distribution of items by theme:")
