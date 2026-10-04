@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Protocol
 from app.core.models import CanonicalDocument, CanonicalSection, EntityRef, FileLink
+from app.ingestion.bylines import authors_from
 from app.ingestion.textutil import slugify as _slugify
 
 if TYPE_CHECKING:
@@ -52,12 +53,14 @@ def _matching(meta: dict[str, Any], *substrings: str) -> list[tuple[str, Any]]:
     ]
 
 
-def _pick_list(meta: dict[str, Any], *substrings: str) -> list[str]:
+def _pick(meta: dict[str, Any], *substrings: str) -> Any:
+    """The one matching field a single-valued facet is read from: the first
+    list-valued match, else the first match at all; None when nothing matches."""
     matches = _matching(meta, *substrings)
     for _, value in matches:
         if isinstance(value, (list, tuple)):
-            return _as_list(value)
-    return _as_list(matches[0][1]) if matches else []
+            return value
+    return matches[0][1] if matches else None
 
 
 def _union_list(meta: dict[str, Any], *substrings: str) -> list[str]:
@@ -134,7 +137,9 @@ def drupal_facets(
     return {
         "categories": categories,
         "tags": _union_list(metadata, *TAG_HINTS),
-        "authors": _pick_list(metadata, *AUTHOR_HINTS),
+        # Read as a byline, not split on every comma: "Sehgal, Meena" is one
+        # person and "A and B" two (see app.ingestion.bylines).
+        "authors": authors_from(_pick(metadata, *AUTHOR_HINTS)),
     }
 
 
