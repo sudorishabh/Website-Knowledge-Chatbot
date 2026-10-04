@@ -27,6 +27,7 @@ from app.retrieval.understanding.clarify import Clarification
 from app.retrieval.understanding.document_request import is_document_request
 from app.retrieval.understanding.query_processor import ProcessedQuery, process
 from app.retrieval.retriever import retrieve
+from app.schemas.query import Citation
 
 logger = logging.getLogger(__name__)
 
@@ -571,7 +572,11 @@ def _theme_digest(question: str, pq: ProcessedQuery) -> str:
     """Each theme's figures and newest item, to follow the home page's list of
     themes: the page says what each theme is about but not what it holds.
     '' with catalog detail off or on any failure, leaving the answer as it was.
-    Owns its ``rag.theme_digest`` span, as `_db_section` does."""
+    Owns its ``rag.theme_digest`` span, as `_db_section` does.
+
+    Only the themes the home page lists, unless the question asks for the
+    others: "all the thematic areas" followed the page's seven with "Green
+    Shipping" and five more, as if the page had left them out."""
     with span("rag.theme_digest"):
         from app.retrieval.structured import detail as structured_detail
         from app.retrieval.structured import theme_scope
@@ -580,13 +585,58 @@ def _theme_digest(question: str, pq: ProcessedQuery) -> str:
         if not structured_detail.enabled():
             return ""
         try:
+            if theme_scope.asks_for_other(question):
+                scope, names = theme_scope.detect(question), None
+            else:
+                from app.retrieval.priority.evidence import thematic_areas
+
+                listing = thematic_areas()
+                if listing is None:
+                    return ""
+                scope, names = theme_scope.SCOPE_ALL, [area.name for area in listing.areas]
             return theme_digest(
-                scope=theme_scope.detect(question),
+                scope=scope, names=names,
                 output_format="table" if pq.answer_format == "table" else "default",
             )
         except Exception:
             logger.warning("Theme digest failed; answering without it.", exc_info=True)
             return ""
+
+
+def _theme_overview(question: str, pq: ProcessedQuery) -> dict[str, Any] | None:
+    """The whole answer to a request for the list of themes and nothing more:
+    the themes the home page lists, what each covers, and what the catalog
+    holds on each. No model call — written from the page, the model described
+    some themes and not others (one of seven, measured 2026-10-04) from teasers
+    the page cuts mid-sentence. None with catalog detail off, for a question
+    asking for the themes the page does not list, or when the page cannot be
+    read, leaving the question to the page and the model as before."""
+    from app.retrieval.structured import detail as structured_detail
+    from app.retrieval.structured import theme_scope
+
+    if not structured_detail.enabled() or theme_scope.asks_for_other(question):
+        return None
+    with span("rag.theme_overview") as s:
+        from app.retrieval.priority.evidence import thematic_areas
+        from app.retrieval.structured.tools import theme_overview
+
+        try:
+            listing = thematic_areas()
+            answer = theme_overview(
+                listing.areas,
+                output_format="table" if pq.answer_format == "table" else "default",
+            ) if listing is not None else ""
+        except Exception:
+            logger.warning("Theme overview failed; answering from the page.", exc_info=True)
+            return None
+        s.set("themes", len(listing.areas) if listing is not None else 0)
+        if not answer:
+            return None
+    return {
+        **_empty(pq.intent, answer, answer_format=pq.answer_format),
+        "citations": [Citation(n=1, type="website", title=listing.title,
+                               url=listing.url).model_dump()],
+    }
 
 
 def _catalog_listing(pq: ProcessedQuery, question: str) -> dict[str, Any] | None:
@@ -725,6 +775,13 @@ def _prepare(
     # that theme's page's question.
     theme_digest_wanted = (themes_listing and page_owned and not any(
         _names_a_theme_page(target) for target in priority_targets or ()))
+    # A listing that asks for nothing else is answered whole, theme by theme;
+    # one that also asks for content ("…and their key projects") is the page's
+    # and the model's, with the figures after it.
+    if theme_digest_wanted and not caps & _CONTENT_CAPS:
+        overview = _theme_overview(question, pq)
+        if overview is not None:
+            return overview, None
     chained = False
     # Whether the catalog has already been asked about this query, so the
     # empty-retrieval fallback at the end doesn't re-run a query that just came

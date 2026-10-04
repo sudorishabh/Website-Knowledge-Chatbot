@@ -12,6 +12,7 @@ from app.pipeline import query_pipeline as pipe
 from app.retrieval.priority import evidence as ev
 from app.retrieval.priority.match import GROUP, NAME, THEME_FACET, Target
 from app.retrieval.priority.registry import CENTRE, PAGE, THEME, PriorityGroup, PriorityPage
+from app.retrieval.priority.themes import ThematicArea, ThemeListing
 from app.retrieval.understanding import query_processor as qp
 
 BLOCK = ContextBlock(n=1, text="corpus text", payload={"source_type": "website", "title": "Doc"})
@@ -222,42 +223,102 @@ def test_a_theme_listing_is_answered_from_the_home_page(wired, monkeypatch):
     assert gen is not None and wired.log.retrieve
 
 
+HOME_THEMES = ThemeListing(
+    areas=(ThematicArea("Energy", "Covers energy systems.", "https://teriin.org/energy"),
+           ThematicArea("Climate Change", "Covers climate science.", "https://teriin.org/climate")),
+    url=HOME.url, title="TERI home",
+)
+
+
 @pytest.fixture
 def digest(monkeypatch):
-    """Catalog detail on, and the theme figures stubbed."""
+    """Catalog detail on, the home page's themes and the theme figures stubbed.
+    Records each digest as (scope, format, names) and each overview as the
+    names it was given."""
     monkeypatch.setattr(get_settings(), "catalog_answer_detail_enabled", True)
-    calls: list = []
+    calls = SimpleNamespace(digest=[], overview=[], listing=HOME_THEMES)
 
-    def fake_digest(*, scope, output_format):
-        calls.append((scope, output_format))
+    def fake_digest(*, scope, output_format, names=None):
+        calls.digest.append((scope, output_format, names))
         return "What each theme holds:\n- Energy — 1154 items"
 
+    def fake_overview(areas, *, output_format):
+        calls.overview.append([a.name for a in areas])
+        return "There are **2 thematic areas**: ..."
+
     monkeypatch.setattr("app.retrieval.structured.tools.theme_digest", fake_digest)
+    monkeypatch.setattr("app.retrieval.structured.tools.theme_overview", fake_overview)
+    monkeypatch.setattr(ev, "thematic_areas", lambda registry=None: calls.listing)
     return calls
 
 
-def test_the_home_pages_theme_listing_is_followed_by_each_themes_figures(
+def _home_listing(wired, pq):
+    wired.state.pq = pq
+    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
+
+
+def test_a_plain_theme_listing_is_answered_theme_by_theme(wired, monkeypatch, digest):
+    """Written by the model from the page, one of seven themes was described."""
+    _enable(monkeypatch)
+    _home_listing(wired, _listing_pq("list_themes"))
+    result, gen = pipe._prepare("tell me about all the thematic areas", history=None,
+                                top_k=None)
+    assert gen is None and result["answer"] == "There are **2 thematic areas**: ..."
+    assert digest.overview == [["Energy", "Climate Change"]]
+    assert [(c["title"], c["url"]) for c in result["citations"]] == [("TERI home", HOME.url)]
+    assert wired.log.retrieve == [] and wired.log.structured == []
+
+
+def test_an_unreadable_home_page_leaves_the_listing_to_the_page(wired, monkeypatch, digest):
+    _enable(monkeypatch)
+    digest.listing = None
+    _home_listing(wired, _listing_pq("list_themes"))
+    _, gen = pipe._prepare("tell me about all the thematic areas", history=None, top_k=None)
+    assert gen is not None and wired.log.retrieve
+    assert digest.overview == [] and gen.db_suffix == ""
+
+
+def test_the_other_themes_are_not_the_home_pages(wired, monkeypatch, digest):
+    _enable(monkeypatch)
+    _home_listing(wired, _listing_pq("list_themes"))
+    _, gen = pipe._prepare("what are the other themes", history=None, top_k=None)
+    assert digest.overview == []
+    assert digest.digest == [("other", "default", None)]
+
+
+def test_a_theme_listing_asking_for_more_is_followed_by_each_themes_figures(
     wired, monkeypatch, digest,
 ):
-    """The page says what each theme is about, not what it holds."""
+    """The page says what each theme is about, not what it holds — and the
+    figures are for the themes it lists, not the catalog's other main themes."""
     _enable(monkeypatch)
-    wired.state.pq = _listing_pq("list_themes")
-    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
-    _, gen = pipe._prepare("what themes do you cover", history=None, top_k=None)
+    _home_listing(wired, _combined_pq("list_themes"))
+    _, gen = pipe._prepare("what are the thematic areas and their key projects",
+                           history=None, top_k=None)
+    assert digest.overview == []
     assert gen.db_suffix == "What each theme holds:\n- Energy — 1154 items"
     assert gen.db_prefix == ""
-    assert digest == [("main", "default")]
+    # Every theme the page lists, whichever group the catalog files it under.
+    assert digest.digest == [("all", "default", ["Energy", "Climate Change"])]
     assert gen.compose("The themes are ...") == (
         "The themes are ...\n\nWhat each theme holds:\n- Energy — 1154 items")
+
+
+def test_no_figures_follow_when_the_home_page_cannot_be_read(wired, monkeypatch, digest):
+    _enable(monkeypatch)
+    digest.listing = None
+    _home_listing(wired, _combined_pq("list_themes"))
+    _, gen = pipe._prepare("what are the thematic areas and their key projects",
+                           history=None, top_k=None)
+    assert gen.db_suffix == "" and digest.digest == []
 
 
 def test_no_figures_follow_with_catalog_detail_off(wired, monkeypatch, digest):
     _enable(monkeypatch)
     monkeypatch.setattr(get_settings(), "catalog_answer_detail_enabled", False)
-    wired.state.pq = _listing_pq("list_themes")
-    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
+    _home_listing(wired, _listing_pq("list_themes"))
     _, gen = pipe._prepare("what themes do you cover", history=None, top_k=None)
-    assert gen.db_suffix == "" and digest == []
+    assert gen.db_suffix == "" and digest.digest == [] and digest.overview == []
 
 
 def test_a_listing_naming_one_theme_gets_no_figures(wired, monkeypatch, digest):
@@ -266,13 +327,13 @@ def test_a_listing_naming_one_theme_gets_no_figures(wired, monkeypatch, digest):
     wired.state.targets = [Target("Climate Change Theme", THEME, NAME,
                                   url="https://teriin.org/climate")]
     _, gen = pipe._prepare("Tell me about climate change thematic", history=None, top_k=None)
-    assert gen.db_suffix == "" and digest == []
+    assert gen.db_suffix == "" and digest.digest == [] and digest.overview == []
 
 
 def test_an_ordinary_answer_gets_no_figures(wired, monkeypatch, digest):
     _enable(monkeypatch)
     _, gen = pipe._prepare("tell me about climate change", history=None, top_k=None)
-    assert gen.db_suffix == "" and digest == []
+    assert gen.db_suffix == "" and digest.digest == [] and digest.overview == []
     assert gen.compose("Body") == "Body"
 
 

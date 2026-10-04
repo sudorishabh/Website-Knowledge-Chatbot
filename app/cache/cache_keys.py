@@ -53,7 +53,9 @@ def _sha(*parts: str) -> str:
 #: listing gives each theme's count and newest item.
 #: 2026-10-04.12: catalog answers are laid out as generated ones are — a lead
 #: with bold figures, titled sections, an italic follow-up.
-PIPELINE_REVISION = "2026-10-04.12"
+#: 2026-10-04.13: a request for the list of themes is answered theme by theme —
+#: what each covers and holds — and only the home page's themes get figures.
+PIPELINE_REVISION = "2026-10-04.13"
 
 
 def _pref_fingerprint() -> str:

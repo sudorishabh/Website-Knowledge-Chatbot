@@ -1185,19 +1185,94 @@ def list_themes(
     )
 
 
-def theme_digest(*, scope: str = SCOPE_MAIN, output_format: str = "default") -> str:
+def _theme_key(name: str) -> str:
+    """A theme name to match across spellings: the home page and the CMS write
+    "Environment & Public Health", the page list "Environment and Public Health"."""
+    return " ".join(re.sub(r"[^\w&]+", " ", name.replace("&", " and ")).split()).casefold()
+
+
+def _catalog_names(wanted: Sequence[str], known: Sequence[str]) -> list[str]:
+    """The catalog's spelling of each theme in ``wanted`` that it knows, in
+    ``wanted``'s order."""
+    by_key = {_theme_key(name): name for name in known}
+    return [by_key[key] for key in dict.fromkeys(_theme_key(n) for n in wanted)
+            if key in by_key]
+
+
+def theme_digest(
+    *, scope: str = SCOPE_MAIN, output_format: str = "default",
+    names: Sequence[str] | None = None,
+) -> str:
     """How many items each theme holds and its newest one, as a section to
     follow an answer that lists the themes from elsewhere — the home page, which
-    describes the themes but cannot say what is in them. '' when the themes or
-    their figures cannot be read, leaving that answer as it was."""
+    describes the themes but cannot say what is in them. ``names`` keeps it to
+    the themes that answer listed: the catalog's main themes include some the
+    home page does not ("Green Shipping", "Corporate Social Responsibility").
+    '' when the themes or their figures cannot be read, leaving that answer as
+    it was."""
     result = list_themes(scope=scope, output_format=output_format)
-    names = result.data.get("themes", []) if result.ok else []
-    counts = structured_detail.theme_counts() if names else {}
+    listed = result.data.get("themes", []) if result.ok else []
+    if names is not None:
+        listed = _catalog_names(names, listed)
+    counts = structured_detail.theme_counts() if listed else {}
     if not counts:
         return ""
-    latest = structured_detail.theme_latest(names)
+    latest = structured_detail.theme_latest(listed)
     return section("What each theme holds",
-                   _theme_section("", names, output_format, counts, latest))
+                   _theme_section("", listed, output_format, counts, latest))
+
+
+def _holding(count: int | None, newest: Any | None) -> str:
+    """"1,220 items · Latest: [Title](url) · 7 Sep 2026" — what the catalog
+    holds on one theme; '' when it holds nothing."""
+    parts = []
+    if count:
+        parts.append(f"{number(count)} {entity_label('items', count)}")
+    if newest is not None:
+        parts.append(f"Latest: {_latest_phrase(newest)}")
+    return " · ".join(parts)
+
+
+def theme_overview(areas: Sequence[Any], *, output_format: str = "default") -> str:
+    """The thematic areas a page lists, each with what it covers and what the
+    catalog holds on it — the whole answer to "tell me about the thematic
+    areas". ``areas`` carry a ``name``, a one-sentence ``description`` and the
+    ``url`` of the theme's page. The figures are `theme_digest`'s, counted as
+    "how many items on <theme>" counts them; a theme the catalog does not know
+    is listed with its description alone. '' with no areas."""
+    if not areas:
+        return ""
+    counts = structured_detail.theme_counts()
+    names = {area.name: next(iter(_catalog_names([area.name], list(counts))), None)
+             for area in areas}
+    latest = structured_detail.theme_latest([n for n in names.values() if n])
+
+    def figures(area: Any) -> tuple[int | None, Any | None]:
+        name = names[area.name]
+        return (counts.get(name), latest.get(name)) if name else (None, None)
+
+    total = len(areas)
+    lead = f"There {'is' if total == 1 else 'are'} {figure(total, entity_label('thematic areas', total))}:"
+    if output_format == "table":
+        rows = ["| theme | what it covers | items | latest |", "| --- | --- | ---: | --- |"]
+        for area in areas:
+            count, newest = figures(area)
+            rows.append("| " + " | ".join([
+                _md_cell(md_link(area.name, area.url)), _md_cell(area.description),
+                number(count) if count else "",
+                _md_cell(_latest_phrase(newest)) if newest is not None else "",
+            ]) + " |")
+        body = "\n".join(rows)
+    else:
+        lines = []
+        for area in areas:
+            about = f" — {area.description}" if area.description else ""
+            lines.append(f"- **{md_link(area.name, area.url)}**{about}")
+            holding = _holding(*figures(area))
+            if holding:
+                lines.append(f"  - {holding}")
+        body = "\n".join(lines)
+    return structured_detail.for_themes().render_onto(f"{lead}\n\n{body}")
 
 
 def resolve_entity(query: str | None, type: str | None = None) -> ToolResult:

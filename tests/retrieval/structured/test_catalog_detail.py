@@ -758,3 +758,54 @@ def test_a_theme_digest_without_figures_is_empty(catalog, vocabulary, monkeypatc
 
     monkeypatch.setattr("app.catalog.queries.distribution", boom)
     assert tools.theme_digest() == ""
+
+
+def test_a_theme_digest_keeps_to_the_themes_the_answer_listed(catalog, vocabulary,
+                                                                monkeypatch):
+    """The catalog's main themes include some the home page does not list."""
+    catalog.values = [("Climate Change", 1220), ("Energy", 1154)]
+    _newest_by_theme(monkeypatch)
+    assert tools.theme_digest(names=["Energy", "Water"]) == (
+        "### What each theme holds\n- **Energy** — 1,154 items")
+    assert tools.theme_digest(names=["Water"]) == ""
+
+
+def _area(name, description="", url=None):
+    return SimpleNamespace(name=name, description=description, url=url)
+
+
+def test_a_theme_overview_describes_each_theme_and_what_it_holds(catalog, monkeypatch):
+    catalog.values = [("Climate Change", 1220), ("Environment & Public Health", 1),
+                      ("Water", 30)]
+    _newest_by_theme(monkeypatch, **{"Climate Change": "Rooted Resilience"})
+    text = tools.theme_overview([
+        _area("Climate Change", "Covers climate science.", "https://teriin.org/climate"),
+        # "and" for the catalog's "&".
+        _area("Environment and Public Health", "Examines health."),
+        _area("Sustainable Habitat", "Promotes resilient settlements."),
+    ])
+    assert text.split("\n\n") == [
+        "There are **3 thematic areas**:",
+        "- **[Climate Change](https://teriin.org/climate)** — Covers climate science.\n"
+        "  - 1,220 items · Latest: [Rooted Resilience](https://teriin.org/rooted-resilience)"
+        " · 20 Apr 2026\n"
+        "- **Environment and Public Health** — Examines health.\n"
+        "  - 1 item\n"
+        # Nothing the catalog knows: the description alone.
+        "- **Sustainable Habitat** — Promotes resilient settlements.",
+        "*You can ask me about the work under any of these — for example, how "
+        "many reports there are on one, or which are the latest.*",
+    ]
+
+
+def test_a_theme_overview_table(catalog, monkeypatch):
+    catalog.values = [("Energy", 1154)]
+    _newest_by_theme(monkeypatch)
+    text = tools.theme_overview([_area("Energy", "Covers energy | power.")],
+                                output_format="table")
+    assert "| theme | what it covers | items | latest |\n| --- | --- | ---: | --- |\n" in text
+    assert "| Energy | Covers energy \\| power. | 1,154 |  |" in text
+
+
+def test_a_theme_overview_of_nothing_is_empty(catalog):
+    assert tools.theme_overview([]) == ""
