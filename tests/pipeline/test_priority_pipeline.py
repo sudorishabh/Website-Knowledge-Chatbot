@@ -222,6 +222,60 @@ def test_a_theme_listing_is_answered_from_the_home_page(wired, monkeypatch):
     assert gen is not None and wired.log.retrieve
 
 
+@pytest.fixture
+def digest(monkeypatch):
+    """Catalog detail on, and the theme figures stubbed."""
+    monkeypatch.setattr(get_settings(), "catalog_answer_detail_enabled", True)
+    calls: list = []
+
+    def fake_digest(*, scope, output_format):
+        calls.append((scope, output_format))
+        return "What each theme holds:\n- Energy — 1154 items"
+
+    monkeypatch.setattr("app.retrieval.structured.tools.theme_digest", fake_digest)
+    return calls
+
+
+def test_the_home_pages_theme_listing_is_followed_by_each_themes_figures(
+    wired, monkeypatch, digest,
+):
+    """The page says what each theme is about, not what it holds."""
+    _enable(monkeypatch)
+    wired.state.pq = _listing_pq("list_themes")
+    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
+    _, gen = pipe._prepare("what themes do you cover", history=None, top_k=None)
+    assert gen.db_suffix == "What each theme holds:\n- Energy — 1154 items"
+    assert gen.db_prefix == ""
+    assert digest == [("main", "default")]
+    assert gen.compose("The themes are ...") == (
+        "The themes are ...\n\nWhat each theme holds:\n- Energy — 1154 items")
+
+
+def test_no_figures_follow_with_catalog_detail_off(wired, monkeypatch, digest):
+    _enable(monkeypatch)
+    monkeypatch.setattr(get_settings(), "catalog_answer_detail_enabled", False)
+    wired.state.pq = _listing_pq("list_themes")
+    wired.state.targets = [Target("Home", PAGE, NAME, url=HOME.url, page=HOME)]
+    _, gen = pipe._prepare("what themes do you cover", history=None, top_k=None)
+    assert gen.db_suffix == "" and digest == []
+
+
+def test_a_listing_naming_one_theme_gets_no_figures(wired, monkeypatch, digest):
+    _enable(monkeypatch)
+    wired.state.pq = _listing_pq("list_themes")
+    wired.state.targets = [Target("Climate Change Theme", THEME, NAME,
+                                  url="https://teriin.org/climate")]
+    _, gen = pipe._prepare("Tell me about climate change thematic", history=None, top_k=None)
+    assert gen.db_suffix == "" and digest == []
+
+
+def test_an_ordinary_answer_gets_no_figures(wired, monkeypatch, digest):
+    _enable(monkeypatch)
+    _, gen = pipe._prepare("tell me about climate change", history=None, top_k=None)
+    assert gen.db_suffix == "" and digest == []
+    assert gen.compose("Body") == "Body"
+
+
 @pytest.mark.parametrize("reason", [NAME, THEME_FACET])
 def test_a_theme_listing_naming_one_theme_is_answered_from_its_page(wired, monkeypatch, reason):
     _enable(monkeypatch)

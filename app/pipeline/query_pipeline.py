@@ -59,6 +59,9 @@ class _Generation:
     # Deterministic catalog section prefixed onto a combined (database + content)
     # answer; "" for single-source answers.
     db_prefix: str = ""
+    # Deterministic catalog section that follows the answer: each theme's
+    # figures beneath the home page's list of themes; "" otherwise.
+    db_suffix: str = ""
     # Evidence-coverage directive for a genuinely multi-part question; "" when
     # the question has one part or the extraction step failed. See
     # `app.generation.answer_plan`.
@@ -67,6 +70,11 @@ class _Generation:
     # fingerprint plus the content of any priority page it stands on. None means
     # the facet fingerprint alone.
     cache_fingerprint: dict[str, Any] | None = None
+
+    def compose(self, answer: str) -> str:
+        """The answer as shown: the catalog sections around the generated text.
+        Every pass that checks the answer reads the generated text alone."""
+        return "\n\n".join(part for part in (self.db_prefix, answer, self.db_suffix) if part)
 
 
 # Content capabilities that pair with a database lookup into a combined answer.
@@ -559,6 +567,28 @@ def _db_section(
         return structured["answer"] if structured else ""
 
 
+def _theme_digest(question: str, pq: ProcessedQuery) -> str:
+    """Each theme's figures and newest item, to follow the home page's list of
+    themes: the page says what each theme is about but not what it holds.
+    '' with catalog detail off or on any failure, leaving the answer as it was.
+    Owns its ``rag.theme_digest`` span, as `_db_section` does."""
+    with span("rag.theme_digest"):
+        from app.retrieval.structured import detail as structured_detail
+        from app.retrieval.structured import theme_scope
+        from app.retrieval.structured.tools import theme_digest
+
+        if not structured_detail.enabled():
+            return ""
+        try:
+            return theme_digest(
+                scope=theme_scope.detect(question),
+                output_format="table" if pq.answer_format == "table" else "default",
+            )
+        except Exception:
+            logger.warning("Theme digest failed; answering without it.", exc_info=True)
+            return ""
+
+
 def _catalog_listing(pq: ProcessedQuery, question: str) -> dict[str, Any] | None:
     """The catalog's take on a content question retrieval could not ground, or None
     to refuse as before.
@@ -690,6 +720,11 @@ def _prepare(
     # would repeat the home page the answer is built on.
     combined = ("database" in caps and bool(caps & _CONTENT_CAPS)
                 and not (themes_listing and page_owned))
+    # The home page's list of themes is followed by what each theme holds,
+    # which the page cannot say. Not when the listing named one theme: that is
+    # that theme's page's question.
+    theme_digest_wanted = (themes_listing and page_owned and not any(
+        _names_a_theme_page(target) for target in priority_targets or ()))
     chained = False
     # Whether the catalog has already been asked about this query, so the
     # empty-retrieval fallback at the end doesn't re-run a query that just came
@@ -821,14 +856,18 @@ def _prepare(
         # derived from `app.generation.answer_plan`, which retrieval may not
         # import (see tests/test_architecture.py).
         subqueries = _subquery_plan(pq, requirements_future)
+        db_prefix = db_suffix = ""
         if combined and not chained:
             db_future = pool.submit(
                 copy_context().run, _db_section, pq, question, history
             )
             blocks = _run_retrieve(subqueries)
             db_prefix = db_future.result()
+        elif theme_digest_wanted:
+            digest_future = pool.submit(copy_context().run, _theme_digest, question, pq)
+            blocks = _run_retrieve(subqueries)
+            db_suffix = digest_future.result()
         else:
-            db_prefix = ""
             blocks = _run_retrieve(subqueries)
         requirements = requirements_future.result()
 
@@ -868,7 +907,7 @@ def _prepare(
 
     return None, _Generation(
         pq=pq, blocks=blocks, query_vector=query_vector,
-        top_k=n, db_prefix=db_prefix, plan_directive=directive,
+        top_k=n, db_prefix=db_prefix, db_suffix=db_suffix, plan_directive=directive,
         # Recomputed after retrieval, which may have read further pages whose
         # stored copies it ranked.
         cache_fingerprint=(
@@ -916,7 +955,7 @@ def _assemble(answer: str, gen: _Generation) -> dict[str, Any]:
         logger.info("Numeric claims not found in cited blocks: %s", mismatches)
     # The catalog section is deterministic (not from the blocks), so faithfulness
     # and numeric checks run on the grounded content only; compose for display.
-    final = f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer
+    final = gen.compose(answer)
     return {
         "answer": final,
         "citations": [
@@ -1041,6 +1080,7 @@ def stream_answer(
             )
             retrieval_log.note(
                 db_prefix_chars=len(gen.db_prefix),
+                db_suffix_chars=len(gen.db_suffix),
                 plan_directive=bool(gen.plan_directive),
             )
         # Cache hit, chit-chat, structured lookup, or refusal — already complete.
@@ -1064,6 +1104,10 @@ def stream_answer(
         ):
             parts.append(token)
             yield {"type": "token", "text": token}
+        # The catalog section that follows (theme figures), streamed before the
+        # checks below so any correction they emit — `gen.compose` — carries it.
+        if gen.db_suffix:
+            yield {"type": "token", "text": "\n\n" + gen.db_suffix}
         answer = faithfulness.validate_markers("".join(parts), len(gen.blocks))
 
         if get_settings().faithfulness_check:
@@ -1092,7 +1136,7 @@ def stream_answer(
                     answer = corrected
                     yield {
                         "type": "correction",
-                        "text": f"{gen.db_prefix}\n\n{corrected}" if gen.db_prefix else corrected,
+                        "text": gen.compose(corrected),
                         "reason": "faithfulness",
                     }
 
@@ -1129,9 +1173,7 @@ def stream_answer(
                 # offending sentences outright.
                 answer = date_claims.safe_rewrite(answer, recheck)
                 reason = 'date_claim_fallback'
-            corrected_text = (
-                gen.db_prefix + "\n\n" + answer if gen.db_prefix else answer
-            )
+            corrected_text = gen.compose(answer)
             yield {
                 "type": "correction",
                 "text": corrected_text,
@@ -1152,7 +1194,7 @@ def stream_answer(
             answer = tidied
             yield {
                 "type": "correction",
-                "text": f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer,
+                "text": gen.compose(answer),
                 "reason": reason,
             }
 
