@@ -223,3 +223,45 @@ def test_effective_date_range_is_cached_between_calls(monkeypatch):
     assert catalog.effective_date_range() == catalog.effective_date_range()
     assert len(cursor.calls) == 1
     assert catalog.effective_date_range(refresh=True) != () and len(cursor.calls) == 2
+
+
+# --------------------------------------------------------------------------- #
+# facets_for — authors and top-level themes for documents an answer shows.
+# --------------------------------------------------------------------------- #
+
+def test_facets_for_groups_authors_and_primary_themes_by_document(monkeypatch):
+    cursor = _FakeCursor(fetchall_results=[
+        [{"document_id": "d1", "author": "A"}, {"document_id": "d1", "author": "B"},
+         {"document_id": "d2", "author": "C"}],
+        [{"document_id": "d1", "theme": "Energy"}],
+    ])
+    _patch(monkeypatch, cursor)
+
+    facets = catalog.facets_for(["d1", "d2", ""])
+
+    assert facets == {
+        "d1": {"authors": ["A", "B"], "themes": ["Energy"]},
+        "d2": {"authors": ["C"], "themes": []},
+    }
+    author_sql, author_params = cursor.calls[0]
+    assert "_author`" in author_sql and "ORDER BY author" in author_sql
+    assert author_params == ("d1", "d2")
+    theme_sql, theme_params = cursor.calls[1]
+    # Sub-themes are not shown at question time; neither are boolean artefacts.
+    assert "theme_type = 'primary'" in theme_sql
+    assert theme_params == ("d1", "d2", "False", "True")
+
+
+def test_facets_for_nothing_asks_nothing(monkeypatch):
+    cursor = _FakeCursor()
+    _patch(monkeypatch, cursor)
+    assert catalog.facets_for([]) == {}
+    assert cursor.calls == []
+
+
+def test_facets_for_fails_open(monkeypatch):
+    def boom():
+        raise RuntimeError("mysql down")
+
+    monkeypatch.setattr(catalog, "mysql_connection", boom)
+    assert catalog.facets_for(["d1"]) == {}

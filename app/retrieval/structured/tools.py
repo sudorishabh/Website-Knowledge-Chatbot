@@ -15,7 +15,7 @@ import logging
 import re
 from dataclasses import replace
 from datetime import datetime
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
 
 from app.config import get_settings
 from app.catalog import queries as state
@@ -29,9 +29,14 @@ from app.retrieval.structured.entities import (
     is_available,
     is_known,
     normalize_entity,
+    scope_noun,
 )
+from app.retrieval.structured import detail as structured_detail
 from app.retrieval.structured import topic
 from app.retrieval.structured.filters import AmbiguousFilter, _parse_date, resolve_filters
+from app.retrieval.structured.rendering import (
+    card, figure, followup, item_line, md_link, number, record_date, section,
+)
 from app.retrieval.structured.types import GroupBy, RecordFilters, ToolResult
 from app.schemas.query import Citation
 
@@ -69,27 +74,83 @@ def _period_label(filters: RecordFilters) -> str:
     return ""
 
 
-def _scope_phrase(filters: RecordFilters) -> str:
+def _quoted(name: str) -> str:
+    return f"'{name}'"
+
+
+def _bold(name: str) -> str:
+    return f"**{name}**"
+
+
+def _plain(name: str) -> str:
+    return name
+
+
+def _scope_phrase(
+    filters: RecordFilters, *, mark: Callable[[str], str] = _quoted, author: bool = True,
+) -> str:
     """Human phrase naming every active filter (author, theme, tag, title,
     period) — so an answer states its own interpretation rather than a bare
     number a wrong match could hide behind. Kept in step with
     `_applied_filters`, which echoes the same set structurally.
+
+    ``mark`` sets how a name reads: quoted, in bold for a lead, or plain for a
+    section heading. ``author=False`` leaves the author out, for a sentence
+    that already opens with them. A title is always quoted: it is the user's
+    phrase, not a name.
 
     The bundle/content-type itself is already named as the sentence's noun (see
     `entity_label`), so it is not repeated here. Callers pass `scope.effective`,
     whose author/theme are the canonical names resolution matched — so the
     phrase names the entity actually filtered on, not the user's spelling."""
     parts = []
-    if filters.author:
-        parts.append(f" by {filters.author}")
+    if filters.author and author:
+        # A person's name is never quoted; quotes mark a vocabulary term.
+        who = filters.author if mark is _quoted else mark(filters.author)
+        parts.append(f" by {who}")
     if filters.theme:
-        parts.append(f" on '{filters.theme}'")
+        parts.append(f" on {mark(filters.theme)}")
     if filters.tag:
-        parts.append(f" tagged '{filters.tag}'")
+        parts.append(f" tagged {mark(filters.tag)}")
     if filters.title_contains:
         parts.append(f" with '{filters.title_contains}' in the title")
     parts.append(_period_label(filters))
     return "".join(parts)
+
+
+def _distinct_headline(
+    total: int, noun: str, filters: RecordFilters, *, source_labels: bool,
+) -> str:
+    """The sentence a count of distinct values answers with: "**Dr Suneel
+    Pandey**'s publications span **4 themes**.", or "There are **975 distinct
+    author names** in the source data." A count of labels says where the
+    labels come from: "975 authors" would claim an identity resolution nobody
+    has done."""
+    rest = _scope_phrase(filters, mark=_bold, author=False)
+    if filters.author and total and not source_labels:
+        return f"**{filters.author}**'s publications span {figure(total, noun)}{rest}."
+    amount = figure(total, noun) if total else f"no {noun}"
+    verb = "is" if total == 1 else "are"
+    tail = " in the source data" if source_labels else ""
+    return f"There {verb} {amount}{_scope_phrase(filters, mark=_bold)}{tail}."
+
+
+def _count_headline(total: int, noun: str, filters: RecordFilters) -> str:
+    """The sentence a count answers with, its figure in bold.
+
+    One author's count opens with them — "**Dr Vibha Dhawan** has **41
+    publications** on the site." — and any other reads "There are **68
+    articles** on **Climate Change**." "On the site" says where the figure comes
+    from whenever no theme or tag does; a person's own total elsewhere (books,
+    papers in other venues) is not what the catalog counts."""
+    rest = _scope_phrase(filters, mark=_bold, author=False)
+    placed = bool(filters.theme or filters.tag or filters.title_contains)
+    site = "" if placed else " on the site"
+    amount = figure(total, noun) if total else f"no {noun}"
+    if filters.author:
+        return f"**{filters.author}** has {amount}{site}{rest}."
+    verb = "is" if total == 1 else "are"
+    return f"There {verb} {amount}{site}{rest}."
 
 
 def _unresolved_miss(tool: str, entity: str | None, kind: str, value: str | None) -> ToolResult:
@@ -250,9 +311,9 @@ def _applied_filters(bundle: str | None, filters: RecordFilters) -> dict[str, st
 def _render_list_table(records: Sequence[StateRecord]) -> str:
     lines = ["| Title | Published | Type |", "| --- | --- | --- |"]
     for r in records:
-        title = _md_cell(r.title or r.document_id)
-        cell = f"[{title}]({r.url})" if r.url else title
-        lines.append(f"| {cell} | {(r.effective_start_date or '')[:10]} | {r.bundle or ''} |")
+        cell = _md_cell(md_link(r.title or r.document_id, r.url))
+        kind = entity_label(r.bundle, 1) if r.bundle else ""
+        lines.append(f"| {cell} | {record_date(r)} | {kind} |")
     return "\n".join(lines)
 
 
@@ -267,36 +328,71 @@ def _render_list_timeline(records: Sequence[StateRecord]) -> str:
                 lines.append("")
             lines.append(f"{y}:")
             year = y
-        label = (r.effective_start_date or "")[:7] or "n.d."
-        title = r.title or r.document_id
-        lines.append(f"- {label}: {title} ({r.url})" if r.url else f"- {label}: {title}")
+        label = record_date(r) or "n.d."
+        lines.append(f"- {label}: {md_link(r.title or r.document_id, r.url)}")
     return "\n".join(lines)
 
 
-def _default_list_line(r: StateRecord) -> str:
-    """One bullet, with its date attached whenever the record carries one — a
-    bare title-and-link tells the reader nothing they could not get from the
-    citation list, whereas the date is real record data already on hand."""
-    title = r.title or r.document_id
-    date = (r.effective_start_date or "")[:10]
-    head = f"{title} — {date}" if date else title
-    return f"- {head} ({r.url})" if r.url else f"- {head}"
+def _topic_phrase(topic_terms: Sequence[str]) -> str:
+    """The title words a topic-constrained list was narrowed by, stated so the
+    reader can see why these rows and not others (any one word qualifies)."""
+    if not topic_terms:
+        return ""
+    words = " or ".join(f"'{term}'" for term in topic_terms)
+    return f" mentioning {words} in the title"
+
+
+def _list_lead(
+    shown: int, total: int | None, bundle: str | None, filters: RecordFilters,
+    *, ranked: bool,
+) -> str:
+    """The sentence above a list: how many rows, of how many, in which scope.
+
+    When the page is a cut of a larger set the total leads, rather than trailing
+    the list where it was easy to miss. Rows ranked by topic match are not
+    "the most recent", so they are not called that."""
+    scope = _scope_phrase(filters, mark=_bold) + _topic_phrase(filters.topic_terms)
+    kind = scope_noun(bundle, by_author=bool(filters.author))
+    if total and total > shown:
+        amount = figure(total, entity_label(kind, total))
+        if ranked:
+            return f"Here are {shown} of the {amount}{scope}, closest matches first:"
+        return f"Here are the {shown} most recent of {amount}{scope}:"
+    return f"Found {figure(shown, entity_label(kind, shown))}{scope}:"
 
 
 def _render_records(
-    records: Sequence[StateRecord], output_format: str, *, bundle: str | None, filters: RecordFilters
+    records: Sequence[StateRecord], output_format: str, *, bundle: str | None,
+    filters: RecordFilters, total: int | None = None, ranked: bool = False,
+    facets: dict[str, dict[str, list[str]]] | None = None,
 ) -> tuple[str, list[dict], list[dict]]:
     """Body + structured records + citations, in one consistent order (timeline
-    sorts newest-first; citations follow the rendered order)."""
+    sorts newest-first; citations follow the rendered order).
+
+    ``facets`` (authors and themes per document) is set when the answer may
+    carry detail: one document is then shown as a card, several with bylines."""
+    separator = "\n"
     if output_format == "timeline":
         ordered = sorted(records, key=lambda r: r.effective_start_date or "", reverse=True)
         body = _render_list_timeline(ordered)
     elif output_format == "table":
         ordered = list(records)
         body = _render_list_table(ordered)
+    elif facets is not None and len(records) == 1:
+        ordered = list(records)
+        found = facets.get(ordered[0].document_id, {})
+        body = card(ordered[0], authors=found.get("authors", ()),
+                    themes=found.get("themes", ()))
+        separator = "\n\n"
     else:
         ordered = list(records)
-        body = "\n".join(_default_list_line(r) for r in ordered)
+        # The kind of each item is only news when the list spans several kinds.
+        body = "\n".join(
+            item_line(r, with_type=bundle is None,
+                      authors=(facets or {}).get(r.document_id, {}).get("authors", ()),
+                      listed_by=filters.author)
+            for r in ordered
+        )
     citations = [
         Citation(
             n=i, type="website", title=r.title, url=r.url,
@@ -314,18 +410,56 @@ def _render_records(
     # Named the scope actually matched, not a generic "here is what I found" —
     # the same information `count_records` already states in its own sentence,
     # so a list answer is no less specific than a count of the same query.
-    noun = entity_label(bundle or "items", len(ordered))
-    lead = f"Found {len(ordered)} {noun}{_scope_phrase(filters)}:"
-    return lead + "\n" + body, data, citations
+    lead = _list_lead(len(ordered), total, bundle, filters, ranked=ranked)
+    return lead + separator + body, data, citations
 
 
-def _theme_section(label: str, names: list[str], output_format: str) -> str:
+def _latest_phrase(record: Any) -> str:
+    """"[Title](url) · 27 Apr 2026" — a theme's newest item, linked and dated."""
+    when = record_date(record)
+    link = md_link(record.title or record.document_id, record.url)
+    return f"{link} · {when}" if when else link
+
+
+def _theme_section(
+    label: str, names: list[str], output_format: str,
+    counts: dict[str, int] | None = None,
+    latest: dict[str, Any] | None = None,
+) -> str:
     """One block of a theme listing. An empty `label` renders the bare list, for
-    the case where the surrounding sentence already names what these are."""
+    the case where the surrounding sentence already names what these are.
+    ``counts`` (items per theme) adds a column, or a figure beside each name;
+    ``latest`` (each theme's newest item) adds that too — on a line of its own
+    beneath the theme, since a title beside a figure reads as one run-on line."""
+    latest = latest or {}
     if output_format == "table":
-        rows = "\n".join(["| theme |", "| --- |"] + [f"| {_md_cell(n)} |" for n in names])
+        header, rule = ["theme"], ["---"]
+        if counts:
+            header.append("items")
+            rule.append("---:")
+        if latest:
+            header.append("latest")
+            rule.append("---")
+        lines = [f"| {' | '.join(header)} |", f"| {' | '.join(rule)} |"]
+        for n in names:
+            cells = [_md_cell(n)]
+            if counts:
+                cells.append(number(counts.get(n, 0)))
+            if latest:
+                cells.append(_md_cell(_latest_phrase(latest[n])) if n in latest else "")
+            lines.append(f"| {' | '.join(cells)} |")
+        rows = "\n".join(lines)
         return f"**{label}**\n{rows}" if label else rows
-    body = "\n".join(f"- {n}" for n in names)
+    lines = []
+    for n in names:
+        if counts:
+            held = counts.get(n, 0)
+            lines.append(f"- **{n}** — {number(held)} {entity_label('items', held)}")
+        else:
+            lines.append(f"- {n}")
+        if n in latest:
+            lines.append(f"  - Latest: {_latest_phrase(latest[n])}")
+    body = "\n".join(lines)
     return f"{label}:\n{body}" if label else body
 
 
@@ -356,7 +490,7 @@ def _project_fields(
 
 def count_records(
     entity: str | None, filters: RecordFilters, *, question: str | None = None,
-    count_of: str = "records",
+    count_of: str = "records", detail: bool = False, named_type: str | None = None,
 ) -> ToolResult:
     """How many catalog documents match. Unknown entity returns ok=False (fall
     through, never a misleading zero). Names are canonicalized first, so the
@@ -372,7 +506,12 @@ def count_records(
     facet within the same scope. "How many authors work on Energy" and "how
     many articles are under Energy" share every filter and differ only
     here — and answering one with the other's number is the failure this
-    parameter exists to prevent."""
+    parameter exists to prevent.
+
+    ``detail`` follows the headline with what the same scope shows (see
+    `app.retrieval.structured.detail`); off, the headline stands alone.
+    ``named_type`` is the type the question's word named when the count was
+    widened past it; the detail then says how many are of that type."""
     guarded = _entity_guard("count_records", entity)
     if guarded is not None:
         return guarded
@@ -428,19 +567,39 @@ def count_records(
                 tool="count_records", entity=bundle, ok=False,
                 error="zero under a guessed title filter",
             )
-    phrase = _scope_phrase(scope.effective)
-    verb = "is" if total == 1 else "are"
     source_labels = count_of in _SOURCE_LABEL_DIMENSIONS
+    kind = scope_noun(bundle, by_author=bool(scope.effective.author))
     if dimension:
         singular, plural = _COUNT_OF_NOUNS[count_of]
         noun = singular if total == 1 else plural
+        rendered = _distinct_headline(total, noun, scope.effective,
+                                      source_labels=source_labels)
     else:
-        noun = entity_label(bundle or "items", total)
-    # A count of labels says where the labels come from. "955 authors" claims an
-    # identity resolution nobody has done; "955 distinct author names recorded
-    # in the source data" is what the query actually established.
-    tail = "recorded in the source data." if source_labels else "matching your query."
-    rendered = f"There {verb} {total} {noun}{phrase} {tail}"
+        rendered = _count_headline(total, entity_label(kind, total), scope.effective)
+    # Section headings name the scope plainly: "All publications by Dr Suneel
+    # Pandey (35)".
+    heading_scope = _scope_phrase(scope.effective, mark=_plain)
+    citations: list[dict[str, Any]] = []
+    if detail:
+        if dimension:
+            extra = structured_detail.for_distinct(
+                total, dimension=dimension, common=common
+            )
+        elif total:
+            extra = structured_detail.for_count(
+                total, common=common, bundle=bundle, filters=scope.effective,
+                named_type=named_type, scope=heading_scope,
+            )
+        else:
+            extra = structured_detail.for_zero(
+                common=common, bundle=bundle, filters=scope.effective,
+                noun=lambda n: entity_label(kind, n),
+                scope_without_period=_scope_phrase(
+                    replace(scope.effective, date_from=None, date_to=None), mark=_bold),
+                scope_without_type=heading_scope,
+            )
+        rendered = extra.render_onto(rendered)
+        citations = extra.citations
     data: dict[str, Any] = {
         "count": total, "applied": _applied_filters(bundle, scope.effective),
     }
@@ -456,7 +615,8 @@ def count_records(
             else f"distinct_{count_of}"
         )
     return ToolResult(
-        tool="count_records", entity=bundle, ok=True, data=data, rendered=rendered,
+        tool="count_records", entity=bundle, ok=True, data=data,
+        citations=citations, rendered=rendered,
     )
 
 
@@ -490,12 +650,16 @@ def list_records(
     offset: int = 0,
     output_format: str = "default",
     fields: Sequence[str] | None = None,
+    detail: bool = False,
+    named_type: str | None = None,
 ) -> ToolResult:
     """List matching documents, most recent first (the only backing sort today).
     Empty result returns ok=False. Filter-resolution semantics match
     `count_records` (see `_scope_guard` / `_empty_result_miss`). `fields` narrows
     the metadata keys in `data["records"]`; `rendered` is unaffected (see
-    `_project_fields`)."""
+    `_project_fields`). ``detail`` adds bylines (a card for a single document)
+    and a follow-up (see `app.retrieval.structured.detail.for_list`), and with
+    ``named_type`` says how many of the listed scope are of that type."""
     guarded = _entity_guard("list_records", entity)
     if guarded is not None:
         return guarded
@@ -525,9 +689,6 @@ def list_records(
             return missed
         return ToolResult(tool="list_records", entity=bundle, ok=False,
                           error="no matching records")
-    rendered, data, citations = _render_records(
-        records, output_format, bundle=bundle, filters=scope.effective
-    )
     # A list cut off at `limit` says nothing about how much it cut off, so a
     # user cannot tell ten from six hundred. Count the same scope and say so
     # whenever the page is full — the count is over exactly the filters that
@@ -535,11 +696,34 @@ def list_records(
     total = None
     if len(records) >= limit and topic.enabled():
         total = _scope_total(ent, bundle, scope)
-        if total and total > len(records):
-            rendered = (
-                f"{rendered}\n\nShowing the {len(records)} most recent of "
-                f"{total} {entity_label(bundle or 'record', total)}."
+    rendered, data, citations = _render_records(
+        records, output_format, bundle=bundle, filters=scope.effective, total=total,
+        # A topic ranks rows by match before recency, and a later page is not
+        # the most recent either.
+        ranked=bool(scope.topic_terms) or offset > 0,
+        facets=structured_detail.facets(records) if detail else None,
+    )
+    if detail:
+        named = None
+        if named_type and bundle is None and (named_ent := get_entity(named_type)):
+            named = (named_type, _scope_total(named_ent, named_type, scope))
+        mix = ""
+        # Title words narrow the rows past what a type count over the facets
+        # would describe, so a topic-constrained list or a title lookup gets no
+        # mix.
+        if not scope.topic_terms and not scope.title_contains:
+            mix = structured_detail.author_list_mix(
+                len(records), total=total, bundle=bundle, filters=scope.effective,
+                scope=_scope_phrase(scope.effective),
+                common=dict(
+                    source_type=ent.source_type if ent else "website", bundle=bundle,
+                    entity_type=ent.entity_type if ent else "node",
+                    title_contains=scope.title_contains, **scope.as_kwargs(),
+                ),
             )
+        rendered = structured_detail.for_list(
+            len(records), total=total, filters=scope.effective, named=named, mix=mix,
+        ).render_onto(rendered)
     return ToolResult(
         tool="list_records", entity=bundle, ok=True,
         data={"records": _project_fields(data, fields),
@@ -589,13 +773,15 @@ def lookup_record(
     limit: int = 10,
     output_format: str = "default",
     question: str | None = None,
+    detail: bool = False,
 ) -> ToolResult:
     """Find a specific document by title. Returns the list rendering AND a
     `chain_document_id` when the lookup uniquely identifies a document for a
     content question (the caller may then route into the QA path)."""
     chain_id = _resolve_chain(title, question, output_format)
     scoped = replace(filters, title_contains=title or filters.title_contains)
-    result = list_records(entity, scoped, limit=limit, output_format=output_format)
+    result = list_records(entity, scoped, limit=limit, output_format=output_format,
+                          detail=detail)
     return ToolResult(
         tool="lookup_record",
         entity=result.entity,
@@ -666,6 +852,19 @@ VALID_DIMENSIONS: frozenset[str] = frozenset(_GROUP_DIMENSIONS)
 VALID_COUNT_OF: frozenset[str] = VALID_DIMENSIONS | {COUNT_RECORDS}
 
 
+# Groups a single-dimension breakdown shows, pairs a two-dimension one shows,
+# and the ceiling for years (all of them; the corpus spans about 35).
+_GROUP_LIMIT = 20
+_PAIR_LIMIT = 50
+_YEAR_LIMIT = 100
+
+
+def _group_value(dimension: str | None, value: Any) -> str:
+    """A group's display name: a content type reads as what it is called
+    ("Feature articles"), not as its bundle key ("feature_articles")."""
+    return entity_label(str(value), 2).capitalize() if dimension == "bundle" else str(value)
+
+
 def _dimension_or_reject(value: Any, *, allow_records: bool) -> tuple[str | None, bool]:
     """Resolve a dimension name to its catalog column. Returns (column, ok).
 
@@ -691,6 +890,7 @@ def aggregate_records(
     secondary_group_by: GroupBy | None = None,
     aggregation: str = "count",
     output_format: str = "default",
+    detail: bool = False,
 ) -> ToolResult:
     """Grouped counts (per theme / content type / author / year). Only the
     'count' aggregation is backed today. Filter-resolution semantics match
@@ -700,7 +900,10 @@ def aggregate_records(
     "which authors write about which themes" is one question whose answer is
     a set of author-theme pairs, not a per-author breakdown repeated. Ignored
     when it names the same dimension as ``group_by`` — a pair of one thing is
-    the single-dimension question, and refusing would be pedantry."""
+    the single-dimension question, and refusing would be pedantry.
+
+    ``detail`` leads with the scope's total and follows the groups with what
+    they show (see `app.retrieval.structured.detail.for_breakdown`)."""
     # Unset groups by theme, which is the documented default. An unrecognised
     # name is refused instead: "group_by='Author'" quietly becoming a theme
     # breakdown is a wrong answer wearing a right one's shape.
@@ -753,11 +956,19 @@ def aggregate_records(
         title_contains=scope.title_contains,
         **scope.as_kwargs(),
     )
+    # Years are few and read as a timeline, so all of them come back; any other
+    # dimension shows its largest groups, and one row past the cap says whether
+    # the cap cut anything off.
+    if second:
+        cap: int | None = _PAIR_LIMIT
+    else:
+        cap = None if dimension == "year" else _GROUP_LIMIT
     try:
         rows = (
-            state.cross_distribution(dimension, second, **common)
+            state.cross_distribution(dimension, second, **common, limit=cap + 1)
             if second
-            else state.distribution(dimension, **common)
+            else state.distribution(dimension, **common,
+                                    limit=_YEAR_LIMIT if cap is None else cap + 1)
         )
     except Exception:
         logger.warning("aggregate_records query failed.", exc_info=True)
@@ -768,17 +979,25 @@ def aggregate_records(
             return missed
         return ToolResult(tool="aggregate_records", entity=bundle, ok=False,
                           error="no matching records")
+    truncated = cap is not None and len(rows) > cap
+    rows = rows[:cap] if cap is not None else rows
+    if dimension == "year" and not second:
+        rows = sorted(rows, key=lambda row: str(row[0]))
     if second:
         if output_format == "table":
             body = "\n".join(
                 [f"| {label} | {second_label} | count |", "| --- | --- | --- |"]
                 + [
-                    f"| {_md_cell(str(a))} | {_md_cell(str(b))} | {n} |"
+                    f"| {_md_cell(_group_value(dimension, a))} | "
+                    f"{_md_cell(_group_value(second, b))} | {number(n)} |"
                     for a, b, n in rows
                 ]
             )
         else:
-            body = "\n".join(f"- {a} — {b}: {n}" for a, b, n in rows)
+            body = "\n".join(
+                f"- {_group_value(dimension, a)} — {_group_value(second, b)}: {number(n)}"
+                for a, b, n in rows
+            )
         by = f"by {label} and {second_label}"
         groups = [[a, b, n] for a, b, n in rows]
         dimensions = [group_by or "theme", secondary_group_by]
@@ -786,19 +1005,35 @@ def aggregate_records(
         if output_format == "table":
             body = "\n".join(
                 [f"| {label} | count |", "| --- | --- |"]
-                + [f"| {_md_cell(str(value))} | {n} |" for value, n in rows]
+                + [f"| {_md_cell(_group_value(dimension, value))} | {number(n)} |"
+                   for value, n in rows]
             )
         else:
-            body = "\n".join(f"- {value}: {n}" for value, n in rows)
+            body = "\n".join(f"- {_group_value(dimension, value)}: {number(n)}" for value, n in rows)
         by = f"by {label}"
         groups = [[value, n] for value, n in rows]
         # What was grouped on, not what was requested: a dropped secondary must
         # not leave a caller parsing pairs out of single-dimension rows.
         dimensions = [group_by or "theme"]
-    rendered = (
-        f"Distribution of {entity_label(bundle or 'items', 2)}{_scope_phrase(scope.effective)} "
-        f"{by}:\n" + body
-    )
+    if truncated:
+        body += (f"\n\nShowing the {cap} {'pairs' if second else label + 's'} "
+                 "with the most items.")
+    scope_text = _scope_phrase(scope.effective, mark=_bold)
+    kind = scope_noun(bundle, by_author=bool(scope.effective.author))
+    total = structured_detail.scope_total(common) if detail else None
+    if total:
+        amount = figure(total, entity_label(kind, total))
+        verb = "breaks" if total == 1 else "break"
+        rendered = f"Here's how the {amount}{scope_text} {verb} down {by}:\n" + body
+    else:
+        rendered = (
+            f"Distribution of {entity_label(kind, 2)}{scope_text} "
+            f"{by}:\n" + body
+        )
+    if detail and not second:
+        rendered = structured_detail.for_breakdown(
+            rows, dimension=dimension, label=label, total=total,
+        ).render_onto(rendered)
     return ToolResult(
         tool="aggregate_records", entity=bundle, ok=True,
         data={
@@ -857,6 +1092,7 @@ def list_themes(
     scope: str = SCOPE_MAIN,
     limit: int = THEME_VOCABULARY_LIMIT,
     output_format: str = "default",
+    detail: bool = False,
 ) -> ToolResult:
     """Enumerate the collection's themes — the **top-level themes only**
     (`theme_type='primary'`, plus themes the map does not know). Rows stored as
@@ -931,18 +1167,112 @@ def list_themes(
     # which themes these are, and a lone "Main themes:" label implies a second
     # section that is deliberately absent.
     labelled = len(sections) > 1
+    counts = structured_detail.theme_counts() if detail else None
+    latest = structured_detail.theme_latest(listed) if detail else None
     body = "\n\n".join(
-        _theme_section(label if labelled else "", names, output_format)
+        _theme_section(label if labelled else "", names, output_format, counts, latest)
         for label, names in sections
     )
 
     noun = {
-        SCOPE_MAIN: "main themes", SCOPE_OTHER: "other themes", SCOPE_ALL: "themes",
-    }[scope]
+        SCOPE_MAIN: "main theme", SCOPE_OTHER: "other theme", SCOPE_ALL: "theme",
+    }[scope] + ("" if total == 1 else "s")
+    rendered = f"The collection covers **{total} {noun}**:\n\n{body}"
+    if detail:
+        rendered = structured_detail.for_themes().render_onto(rendered)
     return ToolResult(
-        tool="list_themes", ok=True, data=data,
-        rendered=f"The collection covers {total} {noun}:\n\n{body}",
+        tool="list_themes", ok=True, data=data, rendered=rendered,
     )
+
+
+def _theme_key(name: str) -> str:
+    """A theme name to match across spellings: the home page and the CMS write
+    "Environment & Public Health", the page list "Environment and Public Health"."""
+    return " ".join(re.sub(r"[^\w&]+", " ", name.replace("&", " and ")).split()).casefold()
+
+
+def _catalog_names(wanted: Sequence[str], known: Sequence[str]) -> list[str]:
+    """The catalog's spelling of each theme in ``wanted`` that it knows, in
+    ``wanted``'s order."""
+    by_key = {_theme_key(name): name for name in known}
+    return [by_key[key] for key in dict.fromkeys(_theme_key(n) for n in wanted)
+            if key in by_key]
+
+
+def theme_digest(
+    *, scope: str = SCOPE_MAIN, output_format: str = "default",
+    names: Sequence[str] | None = None,
+) -> str:
+    """How many items each theme holds and its newest one, as a section to
+    follow an answer that lists the themes from elsewhere — the home page, which
+    describes the themes but cannot say what is in them. ``names`` keeps it to
+    the themes that answer listed: the catalog's main themes include some the
+    home page does not ("Green Shipping", "Corporate Social Responsibility").
+    '' when the themes or their figures cannot be read, leaving that answer as
+    it was."""
+    result = list_themes(scope=scope, output_format=output_format)
+    listed = result.data.get("themes", []) if result.ok else []
+    if names is not None:
+        listed = _catalog_names(names, listed)
+    counts = structured_detail.theme_counts() if listed else {}
+    if not counts:
+        return ""
+    latest = structured_detail.theme_latest(listed)
+    return section("What each theme holds",
+                   _theme_section("", listed, output_format, counts, latest))
+
+
+def _holding(count: int | None, newest: Any | None) -> str:
+    """"1,220 items · Latest: [Title](url) · 7 Sep 2026" — what the catalog
+    holds on one theme; '' when it holds nothing."""
+    parts = []
+    if count:
+        parts.append(f"{number(count)} {entity_label('items', count)}")
+    if newest is not None:
+        parts.append(f"Latest: {_latest_phrase(newest)}")
+    return " · ".join(parts)
+
+
+def theme_overview(areas: Sequence[Any], *, output_format: str = "default") -> str:
+    """The thematic areas a page lists, each with what it covers and what the
+    catalog holds on it — the whole answer to "tell me about the thematic
+    areas". ``areas`` carry a ``name``, a one-sentence ``description`` and the
+    ``url`` of the theme's page. The figures are `theme_digest`'s, counted as
+    "how many items on <theme>" counts them; a theme the catalog does not know
+    is listed with its description alone. '' with no areas."""
+    if not areas:
+        return ""
+    counts = structured_detail.theme_counts()
+    names = {area.name: next(iter(_catalog_names([area.name], list(counts))), None)
+             for area in areas}
+    latest = structured_detail.theme_latest([n for n in names.values() if n])
+
+    def figures(area: Any) -> tuple[int | None, Any | None]:
+        name = names[area.name]
+        return (counts.get(name), latest.get(name)) if name else (None, None)
+
+    total = len(areas)
+    lead = f"There {'is' if total == 1 else 'are'} {figure(total, entity_label('thematic areas', total))}:"
+    if output_format == "table":
+        rows = ["| theme | what it covers | items | latest |", "| --- | --- | ---: | --- |"]
+        for area in areas:
+            count, newest = figures(area)
+            rows.append("| " + " | ".join([
+                _md_cell(md_link(area.name, area.url)), _md_cell(area.description),
+                number(count) if count else "",
+                _md_cell(_latest_phrase(newest)) if newest is not None else "",
+            ]) + " |")
+        body = "\n".join(rows)
+    else:
+        lines = []
+        for area in areas:
+            about = f" — {area.description}" if area.description else ""
+            lines.append(f"- **{md_link(area.name, area.url)}**{about}")
+            holding = _holding(*figures(area))
+            if holding:
+                lines.append(f"  - {holding}")
+        body = "\n".join(lines)
+    return structured_detail.for_themes().render_onto(f"{lead}\n\n{body}")
 
 
 def resolve_entity(query: str | None, type: str | None = None) -> ToolResult:

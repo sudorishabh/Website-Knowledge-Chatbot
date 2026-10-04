@@ -163,6 +163,42 @@ def test_a_named_author_is_still_answerable(monkeypatch):
     assert called, "a question naming the author must still reach the planner"
 
 
+@pytest.mark.parametrize(
+    "question, over",
+    [
+        ("Which authors have published the most on climate change?",
+         dict(operation="distribution", group_by="author", theme="climate change")),
+        ("Which researchers have written the most papers?",
+         dict(operation="distribution", group_by="author")),
+        ("How many authors are there?", dict(operation="count", count_of="author")),
+    ],
+)
+def test_an_authorship_question_is_answered_from_the_catalog(monkeypatch, question, over):
+    """Authorship is exactly what the catalog records. Measured: the first
+    question was declined as a person question and refused."""
+    called: list = []
+    monkeypatch.setattr(planner, "plan", lambda *a, **k: called.append(1) or "plan")
+    monkeypatch.setattr(planner, "execute", lambda *a, **k: [])
+    from app.retrieval.structured import answerer
+
+    answerer.answer_structured(question, analysis=slots(**over))
+    assert called, "an authorship question must reach the planner"
+
+
+def test_a_work_question_grouped_by_author_is_still_declined(monkeypatch):
+    """Grouping by author answers who *wrote*; "who works on X" is not that claim."""
+    monkeypatch.setattr(
+        planner, "plan", lambda *a, **k: pytest.fail("must not plan a work question")
+    )
+    from app.retrieval.structured import answerer
+
+    result = answerer.answer_structured(
+        "Which researchers work on AI and sustainability?",
+        analysis=slots(operation="distribution", group_by="author"),
+    )
+    assert result is None
+
+
 def test_a_question_about_one_theme_is_not_answered_with_the_theme_list(monkeypatch):
     """Measured: "tell me about climate change theme" came back as the list of
     all seven themes. The listing enumerates the vocabulary and ignores the
@@ -215,6 +251,21 @@ def test_the_content_type_alone_leaves_nothing_to_constrain(no_taxonomy):
     call = plan_for("What policy briefs has TERI recently published?",
                     bundle="policy_brief")
     assert call.filters.topic_terms == ()
+
+
+def test_naming_a_title_is_not_a_topic(no_taxonomy):
+    """Measured: "Find the article titled Coastal Blue Carbon in Practice" kept
+    "titled" as a topic word, so the lookup also required the title to contain
+    "titled", matched nothing, and fell through to an answer with the wrong link."""
+    for question in (
+        "Find the article titled Coastal Blue Carbon in Practice",
+        "Show the article called Coastal Blue Carbon in Practice",
+        "Which article is named Coastal Blue Carbon in Practice?",
+        "Article with the title Coastal Blue Carbon in Practice",
+    ):
+        call = plan_for(question, operation="lookup", bundle="article",
+                        title_contains="Coastal Blue Carbon in Practice")
+        assert call.filters.topic_terms == (), question
 
 
 def test_a_collective_noun_is_not_a_topic(no_taxonomy):
@@ -332,7 +383,9 @@ def test_q025_a_truncated_list_states_the_total(catalog):
 
     result = list_records("ongoing_projects", RecordFilters(), limit=10)
     assert (result.data or {}).get("total_matching") == 594
-    assert "594" in result.rendered
+    assert result.rendered.startswith(
+        "Here are the 10 most recent of **594 ongoing projects**:"
+    )
 
 
 def test_q035_topic_words_survive_the_bundle(no_taxonomy):

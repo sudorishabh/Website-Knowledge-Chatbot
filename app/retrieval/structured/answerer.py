@@ -172,6 +172,172 @@ def _spans_all_content(question: str, bundle: str | None) -> bool:
     return not (label_words & question_words)
 
 
+# "Article" names one content type on the site and is everyday English for
+# anything a person writes. Asked of a person, the everyday reading is the one
+# meant: measured 2026-10-04, "how many articles are there of Vidha dhawan" was
+# answered "There is 1 article" — the one item in the Article category — while
+# the same author has 31 feature articles, 7 research papers and 2 policy briefs.
+# The category reading stays when the wording points at it: the category or
+# section by name, "only articles", a quoted "Articles", or another content type
+# named beside it ("articles and research papers" sets the types apart).
+_ARTICLE_WORD = re.compile(r"\barticles?\b", re.I)
+_ARTICLE_CATEGORY = re.compile(
+    r"\barticles?\s+(?:category|section|type|content\s+type|tab|page)\b"
+    r"|\b(?:category|section|content\s+type|type|tab)\s+(?:of\s+|called\s+|named\s+)?"
+    r"[\"'‘“]?articles?\b"
+    r"|\b(?:only|just)\s+(?:the\s+)?articles?\b|\barticles?\s+only\b"
+    r"|[\"‘“]articles?[\"’”]",
+    re.I,
+)
+_OTHER_TYPE_WORD = re.compile(
+    r"\b(?:feature[ds]?|papers?|briefs?|reports?|news|press|releases?|events?|"
+    r"videos?|infographics?|projects?|blogs?)\b",
+    re.I,
+)
+
+
+def _reads_article_as_writing(question: str, slots: Any) -> bool:
+    """Whether a person's "articles" means everything they published rather
+    than the site's Article category (see `_ARTICLE_WORD`)."""
+    from app.retrieval.structured.entities import normalize_entity
+
+    if not getattr(slots, "author", None):
+        return False
+    if normalize_entity(getattr(slots, "bundle", None)) != "article":
+        return False
+    if not _ARTICLE_WORD.search(question):
+        return False
+    return not (_ARTICLE_CATEGORY.search(question) or _OTHER_TYPE_WORD.search(question))
+
+
+def _widen_articles(calls: Sequence[Any]) -> None:
+    """Point a person's planned "articles" calls at every content type, and let
+    a count or list say how many are in the Article category itself.
+
+    Done to the plan rather than to the slots: planned with the bundle still
+    set, "articles" is read as the type word it is. Cleared first, it was left
+    over as subject matter and every list was narrowed to titles containing
+    "articles" — none of the 41 (measured 2026-10-04)."""
+    from app.retrieval.structured.entities import normalize_entity
+
+    logger.info("Reading a person's 'articles' as all of their publications.")
+    for call in calls:
+        if normalize_entity(getattr(call, "entity", None)) != "article":
+            continue
+        call.entity = None
+        if call.tool in ("count_records", "list_records"):
+            call.named_type = "article"
+
+
+# The noun after "how many" names what is counted. The unified analysis has no
+# guidance for `count_of` and leaves it at "records": measured 2026-10-04, "how
+# many authors are there?" and "how many themes are there?" both arrived that
+# way, and the second was answered "There are 5524 items". Only nouns that name
+# a catalog facet unambiguously are read here; "people" or "years" can mean
+# something the catalog does not record, so they are left to the classifier.
+_QUALIFIER = r"(?:different\s+|distinct\s+|unique\s+|main\s+|other\s+)*"
+_COUNTED_NOUNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(rf"\bhow\s+many\s+{_QUALIFIER}(?:authors?|writers?|contributors?)\b", re.I),
+     "author"),
+    (re.compile(rf"\bhow\s+many\s+{_QUALIFIER}(?:themes?|thematic\s+areas?)\b", re.I),
+     "theme"),
+    (re.compile(rf"\bhow\s+many\s+{_QUALIFIER}(?:content\s+types?|(?:types|kinds)\s+of\s+content)\b",
+                re.I),
+     "content_type"),
+)
+
+
+def _counted_noun(question: str) -> str | None:
+    """The facet a "how many <noun>" question counts, when the noun names one."""
+    for pattern, count_of in _COUNTED_NOUNS:
+        if pattern.search(question):
+            return count_of
+    return None
+
+
+# Slots that narrow a count to part of the catalog.
+_SCOPE_SLOTS = ("bundle", "theme", "tags", "author", "title_contains",
+                "date_from", "date_to", "year")
+
+
+def _recount(slots: Any, counted: str) -> None:
+    """Point a count at the facet its noun names.
+
+    An unscoped theme count is the theme listing's question ("How many themes
+    are there?" -> list_themes, as the catalog prompt's own example has it): a
+    distinct count over the theme facet includes sub-theme rows and answered 26
+    where the listing and the home page both say 7. Scoped ("how many themes
+    does Meena Sehgal publish in") it stays a distinct count."""
+    if counted == "theme" and not any(getattr(slots, s, None) for s in _SCOPE_SLOTS):
+        slots.operation = "list_themes"
+        return
+    slots.count_of = counted
+
+
+# One calendar year stated as the period ("in 2030", "during 2019"). The year
+# alone is not enough — "the 2030 Agenda" names a subject, not a period.
+_IN_YEAR = re.compile(r"\b(?:in|during)\s+(?:the\s+year\s+)?((?:19|20)\d{2})\b", re.I)
+_ANY_YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
+
+
+def _stated_year(question: str, slots: Any) -> int | None:
+    """A year the question states as its period but the slots dropped.
+
+    The catalog-coverage directive tells the classifier to leave the dates null
+    for a period the catalog does not reach, which suits passage retrieval and
+    answers a count wrongly: "how many events were held in 2030?" came back as
+    "There are 1082 events", the all-time total. Restoring the year makes the
+    count an honest zero instead. Only one distinct year, stated with "in" or
+    "during", and not part of a title the question names."""
+    if any(getattr(slots, name, None) for name in ("date_from", "date_to", "year")):
+        return None
+    if len(set(_ANY_YEAR.findall(question))) != 1:
+        return None
+    match = _IN_YEAR.search(question)
+    if match is None:
+        return None
+    if match.group(1) in (getattr(slots, "title_contains", None) or ""):
+        return None
+    return int(match.group(1))
+
+
+def _restore_year(slots: Any, year: int) -> None:
+    # The parse fallback carries a `year` shorthand (its `date_to` is derived);
+    # the unified analysis carries the bounds themselves, `date_to` exclusive.
+    if "year" in getattr(type(slots), "model_fields", {}):
+        slots.year = year
+    else:
+        slots.date_from, slots.date_to = f"{year:04d}-01-01", f"{year + 1:04d}-01-01"
+
+
+# Words that ask about authorship itself, which the catalog records exactly.
+_AUTHORSHIP_WORDS = re.compile(
+    r"\b(?:authors?|authored|wrote|written|writers?|writing|publish(?:ed|es|ing)?|"
+    r"contributors?|contributed)\b",
+    re.I,
+)
+
+
+def _asks_about_authorship(question: str, slots: Any) -> bool:
+    """Whether a person question is answered by the catalog's authorship facet.
+
+    "Which authors have published the most on climate change?" is a breakdown by
+    author, and "how many authors are there?" a count of author names — both
+    are exactly what the catalog stores, and declining them as person questions
+    left the first refused and the second answered from an unrelated book.
+    "Which researchers work on X" asks about work, not authorship, and is still
+    declined (see `answer_structured`)."""
+    if not _AUTHORSHIP_WORDS.search(question):
+        return False
+    operation = getattr(slots, "operation", None)
+    if operation == "count":
+        return getattr(slots, "count_of", None) == "author"
+    if operation == "distribution":
+        return "author" in (getattr(slots, "group_by", None),
+                            getattr(slots, "secondary_group_by", None))
+    return False
+
+
 # error_kind values that mean "the filter was understood but could not be
 # honored" — the answer is the result's `rendered` message, not a cue to guess
 # via semantic search. Every other ok=False (unknown entity, no matching
@@ -206,6 +372,16 @@ def _terminal_result(results: list[ToolResult], *, strict: bool) -> ToolResult |
     return None
 
 
+def _gate_detail(calls: Sequence[Any], *, allowed: bool) -> None:
+    """Detail only for a plan with one real question in it. A `resolve_entity`
+    step only names who or what the other call filters on, so it does not
+    count; two counts side by side are a comparison, and each part following
+    itself with spreads and recent items would bury it."""
+    substantive = [c for c in calls if getattr(c, "tool", None) != "resolve_entity"]
+    for call in calls:
+        call.detail = allowed and len(substantive) == 1
+
+
 def _compose(results: list[ToolResult]) -> dict[str, Any]:
     """Merge the successful tool results into one structured answer: stack the
     rendered sections and renumber citations sequentially across them. A single
@@ -213,7 +389,13 @@ def _compose(results: list[ToolResult]) -> dict[str, Any]:
     bodies: list[str] = []
     citations: list[dict[str, Any]] = []
     used_chunks = 0
+    # A resolution step only names what the next call filters on, and that call
+    # already states the canonical name in its own sentence — so "'rishab negi'
+    # resolves to Rishabh Negi (author)." is plumbing, unless it is all there is.
+    answered = any(r.tool != "resolve_entity" and r.rendered for r in results)
     for result in results:
+        if result.tool == "resolve_entity" and answered:
+            continue
         if result.rendered:
             bodies.append(result.rendered)
         for citation in result.citations:
@@ -280,8 +462,14 @@ def answer_structured(
     history: Sequence[dict[str, str]] | None = None,
     *,
     analysis: QueryAnalysis | None = None,
+    detail: bool = True,
 ) -> dict[str, Any] | None:
     """Answer a catalog (database-intent) query via the Database Planner + tools.
+
+    ``detail`` lets a single-call answer follow its headline with what the same
+    scope shows (see `app.retrieval.structured.detail`). A combined answer passes
+    False — its prose says the rest — and a multi-call plan never gets it, so a
+    comparison stays a set of headlines rather than several stacked reports.
 
     The unified analysis already extracted the structured slots — reuse it and let
     the planner pick the tool; parse only when no usable analysis came. Returns
@@ -302,6 +490,17 @@ def answer_structured(
     )
     if slots is None:
         return None
+    # The year first: it scopes the count, which decides how a theme count is read.
+    year = _stated_year(question, slots)
+    if year is not None:
+        logger.info("Restoring the year %s the question states as its period.", year)
+        _restore_year(slots, year)
+    if getattr(slots, "operation", None) == "count" and getattr(
+        slots, "count_of", "records"
+    ) in (None, "records"):
+        counted = _counted_noun(question)
+        if counted is not None:
+            _recount(slots, counted)
     # A question about people is not a question about documents. The catalog
     # stores authorship, which is a different claim from "works on" — so unless
     # the question named the person to look up, listing documents at it produces
@@ -312,7 +511,8 @@ def answer_structured(
     # hands it to the layer that can use them.
     if (topic.enabled()
             and topic.wants_person(question)
-            and not getattr(slots, "author", None)):
+            and not getattr(slots, "author", None)
+            and not _asks_about_authorship(question, slots)):
         logger.info(
             "Declining the structured path for a person question; the catalog "
             "lists documents, not people."
@@ -338,6 +538,7 @@ def answer_structured(
     # is not silently narrowed to one type (see _spans_all_content).
     if _spans_all_content(question, getattr(slots, "bundle", None)):
         slots.bundle = None
+    widen_articles = _reads_article_as_writing(question, slots)
     output_format = analysis.answer_format if analysis is not None else "default"
     db_plan = None
     if get_settings().database_multi_call_enabled:
@@ -346,6 +547,9 @@ def answer_structured(
         db_plan = planner.plan(
             slots, output_format=output_format, question=question
         )
+    if widen_articles:
+        _widen_articles(getattr(db_plan, "calls", None) or [])
+    _gate_detail(getattr(db_plan, "calls", None) or [], allowed=detail)
     results = planner.execute(db_plan, question=question)
     ok = [r for r in results if r.ok]
     if not ok:

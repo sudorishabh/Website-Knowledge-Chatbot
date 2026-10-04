@@ -129,6 +129,23 @@ def test_asking_for_the_whole_vocabulary_asks_for_all(question):
     assert theme_scope.detect(question) == SCOPE_ALL
 
 
+@pytest.mark.parametrize(
+    "question, expected",
+    [
+        ("tell me about all the thematic areas", False),
+        ("Show me the complete list of themes", False),
+        ("What are your main themes?", False),
+        ("What other themes are available?", True),
+        ("List all themes, main and other", True),
+        ("Which themes are outside the main areas?", True),
+        ("Tell me another thing about themes", False),
+    ],
+)
+def test_only_naming_the_other_themes_reaches_past_the_home_pages(question, expected):
+    """The home page's list is every thematic area; "all" asks for all of it."""
+    assert theme_scope.asks_for_other(question) is expected
+
+
 # --------------------------------------------------------------------------- #
 # The planner carries the decision onto the tool call
 # --------------------------------------------------------------------------- #

@@ -27,6 +27,7 @@ from app.retrieval.understanding.clarify import Clarification
 from app.retrieval.understanding.document_request import is_document_request
 from app.retrieval.understanding.query_processor import ProcessedQuery, process
 from app.retrieval.retriever import retrieve
+from app.schemas.query import Citation
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,9 @@ class _Generation:
     # Deterministic catalog section prefixed onto a combined (database + content)
     # answer; "" for single-source answers.
     db_prefix: str = ""
+    # Deterministic catalog section that follows the answer: each theme's
+    # figures beneath the home page's list of themes; "" otherwise.
+    db_suffix: str = ""
     # Evidence-coverage directive for a genuinely multi-part question; "" when
     # the question has one part or the extraction step failed. See
     # `app.generation.answer_plan`.
@@ -67,6 +71,11 @@ class _Generation:
     # fingerprint plus the content of any priority page it stands on. None means
     # the facet fingerprint alone.
     cache_fingerprint: dict[str, Any] | None = None
+
+    def compose(self, answer: str) -> str:
+        """The answer as shown: the catalog sections around the generated text.
+        Every pass that checks the answer reads the generated text alone."""
+        return "\n\n".join(part for part in (self.db_prefix, answer, self.db_suffix) if part)
 
 
 # Content capabilities that pair with a database lookup into a combined answer.
@@ -299,6 +308,24 @@ def _series_blocks(documents: Any) -> list[ContextBlock]:
     ]
 
 
+def _series_count(documents: Any, blocks: list[ContextBlock]) -> str:
+    """How many editions there are, which span they cover, and which is the
+    latest — cited, so it gets a chip like any other source. The editions come
+    newest first (see `series_documents`)."""
+    if not documents:
+        return "There are no annual reports available."
+    latest, block = documents[0], blocks[0]
+    name = latest.title or f"Annual Report {latest.edition}"
+    if len(documents) == 1:
+        return f"There is 1 annual report available: {name} [{block.n}]."
+    return (
+        f"There are {len(documents)} annual reports available, from the "
+        f"{documents[-1].edition} edition to {latest.edition}. The latest is "
+        f"{name} [{block.n}].\n\n"
+        'Ask for "the list of annual reports" to see every edition.'
+    )
+
+
 def _series_result(pq: ProcessedQuery) -> dict[str, Any]:
     """List or count the annual-report series, from the catalogue.
 
@@ -321,8 +348,7 @@ def _series_result(pq: ProcessedQuery) -> dict[str, Any]:
     from app.retrieval.understanding.annual_report_editions import COUNT
 
     if series.kind == COUNT:
-        noun = "annual report" if len(documents) == 1 else "annual reports"
-        answer = f"There are {len(documents)} {noun} available."
+        answer = _series_count(documents, blocks)
     else:
         lines = "\n".join(
             f"- {doc.title or f'Annual Report {doc.edition}'} [{block.n}]"
@@ -424,15 +450,52 @@ def _names_a_theme_page(target: Any) -> bool:
     return target.kind == "theme" and target.reason in ("name", "theme")
 
 
-def _priority_overrides_catalog(targets: list[Any] | None, *, themes_listing: bool = False) -> bool:
+#: Catalog operations that report numbers. A page can describe a person, but it
+#: cannot count what they authored.
+_COUNTING_OPERATIONS = frozenset({"count", "distribution"})
+#: Catalog operations that return documents.
+_LISTING_OPERATIONS = frozenset({"list", "lookup"})
+#: Words for a kind of writing — what a list "by" a person is a list of.
+_WRITING_WORDS = re.compile(
+    r"\b(?:publications?|articles?|papers?|briefs?|reports?|writings?|works)\b",
+    re.IGNORECASE,
+)
+
+
+def _asks_for_authorship(question: str, pq: ProcessedQuery) -> bool:
+    """Whether the catalog route is reading one named author's documents:
+    counting them ("how many publications by Suneel Pandey"), or listing a kind
+    of writing ("list articles by Vibha Dhawan"). Authorship is what the catalog
+    records and a profile page does not list. "What does Suneel Pandey work on"
+    names no kind of writing, so it stays a question about the person."""
+    analysis = pq.analysis
+    if analysis is None or not getattr(analysis, "author", None):
+        return False
+    operation = getattr(analysis, "operation", None)
+    if operation in _COUNTING_OPERATIONS:
+        return True
+    return operation in _LISTING_OPERATIONS and bool(_WRITING_WORDS.search(question))
+
+
+def _priority_overrides_catalog(
+    targets: list[Any] | None, *, themes_listing: bool = False,
+    about_authorship: bool = False,
+) -> bool:
     """Whether a live page owns this question outright, so the catalog route —
-    which cannot see these pages — must not answer it instead."""
+    which cannot see these pages — must not answer it instead.
+
+    A named person's page gives way to a question about what that person
+    authored. Measured 2026-10-04: "how many publications by Suneel Pandey" and
+    "list articles by Vibha Dhawan" were both taken by the profile page, which
+    lists no publications, and refused, while the catalog holds 35 and 41."""
     for target in targets or ():
         if themes_listing and _names_a_theme_page(target):
             # Understanding can read "tell me about the climate change thematic"
             # as a theme listing; the themes are flat, so that theme's page answers.
             return True
         if target.reason not in _CATALOG_OVERRIDING:
+            continue
+        if about_authorship and target.reason == "person":
             continue
         if getattr(target.page, "is_home", False) and not themes_listing:
             continue  # "documents in each thematic area" is a catalog count
@@ -499,8 +562,81 @@ def _db_section(
             return ""
         from app.retrieval.structured.answerer import answer_structured
 
-        structured = answer_structured(question, history, analysis=pq.analysis)
+        # The headline alone: the grounded answer that follows is the detail.
+        structured = answer_structured(question, history, analysis=pq.analysis,
+                                       detail=False)
         return structured["answer"] if structured else ""
+
+
+def _theme_digest(question: str, pq: ProcessedQuery) -> str:
+    """Each theme's figures and newest item, to follow the home page's list of
+    themes: the page says what each theme is about but not what it holds.
+    '' with catalog detail off or on any failure, leaving the answer as it was.
+    Owns its ``rag.theme_digest`` span, as `_db_section` does.
+
+    Only the themes the home page lists, unless the question asks for the
+    others: "all the thematic areas" followed the page's seven with "Green
+    Shipping" and five more, as if the page had left them out."""
+    with span("rag.theme_digest"):
+        from app.retrieval.structured import detail as structured_detail
+        from app.retrieval.structured import theme_scope
+        from app.retrieval.structured.tools import theme_digest
+
+        if not structured_detail.enabled():
+            return ""
+        try:
+            if theme_scope.asks_for_other(question):
+                scope, names = theme_scope.detect(question), None
+            else:
+                from app.retrieval.priority.evidence import thematic_areas
+
+                listing = thematic_areas()
+                if listing is None:
+                    return ""
+                scope, names = theme_scope.SCOPE_ALL, [area.name for area in listing.areas]
+            return theme_digest(
+                scope=scope, names=names,
+                output_format="table" if pq.answer_format == "table" else "default",
+            )
+        except Exception:
+            logger.warning("Theme digest failed; answering without it.", exc_info=True)
+            return ""
+
+
+def _theme_overview(question: str, pq: ProcessedQuery) -> dict[str, Any] | None:
+    """The whole answer to a request for the list of themes and nothing more:
+    the themes the home page lists, what each covers, and what the catalog
+    holds on each. No model call — written from the page, the model described
+    some themes and not others (one of seven, measured 2026-10-04) from teasers
+    the page cuts mid-sentence. None with catalog detail off, for a question
+    asking for the themes the page does not list, or when the page cannot be
+    read, leaving the question to the page and the model as before."""
+    from app.retrieval.structured import detail as structured_detail
+    from app.retrieval.structured import theme_scope
+
+    if not structured_detail.enabled() or theme_scope.asks_for_other(question):
+        return None
+    with span("rag.theme_overview") as s:
+        from app.retrieval.priority.evidence import thematic_areas
+        from app.retrieval.structured.tools import theme_overview
+
+        try:
+            listing = thematic_areas()
+            answer = theme_overview(
+                listing.areas,
+                output_format="table" if pq.answer_format == "table" else "default",
+            ) if listing is not None else ""
+        except Exception:
+            logger.warning("Theme overview failed; answering from the page.", exc_info=True)
+            return None
+        s.set("themes", len(listing.areas) if listing is not None else 0)
+        if not answer:
+            return None
+    return {
+        **_empty(pq.intent, answer, answer_format=pq.answer_format),
+        "citations": [Citation(n=1, type="website", title=listing.title,
+                               url=listing.url).model_dump()],
+    }
 
 
 def _catalog_listing(pq: ProcessedQuery, question: str) -> dict[str, Any] | None:
@@ -624,13 +760,28 @@ def _prepare(
     # tenders") must reach that page rather than be answered from the catalog.
     priority_targets = _priority_targets(question, pq)
     themes_listing = _lists_themes(pq)
-    page_owned = _priority_overrides_catalog(priority_targets, themes_listing=themes_listing)
+    page_owned = _priority_overrides_catalog(
+        priority_targets, themes_listing=themes_listing,
+        about_authorship=_asks_for_authorship(question, pq),
+    )
     # A query that needs both catalog facts and document content: keep the
     # deterministic catalog answer and prefix it onto the grounded content answer.
     # Not for a theme listing a live page owns: the catalog's list of themes
     # would repeat the home page the answer is built on.
     combined = ("database" in caps and bool(caps & _CONTENT_CAPS)
                 and not (themes_listing and page_owned))
+    # The home page's list of themes is followed by what each theme holds,
+    # which the page cannot say. Not when the listing named one theme: that is
+    # that theme's page's question.
+    theme_digest_wanted = (themes_listing and page_owned and not any(
+        _names_a_theme_page(target) for target in priority_targets or ()))
+    # A listing that asks for nothing else is answered whole, theme by theme;
+    # one that also asks for content ("…and their key projects") is the page's
+    # and the model's, with the figures after it.
+    if theme_digest_wanted and not caps & _CONTENT_CAPS:
+        overview = _theme_overview(question, pq)
+        if overview is not None:
+            return overview, None
     chained = False
     # Whether the catalog has already been asked about this query, so the
     # empty-retrieval fallback at the end doesn't re-run a query that just came
@@ -762,14 +913,18 @@ def _prepare(
         # derived from `app.generation.answer_plan`, which retrieval may not
         # import (see tests/test_architecture.py).
         subqueries = _subquery_plan(pq, requirements_future)
+        db_prefix = db_suffix = ""
         if combined and not chained:
             db_future = pool.submit(
                 copy_context().run, _db_section, pq, question, history
             )
             blocks = _run_retrieve(subqueries)
             db_prefix = db_future.result()
+        elif theme_digest_wanted:
+            digest_future = pool.submit(copy_context().run, _theme_digest, question, pq)
+            blocks = _run_retrieve(subqueries)
+            db_suffix = digest_future.result()
         else:
-            db_prefix = ""
             blocks = _run_retrieve(subqueries)
         requirements = requirements_future.result()
 
@@ -809,7 +964,7 @@ def _prepare(
 
     return None, _Generation(
         pq=pq, blocks=blocks, query_vector=query_vector,
-        top_k=n, db_prefix=db_prefix, plan_directive=directive,
+        top_k=n, db_prefix=db_prefix, db_suffix=db_suffix, plan_directive=directive,
         # Recomputed after retrieval, which may have read further pages whose
         # stored copies it ranked.
         cache_fingerprint=(
@@ -857,7 +1012,7 @@ def _assemble(answer: str, gen: _Generation) -> dict[str, Any]:
         logger.info("Numeric claims not found in cited blocks: %s", mismatches)
     # The catalog section is deterministic (not from the blocks), so faithfulness
     # and numeric checks run on the grounded content only; compose for display.
-    final = f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer
+    final = gen.compose(answer)
     return {
         "answer": final,
         "citations": [
@@ -982,6 +1137,7 @@ def stream_answer(
             )
             retrieval_log.note(
                 db_prefix_chars=len(gen.db_prefix),
+                db_suffix_chars=len(gen.db_suffix),
                 plan_directive=bool(gen.plan_directive),
             )
         # Cache hit, chit-chat, structured lookup, or refusal — already complete.
@@ -1005,6 +1161,10 @@ def stream_answer(
         ):
             parts.append(token)
             yield {"type": "token", "text": token}
+        # The catalog section that follows (theme figures), streamed before the
+        # checks below so any correction they emit — `gen.compose` — carries it.
+        if gen.db_suffix:
+            yield {"type": "token", "text": "\n\n" + gen.db_suffix}
         answer = faithfulness.validate_markers("".join(parts), len(gen.blocks))
 
         if get_settings().faithfulness_check:
@@ -1033,7 +1193,7 @@ def stream_answer(
                     answer = corrected
                     yield {
                         "type": "correction",
-                        "text": f"{gen.db_prefix}\n\n{corrected}" if gen.db_prefix else corrected,
+                        "text": gen.compose(corrected),
                         "reason": "faithfulness",
                     }
 
@@ -1070,9 +1230,7 @@ def stream_answer(
                 # offending sentences outright.
                 answer = date_claims.safe_rewrite(answer, recheck)
                 reason = 'date_claim_fallback'
-            corrected_text = (
-                gen.db_prefix + "\n\n" + answer if gen.db_prefix else answer
-            )
+            corrected_text = gen.compose(answer)
             yield {
                 "type": "correction",
                 "text": corrected_text,
@@ -1093,7 +1251,7 @@ def stream_answer(
             answer = tidied
             yield {
                 "type": "correction",
-                "text": f"{gen.db_prefix}\n\n{answer}" if gen.db_prefix else answer,
+                "text": gen.compose(answer),
                 "reason": reason,
             }
 

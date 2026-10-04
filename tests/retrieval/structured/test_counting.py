@@ -13,6 +13,8 @@ from __future__ import annotations
 from datetime import datetime
 from types import SimpleNamespace
 
+import pytest
+
 from app.catalog import queries as state
 from app.retrieval.structured import answerer as dr
 from app.retrieval.structured import planner
@@ -154,7 +156,7 @@ def test_answer_structured_zero_for_a_title_question_is_answered(monkeypatch):
     )
     out = dr.answer_structured(question, analysis=analysis)
     assert out["answer"] == (
-        "There are 0 items with 'Solar' in the title matching your query."
+        "There are no items with 'Solar' in the title."
     )
 
 
@@ -202,7 +204,7 @@ def test_answer_structured_real_theme_is_counted(monkeypatch):
         intent="structured", operation="count", theme="Environment",
     )
     out = dr.answer_structured("how many posts under Environment?", analysis=analysis)
-    assert out["answer"] == "There are 32 items on 'Environment' matching your query."
+    assert out["answer"] == "There are **32 items** on **Environment**."
 
 
 def test_answer_structured_unresolved_tag_is_terminal_not_a_fallthrough(monkeypatch):
@@ -232,7 +234,7 @@ def test_answer_structured_normalizes_bundle_for_count(monkeypatch):
     out = dr.answer_structured("how many events?")
 
     assert seen["bundle"] == "events"  # normalized before the catalog query
-    assert out["answer"] == "There are 3 events matching your query."
+    assert out["answer"] == "There are **3 events** on the site."
 
 
 def test_answer_structured_generic_publications_spans_all_types(monkeypatch):
@@ -250,7 +252,7 @@ def test_answer_structured_generic_publications_spans_all_types(monkeypatch):
         "tell me overall number of publications from Dr Suneel Pandey", analysis=analysis
     )
     assert seen["bundle"] is None  # spans all content types, not just papers
-    assert out["answer"] == "There are 21 items by Dr Suneel Pandey matching your query."
+    assert out["answer"] == "**Dr Suneel Pandey** has **21 publications** on the site."
 
 
 def test_answer_structured_named_type_keeps_bundle(monkeypatch):
@@ -280,6 +282,93 @@ def test_spans_all_content_helper():
     assert not dr._spans_all_content("how many publications from Dr X", None)
 
 
+def test_a_persons_articles_span_everything_they_published(monkeypatch):
+    """Measured 2026-10-04: "how many articles are there of Vidha dhawan" counted
+    the 1 item in the Article category and missed 40 more publications."""
+    from app.retrieval.structured import resolve
+
+    monkeypatch.setattr(state, "distinct_authors", lambda **kw: ["Dr Vibha Dhawan"])
+    resolve.reload_authors()
+    seen: list = []
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.append(kw) or 41)
+    captured: dict = {}
+    real_execute = planner.execute
+
+    def spy(db_plan, **kw):
+        captured["calls"] = list(db_plan.calls)
+        return real_execute(db_plan, **kw)
+
+    monkeypatch.setattr(planner, "execute", spy)
+    analysis = qp.QueryAnalysis(
+        search_query="How many articles are there by Vibha Dhawan?",
+        intent="structured", operation="count",
+        bundle="article", author="Dr Vibha Dhawan",
+    )
+    try:
+        out = dr.answer_structured("how many articles are there of Vidha dhawan",
+                                   analysis=analysis)
+    finally:
+        resolve.reload_authors()
+    assert seen[0]["bundle"] is None
+    assert [c.named_type for c in captured["calls"]] == ["article"]
+    assert out["answer"] == "**Dr Vibha Dhawan** has **41 publications** on the site."
+
+
+def test_a_persons_articles_list_is_not_narrowed_to_the_word(monkeypatch):
+    """Measured 2026-10-04: with the type cleared before planning, "articles"
+    was left over as a title word and the list of 41 publications came back
+    empty."""
+    from app.retrieval.structured import resolve
+
+    monkeypatch.setattr(state, "distinct_authors", lambda **kw: ["Dr Vibha Dhawan"])
+    resolve.reload_authors()
+    seen: list = []
+    monkeypatch.setattr(state, "list_documents", lambda **kw: seen.append(kw) or [_rec()])
+    analysis = qp.QueryAnalysis(
+        search_query="List articles by Vibha Dhawan.", intent="structured",
+        operation="list", bundle="article", author="Dr Vibha Dhawan",
+    )
+    try:
+        out = dr.answer_structured("list articles by Vibha Dhawan", analysis=analysis)
+    finally:
+        resolve.reload_authors()
+    assert seen[0]["bundle"] is None
+    assert not seen[0].get("topic_terms")
+    assert out["answer"].startswith("Found **1 publication** by **Dr Vibha Dhawan**:")
+
+
+@pytest.mark.parametrize("question, widened", [
+    ("how many articles are there of Vidha dhawan", True),
+    ("how many articles has Vibha Dhawan written", True),
+    ("list the latest articles by Vibha Dhawan", True),
+    ("show me Vibha Dhawan's article on ethanol", True),
+    # The wording points at the site's Article category.
+    ("how many items in the article category are by Vibha Dhawan", False),
+    ("how many articles in the Articles section by Vibha Dhawan", False),
+    ("how many of Vibha Dhawan's pieces are filed under content type article", False),
+    ("only articles by Vibha Dhawan, please", False),
+    ("Vibha Dhawan's articles only", False),
+    ('how many "Articles" by Vibha Dhawan', False),
+    # Another type named beside it sets the types apart.
+    ("how many articles and research papers by Vibha Dhawan", False),
+    ("articles versus feature articles by Vibha Dhawan", False),
+    ("how many articles or policy briefs by Vibha Dhawan", False),
+])
+def test_when_a_persons_articles_mean_everything(question, widened):
+    slots = SimpleNamespace(bundle="article", author="Dr Vibha Dhawan")
+    assert dr._reads_article_as_writing(question, slots) is widened
+
+
+def test_articles_without_a_person_stay_the_category():
+    slots = SimpleNamespace(bundle="article", author=None)
+    assert not dr._reads_article_as_writing("how many articles are there", slots)
+
+
+def test_another_type_by_a_person_is_left_as_asked():
+    slots = SimpleNamespace(bundle="research_papers", author="Dr Vibha Dhawan")
+    assert not dr._reads_article_as_writing("how many papers by Vibha Dhawan", slots)
+
+
 def test_answer_structured_skips_parse_when_analysis_provided(monkeypatch):
     def no_parse(q, h=None):
         raise AssertionError("parse_structured must not be called")
@@ -301,7 +390,144 @@ def test_answer_structured_skips_parse_when_analysis_provided(monkeypatch):
     assert seen["bundle"] == "events"  # normalized before the catalog query
     assert seen["effective_from"] == datetime(2024, 1, 1)
     assert seen["effective_to"] == datetime(2025, 1, 1)
-    assert out["answer"] == "There are 5 events in 2024 matching your query."
+    assert out["answer"] == "There are **5 events** on the site in 2024."
+
+
+def _count_distinct_spy(monkeypatch, n=7):
+    seen: dict = {}
+
+    def fake(dimension, **kw):
+        seen.update(kw, dimension=dimension)
+        return n
+
+    monkeypatch.setattr(state, "count_distinct_values", fake)
+    monkeypatch.setattr(state, "count_documents", _forbid_count)
+    return seen
+
+
+def test_how_many_authors_counts_author_names_not_documents(monkeypatch):
+    """Measured: the analysis carried count_of="records" for this question, so
+    it would have been answered with the number of documents."""
+    seen = _count_distinct_spy(monkeypatch, n=955)
+    analysis = qp.QueryAnalysis(
+        search_query="How many authors are there?", intent="structured",
+        operation="count",
+    )
+    out = dr.answer_structured("How many authors are there?", analysis=analysis)
+    assert seen["dimension"] == "author"
+    assert out["answer"].startswith(
+        "There are **955 distinct author names** in the source data."
+    )
+
+
+def test_how_many_themes_is_answered_from_the_theme_list(monkeypatch):
+    """Measured: "How many themes are there?" was answered "There are 5524
+    items". A distinct count over the theme facet would say 26, because it
+    includes sub-theme rows; the listing says 7, as the home page does."""
+    _count_distinct_spy(monkeypatch)
+    monkeypatch.setattr(
+        state, "theme_vocabulary",
+        lambda **kw: [
+            {"theme": name, "theme_type": "primary", "parent": None,
+             "theme_group": "main", "documents": 3}
+            for name in ("Climate Change", "Energy")
+        ] + [{"theme": "Air", "theme_type": "sub", "parent": "Environment",
+              "theme_group": "main", "documents": 3}],
+    )
+    analysis = qp.QueryAnalysis(
+        search_query="How many themes are there?", intent="structured",
+        operation="count",
+    )
+    out = dr.answer_structured("How many themes are there?", analysis=analysis)
+    assert out["answer"].startswith("The collection covers **2 main themes**")
+    assert "Air" not in out["answer"]
+
+
+def test_a_scoped_theme_count_counts_distinct_themes(monkeypatch):
+    seen = _count_distinct_spy(monkeypatch, n=4)
+    question = "How many themes does Meena Sehgal publish in?"
+    analysis = qp.QueryAnalysis(
+        search_query=question, intent="structured", operation="count",
+        author="Meena Sehgal",
+    )
+    out = dr.answer_structured(question, analysis=analysis)
+    assert seen["dimension"] == "theme"
+    # The name is whatever author resolution canonicalised it to.
+    assert "'s publications span **4 themes**." in out["answer"]
+
+
+def test_a_counted_noun_does_not_override_a_deliberate_count_of(monkeypatch):
+    seen = _count_distinct_spy(monkeypatch)
+    analysis = qp.QueryAnalysis(
+        search_query="q", intent="structured", operation="count", count_of="year",
+    )
+    dr.answer_structured("How many themes cover years of work?", analysis=analysis)
+    assert seen["dimension"] == "year"
+
+
+def test_counted_noun_reads_only_facet_nouns():
+    assert dr._counted_noun("How many distinct authors wrote on energy?") == "author"
+    assert dr._counted_noun("how many main themes are there") == "theme"
+    assert dr._counted_noun("How many thematic areas does TERI have?") == "theme"
+    assert dr._counted_noun("How many content types are there?") == "content_type"
+    # Documents, and nouns the catalog does not record as a facet, stay as they were.
+    assert dr._counted_noun("How many articles on climate change?") is None
+    assert dr._counted_noun("How many people work at TERI?") is None
+    assert dr._counted_noun("How many years of reports are there?") is None
+
+
+def test_a_year_the_classifier_dropped_is_restored(monkeypatch):
+    """Measured: "How many events were held in 2030?" arrived without dates — the
+    coverage directive tells the classifier to drop a period the catalog does not
+    reach — and was answered with the all-time total of 1082 events."""
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 0)
+    analysis = qp.QueryAnalysis(
+        search_query="How many events were held in 2030?", intent="structured",
+        operation="count", bundle="events",
+    )
+    out = dr.answer_structured("How many events were held in 2030?", analysis=analysis)
+    assert seen["effective_from"] == datetime(2030, 1, 1)
+    assert seen["effective_to"] == datetime(2031, 1, 1)
+    assert "in 2030" in out["answer"]
+
+
+def test_a_year_restores_through_the_parse_fallback(monkeypatch):
+    monkeypatch.setattr(
+        dr, "parse_structured",
+        lambda q, h=None: dr.StructuredQuery(operation="count", bundle="events"),
+    )
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 0)
+    dr.answer_structured("How many events were held during 2019?")
+    assert seen["effective_from"] == datetime(2019, 1, 1)
+
+
+def test_a_year_that_names_a_subject_is_not_a_period(monkeypatch):
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 4)
+    for question in ("How many reports are there on the 2030 Agenda?",
+                     "How many reports compare 2020 with 2030?",
+                     "How many reports are titled Energy in 2030?"):
+        seen.clear()
+        analysis = qp.QueryAnalysis(
+            search_query=question, intent="structured", operation="count",
+            bundle="report",
+            title_contains="Energy in 2030" if "titled" in question else None,
+        )
+        dr.answer_structured(question, analysis=analysis)
+        assert "effective_from" not in seen, question
+
+
+def test_a_year_the_classifier_kept_is_left_alone(monkeypatch):
+    seen: dict = {}
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.update(kw) or 5)
+    analysis = qp.QueryAnalysis(
+        search_query="q", intent="structured", operation="count", bundle="events",
+        date_from="2024-03-01", date_to="2024-04-01",
+    )
+    dr.answer_structured("How many events were held in 2024?", analysis=analysis)
+    assert seen["effective_from"] == datetime(2024, 3, 1)
 
 
 def test_answer_structured_falls_back_to_parse_without_operation(monkeypatch):
@@ -313,7 +539,7 @@ def test_answer_structured_falls_back_to_parse_without_operation(monkeypatch):
 
     analysis = qp.QueryAnalysis(search_query="x", intent="structured")  # no operation
     out = dr.answer_structured("how many events?", analysis=analysis)
-    assert out["answer"] == "There are 4 events matching your query."
+    assert out["answer"] == "There are **4 events** on the site."
 
 
 def test_answer_structured_passes_format_from_analysis(monkeypatch):
@@ -447,7 +673,7 @@ def test_answer_structured_falls_back_to_v1_when_multi_none(monkeypatch):
         search_query="x", intent="structured", operation="count", bundle="events"
     )
     out = dr.answer_structured("how many events?", analysis=analysis)
-    assert out["answer"] == "There are 2 events matching your query."
+    assert out["answer"] == "There are **2 events** on the site."
 
 
 def test_compose_stacks_sections_and_renumbers_citations():
@@ -708,3 +934,23 @@ def test_count_and_aggregate_scope_the_same_entity_identically(monkeypatch):
 
     for key in ("source_type", "entity_type", "bundle"):
         assert counted[key] == grouped[key], (key, counted[key], grouped[key])
+
+
+def test_compose_drops_a_resolution_step_beside_its_answer():
+    """The count names the canonical author itself; the step that found the name
+    is plumbing."""
+    out = dr._compose([
+        ToolResult(tool="resolve_entity", ok=True,
+                   rendered="'rishab negi' resolves to Rishabh Negi (author)."),
+        ToolResult(tool="count_records", ok=True,
+                   rendered="There are 12 items by Rishabh Negi matching your query."),
+    ])
+    assert out["answer"] == "There are 12 items by Rishabh Negi matching your query."
+
+
+def test_compose_keeps_a_resolution_that_is_the_whole_answer():
+    out = dr._compose([
+        ToolResult(tool="resolve_entity", ok=True,
+                   rendered="'rishab negi' resolves to Rishabh Negi (author)."),
+    ])
+    assert out["answer"] == "'rishab negi' resolves to Rishabh Negi (author)."

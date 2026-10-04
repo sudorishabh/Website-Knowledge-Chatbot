@@ -197,7 +197,7 @@ def test_misspelled_author_reaches_sql_as_the_canonical_name(monkeypatch, resolu
     )
     r = tools.count_records(None, RecordFilters(author="rishab negi"))
     assert seen["author"] == "Rishabh Negi"
-    assert r.rendered == "There are 12 items by Rishabh Negi matching your query."
+    assert r.rendered == "**Rishabh Negi** has **12 publications** on the site."
     assert r.data["applied"]["author"] == "Rishabh Negi"
 
 
@@ -246,7 +246,7 @@ def test_aggregate_records_applies_the_same_canonicalization(monkeypatch, resolu
     )
     r = tools.aggregate_records(None, "content_type", RecordFilters(author="rishab negi"))
     assert seen["author"] == "Rishabh Negi"
-    assert "by Rishabh Negi" in r.rendered
+    assert "by **Rishabh Negi**" in r.rendered
 
 
 def test_disabled_flag_still_canonicalizes_but_reports_no_miss(monkeypatch, resolution_off):

@@ -91,6 +91,14 @@ class ToolCall:
     theme_scope: str = "main"
     # rendering shape for list/aggregate output (table/timeline/list/default)
     output_format: str = "default"
+    # Whether the answer may follow its headline with detail sections (see
+    # `app.retrieval.structured.detail`). Cleared for a part of a multi-call
+    # plan or a combined answer, where the parts or the prose say the rest.
+    detail: bool = True
+    # count_records / list_records: the content type the question's own word
+    # also names when the call was widened past it ("articles" by a person spans
+    # everything they published), so the detail can say how many are of it.
+    named_type: str | None = None
     # resolve_entity
     query: str | None = None
     resolve_type: ResolveType | None = None

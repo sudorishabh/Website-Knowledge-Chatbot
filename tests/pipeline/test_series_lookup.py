@@ -238,8 +238,14 @@ def test_the_count_states_the_number(monkeypatch):
     question = "how many annual reports are there?"
     result, generation = _prepare(monkeypatch, _pq(question, series=_request(question)))
     assert generation is None
-    assert result["answer"] == "There are 10 annual reports available."
+    assert result["answer"] == (
+        "There are 10 annual reports available, from the 2015-16 edition to "
+        "2024-25. The latest is Annual Report 2024-2025 [1].\n\n"
+        'Ask for "the list of annual reports" to see every edition.'
+    )
     assert result["intent"] == "series_count"
+    # The cited latest edition is the first card.
+    assert result["citations"][0]["edition"] == "2024-25"
 
 
 def test_the_count_cites_what_it_counted(monkeypatch):
@@ -251,7 +257,15 @@ def test_the_count_cites_what_it_counted(monkeypatch):
 def test_a_single_edition_series_is_not_pluralised():
     pq = _pq("how many annual reports are there?", series=are.SeriesRequest(
         kind=are.COUNT, documents=DOCUMENTS[:1]))
-    assert pipe._series_result(pq)["answer"] == "There are 1 annual report available."
+    assert pipe._series_result(pq)["answer"] == (
+        "There is 1 annual report available: Annual Report 2024-2025 [1]."
+    )
+
+
+def test_an_empty_series_count_is_an_honest_zero():
+    pq = _pq("how many annual reports are there?",
+             series=are.SeriesRequest(kind=are.COUNT, documents=()))
+    assert pipe._series_result(pq)["answer"] == "There are no annual reports available."
 
 
 # --------------------------------------------------------------------------- #

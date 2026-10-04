@@ -32,7 +32,8 @@ import re
 from app.retrieval.structured.tools import SCOPE_ALL, SCOPE_MAIN, SCOPE_OTHER
 
 __all__ = [
-    "detect", "mentions_themes", "SCOPE_MAIN", "SCOPE_OTHER", "SCOPE_ALL",
+    "asks_for_other", "detect", "mentions_themes", "SCOPE_MAIN", "SCOPE_OTHER",
+    "SCOPE_ALL",
 ]
 
 # Words that make a question *about* themes. `detect` says which group a theme
@@ -95,6 +96,16 @@ _MAIN = re.compile(
     r"\b(?:main|primary|core|key|major|principal|top[-\s]?level)\w*\b",
     re.IGNORECASE,
 )
+
+
+def asks_for_other(question: str | None) -> bool:
+    """Whether the question names the themes outside the main structure ("other
+    themes", "besides the main ones"). For the home page's list of themes this,
+    not :func:`detect`, is the test: "tell me about all the thematic areas"
+    asks for every theme the page lists, and read as :data:`SCOPE_ALL` it
+    followed the page's seven with "Green Shipping" and five more (measured
+    2026-10-04)."""
+    return bool(_OTHER.search(question or ""))
 
 
 def detect(question: str | None) -> str:

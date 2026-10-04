@@ -58,15 +58,20 @@ def test_capabilities_empty_on_passthrough():
 # --------------------------------------------------------------------------- #
 
 def test_db_section_uses_analysis_slots(monkeypatch):
-    monkeypatch.setattr(
-        "app.retrieval.structured.answerer.answer_structured",
-        lambda q, h, *, analysis: {"answer": "There are 12 reports matching your query."},
-    )
+    seen: dict = {}
+
+    def fake(q, h, *, analysis, detail=True):
+        seen["detail"] = detail
+        return {"answer": "There are 12 reports matching your query."}
+
+    monkeypatch.setattr("app.retrieval.structured.answerer.answer_structured", fake)
     pq = _pq(
         [("database", 0.9), ("qa", 0.8)],
         analysis=qp.QueryAnalysis(search_query="q", operation="count", bundle="report"),
     )
     assert pipe._db_section(pq, "q", None) == "There are 12 reports matching your query."
+    # The grounded answer that follows is the detail; the section is the headline.
+    assert seen["detail"] is False
 
 
 def test_db_section_empty_without_operation():
@@ -76,7 +81,8 @@ def test_db_section_empty_without_operation():
 
 def test_db_section_empty_when_structured_fails(monkeypatch):
     monkeypatch.setattr(
-        "app.retrieval.structured.answerer.answer_structured", lambda q, h, *, analysis: None
+        "app.retrieval.structured.answerer.answer_structured",
+        lambda q, h, *, analysis, detail=True: None,
     )
     pq = _pq(
         [("database", 0.9)],
@@ -105,6 +111,34 @@ def test_assemble_prefixes_db_section():
 def test_assemble_no_prefix_is_content_only():
     out = pipe._assemble("Rooftop solar grew 1.2 GW in 2023 [1].", _gen(db_prefix=""))
     assert out["answer"] == "Rooftop solar grew 1.2 GW in 2023 [1]."
+
+
+_SUFFIX = "What each theme holds:\n- Energy — 1154 items"
+
+
+def test_assemble_follows_the_answer_with_the_suffix():
+    gen = _gen()
+    gen.db_suffix = _SUFFIX
+    out = pipe._assemble("Rooftop solar grew 1.2 GW in 2023 [1].", gen)
+    assert out["answer"] == f"Rooftop solar grew 1.2 GW in 2023 [1].\n\n{_SUFFIX}"
+
+
+def test_a_suffix_streams_after_the_answer_and_is_stored(monkeypatch):
+    from app.config import get_settings
+
+    gen = _gen()
+    gen.db_suffix = _SUFFIX
+    monkeypatch.setattr(pipe, "_prepare", lambda q, *, history, top_k: (None, gen))
+    monkeypatch.setattr(pipe, "generate_stream",
+                        lambda *a, **k: iter(["Rooftop solar grew ", "1.2 GW in 2023 [1]."]))
+    monkeypatch.setattr(get_settings(), "faithfulness_check", False)
+    stored: list = []
+    monkeypatch.setattr("app.cache.semantic_cache.store",
+                        lambda vector, result, **k: stored.append(result))
+    events = list(pipe.stream_answer("what themes do you cover"))
+    shown = "".join(e["text"] for e in events if e["type"] == "token")
+    assert shown == f"Rooftop solar grew 1.2 GW in 2023 [1].\n\n{_SUFFIX}"
+    assert stored[0]["answer"] == shown
 
 
 # --------------------------------------------------------------------------- #

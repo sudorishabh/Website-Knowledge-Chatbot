@@ -80,6 +80,19 @@ def _gather(question, embed=None, **kw):
                      embed=embed or _embed_on("\0never"), **kw)
 
 
+def test_the_thematic_areas_are_read_from_the_live_home_page(_pages):
+    listing = ev.thematic_areas(REGISTRY)
+    assert _pages == ["https://www.teriin.org"]
+    assert listing.url == "https://www.teriin.org" and len(listing.areas) == 7
+    climate = next(a for a in listing.areas if a.name == "Climate Change")
+    assert climate.description == "Climate science and policy."
+
+
+def test_no_thematic_areas_when_the_home_page_cannot_be_read(monkeypatch):
+    monkeypatch.setattr(fetching, "fetch", lambda url, **kw: None)
+    assert ev.thematic_areas(REGISTRY) is None
+
+
 def test_a_named_page_leads_with_its_opening_section():
     got = _gather("tell me about the climate change theme")
     assert [(t.name, t.reason) for t in got.targets] == [("Climate Change Theme", match.NAME)]

@@ -259,9 +259,9 @@ real?).
 | Tool | Answers | Notable behaviour |
 | --- | --- | --- |
 | `count_records` | "how many X" | `count_of` changes *what* is counted (documents vs. a distinct facet value — "264 authors work on Energy" is a different claim from "264 articles"); an unrecognised `count_of` is refused rather than silently defaulting, because a wrong noun on a right number is a confident wrong answer |
-| `list_records` | browse/enumerate | Appends "showing N of TOTAL" whenever the page is full and the topic constraint is active, using the identical filters that produced the rows, so the two numbers can never disagree |
+| `list_records` | browse/enumerate | Leads with "Here are the N most recent of TOTAL" whenever the page is full and the topic constraint is active, using the identical filters that produced the rows, so the two numbers can never disagree ("N of TOTAL …, closest matches first" when a topic ranks the rows). Items are linked titles with dates at the stored precision (`rendering.py`), and name their content type when the list spans several |
 | `lookup_record` | one specific document by title | Also resolves a `chain_document_id` (`_resolve_chain`) when the title uniquely matches one catalog document *and* the question asks about content ("what does X say") rather than browsing — letting the pipeline chain straight into full-document QA |
-| `aggregate_records` | breakdown per theme/content type/author/year | `secondary_group_by` makes the key the **pair** of dimensions ("which authors write about which themes"), not a repeated single breakdown; ignored when it names the same dimension as the primary (a pair of one thing is the single-dimension question) |
+| `aggregate_records` | breakdown per theme/content type/author/year | `secondary_group_by` makes the key the **pair** of dimensions ("which authors write about which themes"), not a repeated single breakdown; ignored when it names the same dimension as the primary (a pair of one thing is the single-dimension question). Content types read as their labels ("feature articles"), years come back in full and in order, and a breakdown cut at 20 groups (50 pairs) says so |
 | `list_themes` | the theme vocabulary itself | Top-level themes only, split into Main and Other by `theme_scope`; rows stored as sub-themes are never listed, and a named theme does not narrow the listing — so a `list_themes` reading that carries a theme never reaches it: `answer_structured` declines, and the question ("tell me about climate change theme") is answered from passages and the theme's own page |
 | `resolve_entity` | "what does X refer to" | The only tool that wraps `resolve.py` rather than a catalog read; renders `ACCEPT`/`AMBIGUOUS`/`MISS` as a resolved name, a "which did you mean?" clarification, or an explicit no-match respectively |
 
@@ -277,6 +277,124 @@ person written "Datta Debajit" in one place and "Debajit Datta" in another is
 two. Every rendered count under this dimension says "... recorded in the
 source data" rather than asserting an identity resolution that has not been
 done.
+
+### What an answer says beyond its headline
+
+A count used to be one sentence: "There are 68 articles on 'Climate Change'
+matching your query." Right, and nothing else. `detail.py` follows each
+headline with what the same scope shows, read over **exactly the filters the
+headline used**, so the extra lines cannot disagree with the number above them:
+
+| Answer | Follows the headline with |
+| --- | --- |
+| A count of documents | The years they span and the busiest year; the content-type mix when the count spans types, or — for one type counted under an author, theme or tag — every type the same scope holds, the asked one in bold ("All publications by Dr Suneel Pandey (35)"); the five most recent items, linked, cited and with their authors (only the co-authors under one author), a page published twice under one title shown once; follow-ups that vary ("list them", "break them down by year") |
+| An honest zero | The nearest scope that is not empty: across all dates (and how recent the newest is) when a period emptied it, else across all content types, with that scope's type mix and its newest items |
+| A distinct count | The values themselves — all of them when few, else the five largest (for authors, the names that appear most often) |
+| A breakdown | The scope's total in the lead, the year span and peak or the leading group, and a note when a document can sit in several groups |
+| A list | Bylines on each item (only the co-authors in a list by one author); one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; under one author, the other types they published (a list of one type) or the type mix (a cut list across types); a cut list offers the dimensions still open |
+| The theme listing | How many items each theme holds, counted as a theme count counts them, and each theme's newest item; the home page's list also says what each theme covers (below) |
+
+#### How it is laid out
+
+A catalog answer is laid out the way a generated answer is (`rendering.py`
+holds the pieces: `figure`, `section`, `tally`, `followup`, `item_line`):
+
+- **The lead** answers in plain words, its figures and names in bold:
+  "**Dr Vibha Dhawan** has **41 publications** on the site." or "There are
+  **68 articles** on **Climate Change**." Sentences that continue it (the
+  span of years) join its paragraph (`Detail.lead`).
+- **Sections** under `###` headings, one fact per line: "By type", "All
+  publications by Dr Suneel Pandey (35)", "Latest research papers". The type
+  the question asked about is in bold. Counts are grouped by thousands (1,220).
+- **Items** read "[Title](url) — Feature article · 19 Aug 2026 · with Dr
+  Pushplata Singh".
+- **The follow-up** closes the answer in italics.
+
+```
+**Dr Vibha Dhawan** has **41 publications** on the site. They span 2003 to
+2026, and 2023 was the busiest year, with 9.
+
+That counts every kind of publication; only 1 of them is filed under
+*Articles* on the site.
+
+### By type
+- Feature articles: 31
+- Research papers: 7
+- Policy briefs: 2
+- **Articles: 1**
+
+### Latest publications
+- [Why India's Ethanol Journey Must Be Guided by Science, ...](...) — Feature article · 19 Aug 2026
+- ...
+
+*You can ask me to list them, or to break them down by year or content type.*
+```
+
+The list of themes is the home page's to give: its "Thematic Areas" section
+names seven, while the catalog's main group holds more ("Green Shipping",
+"Corporate Social Responsibility"). A request for that list and nothing more
+("tell me about all the thematic areas") is answered whole by
+`query_pipeline._theme_overview`, with no model call — written by the model
+from the page, one of the seven was described and the rest named, because the
+page cuts each teaser mid-sentence. `priority.evidence.thematic_areas` reads
+the live page for the names (`priority.themes.areas_on`) and describes each
+from the page list (`data/priority_crawl_pages.json`, the theme page's
+`description`; the teaser only for a theme with no page there), and
+`tools.theme_overview` adds what the catalog holds on each:
+
+```
+There are **7 thematic areas**:
+
+- **[Climate Change](https://teriin.org/climate)** — Covers climate science, ...
+  - 1,220 items · Latest: [Nepal: A wake-up call](...) · 7 Sep 2026
+- ...
+
+*You can ask me about the work under any of these — ...*
+```
+
+A listing that also asks for content ("the thematic areas and their key
+projects") is the page's and the model's; `tools.theme_digest` follows it with
+the same figures for the page's themes (`_Generation.db_suffix`, run alongside
+retrieval in `query_pipeline._prepare`). Only `theme_scope.asks_for_other` —
+"other themes", "besides the main ones" — reaches past the page's themes: "all
+the thematic areas" read as `SCOPE_ALL` once followed the seven with six more.
+Neither is given when the listing names one theme, whose own page answers, or
+when the home page cannot be read.
+
+No model call, and every read is fail-open: a query that fails costs its own
+section and nothing else. Detail is given to a plan with **one** real question
+in it (a `resolve_entity` step does not count) — two counts side by side are a
+comparison and stay headlines — and never to the catalog section of a combined
+answer, whose grounded prose is the detail. `catalog_answer_detail_enabled`
+turns it off; the headline then stands alone as before.
+
+The follow-ups offered are ones the catalog route was checked to answer from
+the conversation ("list them", "break them down by year", and "what does it
+say?" after a card, which chains into document QA).
+
+### A person's "articles"
+
+"Article" is one content type on the site and everyday English for anything a
+person writes. Asked of a person, the everyday reading is the one meant: "how
+many articles are there of Vibha Dhawan" used to count the 1 item in the
+Article category and miss 31 feature articles, 7 research papers and 2 policy
+briefs. `answerer._reads_article_as_writing` decides; `_widen_articles` then
+clears the type from the *planned* calls, not the slots, so the planner still
+reads "articles" as the type word rather than leaving it over as a title word.
+The answer covers both readings — the total across types, and how many of
+those are in the Article category (the layout above shows it in full):
+
+> **Dr Vibha Dhawan** has **41 publications** on the site. ...
+>
+> That counts every kind of publication; only 1 of them is filed under
+> *Articles* on the site.
+
+The category reading stays when the wording points at it ("the article
+category", "only articles", a quoted "Articles") or names another type beside
+it ("articles and research papers"). Without a person, "articles" stays the
+Article category. Every document that carries authors is a publication
+(feature article, research paper, article, policy brief, report), so one
+author's documents of every type are called publications rather than items.
 
 ---
 
@@ -344,7 +462,13 @@ existing refusal in place.
 | Author/theme/tag name matches two candidates too closely | `classify_band` = `AMBIGUOUS` | `entity_resolution_enabled` on: terminal clarification / off: takes the top candidate | User picks one |
 | Theme resolves to something broader than asked | `topic.faithful_theme` fails | Theme dropped; falls back to a topic-term constraint | — |
 | Question's subject has no covering facet | `topic.residual_topic` non-empty, `topic.enabled()` | Rows constrained by the residual words; ranked by match count | — |
-| Question asks about people, not documents | `topic.wants_person`, no `author` set | Structured path declines outright (`None`) | Semantic retrieval answers instead |
+| Question asks about people, not documents | `topic.wants_person`, no `author` set | Structured path declines outright (`None`) — unless it asks about authorship itself ("which authors published the most", "how many authors"), which is a breakdown or count the catalog records | Semantic retrieval answers instead |
+| "How many authors / themes / content types" arrives as a document count | `answerer._counted_noun` | `count_of` set from the noun; an unscoped theme count becomes the theme listing (a distinct count includes sub-theme rows) | — |
+| A period the question states ("in 2030") arrives without dates | `answerer._stated_year` | The year is restored, so the count is an honest zero rather than the all-time total | — |
+| A named person's profile page would take a count or list of their publications | `query_pipeline._asks_for_authorship` | The page gives way to the catalog for a count or breakdown with an author, or a list or lookup naming a kind of writing ("list articles by X"); "what does X work on" stays the page's | — |
+| A person's "articles" read as the Article category alone | `answerer._reads_article_as_writing` | Counted and listed across every type, with the Article category's share stated | Ask for "the article category" for the narrow count |
+| "All the thematic areas" read as every theme group | `theme_scope.asks_for_other` | The home page's themes only; the other group needs "other themes" | — |
+| The home page cannot be read for a theme listing | `priority.evidence.thematic_areas` returns `None` | No overview and no figures; the question goes to retrieval and the model, as before them | — |
 | `count_of` / `group_by` names an unsupported dimension | `_dimension_or_reject` / a `_GROUP_DIMENSIONS` miss | Refused with an explicit error, never a silent default | Fix the caller/plan |
 | Title substring was guessed from the question's subject, count is zero | `_title_guess_zero` | Falls through instead of reporting a corpus-wide zero | Semantic retrieval answers instead |
 | Catalog query raises | `except Exception` around every `state.*` call | `ok=False, error="query failed"`, logged | Falls through |
@@ -372,6 +496,7 @@ existing refusal in place.
 | `database_multi_call_enabled` | `false` | Opt into the v2 LLM multi-call planner; v1 is otherwise always used. |
 | `entity_resolution_enabled` | `false` | Whether an ambiguous/missing name match becomes a terminal clarification (`true`) or is absorbed silently as before (`false`). Matching itself always runs. |
 | `structured_topic_constraint_enabled` | `true` | The topic-residual constraint (`topic.py`) that keeps a list from degenerating into "the newest N rows of a large bucket." |
+| `catalog_answer_detail_enabled` | `true` | Whether a catalog answer follows its headline with detail (`detail.py`). Off in the test suite unless a test turns it on (`tests/conftest.py`). |
 
 ## Hand-off
 

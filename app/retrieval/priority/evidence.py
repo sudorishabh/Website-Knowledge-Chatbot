@@ -37,6 +37,7 @@ from app.retrieval.priority.extract import PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.people import Person, people_on
 from app.retrieval.priority.registry import PEOPLE, Registry, load_registry, normalize_url
+from app.retrieval.priority.themes import ThemeListing, areas_on
 
 logger = logging.getLogger(__name__)
 
@@ -236,6 +237,23 @@ def listed_people(registry: Registry) -> list[Person]:
         if read.content is not None:
             people.extend(people_on(read.content, read.target.name))
     return people
+
+
+def thematic_areas(registry: Registry | None = None) -> ThemeListing | None:
+    """The themes the home page lists, read live (and cached with the pages),
+    each described from the page list. None when the page cannot be read or
+    lists none, so the caller answers as it would without them."""
+    registry = registry or load_registry()
+    home = registry.home
+    if home is None:
+        return None
+    read = _read(Target(home.name, home.kind, match.NAME, url=home.url, page=home), registry)
+    if read.content is None:
+        return None
+    areas = areas_on(read.content, registry)
+    if not areas:
+        return None
+    return ThemeListing(areas=tuple(areas), url=home.url, title=read.content.title)
 
 
 # -- choosing sections -----------------------------------------------------------------

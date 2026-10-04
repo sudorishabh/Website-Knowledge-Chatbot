@@ -55,7 +55,7 @@ def test_execute_lists_top_level_themes_even_when_a_theme_is_named(monkeypatch):
     tool is only ever asked for the theme vocabulary."""
     seen = {}
 
-    def fake_list_themes(*, scope, limit, output_format):
+    def fake_list_themes(*, scope, limit, output_format, detail=False):
         seen.update(scope=scope)
         return ToolResult(tool="list_themes")
 
@@ -120,7 +120,7 @@ def test_plan_explicit_dates_win_over_year():
 def test_execute_routes_to_tool(monkeypatch):
     monkeypatch.setattr(
         planner, "count_records",
-        lambda entity, filters, *, question=None, count_of="records": ToolResult(
+        lambda entity, filters, *, question=None, count_of="records", detail=False, named_type=None: ToolResult(
             tool="count_records", entity=entity, data={"count": 7}
         ),
     )
@@ -132,7 +132,7 @@ def test_execute_routes_to_tool(monkeypatch):
 def test_execute_routes_to_list_themes(monkeypatch):
     monkeypatch.setattr(
         planner, "list_themes",
-        lambda *, scope, limit, output_format: ToolResult(
+        lambda *, scope, limit, output_format, detail=False: ToolResult(
             tool="list_themes", data={"themes": ["Climate"]}
         ),
     )
@@ -146,7 +146,8 @@ def test_execute_forwards_offset_and_fields_to_list_records(monkeypatch):
     are unreachable from any plan — dead parameter surface."""
     seen = {}
 
-    def fake_list(entity, filters, *, sort, limit, offset, output_format, fields):
+    def fake_list(entity, filters, *, sort, limit, offset, output_format, fields,
+                  detail=False, named_type=None):
         seen.update(limit=limit, offset=offset, fields=fields)
         return ToolResult(tool="list_records", entity=entity)
 
@@ -194,14 +195,14 @@ def test_execute_routes_to_resolve_entity(monkeypatch):
 def test_execute_runs_multiple_calls(monkeypatch):
     monkeypatch.setattr(
         planner, "count_records",
-        lambda entity, filters, *, question=None, count_of="records": ToolResult(
+        lambda entity, filters, *, question=None, count_of="records", detail=False, named_type=None: ToolResult(
             tool="count_records", entity=entity
         ),
     )
     monkeypatch.setattr(
         planner, "aggregate_records",
         lambda entity, group_by, filters, secondary_group_by=None,
-        aggregation="count", output_format="default":
+        aggregation="count", output_format="default", detail=False:
             ToolResult(tool="aggregate_records", entity=entity),
     )
     plan_obj = DatabasePlan(calls=[
@@ -215,7 +216,8 @@ def test_execute_runs_multiple_calls(monkeypatch):
 def test_execute_passes_question_to_lookup(monkeypatch):
     seen = {}
 
-    def fake_lookup(entity, title, filters, *, limit, output_format, question):
+    def fake_lookup(entity, title, filters, *, limit, output_format, question,
+                    detail=False):
         seen["question"] = question
         seen["title"] = title
         return ToolResult(tool="lookup_record", entity=entity)
@@ -233,7 +235,8 @@ def test_execute_passes_question_to_count(monkeypatch):
     for from one the classifier guessed (tools._title_guess_zero)."""
     seen = {}
 
-    def fake_count(entity, filters, *, question=None, count_of="records"):
+    def fake_count(entity, filters, *, question=None, count_of="records", detail=False,
+                   named_type=None):
         seen["question"] = question
         return ToolResult(tool="count_records", entity=entity)
 
@@ -392,7 +395,8 @@ def test_slots_without_the_new_fields_still_plan():
 def test_execute_forwards_count_of_to_the_tool(monkeypatch):
     seen = {}
 
-    def fake_count(entity, filters, *, question=None, count_of="records"):
+    def fake_count(entity, filters, *, question=None, count_of="records", detail=False,
+                   named_type=None):
         seen["count_of"] = count_of
         return ToolResult(tool="count_records", entity=entity)
 
@@ -405,7 +409,7 @@ def test_execute_forwards_both_dimensions_to_the_tool(monkeypatch):
     seen = {}
 
     def fake_aggregate(entity, group_by, filters, *, secondary_group_by=None,
-                       aggregation="count", output_format="default"):
+                       aggregation="count", output_format="default", detail=False):
         seen.update(group_by=group_by, secondary_group_by=secondary_group_by)
         return ToolResult(tool="aggregate_records", entity=entity)
 

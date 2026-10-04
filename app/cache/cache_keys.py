@@ -43,7 +43,21 @@ def _sha(*parts: str) -> str:
 #: 2026-09-25.12: the head of the organisation always leads a selection.
 #: 2026-09-26.1: a summary of one theme is answered from its live page, and a
 #: theme listing that also asks for content no longer repeats the catalog's list.
-PIPELINE_REVISION = "2026-09-26.1"
+#: 2026-10-04.1: catalog answers follow their headline with detail, list items
+#: are linked, and a count of a person's publications stays on the catalog.
+#: 2026-10-04.6: a person's "articles" spans everything they published, a list
+#: of what a person wrote stays on the catalog, and a count of one type by a
+#: person gives their total across types.
+#: 2026-10-04.10: a count or list of one type names the person's or theme's
+#: other types, recent lists show five items with bylines, and every theme
+#: listing gives each theme's count and newest item.
+#: 2026-10-04.12: catalog answers are laid out as generated ones are — a lead
+#: with bold figures, titled sections, an italic follow-up.
+#: 2026-10-04.13: a request for the list of themes is answered theme by theme —
+#: what each covers and holds — and only the home page's themes get figures.
+#: 2026-10-04.14: a listed person named with a misspelling ("PK bhatacharia")
+#: is answered from their profile.
+PIPELINE_REVISION = "2026-10-04.14"
 
 
 def _pref_fingerprint() -> str:

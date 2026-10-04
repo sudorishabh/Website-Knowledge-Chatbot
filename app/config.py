@@ -233,6 +233,12 @@ class Settings(BaseSettings):
     # truncated. Kept as a switch so the two can be A/B'd on one build; see
     # `app.retrieval.structured.topic`.
     structured_topic_constraint_enabled: bool = True
+    # Follow a catalog answer's headline with what the same scope shows: a
+    # count's date spread, content-type mix and most recent items; the leading
+    # values behind a distinct count; a breakdown's total. A few extra SELECTs
+    # over the same filters, no model call. OFF answers with the headline alone,
+    # as before. See `app.retrieval.structured.detail`.
+    catalog_answer_detail_enabled: bool = True
     reranker_provider: str = "embedding"
     rerank_model: str = ""
     rerank_score_threshold: float = 0.0
