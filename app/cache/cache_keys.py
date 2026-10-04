@@ -48,7 +48,10 @@ def _sha(*parts: str) -> str:
 #: 2026-10-04.6: a person's "articles" spans everything they published, a list
 #: of what a person wrote stays on the catalog, and a count of one type by a
 #: person gives their total across types.
-PIPELINE_REVISION = "2026-10-04.6"
+#: 2026-10-04.10: a count or list of one type names the person's or theme's
+#: other types, recent lists show five items with bylines, and every theme
+#: listing gives each theme's count and newest item.
+PIPELINE_REVISION = "2026-10-04.10"
 
 
 def _pref_fingerprint() -> str:

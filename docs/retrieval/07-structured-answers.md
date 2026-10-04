@@ -287,12 +287,18 @@ headline used**, so the extra lines cannot disagree with the number above them:
 
 | Answer | Follows the headline with |
 | --- | --- |
-| A count of documents | The years they date from and the peak year; the content-type mix when the count spans types, or for one author's count of one type their total across types; the three most recent items, linked and cited; follow-ups that vary ("list them", "break them down by year") |
-| An honest zero | The nearest scope that is not empty: across all dates (and how recent the newest is) when a period emptied it, else across all content types |
+| A count of documents | The years they date from and the peak year; the content-type mix when the count spans types, or — for one type counted under an author, theme or tag — the other types the same scope holds and its total ("Beyond these, there are 12 feature articles, 11 articles and 2 policy briefs by Dr Suneel Pandey — 35 publications in all."); the five most recent items, linked, cited and with their authors (only the co-authors under one author), a page published twice under one title shown once; follow-ups that vary ("list them", "break them down by year") |
+| An honest zero | The nearest scope that is not empty: across all dates (and how recent the newest is) when a period emptied it, else across all content types, with that scope's type mix and its newest items |
 | A distinct count | The values themselves — all of them when few, else the five largest (for authors, the names that appear most often) |
 | A breakdown | The scope's total in the lead, the year span and peak or the leading group, and a note when a document can sit in several groups |
-| A list | Bylines on each item (only the co-authors in a list by one author); one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; a cut list offers the dimensions still open |
-| The theme listing | How many items each theme holds, counted as a theme count counts them |
+| A list | Bylines on each item (only the co-authors in a list by one author); one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; under one author, the other types they published (a list of one type) or the type mix (a cut list across types); a cut list offers the dimensions still open |
+| The theme listing | How many items each theme holds, counted as a theme count counts them, and each theme's newest item |
+
+The home page answers "what themes do you cover" itself (it describes each
+theme), so the catalog cannot lead that answer. `tools.theme_digest` gives the
+same figures as a section that follows the generated answer
+(`_Generation.db_suffix`, run alongside retrieval in `query_pipeline._prepare`);
+it is left off when the listing names one theme, whose own page answers.
 
 No model call, and every read is fail-open: a query that fails costs its own
 section and nothing else. Detail is given to a plan with **one** real question
