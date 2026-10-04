@@ -655,12 +655,28 @@ def vocabulary(monkeypatch):
     )
 
 
-def test_a_theme_listing_says_how_much_each_theme_holds(catalog, vocabulary):
+def _newest_by_theme(monkeypatch, **titles):
+    """Each theme's newest item; a theme left out has none."""
+    def listing(**kw):
+        title = titles.get(kw.get("theme"))
+        if not title:
+            return []
+        row = _row(0)
+        row.title, row.url = title, f"https://teriin.org/{title.lower().replace(' ', '-')}"
+        return [row]
+
+    monkeypatch.setattr("app.catalog.queries.list_documents", listing)
+
+
+def test_a_theme_listing_says_how_much_each_theme_holds(catalog, vocabulary, monkeypatch):
     catalog.values = [("Climate Change", 1220), ("Energy", 1), ("Air", 359)]
+    _newest_by_theme(monkeypatch, **{"Climate Change": "Rooted Resilience"})
     r = tools.list_themes(detail=True)
     assert r.rendered.split("\n\n") == [
         "The collection covers 2 main themes:",
-        "- Climate Change — 1220 items\n- Energy — 1 item",
+        "- Climate Change — 1220 items; latest: "
+        "[Rooted Resilience](https://teriin.org/rooted-resilience), 20 Apr 2026\n"
+        "- Energy — 1 item",
         "You can ask me about the work under any of these — for example, how "
         "many reports there are on one, or which are the latest.",
     ]
@@ -682,6 +698,30 @@ def test_a_theme_listing_without_counts_is_still_a_listing(catalog, vocabulary, 
         raise RuntimeError("db blip")
 
     monkeypatch.setattr("app.catalog.queries.distribution", boom)
+    monkeypatch.setattr("app.catalog.queries.list_documents", boom)
     r = tools.list_themes(detail=True)
     assert r.rendered.startswith("The collection covers 2 main themes:\n\n"
                                  "- Climate Change\n- Energy")
+
+
+def test_a_theme_digest_gives_each_themes_figures_and_newest(catalog, vocabulary,
+                                                               monkeypatch):
+    """What follows the home page's own list of themes."""
+    catalog.values = [("Climate Change", 1220), ("Energy", 1154)]
+    _newest_by_theme(monkeypatch, **{"Climate Change": "Rooted Resilience",
+                                     "Energy": "Storage at POWERGEN"})
+    assert tools.theme_digest() == (
+        "What each theme holds:\n"
+        "- Climate Change — 1220 items; latest: "
+        "[Rooted Resilience](https://teriin.org/rooted-resilience), 20 Apr 2026\n"
+        "- Energy — 1154 items; latest: "
+        "[Storage at POWERGEN](https://teriin.org/storage-at-powergen), 20 Apr 2026"
+    )
+
+
+def test_a_theme_digest_without_figures_is_empty(catalog, vocabulary, monkeypatch):
+    def boom(group_by, **kw):
+        raise RuntimeError("db blip")
+
+    monkeypatch.setattr("app.catalog.queries.distribution", boom)
+    assert tools.theme_digest() == ""

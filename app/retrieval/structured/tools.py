@@ -356,26 +356,50 @@ def _render_records(
     return lead + separator + body, data, citations
 
 
+def _latest_phrase(record: Any) -> str:
+    """"[Title](url), 27 Apr 2026" — a theme's newest item, linked and dated."""
+    when = record_date(record)
+    link = md_link(record.title or record.document_id, record.url)
+    return f"{link}, {when}" if when else link
+
+
 def _theme_section(
     label: str, names: list[str], output_format: str,
     counts: dict[str, int] | None = None,
+    latest: dict[str, Any] | None = None,
 ) -> str:
     """One block of a theme listing. An empty `label` renders the bare list, for
     the case where the surrounding sentence already names what these are.
-    ``counts`` (items per theme) adds a column, or a figure beside each name."""
+    ``counts`` (items per theme) adds a column, or a figure beside each name;
+    ``latest`` (each theme's newest item) adds that too."""
+    latest = latest or {}
     if output_format == "table":
+        header, rule = ["theme"], ["---"]
         if counts:
-            rows = "\n".join(["| theme | items |", "| --- | --- |"] + [
-                f"| {_md_cell(n)} | {counts.get(n, 0)} |" for n in names])
-        else:
-            rows = "\n".join(["| theme |", "| --- |"] + [f"| {_md_cell(n)} |" for n in names])
+            header.append("items")
+            rule.append("---")
+        if latest:
+            header.append("latest")
+            rule.append("---")
+        lines = [f"| {' | '.join(header)} |", f"| {' | '.join(rule)} |"]
+        for n in names:
+            cells = [_md_cell(n)]
+            if counts:
+                cells.append(str(counts.get(n, 0)))
+            if latest:
+                cells.append(_md_cell(_latest_phrase(latest[n])) if n in latest else "")
+            lines.append(f"| {' | '.join(cells)} |")
+        rows = "\n".join(lines)
         return f"**{label}**\n{rows}" if label else rows
-    if counts:
-        body = "\n".join(
-            f"- {n} — {counts.get(n, 0)} {entity_label('items', counts.get(n, 0))}"
-            for n in names)
-    else:
-        body = "\n".join(f"- {n}" for n in names)
+    lines = []
+    for n in names:
+        line = f"- {n}"
+        if counts:
+            line += f" — {counts.get(n, 0)} {entity_label('items', counts.get(n, 0))}"
+        if n in latest:
+            line += f"; latest: {_latest_phrase(latest[n])}"
+        lines.append(line)
+    body = "\n".join(lines)
     return f"{label}:\n{body}" if label else body
 
 
@@ -1086,8 +1110,9 @@ def list_themes(
     # section that is deliberately absent.
     labelled = len(sections) > 1
     counts = structured_detail.theme_counts() if detail else None
+    latest = structured_detail.theme_latest(listed) if detail else None
     body = "\n\n".join(
-        _theme_section(label if labelled else "", names, output_format, counts)
+        _theme_section(label if labelled else "", names, output_format, counts, latest)
         for label, names in sections
     )
 
@@ -1100,6 +1125,20 @@ def list_themes(
     return ToolResult(
         tool="list_themes", ok=True, data=data, rendered=rendered,
     )
+
+
+def theme_digest(*, scope: str = SCOPE_MAIN, output_format: str = "default") -> str:
+    """How many items each theme holds and its newest one, as a section to
+    follow an answer that lists the themes from elsewhere — the home page, which
+    describes the themes but cannot say what is in them. '' when the themes or
+    their figures cannot be read, leaving that answer as it was."""
+    result = list_themes(scope=scope, output_format=output_format)
+    names = result.data.get("themes", []) if result.ok else []
+    counts = structured_detail.theme_counts() if names else {}
+    if not counts:
+        return ""
+    latest = structured_detail.theme_latest(names)
+    return _theme_section("What each theme holds", names, output_format, counts, latest)
 
 
 def resolve_entity(query: str | None, type: str | None = None) -> ToolResult:

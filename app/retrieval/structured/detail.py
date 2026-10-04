@@ -412,6 +412,24 @@ def theme_counts() -> dict[str, int]:
     return {str(theme): int(n) for theme, n in rows}
 
 
+def theme_latest(names: Sequence[str]) -> dict[str, Any]:
+    """Each theme's newest item, over the same scope `theme_counts` counts —
+    so "Energy — 1154 items, latest: ..." names one of those 1154. A theme
+    whose read fails or holds nothing is left out, and its line shows the count
+    alone."""
+    latest: dict[str, Any] = {}
+    for name in names:
+        rows = _safe(
+            f"latest on {name}",
+            lambda name=name: state.list_documents(
+                source_type="website", entity_type="node", theme=name, limit=1),
+            [],
+        )
+        if rows:
+            latest[name] = rows[0]
+    return latest
+
+
 def for_themes() -> Detail:
     """Beneath a theme listing: what can be asked about any one of them."""
     detail = Detail()
