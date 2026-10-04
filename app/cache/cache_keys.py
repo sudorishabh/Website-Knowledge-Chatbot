@@ -43,7 +43,9 @@ def _sha(*parts: str) -> str:
 #: 2026-09-25.12: the head of the organisation always leads a selection.
 #: 2026-09-26.1: a summary of one theme is answered from its live page, and a
 #: theme listing that also asks for content no longer repeats the catalog's list.
-PIPELINE_REVISION = "2026-09-26.1"
+#: 2026-10-04.1: catalog answers follow their headline with detail, list items
+#: are linked, and a count of a person's publications stays on the catalog.
+PIPELINE_REVISION = "2026-10-04.1"
 
 
 def _pref_fingerprint() -> str:
