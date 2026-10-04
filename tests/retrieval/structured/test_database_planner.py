@@ -120,7 +120,7 @@ def test_plan_explicit_dates_win_over_year():
 def test_execute_routes_to_tool(monkeypatch):
     monkeypatch.setattr(
         planner, "count_records",
-        lambda entity, filters, *, question=None, count_of="records", detail=False: ToolResult(
+        lambda entity, filters, *, question=None, count_of="records", detail=False, named_type=None: ToolResult(
             tool="count_records", entity=entity, data={"count": 7}
         ),
     )
@@ -147,7 +147,7 @@ def test_execute_forwards_offset_and_fields_to_list_records(monkeypatch):
     seen = {}
 
     def fake_list(entity, filters, *, sort, limit, offset, output_format, fields,
-                  detail=False):
+                  detail=False, named_type=None):
         seen.update(limit=limit, offset=offset, fields=fields)
         return ToolResult(tool="list_records", entity=entity)
 
@@ -195,7 +195,7 @@ def test_execute_routes_to_resolve_entity(monkeypatch):
 def test_execute_runs_multiple_calls(monkeypatch):
     monkeypatch.setattr(
         planner, "count_records",
-        lambda entity, filters, *, question=None, count_of="records", detail=False: ToolResult(
+        lambda entity, filters, *, question=None, count_of="records", detail=False, named_type=None: ToolResult(
             tool="count_records", entity=entity
         ),
     )
@@ -235,7 +235,8 @@ def test_execute_passes_question_to_count(monkeypatch):
     for from one the classifier guessed (tools._title_guess_zero)."""
     seen = {}
 
-    def fake_count(entity, filters, *, question=None, count_of="records", detail=False):
+    def fake_count(entity, filters, *, question=None, count_of="records", detail=False,
+                   named_type=None):
         seen["question"] = question
         return ToolResult(tool="count_records", entity=entity)
 
@@ -394,7 +395,8 @@ def test_slots_without_the_new_fields_still_plan():
 def test_execute_forwards_count_of_to_the_tool(monkeypatch):
     seen = {}
 
-    def fake_count(entity, filters, *, question=None, count_of="records", detail=False):
+    def fake_count(entity, filters, *, question=None, count_of="records", detail=False,
+                   named_type=None):
         seen["count_of"] = count_of
         return ToolResult(tool="count_records", entity=entity)
 

@@ -117,6 +117,63 @@ def test_a_count_across_content_types_gives_its_mix(catalog):
     )
 
 
+def _article_share(monkeypatch, *, articles, everything):
+    """Counts as the catalog gives them: the Article category alone, or every type."""
+    monkeypatch.setattr(
+        "app.catalog.queries.count_documents",
+        lambda **kw: articles if kw.get("bundle") == "article" else everything,
+    )
+
+
+def test_a_widened_count_says_how_many_are_of_the_type_asked_about(catalog, monkeypatch):
+    """A person's "articles" spans everything they published; the category
+    reading is answered beside it, not dropped."""
+    _article_share(monkeypatch, articles=1, everything=41)
+    catalog.types = [("feature_articles", 31), ("research_papers", 7),
+                     ("policy_brief", 2), ("article", 1)]
+    r = tools.count_records(None, RecordFilters(author="Dr Vibha Dhawan"),
+                            detail=True, named_type="article")
+    assert r.rendered.split("\n\n")[:2] == [
+        "There are 41 publications by Dr Vibha Dhawan matching your query.",
+        "That spans every type of publication, not only the site's Article category, "
+        "which holds 1 of them. They date from 2018 to 2026, with the most (13) in 2025. "
+        "By type: 31 feature articles, 7 research papers, 2 policy briefs and 1 article.",
+    ]
+
+
+def test_a_widened_count_with_none_of_the_type_says_so(catalog, monkeypatch):
+    _article_share(monkeypatch, articles=0, everything=5)
+    r = tools.count_records(None, RecordFilters(author="Dr A"), detail=True,
+                            named_type="article")
+    assert "Article category, which holds none of them." in r.rendered
+
+
+def test_a_count_that_was_not_widened_names_no_category(catalog):
+    assert "category" not in _count(None, author="Suneel Pandey").rendered
+
+
+def test_a_widened_list_says_how_many_are_of_the_type_asked_about(
+    catalog, facets, monkeypatch,
+):
+    _article_share(monkeypatch, articles=1, everything=41)
+    catalog.rows = [_row(i, bundle="feature_articles") for i in range(3)]
+    r = tools.list_records(None, RecordFilters(author="Dr Vibha Dhawan"), limit=3,
+                           detail=True, named_type="article")
+    assert r.rendered.startswith(
+        "Here are the 3 most recent of 41 publications by Dr Vibha Dhawan:")
+    assert ("That spans every type of publication, not only the site's Article "
+            "category, which holds 1 of the 41.") in r.rendered
+
+
+def test_a_widened_single_document_shows_its_own_type(catalog, facets, monkeypatch):
+    _article_share(monkeypatch, articles=0, everything=1)
+    catalog.rows = [_row(0, bundle="feature_articles")]
+    r = tools.list_records(None, RecordFilters(author="Dr A"), detail=True,
+                           named_type="article")
+    assert "Feature article · 20 Apr 2026" in r.rendered
+    assert "category" not in r.rendered
+
+
 def test_a_long_type_mix_folds_the_tail(catalog):
     catalog.total = 100
     catalog.types = [(b, n) for b, n in zip(

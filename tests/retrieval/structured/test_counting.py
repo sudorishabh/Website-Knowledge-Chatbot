@@ -13,6 +13,8 @@ from __future__ import annotations
 from datetime import datetime
 from types import SimpleNamespace
 
+import pytest
+
 from app.catalog import queries as state
 from app.retrieval.structured import answerer as dr
 from app.retrieval.structured import planner
@@ -278,6 +280,93 @@ def test_spans_all_content_helper():
     assert not dr._spans_all_content("how many articles from Dr X", "article")
     # No bundle to begin with -> nothing to clear.
     assert not dr._spans_all_content("how many publications from Dr X", None)
+
+
+def test_a_persons_articles_span_everything_they_published(monkeypatch):
+    """Measured 2026-10-04: "how many articles are there of Vidha dhawan" counted
+    the 1 item in the Article category and missed 40 more publications."""
+    from app.retrieval.structured import resolve
+
+    monkeypatch.setattr(state, "distinct_authors", lambda **kw: ["Dr Vibha Dhawan"])
+    resolve.reload_authors()
+    seen: list = []
+    monkeypatch.setattr(state, "count_documents", lambda **kw: seen.append(kw) or 41)
+    captured: dict = {}
+    real_execute = planner.execute
+
+    def spy(db_plan, **kw):
+        captured["calls"] = list(db_plan.calls)
+        return real_execute(db_plan, **kw)
+
+    monkeypatch.setattr(planner, "execute", spy)
+    analysis = qp.QueryAnalysis(
+        search_query="How many articles are there by Vibha Dhawan?",
+        intent="structured", operation="count",
+        bundle="article", author="Dr Vibha Dhawan",
+    )
+    try:
+        out = dr.answer_structured("how many articles are there of Vidha dhawan",
+                                   analysis=analysis)
+    finally:
+        resolve.reload_authors()
+    assert seen[0]["bundle"] is None
+    assert [c.named_type for c in captured["calls"]] == ["article"]
+    assert out["answer"] == "There are 41 publications by Dr Vibha Dhawan matching your query."
+
+
+def test_a_persons_articles_list_is_not_narrowed_to_the_word(monkeypatch):
+    """Measured 2026-10-04: with the type cleared before planning, "articles"
+    was left over as a title word and the list of 41 publications came back
+    empty."""
+    from app.retrieval.structured import resolve
+
+    monkeypatch.setattr(state, "distinct_authors", lambda **kw: ["Dr Vibha Dhawan"])
+    resolve.reload_authors()
+    seen: list = []
+    monkeypatch.setattr(state, "list_documents", lambda **kw: seen.append(kw) or [_rec()])
+    analysis = qp.QueryAnalysis(
+        search_query="List articles by Vibha Dhawan.", intent="structured",
+        operation="list", bundle="article", author="Dr Vibha Dhawan",
+    )
+    try:
+        out = dr.answer_structured("list articles by Vibha Dhawan", analysis=analysis)
+    finally:
+        resolve.reload_authors()
+    assert seen[0]["bundle"] is None
+    assert not seen[0].get("topic_terms")
+    assert out["answer"].startswith("Found 1 publication by Dr Vibha Dhawan:")
+
+
+@pytest.mark.parametrize("question, widened", [
+    ("how many articles are there of Vidha dhawan", True),
+    ("how many articles has Vibha Dhawan written", True),
+    ("list the latest articles by Vibha Dhawan", True),
+    ("show me Vibha Dhawan's article on ethanol", True),
+    # The wording points at the site's Article category.
+    ("how many items in the article category are by Vibha Dhawan", False),
+    ("how many articles in the Articles section by Vibha Dhawan", False),
+    ("how many of Vibha Dhawan's pieces are filed under content type article", False),
+    ("only articles by Vibha Dhawan, please", False),
+    ("Vibha Dhawan's articles only", False),
+    ('how many "Articles" by Vibha Dhawan', False),
+    # Another type named beside it sets the types apart.
+    ("how many articles and research papers by Vibha Dhawan", False),
+    ("articles versus feature articles by Vibha Dhawan", False),
+    ("how many articles or policy briefs by Vibha Dhawan", False),
+])
+def test_when_a_persons_articles_mean_everything(question, widened):
+    slots = SimpleNamespace(bundle="article", author="Dr Vibha Dhawan")
+    assert dr._reads_article_as_writing(question, slots) is widened
+
+
+def test_articles_without_a_person_stay_the_category():
+    slots = SimpleNamespace(bundle="article", author=None)
+    assert not dr._reads_article_as_writing("how many articles are there", slots)
+
+
+def test_another_type_by_a_person_is_left_as_asked():
+    slots = SimpleNamespace(bundle="research_papers", author="Dr Vibha Dhawan")
+    assert not dr._reads_article_as_writing("how many papers by Vibha Dhawan", slots)
 
 
 def test_answer_structured_skips_parse_when_analysis_provided(monkeypatch):

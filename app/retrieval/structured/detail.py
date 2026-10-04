@@ -138,6 +138,20 @@ def type_sentence(common: dict[str, Any], total: int) -> str:
     return f"By type: {_join(parts)}."
 
 
+def named_type_sentence(named_type: str, n: int | None, *, of: str) -> str:
+    """That an answer spans more than the type the question's word names, and
+    how many it holds of that type. "Article" is both one category on the site
+    and everyday English for anything a person writes, so "how many articles by
+    Vibha Dhawan" counts all 41 publications and says that 1 is filed as an
+    article — the narrow reading answered too, not replaced. ``of`` says what
+    the figure is out of ("them", "the 41"). Nothing when the figure is unknown."""
+    if n is None:
+        return ""
+    category = entity_label(named_type, 1).capitalize()
+    return (f"That spans every type of publication, not only the site's {category} "
+            f"category, which holds {n or 'none'} of {of}.")
+
+
 def recent_items(
     common: dict[str, Any], *, total: int, with_type: bool
 ) -> tuple[str, list[dict[str, Any]]]:
@@ -192,15 +206,23 @@ def _count_followup(
 # --------------------------------------------------------------------------- #
 
 def for_count(
-    total: int, *, common: dict[str, Any], bundle: str | None, filters: RecordFilters
+    total: int, *, common: dict[str, Any], bundle: str | None, filters: RecordFilters,
+    named_type: str | None = None,
 ) -> Detail:
-    """Beneath "There are N <items>": when they date from, their type mix (when
-    the count spans types), the most recent few, and what to ask next."""
+    """Beneath "There are N <items>": how many are of the type the question
+    named, when the count was widened past it; when they date from; their type
+    mix (when the count spans types); the most recent few; and what to ask next."""
     detail = Detail()
     if total <= 0:
         return detail
     years = _years(common)
+    named = ""
+    if named_type and bundle is None:
+        n = _safe("named type",
+                  lambda: state.count_documents(**{**common, "bundle": named_type}), None)
+        named = named_type_sentence(named_type, n, of="them")
     sentences = [
+        named,
         year_sentence(years, total=total,
                       period_fixed=bool(filters.date_from or filters.date_to)),
         type_sentence(common, total) if bundle is None and total > 1 else "",
@@ -257,11 +279,19 @@ def facets(records: Sequence[Any]) -> dict[str, dict[str, list[str]]]:
     return _safe("facets", lambda: state.facets_for([i for i in ids if i]), {})
 
 
-def for_list(shown: int, *, total: int | None, filters: RecordFilters) -> Detail:
-    """Beneath a list: for a single document, that its content can be asked
-    about; for a page cut from a larger set, how to narrow it. Only the
-    dimensions the question has not already fixed are offered."""
+def for_list(
+    shown: int, *, total: int | None, filters: RecordFilters,
+    named: tuple[str, int | None] | None = None,
+) -> Detail:
+    """Beneath a list: how many are of the type the question named, when the
+    list was widened past it (``named`` is that type and its count); for a
+    single document, that its content can be asked about; for a page cut from a
+    larger set, how to narrow it. Only the dimensions the question has not
+    already fixed are offered."""
     detail = Detail()
+    # One document already shows its own type.
+    if named is not None and (total or shown) > 1:
+        detail.add(named_type_sentence(*named, of=f"the {total or shown}"))
     if shown == 1 and not total:
         detail.add("Ask me what it says, and I'll answer from the document itself.")
         return detail

@@ -409,12 +409,13 @@ def _run(call: ToolCall, question: str | None) -> ToolResult:
         # The question decides whether a zero under a title substring is the
         # answer or a guess to fall through on (see tools._title_guess_zero).
         return count_records(call.entity, call.filters, question=question,
-                             count_of=call.count_of, detail=detail)
+                             count_of=call.count_of, detail=detail,
+                             named_type=call.named_type)
     if call.tool == "list_records":
         return list_records(call.entity, call.filters, sort=call.sort,
                             limit=call.limit, offset=call.offset,
                             output_format=call.output_format, fields=call.fields,
-                            detail=detail)
+                            detail=detail, named_type=call.named_type)
     if call.tool == "lookup_record":
         return lookup_record(call.entity, call.title, call.filters, limit=call.limit,
                              output_format=call.output_format, question=question,

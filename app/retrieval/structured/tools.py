@@ -405,7 +405,7 @@ def _project_fields(
 
 def count_records(
     entity: str | None, filters: RecordFilters, *, question: str | None = None,
-    count_of: str = "records", detail: bool = False,
+    count_of: str = "records", detail: bool = False, named_type: str | None = None,
 ) -> ToolResult:
     """How many catalog documents match. Unknown entity returns ok=False (fall
     through, never a misleading zero). Names are canonicalized first, so the
@@ -424,7 +424,9 @@ def count_records(
     parameter exists to prevent.
 
     ``detail`` follows the headline with what the same scope shows (see
-    `app.retrieval.structured.detail`); off, the headline stands alone."""
+    `app.retrieval.structured.detail`); off, the headline stands alone.
+    ``named_type`` is the type the question's word named when the count was
+    widened past it; the detail then says how many are of that type."""
     guarded = _entity_guard("count_records", entity)
     if guarded is not None:
         return guarded
@@ -502,7 +504,8 @@ def count_records(
             )
         elif total:
             extra = structured_detail.for_count(
-                total, common=common, bundle=bundle, filters=scope.effective
+                total, common=common, bundle=bundle, filters=scope.effective,
+                named_type=named_type,
             )
         else:
             extra = structured_detail.for_zero(
@@ -565,13 +568,15 @@ def list_records(
     output_format: str = "default",
     fields: Sequence[str] | None = None,
     detail: bool = False,
+    named_type: str | None = None,
 ) -> ToolResult:
     """List matching documents, most recent first (the only backing sort today).
     Empty result returns ok=False. Filter-resolution semantics match
     `count_records` (see `_scope_guard` / `_empty_result_miss`). `fields` narrows
     the metadata keys in `data["records"]`; `rendered` is unaffected (see
     `_project_fields`). ``detail`` adds bylines (a card for a single document)
-    and a follow-up (see `app.retrieval.structured.detail.for_list`)."""
+    and a follow-up (see `app.retrieval.structured.detail.for_list`), and with
+    ``named_type`` says how many of the listed scope are of that type."""
     guarded = _entity_guard("list_records", entity)
     if guarded is not None:
         return guarded
@@ -616,8 +621,11 @@ def list_records(
         facets=structured_detail.facets(records) if detail else None,
     )
     if detail:
+        named = None
+        if named_type and bundle is None and (named_ent := get_entity(named_type)):
+            named = (named_type, _scope_total(named_ent, named_type, scope))
         rendered = structured_detail.for_list(
-            len(records), total=total, filters=scope.effective,
+            len(records), total=total, filters=scope.effective, named=named,
         ).render_onto(rendered)
     return ToolResult(
         tool="list_records", entity=bundle, ok=True,

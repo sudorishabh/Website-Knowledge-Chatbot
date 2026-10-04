@@ -172,6 +172,63 @@ def _spans_all_content(question: str, bundle: str | None) -> bool:
     return not (label_words & question_words)
 
 
+# "Article" names one content type on the site and is everyday English for
+# anything a person writes. Asked of a person, the everyday reading is the one
+# meant: measured 2026-10-04, "how many articles are there of Vidha dhawan" was
+# answered "There is 1 article" — the one item in the Article category — while
+# the same author has 31 feature articles, 7 research papers and 2 policy briefs.
+# The category reading stays when the wording points at it: the category or
+# section by name, "only articles", a quoted "Articles", or another content type
+# named beside it ("articles and research papers" sets the types apart).
+_ARTICLE_WORD = re.compile(r"\barticles?\b", re.I)
+_ARTICLE_CATEGORY = re.compile(
+    r"\barticles?\s+(?:category|section|type|content\s+type|tab|page)\b"
+    r"|\b(?:category|section|content\s+type|type|tab)\s+(?:of\s+|called\s+|named\s+)?"
+    r"[\"'‘“]?articles?\b"
+    r"|\b(?:only|just)\s+(?:the\s+)?articles?\b|\barticles?\s+only\b"
+    r"|[\"‘“]articles?[\"’”]",
+    re.I,
+)
+_OTHER_TYPE_WORD = re.compile(
+    r"\b(?:feature[ds]?|papers?|briefs?|reports?|news|press|releases?|events?|"
+    r"videos?|infographics?|projects?|blogs?)\b",
+    re.I,
+)
+
+
+def _reads_article_as_writing(question: str, slots: Any) -> bool:
+    """Whether a person's "articles" means everything they published rather
+    than the site's Article category (see `_ARTICLE_WORD`)."""
+    from app.retrieval.structured.entities import normalize_entity
+
+    if not getattr(slots, "author", None):
+        return False
+    if normalize_entity(getattr(slots, "bundle", None)) != "article":
+        return False
+    if not _ARTICLE_WORD.search(question):
+        return False
+    return not (_ARTICLE_CATEGORY.search(question) or _OTHER_TYPE_WORD.search(question))
+
+
+def _widen_articles(calls: Sequence[Any]) -> None:
+    """Point a person's planned "articles" calls at every content type, and let
+    a count or list say how many are in the Article category itself.
+
+    Done to the plan rather than to the slots: planned with the bundle still
+    set, "articles" is read as the type word it is. Cleared first, it was left
+    over as subject matter and every list was narrowed to titles containing
+    "articles" — none of the 41 (measured 2026-10-04)."""
+    from app.retrieval.structured.entities import normalize_entity
+
+    logger.info("Reading a person's 'articles' as all of their publications.")
+    for call in calls:
+        if normalize_entity(getattr(call, "entity", None)) != "article":
+            continue
+        call.entity = None
+        if call.tool in ("count_records", "list_records"):
+            call.named_type = "article"
+
+
 # The noun after "how many" names what is counted. The unified analysis has no
 # guidance for `count_of` and leaves it at "records": measured 2026-10-04, "how
 # many authors are there?" and "how many themes are there?" both arrived that
@@ -481,6 +538,7 @@ def answer_structured(
     # is not silently narrowed to one type (see _spans_all_content).
     if _spans_all_content(question, getattr(slots, "bundle", None)):
         slots.bundle = None
+    widen_articles = _reads_article_as_writing(question, slots)
     output_format = analysis.answer_format if analysis is not None else "default"
     db_plan = None
     if get_settings().database_multi_call_enabled:
@@ -489,6 +547,8 @@ def answer_structured(
         db_plan = planner.plan(
             slots, output_format=output_format, question=question
         )
+    if widen_articles:
+        _widen_articles(getattr(db_plan, "calls", None) or [])
     _gate_detail(getattr(db_plan, "calls", None) or [], allowed=detail)
     results = planner.execute(db_plan, question=question)
     ok = [r for r in results if r.ok]
