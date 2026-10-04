@@ -500,7 +500,15 @@ neither blocks nor corrects anything:
 - `numeric_mismatches(answer, blocks)` — numbers appearing in the answer but
   in none of its cited blocks (or, uncited, none of the blocks at all).
   Percent signs and thousands separators are normalised away to keep false
-  positives low.
+  positives low. A block is its header as well as its text: the model is
+  shown each block's title, edition and page date, and rule 9 asks it to
+  date its claims by them. Each number has one spelling ("05" and "5", "95.40"
+  and "95.4"), an abbreviated year range is read as its years ("2022–23"),
+  and a decimal also counts as its whole part (a footnote marker run into a
+  year, "2031.6"). The UI shows the flag as "Some figures in this answer
+  could not be verified". Reading the text alone, it fired on 55 of 196
+  answers measured on 2026-10-04, and all 87 figures it flagged were in the
+  context. With these changes it fired on 2 of 364.
 
 `validate_markers(answer, n_blocks)` is unconditional and cheap: it strips any
 `[n]` whose `n` falls outside `1..n_blocks` — a model citing a block that
