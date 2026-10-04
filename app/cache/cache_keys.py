@@ -51,7 +51,9 @@ def _sha(*parts: str) -> str:
 #: 2026-10-04.10: a count or list of one type names the person's or theme's
 #: other types, recent lists show five items with bylines, and every theme
 #: listing gives each theme's count and newest item.
-PIPELINE_REVISION = "2026-10-04.10"
+#: 2026-10-04.12: catalog answers are laid out as generated ones are — a lead
+#: with bold figures, titled sections, an italic follow-up.
+PIPELINE_REVISION = "2026-10-04.12"
 
 
 def _pref_fingerprint() -> str:

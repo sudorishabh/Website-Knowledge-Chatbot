@@ -287,12 +287,48 @@ headline used**, so the extra lines cannot disagree with the number above them:
 
 | Answer | Follows the headline with |
 | --- | --- |
-| A count of documents | The years they date from and the peak year; the content-type mix when the count spans types, or — for one type counted under an author, theme or tag — the other types the same scope holds and its total ("Beyond these, there are 12 feature articles, 11 articles and 2 policy briefs by Dr Suneel Pandey — 35 publications in all."); the five most recent items, linked, cited and with their authors (only the co-authors under one author), a page published twice under one title shown once; follow-ups that vary ("list them", "break them down by year") |
+| A count of documents | The years they span and the busiest year; the content-type mix when the count spans types, or — for one type counted under an author, theme or tag — every type the same scope holds, the asked one in bold ("All publications by Dr Suneel Pandey (35)"); the five most recent items, linked, cited and with their authors (only the co-authors under one author), a page published twice under one title shown once; follow-ups that vary ("list them", "break them down by year") |
 | An honest zero | The nearest scope that is not empty: across all dates (and how recent the newest is) when a period emptied it, else across all content types, with that scope's type mix and its newest items |
 | A distinct count | The values themselves — all of them when few, else the five largest (for authors, the names that appear most often) |
 | A breakdown | The scope's total in the lead, the year span and peak or the leading group, and a note when a document can sit in several groups |
 | A list | Bylines on each item (only the co-authors in a list by one author); one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; under one author, the other types they published (a list of one type) or the type mix (a cut list across types); a cut list offers the dimensions still open |
 | The theme listing | How many items each theme holds, counted as a theme count counts them, and each theme's newest item |
+
+#### How it is laid out
+
+A catalog answer is laid out the way a generated answer is (`rendering.py`
+holds the pieces: `figure`, `section`, `tally`, `followup`, `item_line`):
+
+- **The lead** answers in plain words, its figures and names in bold:
+  "**Dr Vibha Dhawan** has **41 publications** on the site." or "There are
+  **68 articles** on **Climate Change**." Sentences that continue it (the
+  span of years) join its paragraph (`Detail.lead`).
+- **Sections** under `###` headings, one fact per line: "By type", "All
+  publications by Dr Suneel Pandey (35)", "Latest research papers". The type
+  the question asked about is in bold. Counts are grouped by thousands (1,220).
+- **Items** read "[Title](url) — Feature article · 19 Aug 2026 · with Dr
+  Pushplata Singh".
+- **The follow-up** closes the answer in italics.
+
+```
+**Dr Vibha Dhawan** has **41 publications** on the site. They span 2003 to
+2026, and 2023 was the busiest year, with 9.
+
+That counts every kind of publication; only 1 of them is filed under
+*Articles* on the site.
+
+### By type
+- Feature articles: 31
+- Research papers: 7
+- Policy briefs: 2
+- **Articles: 1**
+
+### Latest publications
+- [Why India's Ethanol Journey Must Be Guided by Science, ...](...) — Feature article · 19 Aug 2026
+- ...
+
+*You can ask me to list them, or to break them down by year or content type.*
+```
 
 The home page answers "what themes do you cover" itself (it describes each
 theme), so the catalog cannot lead that answer. `tools.theme_digest` gives the
@@ -321,12 +357,12 @@ briefs. `answerer._reads_article_as_writing` decides; `_widen_articles` then
 clears the type from the *planned* calls, not the slots, so the planner still
 reads "articles" as the type word rather than leaving it over as a title word.
 The answer covers both readings — the total across types, and how many of
-those are in the Article category:
+those are in the Article category (the layout above shows it in full):
 
-> There are 41 publications by Dr Vibha Dhawan matching your query.
+> **Dr Vibha Dhawan** has **41 publications** on the site. ...
 >
-> That spans every type of publication, not only the site's Article category,
-> which holds 1 of them. ...
+> That counts every kind of publication; only 1 of them is filed under
+> *Articles* on the site.
 
 The category reading stays when the wording points at it ("the article
 category", "only articles", a quoted "Articles") or names another type beside
