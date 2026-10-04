@@ -140,6 +140,19 @@ honorific and only when unique ("Dr Mathur" matches nobody: there are two).
 Someone on two listings is one person, and the committee listing's profile is
 used. A question naming nobody listed goes to the corpus, as before.
 
+A part may be misspelt. Words are compared by sound first — "h" after a
+consonant, doubled letters, "y"/"i", "w"/"v", "ee"/"i", "oo"/"u" and "x"/"ks"
+set aside, the first letter kept — so "PK bhatacharia" is Dr P K Bhattacharya,
+"vibha dhavan" Dr Vibha Dhawan and "Dr Dhavan" her too. When the question gives
+more than one word of the name, or the initials ("PK"), a part may also be a
+letter out (two from nine letters): "suneel pande", "PK bhatacharaya". A lone
+word — a one-word name, a surname after an honorific — must sound the same, so
+"Mr Malik" is not Mr Mullick. A misspelling never beats a listed spelling: "Dr
+Bhattacharjya" is Mr Souvik Bhattacharjya, not a misspelt Dr Bhattacharya,
+while "Souvik Bhattacharya" is still Mr Bhattacharjya, the reading that
+explains more of the question. Over the 4,649 questions in the logs and the
+test suite, the only answer that changed was the misspelt one it was written for.
+
 ---
 
 ## What is read, and what becomes a block
@@ -263,6 +276,7 @@ sections once; a page read itself took 83 ms.
 | Page list missing or malformed | empty registry, feature does nothing, one error log line |
 | Theme redesign breaks extraction | as "no content" above; check `notes.priority_pages.reads[].sections` |
 | Anything unexpected in `gather` | logged, no priority blocks, answer from the corpus |
+| A listed person's name misspelt ("PK bhatacharia") | read by sound, so the profile still leads; a lone word further out than its sound names nobody, and the answer comes from the corpus |
 
 ---
 
