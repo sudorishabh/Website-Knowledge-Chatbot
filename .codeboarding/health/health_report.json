@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-01T06:39:29.631794+00:00",
-  "overall_score": 0.9853321033210332,
+  "timestamp": "2026-10-04T12:01:49.216541+00:00",
+  "overall_score": 0.9854674346477624,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2093,
-      "findings_count": 20,
-      "warning_count": 20,
-      "score": 0.9904443382704252,
+      "total_entities_checked": 2182,
+      "findings_count": 21,
+      "warning_count": 21,
+      "score": 0.9903758020164987,
       "finding_groups": [
         {
           "severity": "warning",
@@ -90,18 +90,18 @@
               "metric_value": 341
             },
             {
+              "entity_name": "app.pipeline.query_pipeline._prepare",
+              "file_path": "app/pipeline/query_pipeline.py",
+              "line_start": 703,
+              "line_end": 974,
+              "metric_value": 271
+            },
+            {
               "entity_name": "tools.e2e_ingest_audit.run_audit.main",
               "file_path": "tools/e2e_ingest_audit/run_audit.py",
               "line_start": 352,
               "line_end": 607,
               "metric_value": 255
-            },
-            {
-              "entity_name": "app.pipeline.query_pipeline._prepare",
-              "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 567,
-              "line_end": 819,
-              "metric_value": 252
             },
             {
               "entity_name": "scripts.shadow_date_prototype.main",
@@ -181,6 +181,13 @@
               "metric_value": 166
             },
             {
+              "entity_name": "app.pipeline.query_pipeline.stream_answer",
+              "file_path": "app/pipeline/query_pipeline.py",
+              "line_start": 1105,
+              "line_end": 1271,
+              "metric_value": 166
+            },
+            {
               "entity_name": "scripts._build_graph_benchmark.build",
               "file_path": "scripts/_build_graph_benchmark.py",
               "line_start": 161,
@@ -188,18 +195,18 @@
               "metric_value": 165
             },
             {
-              "entity_name": "app.pipeline.query_pipeline.stream_answer",
-              "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 950,
-              "line_end": 1113,
-              "metric_value": 163
-            },
-            {
               "entity_name": "app.knowledge.claims.validate._validate_one",
               "file_path": "app/knowledge/claims/validate.py",
               "line_start": 122,
               "line_end": 283,
               "metric_value": 161
+            },
+            {
+              "entity_name": "app.retrieval.structured.tools.aggregate_records",
+              "file_path": "app/retrieval/structured/tools.py",
+              "line_start": 885,
+              "line_end": 1045,
+              "metric_value": 160
             },
             {
               "entity_name": "tools.e2e_ingest_audit.capture.observed_pipeline",
@@ -265,31 +272,24 @@
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_variable] \"_label\" is not accessed",
-              "file_path": "app/catalog/queries.py",
-              "line_start": 425,
-              "line_end": 425,
+              "entity_name": "[unused_variable] \"exc\" is not accessed",
+              "file_path": "app/ingestion/reprocess.py",
+              "line_start": 313,
+              "line_end": 313,
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_variable] \"get_settings\" is not accessed",
-              "file_path": "app/retrieval/structured/tools.py",
-              "line_start": 20,
-              "line_end": 20,
+              "entity_name": "[unused_variable] \"camelot\" is not accessed",
+              "file_path": "app/ingestion/extractors/camelot_tables.py",
+              "line_start": 164,
+              "line_end": 164,
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_variable] \"sort\" is not accessed",
-              "file_path": "app/retrieval/structured/tools.py",
-              "line_start": 488,
-              "line_end": 488,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"aggregation\" is not accessed",
-              "file_path": "app/retrieval/structured/tools.py",
-              "line_start": 692,
-              "line_end": 692,
+              "entity_name": "[unused_variable] \"_included\" is not accessed",
+              "file_path": "app/ingestion/extractors/drupal_extractor.py",
+              "line_start": 286,
+              "line_end": 286,
               "metric_value": 0.0
             },
             {
@@ -304,6 +304,13 @@
               "file_path": "app/generation/prompts.py",
               "line_start": 6,
               "line_end": 6,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"_label\" is not accessed",
+              "file_path": "app/catalog/queries.py",
+              "line_start": 425,
+              "line_end": 425,
               "metric_value": 0.0
             }
           ]
@@ -321,10 +328,10 @@
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_import] Import \"get_settings\" is not accessed",
-              "file_path": "app/retrieval/structured/tools.py",
-              "line_start": 20,
-              "line_end": 20,
+              "entity_name": "[unused_import] Import \"camelot\" is not accessed",
+              "file_path": "app/ingestion/extractors/camelot_tables.py",
+              "line_start": 164,
+              "line_end": 164,
               "metric_value": 0.0
             },
             {
@@ -340,12 +347,6 @@
     }
   ],
   "file_summaries": [
-    {
-      "file_path": "app/retrieval/structured/tools.py",
-      "total_findings": 4,
-      "warning_findings": 1,
-      "composite_risk_score": 45.0
-    },
     {
       "file_path": "ui/script.js",
       "total_findings": 2,
@@ -366,6 +367,12 @@
     },
     {
       "file_path": "app/catalog/mentions.py",
+      "total_findings": 2,
+      "warning_findings": 1,
+      "composite_risk_score": 25.0
+    },
+    {
+      "file_path": "app/ingestion/extractors/camelot_tables.py",
       "total_findings": 2,
       "warning_findings": 1,
       "composite_risk_score": 25.0
