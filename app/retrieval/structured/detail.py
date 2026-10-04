@@ -350,19 +350,38 @@ def facets(records: Sequence[Any]) -> dict[str, dict[str, list[str]]]:
     return _safe("facets", lambda: state.facets_for([i for i in ids if i]), {})
 
 
+def author_list_mix(
+    shown: int, *, total: int | None, common: dict[str, Any], bundle: str | None,
+    filters: RecordFilters, scope: str,
+) -> str:
+    """For a list of one author's work: what else they published, when it is
+    one type ("list research papers by Vibha Dhawan" is 7 of 41), or the type
+    mix of a list that spans types and was cut short. Nothing for any other list,
+    whose rows answer what was asked."""
+    if not filters.author:
+        return ""
+    if bundle:
+        return other_types_sentence(total or shown, common=common, bundle=bundle,
+                                    filters=filters, scope=scope)
+    if total and total > shown:
+        return type_sentence(common, total)
+    return ""
+
+
 def for_list(
     shown: int, *, total: int | None, filters: RecordFilters,
-    named: tuple[str, int | None] | None = None,
+    named: tuple[str, int | None] | None = None, mix: str = "",
 ) -> Detail:
     """Beneath a list: how many are of the type the question named, when the
-    list was widened past it (``named`` is that type and its count); for a
-    single document, that its content can be asked about; for a page cut from a
-    larger set, how to narrow it. Only the dimensions the question has not
-    already fixed are offered."""
+    list was widened past it (``named`` is that type and its count); ``mix``
+    (see `author_list_mix`); for a single document, that its content can be
+    asked about; for a page cut from a larger set, how to narrow it. Only the
+    dimensions the question has not already fixed are offered."""
     detail = Detail()
     # One document already shows its own type.
     if named is not None and (total or shown) > 1:
         detail.add(named_type_sentence(*named, of=f"the {total or shown}"))
+    detail.add(mix)
     if shown == 1 and not total:
         detail.add("Ask me what it says, and I'll answer from the document itself.")
         return detail

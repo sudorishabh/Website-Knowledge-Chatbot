@@ -230,6 +230,33 @@ def test_a_widened_list_says_how_many_are_of_the_type_asked_about(
             "category, which holds 1 of the 41.") in r.rendered
 
 
+def test_a_persons_list_of_one_type_names_what_else_they_published(catalog, facets):
+    catalog.total, catalog.wider_total = 7, 41
+    catalog.types = [("feature_articles", 31), ("research_papers", 7),
+                     ("policy_brief", 2), ("article", 1)]
+    catalog.rows = [_row(i, bundle="research_papers") for i in range(3)]
+    r = tools.list_records("research_papers", RecordFilters(author="Dr Vibha Dhawan"),
+                           detail=True)
+    assert ("Beyond these, there are 31 feature articles, 2 policy briefs and 1 article "
+            "by Dr Vibha Dhawan — 41 publications in all.") in r.rendered
+
+
+def test_a_persons_cut_list_across_types_gives_its_mix(catalog, facets):
+    catalog.total = 41
+    catalog.types = [("feature_articles", 31), ("research_papers", 10)]
+    catalog.rows = [_row(i, bundle="feature_articles") for i in range(3)]
+    r = tools.list_records(None, RecordFilters(author="Dr Vibha Dhawan"), limit=3,
+                           detail=True)
+    assert "By type: 31 feature articles and 10 research papers." in r.rendered
+
+
+def test_a_list_without_a_person_gets_no_mix(catalog, facets):
+    catalog.wider_total = 500
+    catalog.types = [("news", 300), ("article", 200)]
+    r = tools.list_records("article", RecordFilters(theme="Energy"), limit=3, detail=True)
+    assert "Beyond these" not in r.rendered and "By type" not in r.rendered
+
+
 def test_a_widened_single_document_shows_its_own_type(catalog, facets, monkeypatch):
     _article_share(monkeypatch, articles=0, everything=1)
     catalog.rows = [_row(0, bundle="feature_articles")]

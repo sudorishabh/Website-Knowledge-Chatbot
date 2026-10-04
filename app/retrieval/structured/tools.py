@@ -625,8 +625,22 @@ def list_records(
         named = None
         if named_type and bundle is None and (named_ent := get_entity(named_type)):
             named = (named_type, _scope_total(named_ent, named_type, scope))
+        mix = ""
+        # Title words narrow the rows past what a type count over the facets
+        # would describe, so a topic-constrained list or a title lookup gets no
+        # mix.
+        if not scope.topic_terms and not scope.title_contains:
+            mix = structured_detail.author_list_mix(
+                len(records), total=total, bundle=bundle, filters=scope.effective,
+                scope=_scope_phrase(scope.effective),
+                common=dict(
+                    source_type=ent.source_type if ent else "website", bundle=bundle,
+                    entity_type=ent.entity_type if ent else "node",
+                    title_contains=scope.title_contains, **scope.as_kwargs(),
+                ),
+            )
         rendered = structured_detail.for_list(
-            len(records), total=total, filters=scope.effective, named=named,
+            len(records), total=total, filters=scope.effective, named=named, mix=mix,
         ).render_onto(rendered)
     return ToolResult(
         tool="list_records", entity=bundle, ok=True,
