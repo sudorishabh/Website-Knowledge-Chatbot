@@ -168,6 +168,23 @@ def test_a_persons_page_does_not_overrule_a_count_of_their_publications(
     assert result["answer"] == "catalog answer"
 
 
+@pytest.mark.parametrize("operation, question", [
+    ("list", "list articles by Vibha Dhawan"),
+    ("list", "show me the research papers Suneel Pandey wrote"),
+    ("lookup", "find Suneel Pandey's policy brief on air quality"),
+])
+def test_a_persons_page_does_not_overrule_a_list_of_their_writing(
+    wired, monkeypatch, operation, question,
+):
+    """Measured: the profile page took "list articles by Vibha Dhawan", listed
+    none, and the answer was a refusal while the catalog holds 41."""
+    _enable(monkeypatch)
+    wired.state.pq = _person_pq(operation)
+    wired.state.targets = [PERSON_TARGET]
+    result, _ = pipe._prepare(question, history=None, top_k=None)
+    assert result["answer"] == "catalog answer"
+
+
 def test_a_persons_page_still_owns_a_question_about_them(wired, monkeypatch):
     _enable(monkeypatch)
     wired.state.pq = _person_pq("list")

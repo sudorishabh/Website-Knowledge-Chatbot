@@ -444,28 +444,41 @@ def _names_a_theme_page(target: Any) -> bool:
 #: Catalog operations that report numbers. A page can describe a person, but it
 #: cannot count what they authored.
 _COUNTING_OPERATIONS = frozenset({"count", "distribution"})
+#: Catalog operations that return documents.
+_LISTING_OPERATIONS = frozenset({"list", "lookup"})
+#: Words for a kind of writing — what a list "by" a person is a list of.
+_WRITING_WORDS = re.compile(
+    r"\b(?:publications?|articles?|papers?|briefs?|reports?|writings?|works)\b",
+    re.IGNORECASE,
+)
 
 
-def _counts_authorship(pq: ProcessedQuery) -> bool:
-    """Whether the catalog route is counting one named author's documents —
-    "how many publications by Suneel Pandey" is a count of authorship, which the
-    catalog records and the person's profile page does not."""
+def _asks_for_authorship(question: str, pq: ProcessedQuery) -> bool:
+    """Whether the catalog route is reading one named author's documents:
+    counting them ("how many publications by Suneel Pandey"), or listing a kind
+    of writing ("list articles by Vibha Dhawan"). Authorship is what the catalog
+    records and a profile page does not list. "What does Suneel Pandey work on"
+    names no kind of writing, so it stays a question about the person."""
     analysis = pq.analysis
-    return (analysis is not None
-            and getattr(analysis, "operation", None) in _COUNTING_OPERATIONS
-            and bool(getattr(analysis, "author", None)))
+    if analysis is None or not getattr(analysis, "author", None):
+        return False
+    operation = getattr(analysis, "operation", None)
+    if operation in _COUNTING_OPERATIONS:
+        return True
+    return operation in _LISTING_OPERATIONS and bool(_WRITING_WORDS.search(question))
 
 
 def _priority_overrides_catalog(
     targets: list[Any] | None, *, themes_listing: bool = False,
-    counts_authorship: bool = False,
+    about_authorship: bool = False,
 ) -> bool:
     """Whether a live page owns this question outright, so the catalog route —
     which cannot see these pages — must not answer it instead.
 
-    A named person's page gives way to a count of what that person authored:
-    measured 2026-10-04, "how many publications by Suneel Pandey" was taken by
-    his profile page, which lists none, and refused, while the catalog holds 35."""
+    A named person's page gives way to a question about what that person
+    authored. Measured 2026-10-04: "how many publications by Suneel Pandey" and
+    "list articles by Vibha Dhawan" were both taken by the profile page, which
+    lists no publications, and refused, while the catalog holds 35 and 41."""
     for target in targets or ():
         if themes_listing and _names_a_theme_page(target):
             # Understanding can read "tell me about the climate change thematic"
@@ -473,7 +486,7 @@ def _priority_overrides_catalog(
             return True
         if target.reason not in _CATALOG_OVERRIDING:
             continue
-        if counts_authorship and target.reason == "person":
+        if about_authorship and target.reason == "person":
             continue
         if getattr(target.page, "is_home", False) and not themes_listing:
             continue  # "documents in each thematic area" is a catalog count
@@ -669,7 +682,7 @@ def _prepare(
     themes_listing = _lists_themes(pq)
     page_owned = _priority_overrides_catalog(
         priority_targets, themes_listing=themes_listing,
-        counts_authorship=_counts_authorship(pq),
+        about_authorship=_asks_for_authorship(question, pq),
     )
     # A query that needs both catalog facts and document content: keep the
     # deterministic catalog answer and prefix it onto the grounded content answer.
