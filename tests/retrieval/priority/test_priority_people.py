@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from app.retrieval.priority.extract import extract
-from app.retrieval.priority.people import Person, named_in, people_on
+from app.retrieval.priority.people import Person, holding, named_in, people_on
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -121,6 +121,52 @@ def test_initials_are_read_together_or_apart():
     for question in ("PK Bhatacharya", "P K Bhatacharya", "Dr P.K. Bhatacharya"):
         assert named_in(question, [pk]) == [pk]
     assert Person("Mr S Vijay Kumar", "https://teriin.org/profile/s", "X").initials == ""
+
+
+def test_a_title_is_read_as_its_post_and_area(people):
+    sethi = next(p for p in people if p.name == "Mr Girish Sethi")
+    assert sethi.post == ("senior director", frozenset({"energy"}))
+    desai = next(p for p in people if p.name == "Mr Nitin Desai")
+    assert desai.post == ("chairman", frozenset({"governing", "council"}))
+    dg = next(p for p in people if p.title == "Director General")
+    assert dg.post == ("director general", frozenset())
+
+
+@pytest.mark.parametrize("question, holder", [
+    ("who is the current director general of TERI", ["Dr Vibha Dhawan"]),
+    ("who is TERI's DG", ["Dr Vibha Dhawan"]),
+    # One chairman on the listings, so the council may go unsaid.
+    ("who is the chairman of TERI", ["Mr Nitin Desai"]),
+    ("who is the director of human resources at TERI", ["Ms Gauri Mathur"]),
+    ("who is the executive director of strategy and partnerships",
+     ["Mr Sanjay Seth"]),
+    # The closest title wins: the senior director, not the director of the area.
+    ("who is the senior director of electricity and renewables", ["Mr A K Saxena"]),
+    ("who is the director of electricity and renewables", ["Mr Alekhya Datta"]),
+    # Two holders of one post: both profiles.
+    ("who is the director of industrial energy efficiency",
+     ["Dr G R Narsimha Rao", "Mr Prosanto Pal"]),
+])
+def test_a_post_names_whoever_holds_it(people, question, holder):
+    assert _names(holding(question, people)) == holder
+
+
+@pytest.mark.parametrize("question", [
+    # More than two holders: the listing answers it, not their profiles.
+    "who are the members of the governing council",
+    "who are the directors of TERI",
+    # A post several people hold, without the area that tells them apart.
+    "who is the senior director",
+    "who is the executive director",
+    # The listings say who holds a post now, not who held it.
+    "who was the first director general of TERI",
+    "who served as director general",
+    "who stepped down as director general",
+    "director general in 2015",
+    "what are TERI's themes",
+])
+def test_a_post_that_names_no_one_person_now_names_nobody(people, question):
+    assert holding(question, people) == []
 
 
 def test_one_person_on_two_listings_is_one_profile():

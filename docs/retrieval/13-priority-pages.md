@@ -153,6 +153,25 @@ while "Souvik Bhattacharya" is still Mr Bhattacharjya, the reading that
 explains more of the question. Over the 4,649 questions in the logs and the
 test suite, the only answer that changed was the misspelt one it was written for.
 
+A question naming nobody may ask for someone by their post (`holding`). Each
+listed title is read as a post and an area: "Senior Director, Energy",
+"Chairman - Governing Council". The person matches when the question names
+the post as a phrase and every word of its area, or names the post alone when
+one person on the listings holds it ("the director general", "the chairman",
+"TERI's DG"). The closest titles win, so "the senior director of electricity
+and renewables" is Mr A K Saxena, not the director of that area. More than
+two holders ("the members of the governing council", "the directors") names
+nobody, and the listing answers it. So does a question about a past holder
+("the first director general", "who served as …", a year), because the
+listings say only who holds a post now.
+
+Before this, "who is the current director general of TERI" read the committee
+listing alone and came back as her name and a line about an annual report.
+"The senior director of energy" and "the associate director of air quality
+research" reached the Distinguished Fellows listing, which names neither.
+Across the logged and test questions, the lookup matched only
+director-general questions and test fixtures.
+
 ---
 
 ## What is read, and what becomes a block
@@ -277,6 +296,7 @@ sections once; a page read itself took 83 ms.
 | Theme redesign breaks extraction | as "no content" above; check `notes.priority_pages.reads[].sections` |
 | Anything unexpected in `gather` | logged, no priority blocks, answer from the corpus |
 | A listed person's name misspelt ("PK bhatacharia") | read by sound, so the profile still leads; a lone word further out than its sound names nobody, and the answer comes from the corpus |
+| A person asked for by post ("who is the current director general") | the holder's profile leads, with the listing beside it; a past holder ("the first director general") is left to the corpus |
 
 ---
 

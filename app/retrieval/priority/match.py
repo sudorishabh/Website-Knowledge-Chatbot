@@ -5,8 +5,9 @@ the fourth reuses the theme query understanding already resolved; the fifth
 reuses the query vector the pipeline already computed, so no trigger costs a
 model call.
 
-* ``person`` — the question names someone on the people listings; the target
-  is that person's profile.
+* ``person`` — the question names someone on the people listings, or a post
+  one of them holds ("who is the director general"); the target is that
+  person's profile.
 * ``name`` — the question names a page outright: its own name when that is
   more than one word ("climate change", "green shipping"), a theme's name with
   "theme" or "thematic" after it ("the water theme"), or a phrase curated in the
@@ -46,7 +47,7 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 from app.config import get_settings
-from app.retrieval.priority.people import Person, named_in
+from app.retrieval.priority.people import Person, holding, named_in
 from app.retrieval.priority.registry import (
     CENTRE,
     PEOPLE,
@@ -153,7 +154,10 @@ def explicit(
     """
     words = normalize_text(question)
     targets: list[Target] = []
-    for person in named_in(question, list(people))[:2]:
+    # A question naming nobody may still ask for someone by their post ("who
+    # is the current director general"), and their profile answers it as it
+    # would their name.
+    for person in (named_in(question, list(people)) or holding(question, list(people)))[:2]:
         targets.append(Target(person.name, PROFILE, PERSON, url=person.profile_url, person=person))
     for group in registry.groups:
         if any(_has(words, alias) for alias in group.aliases):
