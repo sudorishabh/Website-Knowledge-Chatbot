@@ -287,11 +287,11 @@ headline used**, so the extra lines cannot disagree with the number above them:
 
 | Answer | Follows the headline with |
 | --- | --- |
-| A count of documents | The years they date from and the peak year; the content-type mix when the count spans types; the three most recent items, linked and cited; follow-ups that vary ("list them", "break them down by year") |
+| A count of documents | The years they date from and the peak year; the content-type mix when the count spans types, or for one author's count of one type their total across types; the three most recent items, linked and cited; follow-ups that vary ("list them", "break them down by year") |
 | An honest zero | The nearest scope that is not empty: across all dates (and how recent the newest is) when a period emptied it, else across all content types |
 | A distinct count | The values themselves — all of them when few, else the five largest (for authors, the names that appear most often) |
 | A breakdown | The scope's total in the lead, the year span and peak or the leading group, and a note when a document can sit in several groups |
-| A list | Bylines on each item; one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; a cut list offers the dimensions still open |
+| A list | Bylines on each item (only the co-authors in a list by one author); one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; a cut list offers the dimensions still open |
 | The theme listing | How many items each theme holds, counted as a theme count counts them |
 
 No model call, and every read is fail-open: a query that fails costs its own
@@ -304,6 +304,30 @@ turns it off; the headline then stands alone as before.
 The follow-ups offered are ones the catalog route was checked to answer from
 the conversation ("list them", "break them down by year", and "what does it
 say?" after a card, which chains into document QA).
+
+### A person's "articles"
+
+"Article" is one content type on the site and everyday English for anything a
+person writes. Asked of a person, the everyday reading is the one meant: "how
+many articles are there of Vibha Dhawan" used to count the 1 item in the
+Article category and miss 31 feature articles, 7 research papers and 2 policy
+briefs. `answerer._reads_article_as_writing` decides; `_widen_articles` then
+clears the type from the *planned* calls, not the slots, so the planner still
+reads "articles" as the type word rather than leaving it over as a title word.
+The answer covers both readings — the total across types, and how many of
+those are in the Article category:
+
+> There are 41 publications by Dr Vibha Dhawan matching your query.
+>
+> That spans every type of publication, not only the site's Article category,
+> which holds 1 of them. ...
+
+The category reading stays when the wording points at it ("the article
+category", "only articles", a quoted "Articles") or names another type beside
+it ("articles and research papers"). Without a person, "articles" stays the
+Article category. Every document that carries authors is a publication
+(feature article, research paper, article, policy brief, report), so one
+author's documents of every type are called publications rather than items.
 
 ---
 
@@ -374,7 +398,8 @@ existing refusal in place.
 | Question asks about people, not documents | `topic.wants_person`, no `author` set | Structured path declines outright (`None`) — unless it asks about authorship itself ("which authors published the most", "how many authors"), which is a breakdown or count the catalog records | Semantic retrieval answers instead |
 | "How many authors / themes / content types" arrives as a document count | `answerer._counted_noun` | `count_of` set from the noun; an unscoped theme count becomes the theme listing (a distinct count includes sub-theme rows) | — |
 | A period the question states ("in 2030") arrives without dates | `answerer._stated_year` | The year is restored, so the count is an honest zero rather than the all-time total | — |
-| A named person's profile page would take a count of their publications | `query_pipeline._counts_authorship` | The page gives way to the catalog for a count or breakdown with an author | — |
+| A named person's profile page would take a count or list of their publications | `query_pipeline._asks_for_authorship` | The page gives way to the catalog for a count or breakdown with an author, or a list or lookup naming a kind of writing ("list articles by X"); "what does X work on" stays the page's | — |
+| A person's "articles" read as the Article category alone | `answerer._reads_article_as_writing` | Counted and listed across every type, with the Article category's share stated | Ask for "the article category" for the narrow count |
 | `count_of` / `group_by` names an unsupported dimension | `_dimension_or_reject` / a `_GROUP_DIMENSIONS` miss | Refused with an explicit error, never a silent default | Fix the caller/plan |
 | Title substring was guessed from the question's subject, count is zero | `_title_guess_zero` | Falls through instead of reporting a corpus-wide zero | Semantic retrieval answers instead |
 | Catalog query raises | `except Exception` around every `state.*` call | `ok=False, error="query failed"`, logged | Falls through |

@@ -45,7 +45,10 @@ def _sha(*parts: str) -> str:
 #: theme listing that also asks for content no longer repeats the catalog's list.
 #: 2026-10-04.1: catalog answers follow their headline with detail, list items
 #: are linked, and a count of a person's publications stays on the catalog.
-PIPELINE_REVISION = "2026-10-04.1"
+#: 2026-10-04.6: a person's "articles" spans everything they published, a list
+#: of what a person wrote stays on the catalog, and a count of one type by a
+#: person gives their total across types.
+PIPELINE_REVISION = "2026-10-04.6"
 
 
 def _pref_fingerprint() -> str:
