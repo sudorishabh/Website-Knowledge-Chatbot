@@ -86,7 +86,28 @@ def test_item_line_links_and_dates():
 
 def test_item_line_names_the_kind_only_when_asked():
     line = rendering.item_line(_row(bundle="research_papers"), with_type=True)
-    assert line.endswith("— research paper, 20 Apr 2026")
+    assert line.endswith("— Research paper · 20 Apr 2026")
+
+
+def test_figures_are_bold_and_grouped_by_thousands():
+    assert rendering.number(1220) == "1,220"
+    assert rendering.figure(41, "publications") == "**41 publications**"
+
+
+def test_a_section_is_a_titled_block_and_vanishes_when_empty():
+    assert rendering.section("By type", "- News items: 3") == "### By type\n- News items: 3"
+    assert rendering.section("By type", "") == ""
+
+
+def test_a_tally_bolds_what_was_asked_about():
+    assert rendering.tally([("Feature articles", 31), ("Articles", 1)],
+                           highlight="Articles") == (
+        "- Feature articles: 31\n- **Articles: 1**")
+
+
+def test_a_followup_is_set_apart():
+    assert rendering.followup("Ask me more.") == "*Ask me more.*"
+    assert rendering.followup("") == ""
 
 
 def test_item_line_without_a_date_or_link():
@@ -113,14 +134,14 @@ def test_a_list_spanning_content_types_names_each_items_kind(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.list_documents",
                         lambda **k: [_row(bundle="news"), _row(bundle="report")])
     r = tools.list_records(None, RecordFilters(author="A"))
-    assert "— news item, 20 Apr 2026" in r.rendered
-    assert "— report, 20 Apr 2026" in r.rendered
+    assert "— News item · 20 Apr 2026" in r.rendered
+    assert "— Report · 20 Apr 2026" in r.rendered
 
 
 def test_a_list_of_one_content_type_does_not_repeat_it(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.list_documents", lambda **k: [_row()])
     r = tools.list_records("article", RecordFilters())
-    assert "article," not in r.rendered
+    assert "Article ·" not in r.rendered
 
 
 def test_a_cut_list_leads_with_its_total(monkeypatch):
@@ -129,7 +150,7 @@ def test_a_cut_list_leads_with_its_total(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 68)
     r = tools.list_records("article", RecordFilters(theme="Climate Change"), limit=3)
     assert r.rendered.startswith(
-        "Here are the 3 most recent of 68 articles on 'Climate Change':"
+        "Here are the 3 most recent of **68 articles** on **Climate Change**:"
     )
     assert "Showing" not in r.rendered
 
@@ -142,7 +163,7 @@ def test_a_topic_ranked_list_is_not_called_the_most_recent(monkeypatch):
         "research_papers", RecordFilters(topic_terms=("air", "pollution")), limit=2,
     )
     assert r.rendered.startswith(
-        "Here are 2 of the 57 research papers mentioning 'air' or 'pollution' "
+        "Here are 2 of the **57 research papers** mentioning 'air' or 'pollution' "
         "in the title, closest matches first:"
     )
 
@@ -150,7 +171,7 @@ def test_a_topic_ranked_list_is_not_called_the_most_recent(monkeypatch):
 def test_a_whole_list_says_found(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.list_documents", lambda **k: [_row()])
     r = tools.list_records("article", RecordFilters(topic_terms=("air",)), limit=10)
-    assert r.rendered.startswith("Found 1 article mentioning 'air' in the title:")
+    assert r.rendered.startswith("Found **1 article** mentioning 'air' in the title:")
 
 
 def test_the_table_names_the_kind_and_dates_precisely(monkeypatch):

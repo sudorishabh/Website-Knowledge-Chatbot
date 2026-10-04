@@ -7,6 +7,11 @@ when its documents date from, which kinds they are, and which are newest. This
 module reads those from the catalog, over exactly the filters the headline used,
 so the lines it adds can never disagree with the number above them.
 
+It also lays them out the way a generated answer is laid out (see
+`app.retrieval.structured.rendering`): sentences that continue the headline's
+paragraph, then titled sections of one fact per line — "By type", "Latest
+publications" — and an offer of what to ask next, in italics.
+
 Deterministic and fail-open: no model call, and a query that fails costs its own
 section and nothing else. With `catalog_answer_detail_enabled` off the headline
 stands alone, as it always did.
@@ -19,7 +24,9 @@ from typing import Any, Callable, Sequence
 
 from app.catalog import queries as state
 from app.retrieval.structured.entities import entity_label, scope_noun
-from app.retrieval.structured.rendering import item_line, record_date
+from app.retrieval.structured.rendering import (
+    figure, followup, item_line, number, record_date, section, tally,
+)
 from app.retrieval.structured.types import RecordFilters
 from app.schemas.query import Citation
 
@@ -29,8 +36,12 @@ logger = logging.getLogger(__name__)
 # enough that the answer stays a count rather than becoming a list. Five since
 # 2026-10-04: three read as a teaser beside a type mix and a span of years.
 RECENT_ITEMS = 5
-# Values a distinct count names beneath its number.
+# Values a distinct count names beneath its number, and content types a type
+# breakdown names before folding the rest into "Other types".
 LEADING_VALUES = 5
+# Content types read for a breakdown: every one the catalog holds (15), so the
+# type a question asked about is found even when it is not among the largest.
+_ALL_TYPES = 30
 
 # What each distinct-count dimension is called when offering its breakdown.
 _DIMENSION_WORDS = {
@@ -49,17 +60,24 @@ def enabled() -> bool:
 
 @dataclass
 class Detail:
-    """Sections to follow a headline, and citations for any documents named."""
+    """What follows a headline: sentences that continue its paragraph
+    (``lead``), then sections, and citations for any documents named."""
 
+    lead: list[str] = field(default_factory=list)
     sections: list[str] = field(default_factory=list)
     citations: list[dict[str, Any]] = field(default_factory=list)
+
+    def add_lead(self, text: str | None) -> None:
+        if text:
+            self.lead.append(text)
 
     def add(self, text: str | None) -> None:
         if text:
             self.sections.append(text)
 
     def render_onto(self, headline: str) -> str:
-        return "\n\n".join([headline, *self.sections])
+        opening = " ".join([headline, *self.lead])
+        return "\n\n".join([opening, *self.sections])
 
 
 def _safe(label: str, read: Callable[[], Any], default: Any) -> Any:
@@ -75,6 +93,11 @@ def _join(parts: Sequence[str]) -> str:
     if len(parts) <= 1:
         return "".join(parts)
     return f"{', '.join(parts[:-1])} and {parts[-1]}"
+
+
+def _type_name(bundle: str) -> str:
+    """A content type as a category: "Feature articles"."""
+    return entity_label(bundle, 2).capitalize()
 
 
 # --------------------------------------------------------------------------- #
@@ -93,34 +116,35 @@ def _years(common: dict[str, Any]) -> list[tuple[int, int]]:
     return sorted(years)
 
 
-def _peak(years: list[tuple[int, int]]) -> str:
-    """", with the most (13) in 2025" — or nothing when no year stands out:
-    a peak of one, or three or more years tied for it, says nothing."""
+def _busiest(years: list[tuple[int, int]]) -> str:
+    """", and 2023 was the busiest year, with 9" — or nothing when no year
+    stands out: a peak of one, or three or more years tied for it, says nothing."""
     top = max(n for _, n in years)
     tied = [year for year, n in years if n == top]
     if top < 2 or len(tied) > 2:
         return ""
     if len(tied) == 2:
-        return f", with the most ({top} each) in {tied[0]} and {tied[1]}"
-    return f", with the most ({top}) in {tied[0]}"
+        return f", and {tied[0]} and {tied[1]} were the busiest years, with {number(top)} each"
+    return f", and {tied[0]} was the busiest year, with {number(top)}"
 
 
 def year_sentence(
     years: list[tuple[int, int]], *, total: int, period_fixed: bool
 ) -> str:
-    """When the scope's documents date from. Nothing for a single document, and
-    nothing for a single year the question already fixed."""
+    """When the scope's documents date from: "They span 2003 to 2026, and 2023
+    was the busiest year, with 9." Nothing for a single document, and nothing
+    for a single year the question already fixed."""
     if not years or total < 2:
         return ""
     if len(years) == 1:
         if period_fixed or sum(n for _, n in years) < total:
             return ""
-        return f"All of them date from {years[0][0]}."
+        return f"All of them are from {years[0][0]}."
     first, last = years[0][0], years[-1][0]
-    return f"They date from {first} to {last}{_peak(years)}."
+    return f"They span {first} to {last}{_busiest(years)}."
 
 
-def _type_rows(common: dict[str, Any], *, limit: int) -> list[tuple[str, int]]:
+def _type_rows(common: dict[str, Any], *, limit: int = _ALL_TYPES) -> list[tuple[str, int]]:
     """(content type, documents) for the scope, largest first."""
     rows = _safe(
         "types", lambda: state.distribution("bundle", **common, limit=limit), []
@@ -128,24 +152,32 @@ def _type_rows(common: dict[str, Any], *, limit: int) -> list[tuple[str, int]]:
     return [(bundle, int(n)) for bundle, n in rows if bundle]
 
 
-def _mix(rows: Sequence[tuple[str, int]], total: int) -> str:
-    """"31 feature articles, 7 research papers and 2 policy briefs" — the
-    largest types by name, the remainder of ``total`` folded into one figure."""
-    shown = rows[:LEADING_VALUES]
-    parts = [f"{n} {entity_label(bundle, n)}" for bundle, n in shown]
+def type_tally(
+    rows: Sequence[tuple[str, int]], total: int, *, highlight: str | None = None,
+) -> str:
+    """The content-type lines of a breakdown: the largest types by name, the
+    one the question asked about (``highlight``) always shown and in bold, and
+    the rest of ``total`` folded into "Other types"."""
+    shown = list(rows[:LEADING_VALUES])
+    if highlight and highlight not in {b for b, _ in shown}:
+        shown += [(b, n) for b, n in rows if b == highlight]
+    lines = [(_type_name(b), n) for b, n in shown]
     rest = total - sum(n for _, n in shown)
-    if len(rows) > LEADING_VALUES and rest > 0:
-        parts.append(f"{rest} of other types")
-    return _join(parts)
+    if len(rows) > len(shown) and rest > 0:
+        lines.append(("Other types", rest))
+    return tally(lines, highlight=_type_name(highlight) if highlight else None)
 
 
-def type_sentence(common: dict[str, Any], total: int) -> str:
-    """The content-type mix of a count that spans every type: "a publication
-    count" means little until it says how many are papers and how many news."""
-    rows = _type_rows(common, limit=LEADING_VALUES + 1)
+def type_section(
+    common: dict[str, Any], total: int, *, highlight: str | None = None,
+) -> str:
+    """"### By type" over the content-type mix of a count that spans every
+    type: a publication count means little until it says how many are papers
+    and how many news. Nothing when there is only one type."""
+    rows = _type_rows(common)
     if len(rows) < 2:
         return ""
-    return f"By type: {_mix(rows, total)}."
+    return section("By type", type_tally(rows, total, highlight=highlight))
 
 
 def _has_subject(filters: RecordFilters) -> bool:
@@ -154,28 +186,28 @@ def _has_subject(filters: RecordFilters) -> bool:
     return bool(filters.author or filters.theme or filters.tag)
 
 
-def other_types_sentence(
+def other_types_section(
     total: int, *, common: dict[str, Any], bundle: str | None,
     filters: RecordFilters, scope: str,
 ) -> str:
-    """What else the same person, theme or tag has, beneath a count or list of
-    one content type: "10 research papers by Suneel Pandey" reads better beside
-    the 12 feature articles, 11 articles and 2 policy briefs that make up the
-    rest of the 35. ``scope`` is the headline's phrase (" by Dr Suneel Pandey").
-    Nothing for an unscoped count, or when the type is all there is."""
+    """Everything the same person, theme or tag has, beneath a count or list of
+    one content type, with that type in bold: "10 research papers by Suneel
+    Pandey" reads better beside the 12 feature articles, 11 articles and 2
+    policy briefs that make up the rest of the 35. ``scope`` is the headline's
+    scope in plain words (" by Dr Suneel Pandey"). Nothing for an unscoped
+    count, or when the type is all there is."""
     if not bundle or not _has_subject(filters):
         return ""
     wider = {**common, "bundle": None}
     everything = _safe("all types", lambda: state.count_documents(**wider), 0)
     if not everything or everything <= total:
         return ""
-    others = [(b, n) for b, n in _type_rows(wider, limit=LEADING_VALUES + 2) if b != bundle]
-    if not others:
+    rows = _type_rows(wider)
+    if not any(b != bundle for b, _ in rows):
         return ""
-    rest = everything - total
     noun = entity_label(scope_noun(None, by_author=bool(filters.author)), everything)
-    return (f"Beyond these, there {'is' if rest == 1 else 'are'} {_mix(others, rest)}"
-            f"{scope} — {everything} {noun} in all.")
+    return section(f"All {noun}{scope} ({number(everything)})",
+                   type_tally(rows, everything, highlight=bundle))
 
 
 def named_type_sentence(named_type: str, n: int | None, *, of: str) -> str:
@@ -187,18 +219,33 @@ def named_type_sentence(named_type: str, n: int | None, *, of: str) -> str:
     the figure is out of ("them", "the 41"). Nothing when the figure is unknown."""
     if n is None:
         return ""
-    category = entity_label(named_type, 1).capitalize()
-    return (f"That spans every type of publication, not only the site's {category} "
-            f"category, which holds {n or 'none'} of {of}.")
+    category = _type_name(named_type)
+    held = f"only {number(n)} of {of} is" if n else f"none of {of} is"
+    return (f"That counts every kind of publication; {held} filed under "
+            f"*{category}* on the site.")
+
+
+def _latest_title(kind: str, *, total: int, shown: int) -> str:
+    """"Latest publications" over a cut; "Both policy briefs" or "All 3
+    research papers" when every one is shown; "The article" for one."""
+    plural = entity_label(kind, 2)
+    if total > shown:
+        return f"Latest {plural}"
+    if total == 1:
+        return f"The {entity_label(kind, 1)}"
+    if total == 2:
+        return f"Both {plural}"
+    return f"All {number(total)} {plural}"
 
 
 def recent_items(
-    common: dict[str, Any], *, total: int, with_type: bool,
+    common: dict[str, Any], *, total: int, with_type: bool, kind: str,
     listed_by: str | None = None,
 ) -> tuple[str, list[dict[str, Any]]]:
-    """The newest documents in the scope, as linked items with their authors
-    and citations — only the co-authors when the scope is one author's
-    (``listed_by``). All of them when there are no more than `RECENT_ITEMS`."""
+    """The newest documents in the scope, as a "Latest ..." section of linked
+    items with their authors and citations — only the co-authors when the scope
+    is one author's (``listed_by``). All of them when there are no more than
+    `RECENT_ITEMS`. ``kind`` names them ("publications", "research_papers")."""
     # A few spare rows, because the site publishes some pages twice under one
     # title (71 titles, the copy's URL ending "-0"), and a short list naming
     # the same paper twice reads as a mistake.
@@ -215,10 +262,6 @@ def recent_items(
     records = records[:RECENT_ITEMS]
     if not records:
         return "", []
-    if total <= len(records):
-        lead = "Here it is:" if total == 1 else "Here they are:"
-    else:
-        lead = "The most recent:"
     found = facets(records)
     lines = [
         item_line(r, with_type=with_type, listed_by=listed_by,
@@ -232,7 +275,8 @@ def recent_items(
         ).model_dump()
         for i, r in enumerate(records, start=1)
     ]
-    return lead + "\n" + "\n".join(lines), citations
+    title = _latest_title(kind, total=total, shown=len(records))
+    return section(title, "\n".join(lines)), citations
 
 
 def _count_followup(
@@ -252,8 +296,8 @@ def _count_followup(
     elif not filters.theme:
         dimensions.append("theme")
     if not dimensions:
-        return "You can ask me to list them."
-    return (
+        return followup("You can ask me to list them.")
+    return followup(
         "You can ask me to list them, or to break them down by "
         f"{' or '.join(dimensions[:2])}."
     )
@@ -267,31 +311,29 @@ def for_count(
     total: int, *, common: dict[str, Any], bundle: str | None, filters: RecordFilters,
     named_type: str | None = None, scope: str = "",
 ) -> Detail:
-    """Beneath "There are N <items>": how many are of the type the question
-    named, when the count was widened past it; when they date from; their type
-    mix (when the count spans types), or what else the same person, theme or
-    tag has (when it does not); the most recent few; and what to ask next.
-    ``scope`` is the headline's own scope phrase (" by Dr Vibha Dhawan in 2024")."""
+    """Beneath "There are N <items>": when they date from (continuing the
+    headline); how many are of the type the question named, when the count was
+    widened past it; the type mix (when the count spans types), or everything
+    the same person, theme or tag has (when it does not); the most recent few;
+    and what to ask next. ``scope`` is the headline's scope in plain words
+    (" by Dr Vibha Dhawan in 2024")."""
     detail = Detail()
     if total <= 0:
         return detail
     years = _years(common)
-    named = ""
+    detail.add_lead(year_sentence(
+        years, total=total, period_fixed=bool(filters.date_from or filters.date_to)))
     if named_type and bundle is None:
         n = _safe("named type",
                   lambda: state.count_documents(**{**common, "bundle": named_type}), None)
-        named = named_type_sentence(named_type, n, of="them")
-    sentences = [
-        named,
-        year_sentence(years, total=total,
-                      period_fixed=bool(filters.date_from or filters.date_to)),
-        type_sentence(common, total) if bundle is None and total > 1 else "",
-        other_types_sentence(total, common=common, bundle=bundle, filters=filters,
-                             scope=scope),
-    ]
-    detail.add(" ".join(s for s in sentences if s))
+        detail.add(named_type_sentence(named_type, n, of="them"))
+    if bundle is None and total > 1:
+        detail.add(type_section(common, total, highlight=named_type))
+    detail.add(other_types_section(total, common=common, bundle=bundle,
+                                   filters=filters, scope=scope))
+    kind = scope_noun(bundle, by_author=bool(filters.author))
     items, citations = recent_items(common, total=total, with_type=bundle is None,
-                                    listed_by=filters.author)
+                                    kind=kind, listed_by=filters.author)
     detail.add(items)
     detail.citations = citations
     detail.add(_count_followup(total, years=years, bundle=bundle, filters=filters))
@@ -307,7 +349,9 @@ def for_zero(
     A zero under a period most often means the period, not the subject — "no
     events in 2030" is better followed by how many there are at all and how
     recent the newest is. Failing that, a zero under a content type may be the
-    type: "no events on Waste" can still have articles on it."""
+    type: "no reports by Vibha Dhawan" is better followed by the 41 publications
+    there are, by type, and the newest of them. ``scope_without_period`` reads
+    in a sentence (names in bold); ``scope_without_type`` heads a section."""
     detail = Detail()
     if filters.date_from or filters.date_to:
         wider = {k: v for k, v in common.items()
@@ -318,8 +362,8 @@ def for_zero(
             when = record_date(latest[0]) if latest else ""
             tail = f"; the most recent is from {when}." if when else "."
             detail.add(
-                f"Across all dates there {'is' if n == 1 else 'are'} {n} "
-                f"{noun(n)}{scope_without_period}{tail}"
+                f"Across all dates there {'is' if n == 1 else 'are'} "
+                f"{figure(n, noun(n))}{scope_without_period}{tail}"
             )
         return detail
     if bundle and (filters.author or filters.theme or filters.tag
@@ -327,17 +371,12 @@ def for_zero(
         wider = {**common, "bundle": None}
         n = _safe("all types", lambda: state.count_documents(**wider), 0)
         if n:
-            # What the scope does hold, and the newest of it: "no reports by
-            # Vibha Dhawan" is better followed by the 41 publications there are.
             kind = scope_noun(None, by_author=bool(filters.author))
-            rows = _type_rows(wider, limit=LEADING_VALUES + 1)
-            mix = f": {_mix(rows, n)}" if rows else ""
-            detail.add(
-                f"Across all content types there {'is' if n == 1 else 'are'} {n} "
-                f"{entity_label(kind, n)}{scope_without_type}{mix}."
-            )
+            rows = _type_rows(wider)
+            title = f"All {entity_label(kind, n)}{scope_without_type} ({number(n)})"
+            detail.add(section(title, type_tally(rows, n)) if rows else "")
             items, citations = recent_items(wider, total=n, with_type=True,
-                                            listed_by=filters.author)
+                                            kind=kind, listed_by=filters.author)
             detail.add(items)
             detail.citations = citations
     return detail
@@ -354,17 +393,17 @@ def author_list_mix(
     shown: int, *, total: int | None, common: dict[str, Any], bundle: str | None,
     filters: RecordFilters, scope: str,
 ) -> str:
-    """For a list of one author's work: what else they published, when it is
-    one type ("list research papers by Vibha Dhawan" is 7 of 41), or the type
-    mix of a list that spans types and was cut short. Nothing for any other list,
-    whose rows answer what was asked."""
+    """For a list of one author's work: everything they published, when the
+    list is of one type ("list research papers by Vibha Dhawan" is 7 of 41), or
+    the type mix of a list that spans types and was cut short. Nothing for any
+    other list, whose rows answer what was asked."""
     if not filters.author:
         return ""
     if bundle:
-        return other_types_sentence(total or shown, common=common, bundle=bundle,
-                                    filters=filters, scope=scope)
+        return other_types_section(total or shown, common=common, bundle=bundle,
+                                   filters=filters, scope=scope)
     if total and total > shown:
-        return type_sentence(common, total)
+        return type_section(common, total)
     return ""
 
 
@@ -380,10 +419,10 @@ def for_list(
     detail = Detail()
     # One document already shows its own type.
     if named is not None and (total or shown) > 1:
-        detail.add(named_type_sentence(*named, of=f"the {total or shown}"))
+        detail.add(named_type_sentence(*named, of=f"the {number(total or shown)}"))
     detail.add(mix)
     if shown == 1 and not total:
-        detail.add("Ask me what it says, and I'll answer from the document itself.")
+        detail.add(followup("Ask me what it says, and I'll answer from the document itself."))
         return detail
     if not total or total <= shown:
         return detail
@@ -395,7 +434,7 @@ def for_list(
     if dimensions:
         options = (dimensions[0] if len(dimensions) == 1
                    else f"{', '.join(dimensions[:-1])} or {dimensions[-1]}")
-        detail.add(f"You can ask me to narrow these down by {options}.")
+        detail.add(followup(f"You can ask me to narrow these down by {options}."))
     return detail
 
 
@@ -414,7 +453,7 @@ def theme_counts() -> dict[str, int]:
 
 def theme_latest(names: Sequence[str]) -> dict[str, Any]:
     """Each theme's newest item, over the same scope `theme_counts` counts —
-    so "Energy — 1154 items, latest: ..." names one of those 1154. A theme
+    so "Energy — 1,154 items, latest: ..." names one of those 1,154. A theme
     whose read fails or holds nothing is left out, and its line shows the count
     alone."""
     latest: dict[str, Any] = {}
@@ -433,8 +472,9 @@ def theme_latest(names: Sequence[str]) -> dict[str, Any]:
 def for_themes() -> Detail:
     """Beneath a theme listing: what can be asked about any one of them."""
     detail = Detail()
-    detail.add("You can ask me about the work under any of these — for example, "
-               "how many reports there are on one, or which are the latest.")
+    detail.add(followup("You can ask me about the work under any of these — for "
+                        "example, how many reports there are on one, or which "
+                        "are the latest."))
     return detail
 
 
@@ -454,11 +494,11 @@ def _leader(rows: Sequence[tuple[Any, int]], dimension: str) -> str:
     def name(value: Any) -> str:
         return entity_label(str(value), 2) if dimension == "bundle" else str(value)
 
-    followers = _join([f"{name(value)} ({n})" for value, n in rows[1:3]])
+    followers = _join([f"{name(value)} ({number(n)})" for value, n in rows[1:3]])
     top, n = name(rows[0][0]), rows[0][1]
     if dimension == "author":
-        return f"{top} has the most ({n}), followed by {followers}."
-    return f"The largest is {top} ({n}), followed by {followers}."
+        return f"**{top}** has the most ({number(n)}), followed by {followers}."
+    return f"The largest is **{top}** ({number(n)}), followed by {followers}."
 
 
 def for_breakdown(
@@ -485,9 +525,9 @@ def for_breakdown(
         if (total and dimension in ("theme", "author")
                 and sum(n for _, n in rows) > total):
             sentences.append(f"An item can carry more than one {label}, so these "
-                             f"add up to more than {total}.")
+                             f"add up to more than {number(total)}.")
         detail.add(" ".join(s for s in sentences if s))
-    detail.add("You can ask me to list the items behind any of these.")
+    detail.add(followup("You can ask me to list the items behind any of these."))
     return detail
 
 
@@ -495,14 +535,16 @@ def for_distinct(
     total: int, *, dimension: str, common: dict[str, Any]
 ) -> Detail:
     """Beneath "There are N themes / author names / content types / years":
-    the values themselves — all of them when few, else the largest."""
+    the values themselves, one per line — all of them when few, else the
+    largest under a heading that says so."""
     detail = Detail()
     if total <= 0:
         return detail
     if dimension == "year":
         years = _years(common)
         if len(years) > 1:
-            detail.add(f"They run from {years[0][0]} to {years[-1][0]}{_peak(years)}.")
+            detail.add_lead(f"They run from {years[0][0]} to {years[-1][0]}"
+                            f"{_busiest(years)}.")
         return detail
     rows = _safe(
         "values",
@@ -511,20 +553,16 @@ def for_distinct(
     )
     if not rows:
         return detail
-    if dimension == "bundle":
-        named = [f"{entity_label(value, 2)} ({n})" for value, n in rows]
-    else:
-        named = [f"{value} ({n})" for value, n in rows]
+    lines = tally([
+        (_type_name(str(value)) if dimension == "bundle" else str(value), int(n))
+        for value, n in rows
+    ])
     if total <= len(rows):
-        lead = "They are"
-    elif dimension == "author":
-        lead = "The names that appear most often are"
-    else:
-        lead = "The largest are"
-    detail.add(f"{lead} {_join(named)}.")
-    if total > len(rows):
-        # "More", not "all": a breakdown shows its largest groups, not every one.
-        detail.add(
-            f"Ask for a breakdown by {_DIMENSION_WORDS[dimension]} to see more of them."
-        )
+        detail.add(lines)
+        return detail
+    title = "Names that appear most often" if dimension == "author" else "The largest"
+    detail.add(section(title, lines))
+    # "More", not "all": a breakdown shows its largest groups, not every one.
+    detail.add(followup(
+        f"Ask for a breakdown by {_DIMENSION_WORDS[dimension]} to see more of them."))
     return detail

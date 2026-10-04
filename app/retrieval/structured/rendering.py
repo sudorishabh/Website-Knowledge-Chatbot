@@ -1,8 +1,10 @@
-"""How a catalog row reads in an answer: its date, its link, its one-line item.
+"""How a catalog answer reads: its figures, sections, dates, links and items.
 
 Shared by the tools' renderings and the detail sections that follow a headline,
-so a document reads the same way wherever a catalog answer shows it. Nothing
-here queries; every function is a pure formatting of values already on hand.
+so a catalog answer is laid out the way a generated answer is — a lead with its
+figures in bold, then titled sections of one fact per line — and a document
+reads the same way wherever one is shown. Nothing here queries; every function
+is a pure formatting of values already on hand.
 """
 from __future__ import annotations
 
@@ -15,6 +17,37 @@ from app.retrieval.structured.entities import entity_label
 # locale and would render a month in whatever language the server runs in.
 _MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+
+def number(n: int) -> str:
+    """1220 -> "1,220"."""
+    return f"{n:,}"
+
+
+def figure(n: int, noun: str) -> str:
+    """"**1,220 items**" — a figure the answer is about, in bold."""
+    return f"**{number(n)} {noun}**"
+
+
+def section(title: str, body: str) -> str:
+    """A titled block, laid out as generated answers are: a "###" heading over
+    its body. '' for an empty body, so a section with nothing in it vanishes."""
+    return f"### {title}\n{body}" if body else ""
+
+
+def followup(text: str) -> str:
+    """The closing offer of what to ask next, set apart in italics."""
+    return f"*{text}*" if text else ""
+
+
+def tally(rows: Sequence[tuple[str, int]], *, highlight: str | None = None) -> str:
+    """"- Feature articles: 31", one line per (label, count) row; the row
+    labelled ``highlight`` — what the question asked about — in bold."""
+    lines = []
+    for label, n in rows:
+        line = f"{label}: {number(n)}"
+        lines.append(f"- **{line}**" if label == highlight else f"- {line}")
+    return "\n".join(lines)
 
 
 def _as_date(value: Any) -> date | None:
@@ -85,22 +118,21 @@ def item_line(
     listed_by: str | None = None,
 ) -> str:
     """One bulleted document: its linked title, then what kind of item it is
-    (when the list spans several kinds), its date and who wrote it.
+    (when the list spans several kinds), its date and who wrote it —
+    "- [Title](url) — Feature article · 19 Aug 2026 · by A and B".
 
     In a list of one author's work (``listed_by``) that author goes without
     saying on every line, so only the co-authors are named — "with ..."."""
     title = getattr(record, "title", None) or getattr(record, "document_id", "")
     bundle = getattr(record, "bundle", None)
-    kind = entity_label(bundle, 1) if with_type and bundle else ""
-    meta = ", ".join(part for part in (kind, record_date(record)) if part)
+    kind = entity_label(bundle, 1).capitalize() if with_type and bundle else ""
     byline = ""
     if listed_by:
         others = [a for a in authors if listed_by.casefold() not in a.casefold()]
         byline = f"with {names(others)}" if others else ""
     elif authors:
         byline = f"by {names(authors)}"
-    if byline:
-        meta = f"{meta} · {byline}" if meta else byline
+    meta = " · ".join(part for part in (kind, record_date(record), byline) if part)
     head = md_link(title, getattr(record, "url", None))
     return f"- {head} — {meta}" if meta else f"- {head}"
 

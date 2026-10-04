@@ -86,13 +86,13 @@ def _count(entity="article", **filters):
 def test_a_count_says_when_its_documents_date_from_and_shows_the_newest(catalog):
     r = _count(theme="Climate Change")
     assert r.rendered.split("\n\n") == [
-        "There are 68 articles on 'Climate Change' matching your query.",
-        "They date from 2018 to 2026, with the most (13) in 2025.",
-        "The most recent:\n"
+        "There are **68 articles** on **Climate Change**. "
+        "They span 2018 to 2026, and 2025 was the busiest year, with 13.",
+        "### Latest articles\n"
         "- [Title 0](https://teriin.org/a/0) — 20 Apr 2026\n"
         "- [Title 1](https://teriin.org/a/1) — 20 Apr 2026\n"
         "- [Title 2](https://teriin.org/a/2) — 20 Apr 2026",
-        "You can ask me to list them, or to break them down by year.",
+        "*You can ask me to list them, or to break them down by year.*",
     ]
     assert [c["title"] for c in r.citations] == ["Title 0", "Title 1", "Title 2"]
     assert r.data["count"] == 68  # the payload is unchanged
@@ -116,11 +116,15 @@ def test_a_count_across_content_types_gives_its_mix(catalog):
     catalog.types = [("article", 12), ("research_papers", 9), ("news", 3)]
     catalog.rows = [_row(0, bundle="news"), _row(1, bundle="research_papers"), _row(2)]
     r = _count(None, author="Suneel Pandey")
-    assert ("They date from 2018 to 2026, with the most (13) in 2025. "
-            "By type: 12 articles, 9 research papers and 3 news items.") in r.rendered
-    assert "— news item, 20 Apr 2026" in r.rendered
+    assert r.rendered.split("\n\n")[:2] == [
+        "**Suneel Pandey** has **68 publications** on the site. "
+        "They span 2018 to 2026, and 2025 was the busiest year, with 13.",
+        "### By type\n- Articles: 12\n- Research papers: 9\n- News items: 3",
+    ]
+    assert "### Latest publications\n" in r.rendered
+    assert "— News item · 20 Apr 2026" in r.rendered
     assert r.rendered.endswith(
-        "You can ask me to list them, or to break them down by year or content type."
+        "*You can ask me to list them, or to break them down by year or content type.*"
     )
 
 
@@ -129,11 +133,15 @@ def test_a_persons_count_of_one_type_names_what_else_they_published(catalog):
     catalog.types = [("feature_articles", 31), ("research_papers", 7),
                      ("policy_brief", 2), ("article", 1)]
     r = _count("research_papers", author="Dr Vibha Dhawan")
-    assert r.rendered.split("\n\n")[:2] == [
-        "There are 7 research papers by Dr Vibha Dhawan matching your query.",
-        "They date from 2018 to 2026, with the most (13) in 2025. "
-        "Beyond these, there are 31 feature articles, 2 policy briefs and 1 article "
-        "by Dr Vibha Dhawan — 41 publications in all.",
+    assert r.rendered.split("\n\n")[:3] == [
+        "**Dr Vibha Dhawan** has **7 research papers** on the site. "
+        "They span 2018 to 2026, and 2025 was the busiest year, with 13.",
+        "### All publications by Dr Vibha Dhawan (41)\n"
+        "- Feature articles: 31\n- **Research papers: 7**\n- Policy briefs: 2\n- Articles: 1",
+        "### Latest research papers\n"
+        "- [Title 0](https://teriin.org/a/0) — 20 Apr 2026\n"
+        "- [Title 1](https://teriin.org/a/1) — 20 Apr 2026\n"
+        "- [Title 2](https://teriin.org/a/2) — 20 Apr 2026",
     ]
 
 
@@ -143,22 +151,27 @@ def test_a_themes_count_of_one_type_names_what_else_it_holds(catalog, monkeypatc
         lambda **kw: [{"theme": "Climate Change", "theme_type": "primary", "parent": None,
                        "theme_group": "main", "documents": 3}],
     )
-    catalog.wider_total = 500
-    catalog.types = [("news", 300), ("events", 132), ("article", 68)]
+    catalog.wider_total = 1500
+    catalog.types = [("news", 300), ("events", 132), ("feature_articles", 100),
+                     ("press_release", 90), ("completed_projects", 80),
+                     ("article", 68), ("videos", 30)]
     r = _count(theme="Climate Change")
-    assert ("Beyond these, there are 300 news items and 132 events on "
-            "'Climate Change' — 500 items in all.") in r.rendered
+    # The asked type is shown even below the five largest; the rest is folded.
+    assert ("### All items on Climate Change (1,500)\n"
+            "- News items: 300\n- Events: 132\n- Feature articles: 100\n"
+            "- Press releases: 90\n- Completed projects: 80\n- **Articles: 68**\n"
+            "- Other types: 730") in r.rendered
 
 
 def test_a_type_that_is_all_a_person_wrote_names_nothing_else(catalog):
     catalog.total, catalog.wider_total = 7, 7
-    assert "Beyond these" not in _count("research_papers", author="Dr A").rendered
+    assert "### All" not in _count("research_papers", author="Dr A").rendered
 
 
 def test_a_type_count_without_a_subject_names_nothing_else(catalog):
     catalog.wider_total = 5000
     catalog.types = [("news", 1667), ("research_papers", 68)]
-    assert "Beyond these" not in _count("research_papers").rendered
+    assert "### All" not in _count("research_papers").rendered
 
 
 def test_recent_items_skip_a_page_published_twice(catalog):
@@ -198,11 +211,13 @@ def test_a_widened_count_says_how_many_are_of_the_type_asked_about(catalog, monk
                      ("policy_brief", 2), ("article", 1)]
     r = tools.count_records(None, RecordFilters(author="Dr Vibha Dhawan"),
                             detail=True, named_type="article")
-    assert r.rendered.split("\n\n")[:2] == [
-        "There are 41 publications by Dr Vibha Dhawan matching your query.",
-        "That spans every type of publication, not only the site's Article category, "
-        "which holds 1 of them. They date from 2018 to 2026, with the most (13) in 2025. "
-        "By type: 31 feature articles, 7 research papers, 2 policy briefs and 1 article.",
+    assert r.rendered.split("\n\n")[:3] == [
+        "**Dr Vibha Dhawan** has **41 publications** on the site. "
+        "They span 2018 to 2026, and 2025 was the busiest year, with 13.",
+        "That counts every kind of publication; only 1 of them is filed under "
+        "*Articles* on the site.",
+        "### By type\n- Feature articles: 31\n- Research papers: 7\n"
+        "- Policy briefs: 2\n- **Articles: 1**",
     ]
 
 
@@ -210,7 +225,7 @@ def test_a_widened_count_with_none_of_the_type_says_so(catalog, monkeypatch):
     _article_share(monkeypatch, articles=0, everything=5)
     r = tools.count_records(None, RecordFilters(author="Dr A"), detail=True,
                             named_type="article")
-    assert "Article category, which holds none of them." in r.rendered
+    assert "none of them is filed under *Articles* on the site." in r.rendered
 
 
 def test_a_count_that_was_not_widened_names_no_category(catalog):
@@ -225,9 +240,9 @@ def test_a_widened_list_says_how_many_are_of_the_type_asked_about(
     r = tools.list_records(None, RecordFilters(author="Dr Vibha Dhawan"), limit=3,
                            detail=True, named_type="article")
     assert r.rendered.startswith(
-        "Here are the 3 most recent of 41 publications by Dr Vibha Dhawan:")
-    assert ("That spans every type of publication, not only the site's Article "
-            "category, which holds 1 of the 41.") in r.rendered
+        "Here are the 3 most recent of **41 publications** by **Dr Vibha Dhawan**:")
+    assert ("That counts every kind of publication; only 1 of the 41 is filed under "
+            "*Articles* on the site.") in r.rendered
 
 
 def test_a_persons_list_of_one_type_names_what_else_they_published(catalog, facets):
@@ -237,8 +252,9 @@ def test_a_persons_list_of_one_type_names_what_else_they_published(catalog, face
     catalog.rows = [_row(i, bundle="research_papers") for i in range(3)]
     r = tools.list_records("research_papers", RecordFilters(author="Dr Vibha Dhawan"),
                            detail=True)
-    assert ("Beyond these, there are 31 feature articles, 2 policy briefs and 1 article "
-            "by Dr Vibha Dhawan — 41 publications in all.") in r.rendered
+    assert ("### All publications by Dr Vibha Dhawan (41)\n"
+            "- Feature articles: 31\n- **Research papers: 7**\n- Policy briefs: 2\n"
+            "- Articles: 1") in r.rendered
 
 
 def test_a_persons_cut_list_across_types_gives_its_mix(catalog, facets):
@@ -247,14 +263,14 @@ def test_a_persons_cut_list_across_types_gives_its_mix(catalog, facets):
     catalog.rows = [_row(i, bundle="feature_articles") for i in range(3)]
     r = tools.list_records(None, RecordFilters(author="Dr Vibha Dhawan"), limit=3,
                            detail=True)
-    assert "By type: 31 feature articles and 10 research papers." in r.rendered
+    assert "### By type\n- Feature articles: 31\n- Research papers: 10" in r.rendered
 
 
 def test_a_list_without_a_person_gets_no_mix(catalog, facets):
     catalog.wider_total = 500
     catalog.types = [("news", 300), ("article", 200)]
     r = tools.list_records("article", RecordFilters(theme="Energy"), limit=3, detail=True)
-    assert "Beyond these" not in r.rendered and "By type" not in r.rendered
+    assert "### All" not in r.rendered and "### By type" not in r.rendered
 
 
 def test_a_widened_single_document_shows_its_own_type(catalog, facets, monkeypatch):
@@ -273,8 +289,8 @@ def test_a_long_type_mix_folds_the_tail(catalog):
         (40, 20, 15, 10, 8, 4),
     )]
     r = _count(None)
-    assert ("By type: 40 news items, 20 articles, 15 reports, 10 events, 8 videos "
-            "and 7 of other types.") in r.rendered
+    assert ("### By type\n- News items: 40\n- Articles: 20\n- Reports: 15\n"
+            "- Events: 10\n- Videos: 8\n- Other types: 7") in r.rendered
 
 
 def test_a_small_count_shows_every_item_and_offers_nothing_more(catalog):
@@ -282,8 +298,8 @@ def test_a_small_count_shows_every_item_and_offers_nothing_more(catalog):
     catalog.years = [("2024", 1), ("2026", 1)]
     r = _count()
     # A peak of one is no peak.
-    assert "They date from 2024 to 2026." in r.rendered
-    assert "Here they are:" in r.rendered
+    assert "They span 2024 to 2026." in r.rendered
+    assert "### Both articles\n" in r.rendered
     assert "You can ask" not in r.rendered
 
 
@@ -291,26 +307,32 @@ def test_a_single_document_is_simply_shown(catalog):
     catalog.total, catalog.rows, catalog.years = 1, [_row(0)], [("2026", 1)]
     r = _count()
     assert r.rendered.split("\n\n") == [
-        "There is 1 article matching your query.",
-        "Here it is:\n- [Title 0](https://teriin.org/a/0) — 20 Apr 2026",
+        "There is **1 article** on the site.",
+        "### The article\n- [Title 0](https://teriin.org/a/0) — 20 Apr 2026",
     ]
+
+
+def test_every_item_shown_says_so(catalog):
+    catalog.total, catalog.rows = 3, [_row(i) for i in range(3)]
+    assert "### All 3 articles\n" in _count().rendered
 
 
 def test_a_year_the_question_fixed_is_not_repeated(catalog):
     catalog.years = [("2025", 68)]
     r = _count(date_from="2025-01-01", date_to="2026-01-01")
-    assert "date from" not in r.rendered
+    assert "They span" not in r.rendered
     assert "All of them" not in r.rendered
 
 
 def test_one_year_is_stated_when_the_question_did_not_fix_it(catalog):
     catalog.years = [("2025", 68)]
-    assert "All of them date from 2025." in _count().rendered
+    assert "All of them are from 2025." in _count().rendered
 
 
 def test_a_tied_peak_names_both_years(catalog):
     catalog.years = [("2020", 12), ("2021", 12), ("2022", 1)]
-    assert "with the most (12 each) in 2020 and 2021." in _count().rendered
+    assert ("and 2020 and 2021 were the busiest years, with 12 each."
+            in _count().rendered)
 
 
 # --------------------------------------------------------------------------- #
@@ -322,8 +344,8 @@ def test_a_zero_in_a_period_says_what_the_other_dates_hold(catalog):
     catalog.rows = [_row(0, bundle="events", date="2026-09-09T00:00:00")]
     r = _count("events", date_from="2030-01-01", date_to="2031-01-01")
     assert r.rendered.split("\n\n") == [
-        "There are no events in 2030 matching your query.",
-        "Across all dates there are 1082 events; the most recent is from 9 Sep 2026.",
+        "There are no events on the site in 2030.",
+        "Across all dates there are **1,082 events**; the most recent is from 9 Sep 2026.",
     ]
 
 
@@ -334,8 +356,12 @@ def test_a_zero_under_a_content_type_looks_across_types(catalog, monkeypatch):
                        "theme_group": "main", "documents": 3}],
     )
     catalog.total, catalog.wider_total = 0, 40
+    catalog.types = [("news", 25), ("article", 15)]
     r = _count("events", theme="Waste")
-    assert "Across all content types there are 40 items on 'Waste'." in r.rendered
+    assert r.rendered.startswith(
+        "There are no events on **Waste**.\n\n"
+        "### All items on Waste (40)\n- News items: 25\n- Articles: 15\n\n"
+        "### Latest items\n")
 
 
 def test_a_persons_zero_says_what_they_did_publish_and_shows_the_newest(
@@ -356,12 +382,12 @@ def test_a_persons_zero_says_what_they_did_publish_and_shows_the_newest(
     finally:
         resolve.reload_authors()
     assert r.rendered.split("\n\n") == [
-        "There are no reports by Dr Vibha Dhawan matching your query.",
-        "Across all content types there are 41 publications by Dr Vibha Dhawan: "
-        "31 feature articles, 7 research papers, 2 policy briefs and 1 article.",
-        "The most recent:\n"
-        "- [Title 0](https://teriin.org/a/0) — feature article, 20 Apr 2026\n"
-        "- [Title 1](https://teriin.org/a/1) — research paper, 20 Apr 2026",
+        "**Dr Vibha Dhawan** has no reports on the site.",
+        "### All publications by Dr Vibha Dhawan (41)\n"
+        "- Feature articles: 31\n- Research papers: 7\n- Policy briefs: 2\n- Articles: 1",
+        "### Latest publications\n"
+        "- [Title 0](https://teriin.org/a/0) — Feature article · 20 Apr 2026\n"
+        "- [Title 1](https://teriin.org/a/1) — Research paper · 20 Apr 2026",
     ]
     assert len(r.citations) == 2
 
@@ -369,7 +395,7 @@ def test_a_persons_zero_says_what_they_did_publish_and_shows_the_newest(
 def test_a_zero_with_nothing_nearby_stays_a_bare_zero(catalog):
     catalog.total, catalog.wider_total = 0, 0
     r = _count("events", date_from="2030-01-01", date_to="2031-01-01")
-    assert r.rendered == "There are no events in 2030 matching your query."
+    assert r.rendered == "There are no events on the site in 2030."
 
 
 # --------------------------------------------------------------------------- #
@@ -383,11 +409,11 @@ def test_an_author_count_names_the_most_frequent_names(catalog):
                       ("Dr Debajit Palit", 60)]
     r = tools.count_records(None, RecordFilters(), count_of="author", detail=True)
     assert r.rendered.split("\n\n") == [
-        "There are 975 distinct author names recorded in the source data.",
-        "The names that appear most often are Dr R K Pachauri (270), Mr Ajay "
-        "Shankar (124), Dr Leena Srivastava (81), Dr Syamal Kumar Sarkar (62) "
-        "and Dr Debajit Palit (60).",
-        "Ask for a breakdown by author to see more of them.",
+        "There are **975 distinct author names** in the source data.",
+        "### Names that appear most often\n"
+        "- Dr R K Pachauri: 270\n- Mr Ajay Shankar: 124\n- Dr Leena Srivastava: 81\n"
+        "- Dr Syamal Kumar Sarkar: 62\n- Dr Debajit Palit: 60",
+        "*Ask for a breakdown by author to see more of them.*",
     ]
 
 
@@ -396,13 +422,19 @@ def test_a_short_distinct_count_names_every_value(catalog):
     catalog.types = [("news", 3), ("report", 2)]
     r = tools.count_records(None, RecordFilters(author="A"), count_of="content_type",
                             detail=True)
-    assert r.rendered.endswith("They are news items (3) and reports (2).")
+    assert r.rendered == (
+        "**A**'s publications span **2 content types**.\n\n"
+        "- News items: 3\n- Reports: 2"
+    )
 
 
 def test_a_year_count_states_its_range(catalog):
     catalog.total = 3
     r = tools.count_records(None, RecordFilters(), count_of="year", detail=True)
-    assert r.rendered.endswith("They run from 2018 to 2026, with the most (13) in 2025.")
+    assert r.rendered == (
+        "There are **3 years**. "
+        "They run from 2018 to 2026, and 2025 was the busiest year, with 13."
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -416,8 +448,8 @@ def test_a_failing_detail_query_costs_only_its_own_section(catalog, monkeypatch)
     monkeypatch.setattr("app.catalog.queries.distribution", boom)
     r = _count()
     assert r.ok
-    assert r.rendered.startswith("There are 68 articles matching your query.\n\n"
-                                 "The most recent:")
+    assert r.rendered.startswith("There are **68 articles** on the site.\n\n"
+                                 "### Latest articles\n")
 
 
 def test_detail_waits_for_the_flag(catalog, monkeypatch):
@@ -425,20 +457,20 @@ def test_detail_waits_for_the_flag(catalog, monkeypatch):
     monkeypatch.setattr(get_settings(), "catalog_answer_detail_enabled", False)
     [r] = planner.execute(DatabasePlan(calls=[ToolCall(tool="count_records",
                                                        entity="article")]))
-    assert r.rendered == "There are 68 articles matching your query."
+    assert r.rendered == "There are **68 articles** on the site."
     assert [name for name, _ in catalog.calls] == ["count"]
 
 
 def test_the_planner_passes_detail_when_on(catalog, on):
     [r] = planner.execute(DatabasePlan(calls=[ToolCall(tool="count_records",
                                                        entity="article")]))
-    assert "The most recent:" in r.rendered
+    assert "### Latest articles\n" in r.rendered
 
 
 def test_detail_is_never_on_when_the_call_says_no(catalog, on):
     call = ToolCall(tool="count_records", entity="article", detail=False)
     [r] = planner.execute(DatabasePlan(calls=[call]))
-    assert r.rendered == "There are 68 articles matching your query."
+    assert r.rendered == "There are **68 articles** on the site."
 
 
 # --------------------------------------------------------------------------- #
@@ -485,7 +517,7 @@ def test_a_content_type_breakdown_names_types_as_people_say_them(catalog):
     r = tools.aggregate_records(None, "content_type", RecordFilters())
     assert r.rendered == (
         "Distribution of items by content type:\n"
-        "- feature articles: 1547\n- press releases: 724"
+        "- Feature articles: 1,547\n- Press releases: 724"
     )
     # The payload keeps the keys a caller filters on.
     assert r.data["groups"] == [["feature_articles", 1547], ["press_release", 724]]
@@ -529,10 +561,10 @@ def test_a_year_breakdown_with_detail_leads_with_its_total(catalog):
     r = tools.aggregate_records("article", "year", RecordFilters(theme="Climate Change"),
                                 detail=True)
     assert r.rendered.split("\n\n") == [
-        "Here's how the 68 articles on 'Climate Change' break down by year:\n"
+        "Here's how the **68 articles** on **Climate Change** break down by year:\n"
         "- 2018: 10\n- 2020: 12\n- 2025: 13",
-        "They date from 2018 to 2025, with the most (13) in 2025.",
-        "You can ask me to list the items behind any of these.",
+        "They span 2018 to 2025, and 2025 was the busiest year, with 13.",
+        "*You can ask me to list the items behind any of these.*",
     ]
 
 
@@ -540,8 +572,8 @@ def test_a_theme_breakdown_with_detail_names_its_leader_and_overlap(catalog):
     catalog.total = 50
     catalog.values = [("Energy", 40), ("Climate Change", 32), ("Water", 12)]
     r = tools.aggregate_records(None, "theme", RecordFilters(), detail=True)
-    assert r.rendered.startswith("Here's how the 50 items break down by theme:")
-    assert ("The largest is Energy (40), followed by Climate Change (32) and "
+    assert r.rendered.startswith("Here's how the **50 items** break down by theme:")
+    assert ("The largest is **Energy** (40), followed by Climate Change (32) and "
             "Water (12). An item can carry more than one theme, so these add up to "
             "more than 50.") in r.rendered
 
@@ -549,7 +581,7 @@ def test_a_theme_breakdown_with_detail_names_its_leader_and_overlap(catalog):
 def test_an_author_breakdown_names_who_has_the_most(catalog):
     catalog.values = [("Mr R R Rashmi", 36), ("Dr Shailly Kedia", 22), ("Mr Ajay Shankar", 15)]
     r = tools.aggregate_records(None, "author", RecordFilters(), detail=True)
-    assert ("Mr R R Rashmi has the most (36), followed by Dr Shailly Kedia (22) and "
+    assert ("**Mr R R Rashmi** has the most (36), followed by Dr Shailly Kedia (22) and "
             "Mr Ajay Shankar (15).") in r.rendered
 
 
@@ -586,12 +618,12 @@ def test_a_single_document_is_shown_as_a_card(catalog, facets):
     facets["d0"] = {"authors": ["Dr Raghab Ray"], "themes": ["Climate Change", "Environment"]}
     r = tools.lookup_record("article", "Title 0", RecordFilters(), detail=True)
     assert r.rendered.split("\n\n") == [
-        "Found 1 article with 'Title 0' in the title:",
+        "Found **1 article** with 'Title 0' in the title:",
         "**[Title 0](https://teriin.org/a/0)**\n"
         "Article · 20 Apr 2026\n"
         "By Dr Raghab Ray\n"
         "Themes: Climate Change, Environment",
-        "Ask me what it says, and I'll answer from the document itself.",
+        "*Ask me what it says, and I'll answer from the document itself.*",
     ]
     assert r.citations[0]["title"] == "Title 0"
 
@@ -616,7 +648,7 @@ def test_a_cut_list_offers_the_dimensions_still_open(catalog, facets):
     catalog.rows = [_row(i) for i in range(3)]
     r = tools.list_records("article", RecordFilters(theme="Energy"), limit=3,
                            detail=True)
-    assert r.rendered.endswith("You can ask me to narrow these down by year or author.")
+    assert r.rendered.endswith("*You can ask me to narrow these down by year or author.*")
 
 
 def test_a_whole_list_offers_nothing(catalog, facets):
@@ -633,7 +665,7 @@ def test_a_failing_facet_read_leaves_the_plain_list(catalog, monkeypatch):
     catalog.rows = [_row(0), _row(1)]
     r = tools.list_records("article", RecordFilters(), detail=True)
     assert r.rendered == (
-        "Found 2 articles:\n"
+        "Found **2 articles**:\n"
         "- [Title 0](https://teriin.org/a/0) — 20 Apr 2026\n"
         "- [Title 1](https://teriin.org/a/1) — 20 Apr 2026"
     )
@@ -673,12 +705,12 @@ def test_a_theme_listing_says_how_much_each_theme_holds(catalog, vocabulary, mon
     _newest_by_theme(monkeypatch, **{"Climate Change": "Rooted Resilience"})
     r = tools.list_themes(detail=True)
     assert r.rendered.split("\n\n") == [
-        "The collection covers 2 main themes:",
-        "- Climate Change — 1220 items; latest: "
-        "[Rooted Resilience](https://teriin.org/rooted-resilience), 20 Apr 2026\n"
-        "- Energy — 1 item",
-        "You can ask me about the work under any of these — for example, how "
-        "many reports there are on one, or which are the latest.",
+        "The collection covers **2 main themes**:",
+        "- **Climate Change** — 1,220 items\n"
+        "  - Latest: [Rooted Resilience](https://teriin.org/rooted-resilience) · 20 Apr 2026\n"
+        "- **Energy** — 1 item",
+        "*You can ask me about the work under any of these — for example, how "
+        "many reports there are on one, or which are the latest.*",
     ]
     # Counted the way a theme count counts: website content, every group.
     [(_, kw)] = [c for c in catalog.calls if c[0] == "distribution:theme"]
@@ -689,8 +721,8 @@ def test_a_theme_listing_says_how_much_each_theme_holds(catalog, vocabulary, mon
 def test_a_theme_table_gains_an_items_column(catalog, vocabulary):
     catalog.values = [("Climate Change", 1220), ("Energy", 1154)]
     r = tools.list_themes(output_format="table", detail=True)
-    assert "| theme | items |" in r.rendered
-    assert "| Climate Change | 1220 |" in r.rendered
+    assert "| theme | items | latest |\n| --- | ---: | --- |" in r.rendered
+    assert "| Climate Change | 1,220 |" in r.rendered
 
 
 def test_a_theme_listing_without_counts_is_still_a_listing(catalog, vocabulary, monkeypatch):
@@ -700,7 +732,7 @@ def test_a_theme_listing_without_counts_is_still_a_listing(catalog, vocabulary, 
     monkeypatch.setattr("app.catalog.queries.distribution", boom)
     monkeypatch.setattr("app.catalog.queries.list_documents", boom)
     r = tools.list_themes(detail=True)
-    assert r.rendered.startswith("The collection covers 2 main themes:\n\n"
+    assert r.rendered.startswith("The collection covers **2 main themes**:\n\n"
                                  "- Climate Change\n- Energy")
 
 
@@ -711,11 +743,12 @@ def test_a_theme_digest_gives_each_themes_figures_and_newest(catalog, vocabulary
     _newest_by_theme(monkeypatch, **{"Climate Change": "Rooted Resilience",
                                      "Energy": "Storage at POWERGEN"})
     assert tools.theme_digest() == (
-        "What each theme holds:\n"
-        "- Climate Change — 1220 items; latest: "
-        "[Rooted Resilience](https://teriin.org/rooted-resilience), 20 Apr 2026\n"
-        "- Energy — 1154 items; latest: "
-        "[Storage at POWERGEN](https://teriin.org/storage-at-powergen), 20 Apr 2026"
+        "### What each theme holds\n"
+        "- **Climate Change** — 1,220 items\n"
+        "  - Latest: [Rooted Resilience](https://teriin.org/rooted-resilience) · 20 Apr 2026\n"
+        "- **Energy** — 1,154 items\n"
+        "  - Latest: [Storage at POWERGEN](https://teriin.org/storage-at-powergen)"
+        " · 20 Apr 2026"
     )
 
 

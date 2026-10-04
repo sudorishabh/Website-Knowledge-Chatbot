@@ -384,7 +384,7 @@ def test_q025_a_truncated_list_states_the_total(catalog):
     result = list_records("ongoing_projects", RecordFilters(), limit=10)
     assert (result.data or {}).get("total_matching") == 594
     assert result.rendered.startswith(
-        "Here are the 10 most recent of 594 ongoing projects:"
+        "Here are the 10 most recent of **594 ongoing projects**:"
     )
 
 

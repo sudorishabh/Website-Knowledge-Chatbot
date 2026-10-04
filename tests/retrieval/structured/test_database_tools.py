@@ -166,7 +166,7 @@ def test_count_records_renders_and_passes_scope(monkeypatch, resolve_theme_ok):
         "applied": {"entity": "news", "theme": "Climate",
                    "date_from": "2024-01-01", "date_to": "2025-01-01"},
     }
-    assert r.rendered == "There are 3 news items on 'Climate' in 2024 matching your query."
+    assert r.rendered == "There are **3 news items** on **Climate** in 2024."
     assert seen["bundle"] == "news"
     assert seen["source_type"] == "website" and seen["entity_type"] == "node"
     assert seen["theme"] == "Climate"
@@ -229,7 +229,7 @@ def test_naming_one_project_type_is_not_ambiguous(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 918)
     r = tools.count_records("completed_projects", RecordFilters())
     assert r.ok and r.error_kind is None
-    assert r.rendered == "There are 918 completed projects matching your query."
+    assert r.rendered == "There are **918 completed projects** on the site."
 
 
 def test_lookup_record_preserves_a_terminal_error_kind(monkeypatch):
@@ -277,7 +277,7 @@ def test_count_records_resolved_theme_with_no_rows_is_an_honest_zero(monkeypatch
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 0)
     r = tools.count_records("news", RecordFilters(theme="Climate Change"))
     assert r.ok is True and r.data["count"] == 0
-    assert r.rendered == "There are no news items on 'Climate Change' matching your query."
+    assert r.rendered == "There are no news items on **Climate Change**."
 
 
 @pytest.fixture
@@ -338,7 +338,7 @@ def test_count_records_passes_tag_scope(monkeypatch, resolve_tag_ok):
     r = tools.count_records("news", RecordFilters(tag="policy"))
     assert r.ok
     assert r.data == {"count": 4, "applied": {"entity": "news", "tag": "policy"}}
-    assert r.rendered == "There are 4 news items tagged 'policy' matching your query."
+    assert r.rendered == "There are **4 news items** tagged **policy**."
     assert seen["tag"] == "policy"
 
 
@@ -354,13 +354,13 @@ def test_count_records_unmatched_tag_with_no_rows_is_a_terminal_miss(monkeypatch
 def test_count_records_singular_verb(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 1)
     r = tools.count_records("report", RecordFilters())
-    assert r.rendered == "There is 1 report matching your query."
+    assert r.rendered == "There is **1 report** on the site."
 
 
 def test_count_records_bare_total(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 123)
     r = tools.count_records(None, RecordFilters())
-    assert r.rendered == "There are 123 items matching your query."
+    assert r.rendered == "There are **123 items** on the site."
 
 
 def test_count_records_date_range_render(monkeypatch):
@@ -369,7 +369,7 @@ def test_count_records_date_range_render(monkeypatch):
         None, RecordFilters(date_from="2024-03-15", date_to="2024-04-01")
     )
     assert r.rendered == (
-        "There are 2 items between 2024-03-15 and 2024-03-31 matching your query."
+        "There are **2 items** on the site between 2024-03-15 and 2024-03-31."
     )
 
 
@@ -383,7 +383,7 @@ def test_count_records_applies_the_title_filter(monkeypatch):
     )
     r = tools.count_records("report", RecordFilters(title_contains="Solar"))
     assert seen["title_contains"] == "Solar"
-    assert r.rendered == "There are 3 reports with 'Solar' in the title matching your query."
+    assert r.rendered == "There are **3 reports** with 'Solar' in the title."
 
 
 def test_zero_under_a_guessed_title_falls_through(monkeypatch):
@@ -414,7 +414,7 @@ def test_zero_is_honest_when_the_question_is_about_titles(monkeypatch):
         )
         assert r.ok, question
         assert r.rendered == (
-            "There are no reports with 'Solar' in the title matching your query."
+            "There are no reports with 'Solar' in the title."
         )
 
 
@@ -428,7 +428,7 @@ def test_zero_without_a_title_filter_stays_an_honest_zero(monkeypatch):
         question="how many reports in 2023?",
     )
     assert r.ok
-    assert r.rendered == "There are no reports in 2023 matching your query."
+    assert r.rendered == "There are no reports on the site in 2023."
 
 
 def test_nonzero_title_count_is_unaffected_by_the_guard(monkeypatch):
@@ -440,7 +440,7 @@ def test_nonzero_title_count_is_unaffected_by_the_guard(monkeypatch):
         question="how many reports about solar?",
     )
     assert r.ok
-    assert r.rendered == "There are 3 reports with 'Solar' in the title matching your query."
+    assert r.rendered == "There are **3 reports** with 'Solar' in the title."
 
 
 def test_count_and_list_pass_the_same_filter_set(monkeypatch):
@@ -464,7 +464,7 @@ def test_count_and_list_pass_the_same_filter_set(monkeypatch):
 def test_count_records_names_author_in_rendered_answer(monkeypatch):
     monkeypatch.setattr("app.catalog.queries.count_documents", lambda **k: 21)
     r = tools.count_records(None, RecordFilters(author="Dr Suneel Pandey"))
-    assert r.rendered == "There are 21 publications by Dr Suneel Pandey matching your query."
+    assert r.rendered == "**Dr Suneel Pandey** has **21 publications** on the site."
     assert r.data["applied"] == {"author": "Dr Suneel Pandey"}
 
 
@@ -477,9 +477,9 @@ def test_one_authors_documents_are_publications_in_a_list_and_a_breakdown(monkey
     )
     by_author = RecordFilters(author="Rishabh Negi")
     assert tools.list_records(None, by_author).rendered.startswith(
-        "Found 1 publication by Rishabh Negi:")
+        "Found **1 publication** by **Rishabh Negi**:")
     assert tools.aggregate_records(None, "year", by_author).rendered.startswith(
-        "Distribution of publications by Rishabh Negi by year:")
+        "Distribution of publications by **Rishabh Negi** by year:")
     assert tools.aggregate_records(None, "year", RecordFilters()).rendered.startswith(
         "Distribution of items by year:")
 
@@ -494,8 +494,8 @@ def test_count_records_combines_author_theme_tag_and_period(monkeypatch, resolve
                      date_from="2024-01-01", date_to="2025-01-01"),
     )
     assert r.rendered == (
-        "There are 3 news items by Rishabh Negi on 'Climate Change' tagged 'policy' "
-        "in 2024 matching your query."
+        "**Rishabh Negi** has **3 news items** on **Climate Change** tagged **policy** "
+        "in 2024."
     )
     assert r.data["applied"] == {
         "entity": "news", "author": "Rishabh Negi", "theme": "Climate Change",
@@ -521,7 +521,7 @@ def test_list_records_plain(monkeypatch):
     assert r.ok
     assert r.data["records"][0]["document_id"] == "d1"
     assert r.citations[0]["title"] == "A"
-    assert r.rendered == "Found 1 news item:\n- [A](http://a) — 1 May 2024"
+    assert r.rendered == "Found **1 news item**:\n- [A](http://a) — 1 May 2024"
     assert r.data["applied"] == {"entity": "news"}
 
 
@@ -530,7 +530,7 @@ def test_list_records_applied_names_author(monkeypatch):
     r = tools.list_records("news", RecordFilters(author="Rishabh Negi"))
     assert r.data["applied"] == {"entity": "news", "author": "Rishabh Negi"}
     # the record list itself is the evidence; the prose names the same scope
-    assert r.rendered == "Found 1 news item by Rishabh Negi:\n- [A](http://a) — 1 May 2024"
+    assert r.rendered == "Found **1 news item** by **Rishabh Negi**:\n- [A](http://a) — 1 May 2024"
 
 
 def test_list_records_table(monkeypatch):
@@ -581,7 +581,7 @@ def test_list_records_projects_requested_fields(monkeypatch):
     r = tools.list_records("news", RecordFilters(), fields=["title", "url"])
     assert r.data["records"] == [{"title": "A", "url": "http://a"}]
     # rendered stays the normal human-readable answer, unaffected by fields
-    assert r.rendered == "Found 1 news item:\n- [A](http://a) — 1 May 2024"
+    assert r.rendered == "Found **1 news item**:\n- [A](http://a) — 1 May 2024"
 
 
 def test_list_records_unknown_fields_do_not_empty_the_records(monkeypatch):
@@ -689,7 +689,7 @@ def test_list_themes_reports_the_whole_vocabulary_not_a_page(monkeypatch):
     r = tools.list_themes()
     assert seen["limit"] == tools.THEME_VOCABULARY_LIMIT
     assert len(r.data["themes"]) == 30
-    assert r.rendered.startswith("The collection covers 30 main themes:")
+    assert r.rendered.startswith("The collection covers **30 main themes**:")
 
 
 
@@ -721,7 +721,7 @@ def test_list_themes_excludes_sub_themes_from_the_default_listing(monkeypatch):
     assert r.data["themes"] == ["Energy"]
     assert r.data["main_themes"] == ["Energy"]
     assert r.data["other_themes"] == []
-    assert r.rendered.startswith("The collection covers 1 main theme:")
+    assert r.rendered.startswith("The collection covers **1 main theme**:")
     assert "Energy Access" not in r.rendered
     assert "Green Shipping" not in r.rendered
 
@@ -779,7 +779,7 @@ def test_an_explicit_other_request_returns_only_other_themes(monkeypatch):
     assert r.data["themes"] == ["Green Shipping"]
     assert r.data["main_themes"] == []
     assert "Energy" not in r.rendered
-    assert r.rendered.startswith("The collection covers 1 other theme:")
+    assert r.rendered.startswith("The collection covers **1 other theme**:")
 
 
 def test_asking_for_other_themes_when_there_are_none_falls_through(monkeypatch):
