@@ -33,7 +33,7 @@ from app.retrieval.structured.entities import (
 from app.retrieval.structured import detail as structured_detail
 from app.retrieval.structured import topic
 from app.retrieval.structured.filters import AmbiguousFilter, _parse_date, resolve_filters
-from app.retrieval.structured.rendering import item_line, md_link, record_date
+from app.retrieval.structured.rendering import card, item_line, md_link, record_date
 from app.retrieval.structured.types import GroupBy, RecordFilters, ToolResult
 from app.schemas.query import Citation
 
@@ -304,19 +304,34 @@ def _list_lead(
 def _render_records(
     records: Sequence[StateRecord], output_format: str, *, bundle: str | None,
     filters: RecordFilters, total: int | None = None, ranked: bool = False,
+    facets: dict[str, dict[str, list[str]]] | None = None,
 ) -> tuple[str, list[dict], list[dict]]:
     """Body + structured records + citations, in one consistent order (timeline
-    sorts newest-first; citations follow the rendered order)."""
+    sorts newest-first; citations follow the rendered order).
+
+    ``facets`` (authors and themes per document) is set when the answer may
+    carry detail: one document is then shown as a card, several with bylines."""
+    separator = "\n"
     if output_format == "timeline":
         ordered = sorted(records, key=lambda r: r.effective_start_date or "", reverse=True)
         body = _render_list_timeline(ordered)
     elif output_format == "table":
         ordered = list(records)
         body = _render_list_table(ordered)
+    elif facets is not None and len(records) == 1:
+        ordered = list(records)
+        found = facets.get(ordered[0].document_id, {})
+        body = card(ordered[0], authors=found.get("authors", ()),
+                    themes=found.get("themes", ()))
+        separator = "\n\n"
     else:
         ordered = list(records)
         # The kind of each item is only news when the list spans several kinds.
-        body = "\n".join(item_line(r, with_type=bundle is None) for r in ordered)
+        body = "\n".join(
+            item_line(r, with_type=bundle is None,
+                      authors=(facets or {}).get(r.document_id, {}).get("authors", ()))
+            for r in ordered
+        )
     citations = [
         Citation(
             n=i, type="website", title=r.title, url=r.url,
@@ -335,7 +350,7 @@ def _render_records(
     # the same information `count_records` already states in its own sentence,
     # so a list answer is no less specific than a count of the same query.
     lead = _list_lead(len(ordered), total, bundle, filters, ranked=ranked)
-    return lead + "\n" + body, data, citations
+    return lead + separator + body, data, citations
 
 
 def _theme_section(label: str, names: list[str], output_format: str) -> str:
@@ -533,12 +548,14 @@ def list_records(
     offset: int = 0,
     output_format: str = "default",
     fields: Sequence[str] | None = None,
+    detail: bool = False,
 ) -> ToolResult:
     """List matching documents, most recent first (the only backing sort today).
     Empty result returns ok=False. Filter-resolution semantics match
     `count_records` (see `_scope_guard` / `_empty_result_miss`). `fields` narrows
     the metadata keys in `data["records"]`; `rendered` is unaffected (see
-    `_project_fields`)."""
+    `_project_fields`). ``detail`` adds bylines (a card for a single document)
+    and a follow-up (see `app.retrieval.structured.detail.for_list`)."""
     guarded = _entity_guard("list_records", entity)
     if guarded is not None:
         return guarded
@@ -580,7 +597,12 @@ def list_records(
         # A topic ranks rows by match before recency, and a later page is not
         # the most recent either.
         ranked=bool(scope.topic_terms) or offset > 0,
+        facets=structured_detail.facets(records) if detail else None,
     )
+    if detail:
+        rendered = structured_detail.for_list(
+            len(records), total=total, filters=scope.effective,
+        ).render_onto(rendered)
     return ToolResult(
         tool="list_records", entity=bundle, ok=True,
         data={"records": _project_fields(data, fields),
@@ -630,13 +652,15 @@ def lookup_record(
     limit: int = 10,
     output_format: str = "default",
     question: str | None = None,
+    detail: bool = False,
 ) -> ToolResult:
     """Find a specific document by title. Returns the list rendering AND a
     `chain_document_id` when the lookup uniquely identifies a document for a
     content question (the caller may then route into the QA path)."""
     chain_id = _resolve_chain(title, question, output_format)
     scoped = replace(filters, title_contains=title or filters.title_contains)
-    result = list_records(entity, scoped, limit=limit, output_format=output_format)
+    result = list_records(entity, scoped, limit=limit, output_format=output_format,
+                          detail=detail)
     return ToolResult(
         tool="lookup_record",
         entity=result.entity,

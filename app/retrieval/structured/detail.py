@@ -249,6 +249,35 @@ def for_zero(
     return detail
 
 
+def facets(records: Sequence[Any]) -> dict[str, dict[str, list[str]]]:
+    """Authors and themes for the documents a list shows; {} on failure, which
+    leaves the list exactly as it renders without detail."""
+    ids = [getattr(r, "document_id", None) for r in records]
+    return _safe("facets", lambda: state.facets_for([i for i in ids if i]), {})
+
+
+def for_list(shown: int, *, total: int | None, filters: RecordFilters) -> Detail:
+    """Beneath a list: for a single document, that its content can be asked
+    about; for a page cut from a larger set, how to narrow it. Only the
+    dimensions the question has not already fixed are offered."""
+    detail = Detail()
+    if shown == 1 and not total:
+        detail.add("Ask me what it says, and I'll answer from the document itself.")
+        return detail
+    if not total or total <= shown:
+        return detail
+    dimensions = [word for word, fixed in (
+        ("year", filters.date_from or filters.date_to),
+        ("theme", filters.theme),
+        ("author", filters.author),
+    ) if not fixed]
+    if dimensions:
+        options = (dimensions[0] if len(dimensions) == 1
+                   else f"{', '.join(dimensions[:-1])} or {dimensions[-1]}")
+        detail.add(f"You can ask me to narrow these down by {options}.")
+    return detail
+
+
 def scope_total(common: dict[str, Any]) -> int | None:
     """How many documents a breakdown's scope holds, or None when unknown —
     the total a breakdown leads with, counted over the same filters."""

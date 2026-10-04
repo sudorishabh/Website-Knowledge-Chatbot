@@ -390,3 +390,73 @@ def test_a_breakdown_without_a_total_keeps_its_plain_lead(catalog, monkeypatch):
     catalog.values = [("Energy", 40), ("Climate Change", 32)]
     r = tools.aggregate_records(None, "theme", RecordFilters(), detail=True)
     assert r.rendered.startswith("Distribution of items by theme:")
+
+
+# --------------------------------------------------------------------------- #
+# A list, and a single document.
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def facets(monkeypatch):
+    found = {}
+    monkeypatch.setattr("app.catalog.queries.facets_for",
+                        lambda ids: {i: found[i] for i in ids if i in found})
+    return found
+
+
+def test_a_single_document_is_shown_as_a_card(catalog, facets):
+    catalog.rows = [_row(0)]
+    facets["d0"] = {"authors": ["Dr Raghab Ray"], "themes": ["Climate Change", "Environment"]}
+    r = tools.lookup_record("article", "Title 0", RecordFilters(), detail=True)
+    assert r.rendered.split("\n\n") == [
+        "Found 1 article with 'Title 0' in the title:",
+        "**[Title 0](https://teriin.org/a/0)**\n"
+        "Article · 20 Apr 2026\n"
+        "By Dr Raghab Ray\n"
+        "Themes: Climate Change, Environment",
+        "Ask me what it says, and I'll answer from the document itself.",
+    ]
+    assert r.citations[0]["title"] == "Title 0"
+
+
+def test_a_card_without_facets_still_shows_what_it_is(catalog, facets):
+    catalog.rows = [_row(0)]
+    r = tools.lookup_record("article", "Title 0", RecordFilters(), detail=True)
+    assert "**[Title 0](https://teriin.org/a/0)**\nArticle · 20 Apr 2026" in r.rendered
+    assert "By " not in r.rendered and "Themes:" not in r.rendered
+
+
+def test_listed_items_carry_bylines(catalog, facets):
+    catalog.rows = [_row(0), _row(1)]
+    facets["d0"] = {"authors": ["& Sharma, A.", "Dr B", "Dr C", "Dr D"], "themes": []}
+    r = tools.list_records("article", RecordFilters(), detail=True)
+    assert ("- [Title 0](https://teriin.org/a/0) — 20 Apr 2026 · by Dr B, Dr C "
+            "and 2 others") in r.rendered
+    assert "- [Title 1](https://teriin.org/a/1) — 20 Apr 2026\n" in r.rendered + "\n"
+
+
+def test_a_cut_list_offers_the_dimensions_still_open(catalog, facets):
+    catalog.rows = [_row(i) for i in range(3)]
+    r = tools.list_records("article", RecordFilters(theme="Energy"), limit=3,
+                           detail=True)
+    assert r.rendered.endswith("You can ask me to narrow these down by year or author.")
+
+
+def test_a_whole_list_offers_nothing(catalog, facets):
+    catalog.rows = [_row(i) for i in range(3)]
+    r = tools.list_records("article", RecordFilters(), limit=10, detail=True)
+    assert "You can ask" not in r.rendered
+
+
+def test_a_failing_facet_read_leaves_the_plain_list(catalog, monkeypatch):
+    def boom(ids):
+        raise RuntimeError("db blip")
+
+    monkeypatch.setattr("app.catalog.queries.facets_for", boom)
+    catalog.rows = [_row(0), _row(1)]
+    r = tools.list_records("article", RecordFilters(), detail=True)
+    assert r.rendered == (
+        "Found 2 articles:\n"
+        "- [Title 0](https://teriin.org/a/0) — 20 Apr 2026\n"
+        "- [Title 1](https://teriin.org/a/1) — 20 Apr 2026"
+    )

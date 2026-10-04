@@ -149,3 +149,32 @@ def test_the_table_names_the_kind_and_dates_precisely(monkeypatch):
     r = tools.list_records(None, RecordFilters(), output_format="table")
     assert "| 2024 | policy brief |" in r.rendered
     assert "[Clean Air Starts at Home](https://teriin.org/article/clean-air)" in r.rendered
+
+
+# --------------------------------------------------------------------------- #
+# names and card
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize(
+    "people, most, expected",
+    [
+        ([], 2, ""),
+        (["A"], 2, "A"),
+        (["B", "A"], 2, "A and B"),
+        (["A", "B", "C"], 2, "A, B and 1 other"),
+        (["A", "B", "C", "D"], 2, "A, B and 2 others"),
+        (["A", "B", "C", "D"], 6, "A, B, C and D"),
+        (["& Sharma, A.", "Sharma, A.", " "], 2, "Sharma, A."),
+    ],
+)
+def test_names_reads_as_a_byline(people, most, expected):
+    assert rendering.names(people, most=most) == expected
+
+
+def test_card_states_one_fact_per_line():
+    text = rendering.card(_row(bundle="research_papers"), authors=["B", "A"],
+                          themes=["Energy"])
+    assert text == (
+        "**[Clean Air Starts at Home](https://teriin.org/article/clean-air)**\n"
+        "Research paper · 20 Apr 2026\nBy A and B\nThemes: Energy"
+    )

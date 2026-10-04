@@ -991,6 +991,46 @@ def abstracts_for(document_ids: Sequence[str]) -> dict[str, dict[str, Any]]:
     }
 
 
+def facets_for(document_ids: Sequence[str]) -> dict[str, dict[str, list[str]]]:
+    """Authors and top-level themes per document, keyed by document_id, for
+    showing documents an answer names — never for filtering.
+
+    Themes are the primary tags only: question time speaks of themes, not the
+    sub-themes stored beneath them. Authors come back alphabetically, since the
+    facet table records no byline order. A document with neither is absent.
+    Fail-open, like the other display reads: an error returns {}."""
+    ids = [d for d in document_ids if d]
+    if not ids:
+        return {}
+    table = _table()
+    placeholders = ", ".join(["%s"] * len(ids))
+    themes_excluded = ", ".join(["%s"] * len(_NON_THEME_VALUES))
+    facets: dict[str, dict[str, list[str]]] = {}
+    try:
+        with mysql_connection() as conn, conn.cursor() as cur:
+            cur.execute(
+                f"SELECT document_id, author FROM `{table}_author`"
+                f" WHERE document_id IN ({placeholders}) ORDER BY author",
+                tuple(ids),
+            )
+            for row in cur.fetchall():
+                facets.setdefault(row["document_id"], {"authors": [], "themes": []})[
+                    "authors"].append(row["author"])
+            cur.execute(
+                f"SELECT document_id, theme FROM `{table}_theme`"
+                f" WHERE document_id IN ({placeholders}) AND theme_type = 'primary'"
+                f" AND theme NOT IN ({themes_excluded}) ORDER BY theme",
+                (*ids, *_NON_THEME_VALUES),
+            )
+            for row in cur.fetchall():
+                facets.setdefault(row["document_id"], {"authors": [], "themes": []})[
+                    "themes"].append(row["theme"])
+    except Exception:
+        logger.warning("Catalog facet lookup failed.", exc_info=True)
+        return {}
+    return facets
+
+
 def attachments_for(document_ids: Sequence[str]) -> dict[str, list[dict[str, Any]]]:
     """Attachment rows keyed by document_id — the website→PDF supplementation
     join. Each row: {file_uuid, origin, url, filename}."""

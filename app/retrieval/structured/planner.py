@@ -413,10 +413,12 @@ def _run(call: ToolCall, question: str | None) -> ToolResult:
     if call.tool == "list_records":
         return list_records(call.entity, call.filters, sort=call.sort,
                             limit=call.limit, offset=call.offset,
-                            output_format=call.output_format, fields=call.fields)
+                            output_format=call.output_format, fields=call.fields,
+                            detail=detail)
     if call.tool == "lookup_record":
         return lookup_record(call.entity, call.title, call.filters, limit=call.limit,
-                             output_format=call.output_format, question=question)
+                             output_format=call.output_format, question=question,
+                             detail=detail)
     if call.tool == "aggregate_records":
         return aggregate_records(call.entity, call.group_by, call.filters,
                                  secondary_group_by=call.secondary_group_by,

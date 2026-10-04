@@ -146,7 +146,8 @@ def test_execute_forwards_offset_and_fields_to_list_records(monkeypatch):
     are unreachable from any plan — dead parameter surface."""
     seen = {}
 
-    def fake_list(entity, filters, *, sort, limit, offset, output_format, fields):
+    def fake_list(entity, filters, *, sort, limit, offset, output_format, fields,
+                  detail=False):
         seen.update(limit=limit, offset=offset, fields=fields)
         return ToolResult(tool="list_records", entity=entity)
 
@@ -215,7 +216,8 @@ def test_execute_runs_multiple_calls(monkeypatch):
 def test_execute_passes_question_to_lookup(monkeypatch):
     seen = {}
 
-    def fake_lookup(entity, title, filters, *, limit, output_format, question):
+    def fake_lookup(entity, title, filters, *, limit, output_format, question,
+                    detail=False):
         seen["question"] = question
         seen["title"] = title
         return ToolResult(tool="lookup_record", entity=entity)

@@ -7,7 +7,7 @@ here queries; every function is a pure formatting of values already on hand.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Sequence
 
 from app.retrieval.structured.entities import entity_label
 
@@ -62,12 +62,51 @@ def record_date(record: Any) -> str:
                         getattr(record, "start_precision", None))
 
 
-def item_line(record: Any, *, with_type: bool = False) -> str:
+def _tidy_name(name: Any) -> str:
+    # Free-text author fields carry separators from the byline they were cut
+    # out of ("& Sharma, A."); a trailing full stop is an initial and stays.
+    return " ".join(str(name or "").split()).strip("&,;:/|- ").rstrip(",;&/|-")
+
+
+def names(people: Sequence[str], *, most: int = 2) -> str:
+    """"A", "A and B", "A, B and 3 others" — a byline that stays one line.
+    Names are tidied of stray separators and listed alphabetically."""
+    people = sorted({tidy for p in people if (tidy := _tidy_name(p))}, key=str.casefold)
+    if len(people) > most:
+        rest = len(people) - most
+        return f"{', '.join(people[:most])} and {rest} other{'s' if rest > 1 else ''}"
+    if len(people) <= 1:
+        return "".join(people)
+    return f"{', '.join(people[:-1])} and {people[-1]}"
+
+
+def item_line(
+    record: Any, *, with_type: bool = False, authors: Sequence[str] = ()
+) -> str:
     """One bulleted document: its linked title, then what kind of item it is
-    (when the list spans several kinds) and its date."""
+    (when the list spans several kinds), its date and who wrote it."""
     title = getattr(record, "title", None) or getattr(record, "document_id", "")
     bundle = getattr(record, "bundle", None)
     kind = entity_label(bundle, 1) if with_type and bundle else ""
     meta = ", ".join(part for part in (kind, record_date(record)) if part)
+    if authors:
+        meta = f"{meta} · by {names(authors)}" if meta else f"by {names(authors)}"
     head = md_link(title, getattr(record, "url", None))
     return f"- {head} — {meta}" if meta else f"- {head}"
+
+
+def card(record: Any, *, authors: Sequence[str] = (), themes: Sequence[str] = ()) -> str:
+    """One document on its own: the linked title, then what it is and when,
+    who wrote it, and the themes it is filed under — one fact per line."""
+    title = getattr(record, "title", None) or getattr(record, "document_id", "")
+    bundle = getattr(record, "bundle", None)
+    kind = entity_label(bundle, 1).capitalize() if bundle else ""
+    lines = [f"**{md_link(title, getattr(record, 'url', None))}**"]
+    meta = " · ".join(part for part in (kind, record_date(record)) if part)
+    if meta:
+        lines.append(meta)
+    if authors:
+        lines.append(f"By {names(authors, most=6)}")
+    if themes:
+        lines.append(f"Themes: {', '.join(themes)}")
+    return "\n".join(lines)
