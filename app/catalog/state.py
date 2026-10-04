@@ -579,6 +579,24 @@ def backfill_facets(
     return True
 
 
+def replace_authors(document_id: str, authors: Iterable[str]) -> bool:
+    """Rewrite one cataloged document's author rows, nothing else.
+
+    For a correction to how authors were *read* (see
+    ``scripts.backfill_author_bylines``): the document's content, dates and
+    other facets are untouched. Returns False when no catalog row exists for
+    the id, leaving the child table alone (FK safety), as `backfill_facets` does.
+    """
+    table = _table()
+    with mysql_connection() as conn, conn.cursor() as cur:
+        cur.execute(f"SELECT 1 FROM `{table}` WHERE document_id = %s", (document_id,))
+        if cur.fetchone() is None:
+            return False
+        _replace_authors(cur, table, document_id, authors)
+        conn.commit()
+    return True
+
+
 def reclassify_theme_rows(*, dry_run: bool = False) -> dict[str, int]:
     """Re-apply the theme map to theme rows already in the table, in place.
 
