@@ -38,7 +38,7 @@ def _structure() -> str:
 def test_the_style_names_each_shape_a_question_takes():
     style = _style()
     for shape in ("- Direct fact —", "- List —", "- Selection —", "- Overview —",
-                  "- Comparison —"):
+                  "- Person —", "- Comparison —"):
         assert shape in style, shape
     assert "Pick the one shape below that fits" in style
 
@@ -92,6 +92,26 @@ def test_a_subject_is_stated_plainly_even_when_no_block_defines_it():
 
     assert "saying plainly what X is" in SHAPE_REMINDER
     assert "never \"the sources describe\" or \"X refers here to\"" in SHAPE_REMINDER
+
+
+def test_a_question_for_a_person_is_answered_with_their_profile():
+    """Measured 2026-10-04: "who is the current director general of TERI" came
+    back as her name and a line about an annual report, with her biography in
+    the context — "who" was a direct fact."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    style = _style()
+    fact = style[style.index("- Direct fact —") : style.index("- List —")]
+    assert "nor is a question for a person (the Person shape below)" in fact
+    assert not fact.startswith("- Direct fact — who")
+    person = style[style.index("- Person —") : style.index("- Comparison —")]
+    assert "who holds a post" in person
+    assert "Use every detail the context holds about them" in person
+    assert "is dated (rule 9)" in person
+    assert "a person's profile" in style[style.index("Formatting"):]
+    assert "\"who is the director general\") — is never one fact either" in SHAPE_REMINDER
+    # Without a bullet count the headings did not stick.
+    assert "2-4 ### headings with 2-4 bullets each" in SHAPE_REMINDER
 
 
 def test_a_single_fact_still_carries_its_detail():
@@ -333,7 +353,7 @@ def test_a_long_list_is_grouped_by_what_the_context_states():
     style = _style()
     assert "more than about 12 items is split into 2-4 groups" in style
     assert "something the context states for every item" in style
-    assert "Headings only in an overview, a selection or a grouped long list" in style
+    assert "a selection or a grouped long list" in style
     assert "more than about 12 items grouped under ### headings" in SHAPE_REMINDER
 
 

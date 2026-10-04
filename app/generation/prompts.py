@@ -184,9 +184,10 @@ _ANSWER_STYLE = (
     "Answer style:\n"
     "Pick the one shape below that fits the question and the material, and "
     "follow it.\n"
-    "- Direct fact — who, when, where, how many, yes or no, or anything with "
-    "one specific answer. A question about a subject, field or idea is never "
-    "a direct fact, even one that starts \"what is\". Give the answer in the "
+    "- Direct fact — when, where, how many, yes or no, or anything with one "
+    "specific answer. A question about a subject, field or idea is never a "
+    "direct fact, even one that starts \"what is\", and nor is a question for "
+    "a person (the Person shape below). Give the answer in the "
     "first sentence, then 2-4 "
     "sentences or a few bullets of the detail the context carries around it: "
     "dates, roles, scope, figures, caveats. No headings. Even a one-fact "
@@ -255,6 +256,14 @@ _ANSWER_STYLE = (
     "heading, 2-6 bullets, one point each. The sections add what the opening "
     "did not: never restate the opening as a section. An answer of three or "
     "more sections may close with one sentence that ties them together.\n"
+    "- Person — \"who is X\" or \"tell me about X\" for a person, or who holds "
+    "a post (\"who is the director general\"). Name the person and their "
+    "current post in the first sentence, then their profile under 2-4 ### "
+    "headings with 2-4 bullets each, from what the context gives: what they "
+    "lead and work on, their career and earlier posts with years, their "
+    "education and expertise, other positions and honours. Use every detail "
+    "the context holds about them; a post or affiliation from a dated source "
+    "is dated (rule 9).\n"
     "- Comparison — two or more things across two or more dimensions: a "
     "Markdown table, one row per thing.\n"
     "Formatting, whatever the shape:\n"
@@ -263,7 +272,8 @@ _ANSWER_STYLE = (
     "one sentence.\n"
     "- A bullet is one point in a line or two, starting with the point itself. "
     "Paragraphs stay at 2-4 sentences. No walls of text.\n"
-    "- Headings only in an overview, a selection or a grouped long list, and "
+    "- Headings only in an overview, a person's profile, a selection or a "
+    "grouped long list, and "
     "never over a section with fewer than two points — merge it into a "
     "neighbour instead.\n"
     "- Name each item once, even when several blocks list it; cite those "
@@ -271,7 +281,8 @@ _ANSWER_STYLE = (
     "exception.\n"
     "- When the context's description of an item is cut off mid-sentence, give "
     "the part that is complete; never finish it from your own knowledge.\n"
-    "- A list or an overview that rests mainly on one page whose header gives a "
+    "- A list, an overview or a person's profile that rests mainly on one page "
+    "whose header gives a "
     "`link` ends with one line: Read more: [the page's title](that link), the "
     "address copied exactly from the header. Never write an address the context "
     "does not show, and never add this line to a direct fact.\n"
@@ -598,6 +609,19 @@ GROUNDED_SYSTEM_PROMPT = _build_grounded_prompt()
 # "never the fact alone" because, beside the subject bullet's "never one fact",
 # one-fact answers shrank to the fact: "when was TERI established" came back
 # as one sentence in one run of three until it did.
+#
+# The person bullet: "who is the current director general" was a "who" — a
+# direct fact — and came back as her name and one sentence about an annual
+# report, while the context held her biography. Named people fared little
+# better ("who is Vibha Dhawan": 390-800 characters from a 2,200-character
+# profile). Measured 2026-10-04 on fourteen person questions on shared blocks:
+# a person's profile under headings took answers for a post from 290 to 860
+# characters and for a named person from 970 to 1,330, and a blind judge
+# preferred it 15-8 and 11-1. Asked "who is the senior director of energy", the
+# judge itself leans to the name alone; the user, shown the two-sentence answer,
+# called it bad, and the user is who the answer is for. "2-4 bullets each" is
+# what made the headings stick: told only to give "a short profile", the model
+# wrote three sentences for most people.
 SHAPE_REMINDER = (
     "Every statement comes only from the numbered context above, never from "
     "your own knowledge; when the context says nothing about the question, "
@@ -632,6 +656,14 @@ SHAPE_REMINDER = (
     "every block that adds something about X, not only the first; nothing "
     "repeating the opening; head each section by what its items are, never "
     "by the page section they came from;\n"
+    "- a person — \"who is X\", or who holds a post (\"who is the director "
+    "general\") — is never one fact either: the person and their current post "
+    "in the first sentence, then their profile under 2-4 ### headings with 2-4 "
+    "bullets each — such as what they lead and work on, their career and "
+    "earlier posts (with years), their education and expertise, and other "
+    "positions or honours — using every detail the context holds about them "
+    "and skipping any heading it does not cover; a post a dated source gives "
+    "is dated;\n"
     "- one fact, or yes or no: the answer in the first sentence, then 2-4 "
     "more sentences of what the context says around it (dates, roles, scope, "
     "background), never the fact alone;\n"

@@ -59,7 +59,9 @@ def _sha(*parts: str) -> str:
 #: is answered from their profile.
 #: 2026-10-04.15: a question about a subject ("what is renewable energy") is
 #: answered as an overview from the angles the context covers, never as one fact.
-PIPELINE_REVISION = "2026-10-04.15"
+#: 2026-10-04.16: a person asked for by post ("who is the director general") is
+#: answered from the holder's profile, and every person question as a profile.
+PIPELINE_REVISION = "2026-10-04.16"
 
 
 def _pref_fingerprint() -> str:
