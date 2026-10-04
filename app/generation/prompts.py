@@ -169,12 +169,25 @@ _ANSWER_STRUCTURE = (
 # anti-padding clause is not optional decoration — it is what keeps the extra
 # length coming from the context. The direct-fact floor exists because an
 # abstract "be thorough" lost to the model's own pull toward one-line answers.
+#
+# The overview's angles: a general question ("what is renewable energy", "why
+# is biodiversity important") was read as a definition — a direct fact — and
+# answered in a few lines from two of seven blocks, while 24,000-37,000
+# characters on the subject sat unused. Measured 2026-10-04 on twenty such
+# questions, three runs each on shared blocks: 1,250 characters, 1.6 sections
+# and two thirds of the blocks cited. Saying that a subject is never one fact,
+# and naming the angles a subject is usually covered from — each kept only
+# where the context covers it — gave 2,150 characters, 3.3 sections and four
+# fifths of the blocks, and a blind judge preferred it in 57 of 60 pairs with
+# no more unsupported claims.
 _ANSWER_STYLE = (
     "Answer style:\n"
     "Pick the one shape below that fits the question and the material, and "
     "follow it.\n"
     "- Direct fact — who, when, where, how many, yes or no, or anything with "
-    "one specific answer. Give the answer in the first sentence, then 2-4 "
+    "one specific answer. A question about a subject, field or idea is never "
+    "a direct fact, even one that starts \"what is\". Give the answer in the "
+    "first sentence, then 2-4 "
     "sentences or a few bullets of the detail the context carries around it: "
     "dates, roles, scope, figures, caveats. No headings. Even a one-fact "
     "question gets its fact plus two or three sentences of surrounding "
@@ -225,11 +238,16 @@ _ANSWER_STYLE = (
     "areas (\"I can also list the full ..., or the ... in one area such as "
     "...\"). A question for all, every or the full list is a List, never a "
     "selection.\n"
-    "- Overview —\"tell me about X\", \"what is X\", \"what does X work on\", "
-    "or a subject the context covers from several angles. Open with 1-3 "
-    "sentences saying what X is (and who runs it, and since when, where the "
-    "context says so); the details belong in the sections. Then 2-5 sections, "
-    "each under a short Markdown heading (### Heading) naming what its items "
+    "- Overview —\"tell me about X\", \"what is X\", \"explain X\", \"how does "
+    "X work\", \"why does X matter\", \"what does X work on\", or a subject the "
+    "context covers from several angles. Open with 2-3 sentences saying what X "
+    "is (and who runs it, and since when, where the context says so); the "
+    "details belong in the sections. Then 3-5 sections, each a different angle "
+    "the context covers — for a subject or idea, such as its kinds or how it "
+    "works, why it matters, its scale and progress, its challenges, and what "
+    "the organisation does on it. Draw on every block that adds something "
+    "about X, not only the first. Each section goes "
+    "under a short Markdown heading (### Heading) naming what its items "
     "are — taken from the material itself, such as focus areas, projects, "
     "partners or findings, never the name of the page section they appeared "
     "in, never a fixed template and never \"Overview\" or \"Introduction\". "
@@ -571,6 +589,15 @@ GROUNDED_SYSTEM_PROMPT = _build_grounded_prompt()
 # the model reads outweighs the first. A version that went straight to "the
 # answer first" had "what is the capital of France" answered "Paris" from the
 # model's own knowledge in two of three runs on identical blocks.
+#
+# The subject bullet carries the overview's angles (see `_ANSWER_STYLE`) and
+# says how to open when no block defines the subject: longer answers opened
+# "The sources describe ..." or "X refers here to ..." in a quarter of runs
+# until the opening was told to state it plainly, which brought that below
+# where it started. The one-fact bullet names the detail to add and says
+# "never the fact alone" because, beside the subject bullet's "never one fact",
+# one-fact answers shrank to the fact: "when was TERI established" came back
+# as one sentence in one run of three until it did.
 SHAPE_REMINDER = (
     "Every statement comes only from the numbered context above, never from "
     "your own knowledge; when the context says nothing about the question, "
@@ -591,12 +618,23 @@ SHAPE_REMINDER = (
     "organisation always fits), under ### headings by "
     "level, then a ### By area section when they span several areas, and one "
     "closing sentence offering the full listing or one area;\n"
-    "- \"tell me about X\" / \"what is X\": one or two opening sentences saying "
-    "what X is, then ### sections of bullets holding the details, none "
-    "repeating the opening; head each section by what its items are, never by "
-    "the page section they came from;\n"
-    "- one fact, or yes or no: the answer first, then 2-4 sentences of the "
-    "detail around it;\n"
+    "- a subject, field, idea, programme or body — \"what is X\", \"explain "
+    "X\", \"how does X work\", \"why does X matter\", \"tell me about X\" — is "
+    "never one fact, however short the question: open with 2-3 sentences "
+    "saying plainly what X is, naming its main kinds or parts where the "
+    "context does — built from what the blocks say about X even when none "
+    "defines it, never \"the sources describe\" or \"X refers here to\"; "
+    "then 3-5 ### sections, each a different angle the context covers — such "
+    "as its kinds or how it works, why it matters, its scale and progress "
+    "(figures with their years), its challenges, and what the organisation "
+    "does on it — skipping any angle the context does not cover; under each, "
+    "2-5 bullets of specifics (names, figures, examples, places); draw on "
+    "every block that adds something about X, not only the first; nothing "
+    "repeating the opening; head each section by what its items are, never "
+    "by the page section they came from;\n"
+    "- one fact, or yes or no: the answer in the first sentence, then 2-4 "
+    "more sentences of what the context says around it (dates, roles, scope, "
+    "background), never the fact alone;\n"
     "- when a document was published: rule 9's labelled parts (report "
     "edition; page publication date; report publication date), never a page "
     "date given as the day the document was published;\n"

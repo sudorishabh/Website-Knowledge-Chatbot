@@ -53,8 +53,53 @@ def test_a_list_gives_every_item_on_its_own_line_with_its_description():
 def test_an_overview_is_sectioned_under_headings_taken_from_the_material():
     style = _style()
     assert "### Heading" in style
-    assert "2-5 sections" in style
+    assert "3-5 sections" in style
     assert "never a fixed template" in style
+
+
+def test_a_question_about_a_subject_is_never_a_direct_fact():
+    """Measured 2026-10-04 on twenty general questions ("what is renewable
+    energy", "why is biodiversity important"): read as definitions, they were
+    answered in about 1,250 characters from two thirds of the blocks."""
+    from app.generation.prompts import SHAPE_REMINDER
+
+    style = _style()
+    fact = style[style.index("- Direct fact —") : style.index("- List —")]
+    assert "A question about a subject, field or idea is never a direct fact" in fact
+    overview = style[style.index("- Overview —") : style.index("- Comparison —")]
+    for phrase in ("\"what is X\"", "\"explain X\"", "\"how does X work\"",
+                   "\"why does X matter\""):
+        assert phrase in overview, phrase
+        assert phrase in SHAPE_REMINDER, phrase
+    assert "never one fact, however short the question" in SHAPE_REMINDER
+
+
+def test_a_subject_is_covered_from_the_angles_the_context_gives():
+    from app.generation.prompts import SHAPE_REMINDER
+
+    overview = _style()[_style().index("- Overview —") : _style().index("- Comparison —")]
+    assert "what the organisation does on it" in overview
+    assert "Draw on every block that adds something about X" in overview
+    assert "3-5 ### sections, each a different angle the context covers" in SHAPE_REMINDER
+    # The angles are suggestions, never a template to fill from memory.
+    assert "skipping any angle the context does not cover" in SHAPE_REMINDER
+    assert "(figures with their years)" in SHAPE_REMINDER
+
+
+def test_a_subject_is_stated_plainly_even_when_no_block_defines_it():
+    # Measured: "The sources describe ..." and "X refers here to ..." openings.
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert "saying plainly what X is" in SHAPE_REMINDER
+    assert "never \"the sources describe\" or \"X refers here to\"" in SHAPE_REMINDER
+
+
+def test_a_single_fact_still_carries_its_detail():
+    # Measured: beside "never one fact", one-fact answers shrank to the fact.
+    from app.generation.prompts import SHAPE_REMINDER
+
+    assert ("then 2-4 more sentences of what the context says around it (dates, roles, "
+            "scope, background), never the fact alone") in SHAPE_REMINDER
 
 
 def test_headings_are_kept_out_of_short_answers():

@@ -227,10 +227,10 @@ a list of questions:
 
 | Shape | For | Looks like |
 | --- | --- | --- |
-| Direct fact | who / when / how many / yes-no | The answer in the first sentence, then 2–4 sentences or a few bullets of surrounding detail; no headings |
+| Direct fact | who / when / how many / yes-no — never a question about a subject, even one starting "what is" | The answer in the first sentence, then 2–4 sentences or a few bullets of surrounding detail; no headings |
 | List | the members of a set — themes, centres, programmes, people | One opening sentence, then one bullet per item: **name** — the one-line description the context gives it; every item kept, in order |
 | Selection | the top, leading or key members of a set the context lists at length (more than about 15) | About 12–15 of them, most senior first, under 2–3 `###` headings by level; a `### By area` index; one closing sentence offering the full listing or one area |
-| Overview | "tell me about X", a subject covered from several angles | 1–3 opening sentences, then 2–5 `###` sections whose headings come from the material, 2–6 bullets each; a three-section answer may close with one tying sentence |
+| Overview | "tell me about X", "what is X", "explain X", "how does X work", "why does X matter" — a subject covered from several angles | 2–3 opening sentences, then 3–5 `###` sections, each a different angle the context covers (its kinds or how it works, why it matters, scale and progress, challenges, what the organisation does on it), headed from the material, 2–6 bullets each; draws on every block that adds something; a three-section answer may close with one tying sentence |
 | Comparison | several things across several dimensions | A Markdown table |
 
 Four more rules came from the people questions ("TERI top researchers"):
@@ -279,8 +279,25 @@ nine centres listed inline with `[1]` after each, and an overview of four
 paragraphs with some forty bold phrases. The model was left to invent a
 structure per answer and invented none.
 
+**A question about a subject is never a direct fact.** "What is renewable
+energy" and "why is biodiversity important" were read as definitions: a few
+lines from two of seven blocks, with 24,000–37,000 characters on the subject
+left unused. Measured on 2026-10-04 over twenty general questions, three runs
+each on shared blocks, the answers averaged 1,250 characters, 1.6 sections and
+two thirds of the blocks cited. The overview now names the angles a subject is
+usually covered from, each kept only where the context covers it, and the
+reminder tells the opening to say plainly what the subject is even when no
+block defines it, never "the sources describe …". That gave 2,150 characters,
+3.3 sections and four fifths of the blocks. A blind gpt-5.4 judge preferred
+the new answers in 57 of 60 pairs (completeness 3.5 → 4.9, accuracy 4.8 →
+4.9) with no more unsupported claims. Over eight controls (direct facts,
+lists, the capital of France) it was neutral or better, and the refusal held.
+
 The direct-fact floor ("never a bare clause or a single sentence") stays: an
 abstract "be thorough" lost to the model's own pull toward one-line answers.
+The reminder repeats it ("never the fact alone", naming the dates, roles,
+scope and background to add), because beside "a subject is never one fact"
+the one-fact answers shrank to the fact.
 So does the anti-padding clause: every added sentence or bullet must rest on a
 cited block and say something new, because a shape with sections raises the
 temptation to fill them with restatement.

@@ -57,7 +57,9 @@ def _sha(*parts: str) -> str:
 #: what each covers and holds — and only the home page's themes get figures.
 #: 2026-10-04.14: a listed person named with a misspelling ("PK bhatacharia")
 #: is answered from their profile.
-PIPELINE_REVISION = "2026-10-04.14"
+#: 2026-10-04.15: a question about a subject ("what is renewable energy") is
+#: answered as an overview from the angles the context covers, never as one fact.
+PIPELINE_REVISION = "2026-10-04.15"
 
 
 def _pref_fingerprint() -> str:
