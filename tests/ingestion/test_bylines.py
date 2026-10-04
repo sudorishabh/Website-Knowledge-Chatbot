@@ -118,6 +118,18 @@ def test_the_field_chosen_is_unchanged():
     assert facets["authors"] == ["Dr Malini Balakrishnan"]
 
 
+def test_a_field_with_no_name_gives_way_to_the_next():
+    facets = drupal_facets({
+        "field_rpaper_author": ["reetas@teri.res.in"],
+        "field_rpaper_authors": "Sharma Reeta,  Shekar Alpana C",
+    }, [])
+    assert facets["authors"] == ["Sharma Reeta", "Shekar Alpana C"]
+
+
+def test_no_author_field_no_authors():
+    assert drupal_facets({"field_theme": "Energy"}, [])["authors"] == []
+
+
 def test_tags_and_themes_still_split_on_commas():
     facets = drupal_facets({"field_tags": "Solar, Wind", "field_theme": "Energy"}, [])
     assert facets["tags"] == ["Solar", "Wind"]
