@@ -705,7 +705,7 @@ def test_list_themes_excludes_sub_themes_from_the_default_listing(monkeypatch):
     assert r.data["themes"] == ["Energy"]
     assert r.data["main_themes"] == ["Energy"]
     assert r.data["other_themes"] == []
-    assert r.rendered.startswith("The collection covers 1 main themes:")
+    assert r.rendered.startswith("The collection covers 1 main theme:")
     assert "Energy Access" not in r.rendered
     assert "Green Shipping" not in r.rendered
 
@@ -763,7 +763,7 @@ def test_an_explicit_other_request_returns_only_other_themes(monkeypatch):
     assert r.data["themes"] == ["Green Shipping"]
     assert r.data["main_themes"] == []
     assert "Energy" not in r.rendered
-    assert r.rendered.startswith("The collection covers 1 other themes:")
+    assert r.rendered.startswith("The collection covers 1 other theme:")
 
 
 def test_asking_for_other_themes_when_there_are_none_falls_through(monkeypatch):

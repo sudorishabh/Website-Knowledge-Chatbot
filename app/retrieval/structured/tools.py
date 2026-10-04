@@ -353,13 +353,26 @@ def _render_records(
     return lead + separator + body, data, citations
 
 
-def _theme_section(label: str, names: list[str], output_format: str) -> str:
+def _theme_section(
+    label: str, names: list[str], output_format: str,
+    counts: dict[str, int] | None = None,
+) -> str:
     """One block of a theme listing. An empty `label` renders the bare list, for
-    the case where the surrounding sentence already names what these are."""
+    the case where the surrounding sentence already names what these are.
+    ``counts`` (items per theme) adds a column, or a figure beside each name."""
     if output_format == "table":
-        rows = "\n".join(["| theme |", "| --- |"] + [f"| {_md_cell(n)} |" for n in names])
+        if counts:
+            rows = "\n".join(["| theme | items |", "| --- | --- |"] + [
+                f"| {_md_cell(n)} | {counts.get(n, 0)} |" for n in names])
+        else:
+            rows = "\n".join(["| theme |", "| --- |"] + [f"| {_md_cell(n)} |" for n in names])
         return f"**{label}**\n{rows}" if label else rows
-    body = "\n".join(f"- {n}" for n in names)
+    if counts:
+        body = "\n".join(
+            f"- {n} — {counts.get(n, 0)} {entity_label('items', counts.get(n, 0))}"
+            for n in names)
+    else:
+        body = "\n".join(f"- {n}" for n in names)
     return f"{label}:\n{body}" if label else body
 
 
@@ -970,6 +983,7 @@ def list_themes(
     scope: str = SCOPE_MAIN,
     limit: int = THEME_VOCABULARY_LIMIT,
     output_format: str = "default",
+    detail: bool = False,
 ) -> ToolResult:
     """Enumerate the collection's themes — the **top-level themes only**
     (`theme_type='primary'`, plus themes the map does not know). Rows stored as
@@ -1044,17 +1058,20 @@ def list_themes(
     # which themes these are, and a lone "Main themes:" label implies a second
     # section that is deliberately absent.
     labelled = len(sections) > 1
+    counts = structured_detail.theme_counts() if detail else None
     body = "\n\n".join(
-        _theme_section(label if labelled else "", names, output_format)
+        _theme_section(label if labelled else "", names, output_format, counts)
         for label, names in sections
     )
 
     noun = {
-        SCOPE_MAIN: "main themes", SCOPE_OTHER: "other themes", SCOPE_ALL: "themes",
-    }[scope]
+        SCOPE_MAIN: "main theme", SCOPE_OTHER: "other theme", SCOPE_ALL: "theme",
+    }[scope] + ("" if total == 1 else "s")
+    rendered = f"The collection covers {total} {noun}:\n\n{body}"
+    if detail:
+        rendered = structured_detail.for_themes().render_onto(rendered)
     return ToolResult(
-        tool="list_themes", ok=True, data=data,
-        rendered=f"The collection covers {total} {noun}:\n\n{body}",
+        tool="list_themes", ok=True, data=data, rendered=rendered,
     )
 
 

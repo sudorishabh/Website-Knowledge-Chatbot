@@ -426,7 +426,7 @@ def _run(call: ToolCall, question: str | None) -> ToolResult:
                                  output_format=call.output_format, detail=detail)
     if call.tool == "list_themes":
         return list_themes(scope=call.theme_scope, limit=call.limit,
-                           output_format=call.output_format)
+                           output_format=call.output_format, detail=detail)
     if call.tool == "resolve_entity":
         return resolve_entity(call.query, call.resolve_type)
     return ToolResult(tool=call.tool, entity=call.entity, ok=False,

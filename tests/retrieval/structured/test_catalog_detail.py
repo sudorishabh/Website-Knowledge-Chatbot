@@ -460,3 +460,51 @@ def test_a_failing_facet_read_leaves_the_plain_list(catalog, monkeypatch):
         "- [Title 0](https://teriin.org/a/0) — 20 Apr 2026\n"
         "- [Title 1](https://teriin.org/a/1) — 20 Apr 2026"
     )
+
+
+# --------------------------------------------------------------------------- #
+# The theme listing.
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def vocabulary(monkeypatch):
+    monkeypatch.setattr(
+        "app.catalog.queries.theme_vocabulary",
+        lambda **kw: [
+            {"theme": name, "theme_type": "primary", "parent": None,
+             "theme_group": "main", "documents": 1}
+            for name in ("Climate Change", "Energy")
+        ],
+    )
+
+
+def test_a_theme_listing_says_how_much_each_theme_holds(catalog, vocabulary):
+    catalog.values = [("Climate Change", 1220), ("Energy", 1), ("Air", 359)]
+    r = tools.list_themes(detail=True)
+    assert r.rendered.split("\n\n") == [
+        "The collection covers 2 main themes:",
+        "- Climate Change — 1220 items\n- Energy — 1 item",
+        "You can ask me about the work under any of these — for example, how "
+        "many reports there are on one, or which are the latest.",
+    ]
+    # Counted the way a theme count counts: website content, every group.
+    [(_, kw)] = [c for c in catalog.calls if c[0] == "distribution:theme"]
+    assert kw["source_type"] == "website" and kw["entity_type"] == "node"
+    assert "theme_group" not in kw
+
+
+def test_a_theme_table_gains_an_items_column(catalog, vocabulary):
+    catalog.values = [("Climate Change", 1220), ("Energy", 1154)]
+    r = tools.list_themes(output_format="table", detail=True)
+    assert "| theme | items |" in r.rendered
+    assert "| Climate Change | 1220 |" in r.rendered
+
+
+def test_a_theme_listing_without_counts_is_still_a_listing(catalog, vocabulary, monkeypatch):
+    def boom(group_by, **kw):
+        raise RuntimeError("db blip")
+
+    monkeypatch.setattr("app.catalog.queries.distribution", boom)
+    r = tools.list_themes(detail=True)
+    assert r.rendered.startswith("The collection covers 2 main themes:\n\n"
+                                 "- Climate Change\n- Energy")

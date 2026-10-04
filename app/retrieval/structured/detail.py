@@ -278,6 +278,27 @@ def for_list(shown: int, *, total: int | None, filters: RecordFilters) -> Detail
     return detail
 
 
+def theme_counts() -> dict[str, int]:
+    """Items per theme, counted exactly as "how many items on <theme>" counts
+    them — website content, the theme by exact name — so the figure beside a
+    theme in a listing is the one a follow-up count will give."""
+    rows = _safe(
+        "theme counts",
+        lambda: state.distribution("theme", source_type="website",
+                                   entity_type="node", limit=100),
+        [],
+    )
+    return {str(theme): int(n) for theme, n in rows}
+
+
+def for_themes() -> Detail:
+    """Beneath a theme listing: what can be asked about any one of them."""
+    detail = Detail()
+    detail.add("You can ask me about the work under any of these — for example, "
+               "how many reports there are on one, or which are the latest.")
+    return detail
+
+
 def scope_total(common: dict[str, Any]) -> int | None:
     """How many documents a breakdown's scope holds, or None when unknown —
     the total a breakdown leads with, counted over the same filters."""

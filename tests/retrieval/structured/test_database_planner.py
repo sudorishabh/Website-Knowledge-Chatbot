@@ -55,7 +55,7 @@ def test_execute_lists_top_level_themes_even_when_a_theme_is_named(monkeypatch):
     tool is only ever asked for the theme vocabulary."""
     seen = {}
 
-    def fake_list_themes(*, scope, limit, output_format):
+    def fake_list_themes(*, scope, limit, output_format, detail=False):
         seen.update(scope=scope)
         return ToolResult(tool="list_themes")
 
@@ -132,7 +132,7 @@ def test_execute_routes_to_tool(monkeypatch):
 def test_execute_routes_to_list_themes(monkeypatch):
     monkeypatch.setattr(
         planner, "list_themes",
-        lambda *, scope, limit, output_format: ToolResult(
+        lambda *, scope, limit, output_format, detail=False: ToolResult(
             tool="list_themes", data={"themes": ["Climate"]}
         ),
     )
