@@ -331,7 +331,8 @@ def _render_records(
         # The kind of each item is only news when the list spans several kinds.
         body = "\n".join(
             item_line(r, with_type=bundle is None,
-                      authors=(facets or {}).get(r.document_id, {}).get("authors", ()))
+                      authors=(facets or {}).get(r.document_id, {}).get("authors", ()),
+                      listed_by=filters.author)
             for r in ordered
         )
     citations = [

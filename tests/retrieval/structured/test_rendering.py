@@ -93,6 +93,18 @@ def test_item_line_without_a_date_or_link():
     assert rendering.item_line(_row(url=None, date=None)) == "- Clean Air Starts at Home"
 
 
+def test_a_list_by_one_author_names_only_the_co_authors():
+    """Every line of "list articles by Vibha Dhawan" said "by Dr Vibha Dhawan"."""
+    both = ["Dr Vibha Dhawan", "Dr Pushplata Singh"]
+    line = rendering.item_line(_row(), authors=both, listed_by="Dr Vibha Dhawan")
+    assert line.endswith("— 20 Apr 2026 · with Dr Pushplata Singh")
+    alone = rendering.item_line(_row(), authors=["Dr Vibha Dhawan"],
+                                listed_by="Dr Vibha Dhawan")
+    assert alone.endswith("— 20 Apr 2026")
+    assert rendering.item_line(_row(), authors=both).endswith(
+        "· by Dr Pushplata Singh and Dr Vibha Dhawan")
+
+
 # --------------------------------------------------------------------------- #
 # list_records leads and shapes
 # --------------------------------------------------------------------------- #

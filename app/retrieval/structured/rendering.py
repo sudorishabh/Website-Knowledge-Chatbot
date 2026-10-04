@@ -81,16 +81,26 @@ def names(people: Sequence[str], *, most: int = 2) -> str:
 
 
 def item_line(
-    record: Any, *, with_type: bool = False, authors: Sequence[str] = ()
+    record: Any, *, with_type: bool = False, authors: Sequence[str] = (),
+    listed_by: str | None = None,
 ) -> str:
     """One bulleted document: its linked title, then what kind of item it is
-    (when the list spans several kinds), its date and who wrote it."""
+    (when the list spans several kinds), its date and who wrote it.
+
+    In a list of one author's work (``listed_by``) that author goes without
+    saying on every line, so only the co-authors are named — "with ..."."""
     title = getattr(record, "title", None) or getattr(record, "document_id", "")
     bundle = getattr(record, "bundle", None)
     kind = entity_label(bundle, 1) if with_type and bundle else ""
     meta = ", ".join(part for part in (kind, record_date(record)) if part)
-    if authors:
-        meta = f"{meta} · by {names(authors)}" if meta else f"by {names(authors)}"
+    byline = ""
+    if listed_by:
+        others = [a for a in authors if listed_by.casefold() not in a.casefold()]
+        byline = f"with {names(others)}" if others else ""
+    elif authors:
+        byline = f"by {names(authors)}"
+    if byline:
+        meta = f"{meta} · {byline}" if meta else byline
     head = md_link(title, getattr(record, "url", None))
     return f"- {head} — {meta}" if meta else f"- {head}"
 
