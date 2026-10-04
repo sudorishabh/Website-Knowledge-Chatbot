@@ -117,6 +117,26 @@ def test_a_count_across_content_types_gives_its_mix(catalog):
     )
 
 
+def test_a_persons_count_of_one_type_gives_their_total_across_types(catalog):
+    catalog.total, catalog.wider_total = 7, 41
+    r = _count("research_papers", author="Dr Vibha Dhawan")
+    assert r.rendered.split("\n\n")[:2] == [
+        "There are 7 research papers by Dr Vibha Dhawan matching your query.",
+        "They date from 2018 to 2026, with the most (13) in 2025. "
+        "Across all content types there are 41 publications by Dr Vibha Dhawan.",
+    ]
+
+
+def test_a_type_that_is_all_a_person_wrote_adds_no_total(catalog):
+    catalog.total, catalog.wider_total = 7, 7
+    assert "Across all" not in _count("research_papers", author="Dr A").rendered
+
+
+def test_a_type_count_without_a_person_adds_no_total(catalog):
+    catalog.wider_total = 5000
+    assert "Across all" not in _count("research_papers").rendered
+
+
 def _article_share(monkeypatch, *, articles, everything):
     """Counts as the catalog gives them: the Article category alone, or every type."""
     monkeypatch.setattr(

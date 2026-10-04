@@ -205,13 +205,31 @@ def _count_followup(
 # Entry points, one per headline shape.
 # --------------------------------------------------------------------------- #
 
+def all_types_sentence(
+    total: int, *, common: dict[str, Any], bundle: str | None,
+    filters: RecordFilters, scope: str,
+) -> str:
+    """A person's total across every content type, beneath a count of one:
+    "7 research papers by Vibha Dhawan" is better read beside the 41
+    publications they belong to. Nothing when the type is all there is."""
+    if not bundle or not filters.author:
+        return ""
+    n = _safe("all types", lambda: state.count_documents(**{**common, "bundle": None}), 0)
+    if not n or n <= total:
+        return ""
+    return (f"Across all content types there are {n} "
+            f"{entity_label(scope_noun(None, by_author=True), n)}{scope}.")
+
+
 def for_count(
     total: int, *, common: dict[str, Any], bundle: str | None, filters: RecordFilters,
-    named_type: str | None = None,
+    named_type: str | None = None, scope: str = "",
 ) -> Detail:
     """Beneath "There are N <items>": how many are of the type the question
     named, when the count was widened past it; when they date from; their type
-    mix (when the count spans types); the most recent few; and what to ask next."""
+    mix (when the count spans types), or a person's total across types (when it
+    does not); the most recent few; and what to ask next. ``scope`` is the
+    headline's own scope phrase (" by Dr Vibha Dhawan in 2024")."""
     detail = Detail()
     if total <= 0:
         return detail
@@ -226,6 +244,8 @@ def for_count(
         year_sentence(years, total=total,
                       period_fixed=bool(filters.date_from or filters.date_to)),
         type_sentence(common, total) if bundle is None and total > 1 else "",
+        all_types_sentence(total, common=common, bundle=bundle, filters=filters,
+                           scope=scope),
     ]
     detail.add(" ".join(s for s in sentences if s))
     items, citations = recent_items(common, total=total, with_type=bundle is None)

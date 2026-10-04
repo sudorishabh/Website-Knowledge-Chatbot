@@ -506,7 +506,7 @@ def count_records(
         elif total:
             extra = structured_detail.for_count(
                 total, common=common, bundle=bundle, filters=scope.effective,
-                named_type=named_type,
+                named_type=named_type, scope=phrase,
             )
         else:
             extra = structured_detail.for_zero(
