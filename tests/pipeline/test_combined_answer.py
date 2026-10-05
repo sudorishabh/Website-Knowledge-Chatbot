@@ -356,6 +356,50 @@ def test_the_catalog_answer_still_wins_when_the_graph_declines(monkeypatch):
     assert seen["graph"] == 1
 
 
+def test_a_count_the_catalog_made_is_not_replaced_by_the_graph(monkeypatch):
+    """"How many publications by Vibha Dhawan" was answered "the knowledge graph
+    records six" over the catalog's 41 whenever the graph answered in time."""
+    seen = _wire_structured(
+        monkeypatch,
+        structured={"answer": "**Dr Vibha Dhawan** has **41 publications**.",
+                    "catalog_answered": True},
+        graph_blocks=[_graph_block()],
+    )
+
+    def counting_pq():
+        pq = _structured_pq()
+        pq.analysis.operation = "count"
+        return pq
+
+    monkeypatch.setattr(pipe, "process", lambda q, h: counting_pq())
+    result, generation = pipe._prepare("q", history=None, top_k=6)
+
+    assert generation is None
+    assert result["answer"].endswith("**41 publications**.")
+    assert seen["graph"] == 0
+
+
+def test_a_clarification_the_catalog_asked_can_still_be_answered_by_the_graph(
+    monkeypatch,
+):
+    seen = _wire_structured(
+        monkeypatch,
+        structured={"answer": "'projects' matches more than one content type"},
+        graph_blocks=[_graph_block()],
+    )
+
+    def counting_pq():
+        pq = _structured_pq()
+        pq.analysis.operation = "count"
+        return pq
+
+    monkeypatch.setattr(pipe, "process", lambda q, h: counting_pq())
+    result, generation = pipe._prepare("q", history=None, top_k=6)
+
+    assert result is None and generation is not None
+    assert seen["graph"] == 1
+
+
 def test_the_graph_is_attempted_once_per_query(monkeypatch):
     """When the catalog has nothing the branch falls through to `retrieve`, whose
     own graph leg is the one attempt. Trying here as well would double the cost

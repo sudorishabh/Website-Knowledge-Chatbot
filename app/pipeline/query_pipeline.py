@@ -832,7 +832,16 @@ def _prepare(
                 # so the graph is still tried exactly once per query: when
                 # `answer_structured` returns None the fall-through reaches
                 # `retrieve` and the graph leg there is untouched.
-                graph = _graph_generation(pq, top_k=n)
+                #
+                # Not over a count the catalog made. How many there are is the
+                # catalog's to say, and the graph's provisional entities are a
+                # sample of it: measured 2026-10-05, "how many publications are
+                # there by Vibha Dhawan" was answered "the knowledge graph records
+                # six" over the catalog's 41 whenever the graph answered before
+                # its timeout, and 41 when it did not.
+                counted = (structured.get("catalog_answered")
+                           and getattr(pq.analysis, "operation", None) in _COUNTING_OPERATIONS)
+                graph = None if counted else _graph_generation(pq, top_k=n)
                 if graph is not None:
                     return None, graph
                 structured.setdefault("answer_format", pq.answer_format)

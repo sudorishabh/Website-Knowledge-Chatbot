@@ -557,4 +557,7 @@ def answer_structured(
             results, strict=get_settings().entity_resolution_enabled
         )
         return _compose([terminal]) if terminal is not None else None
-    return _compose(ok)
+    # Marks an answer the catalog gave, as opposed to a question it asked back,
+    # so the pipeline can tell a count it must keep from a clarification the
+    # graph may still answer (see `query_pipeline._prepare`).
+    return {**_compose(ok), "catalog_answered": True}
