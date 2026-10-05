@@ -29,8 +29,10 @@ def search_within_documents(
     *,
     limit: int,
     trace_stage: str = "scoped_pull",
+    extra_filter: Sequence[Any] | None = None,
 ) -> list[Candidate]:
-    """Dense search constrained to the given document ids."""
+    """Dense search constrained to the given document ids, and to
+    ``extra_filter`` when given."""
     from qdrant_client.models import FieldCondition, MatchAny
 
     ids = [d for d in document_ids if d][:_MAX_IDS]
@@ -40,7 +42,8 @@ def search_within_documents(
         return search(
             "",  # query text unused when query_vector is supplied
             limit=limit,
-            extra_filter=[FieldCondition(key="document_id", match=MatchAny(any=ids))],
+            extra_filter=[FieldCondition(key="document_id", match=MatchAny(any=ids)),
+                          *(extra_filter or ())],
             query_vector=query_vector,
             trace_stage=trace_stage,
         )

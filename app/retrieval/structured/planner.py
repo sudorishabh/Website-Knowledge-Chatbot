@@ -9,6 +9,7 @@ parallel. See docs/database-planner-architecture.md.
 from __future__ import annotations
 
 import logging
+import re
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Literal
 
@@ -38,6 +39,7 @@ from app.retrieval.structured.tools import (
     resolve_entity,
 )
 from app.retrieval.structured import detail as structured_detail
+from app.retrieval.structured import names
 from app.retrieval.structured import theme_scope
 from app.retrieval.structured import topic
 from app.retrieval.structured.types import (
@@ -103,6 +105,16 @@ def _applied_theme(requested: str | None) -> str | None:
     return requested if resolved and topic.faithful_theme(requested, resolved) else None
 
 
+#: Operations whose rows a name in the question can constrain. Not a lookup,
+#: whose title is the one document asked for.
+_NAMED_OPERATIONS = frozenset({"count", "list", "distribution"})
+#: Of those, the ones that report a number, which nothing but the name can
+#: narrow (a list has its topic constraint).
+_COUNTING_OPERATIONS = frozenset({"count", "distribution"})
+#: A list asked for in full.
+_ASKS_FOR_ALL = re.compile(r"\b(?:all|every|complete|full)\b", re.IGNORECASE)
+
+
 def _tool_call(
     slots: Any, output_format: str, question: str | None = None
 ) -> ToolCall:
@@ -125,6 +137,31 @@ def _tool_call(
         date_from, date_to = _year_dates(getattr(slots, "year", None))
     tags = getattr(slots, "tags", None)
     operation = getattr(slots, "operation", None) or "list"
+    theme = getattr(slots, "theme", None)
+    title = getattr(slots, "title_contains", None)
+    author = getattr(slots, "author", None)
+    # A name no facet places — a series, programme or acronym like WSDS — is
+    # matched in titles by every spelling it has, in place of the slot it came
+    # in, whichever that was (see `app.retrieval.structured.names`).
+    named = None
+    if operation in _NAMED_OPERATIONS and names.enabled():
+        slotted = (theme, author, tags[0] if tags else None, title)
+        named = names.place(
+            question, theme=theme,
+            # Not applied as asked: no theme has the name ("WSDS"), or the
+            # nearest one is broader ("World Environment Day" -> Environment).
+            theme_dropped=bool(theme) and _applied_theme(theme) is None,
+            counting=operation in _COUNTING_OPERATIONS, title=title,
+            covered=[word for value in slotted if value for word in value.split()],
+        )
+    if named is not None and named.slot == "theme":
+        theme = None
+    elif named is not None and named.slot == "title":
+        title = None
+    limit = getattr(slots, "limit", 10) or 10
+    if operation == "list" and question and _ASKS_FOR_ALL.search(question):
+        # "List all the WSDS events in 2026" shown ten of nineteen.
+        limit = max(limit, structured_detail.ALL_ITEMS)
     # A theme restriction belongs on a query that concerns themes: one whose
     # answer is broken down or counted *by* theme, or one whose wording is about
     # themes. On anything else it would silently drop every untagged document.
@@ -154,27 +191,29 @@ def _tool_call(
             # crediting it would leave the question's real subject unconstrained
             # — which is exactly how "reports on climate change adaptation"
             # became "the two most recent reports".
-            theme=_applied_theme(getattr(slots, "theme", None)),
+            theme=_applied_theme(theme),
             tag=tags[0] if tags else None,
-            author=getattr(slots, "author", None),
-            title_contains=getattr(slots, "title_contains", None),
+            author=author,
+            # A title name accounts for its words in every spelling.
+            title_contains=" ".join(
+                v for v in (title, *(named.spellings if named else ())) if v) or None,
         ))
     filters = RecordFilters(
         topic_terms=topic_terms,
-        theme=getattr(slots, "theme", None),
+        theme=theme,
         # The same rule the theme *listing* follows, applied to counts: a
         # question that names no theme is answered over the main structure
         # unless it asks otherwise. `resolve_filters` drops this whenever a
         # theme was named, so a named Other theme stays countable.
         theme_group=_theme_group_for(question, applies=themed),
         tag=tags[0] if tags else None,
-        author=getattr(slots, "author", None),
-        title_contains=getattr(slots, "title_contains", None),
+        author=author,
+        title_contains=title,
+        title_names=named.spellings if named else (),
         date_from=date_from,
         date_to=date_to,
     )
     bundle = getattr(slots, "bundle", None)
-    limit = getattr(slots, "limit", 10) or 10
     if operation == "count":
         return ToolCall(tool="count_records", entity=bundle, filters=filters,
                         count_of=getattr(slots, "count_of", None) or "records",

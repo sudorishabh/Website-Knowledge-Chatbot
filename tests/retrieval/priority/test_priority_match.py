@@ -108,6 +108,28 @@ def test_a_named_person_leads_with_their_profile(reg):
     assert ("People - committee of directors", NAME) in [(t.name, t.reason) for t in targets]
 
 
+def test_a_post_leads_with_its_holder_profile(reg):
+    """Measured 2026-10-04: "who is the current director general of TERI" read
+    the committee listing alone and was answered with her name and a line about
+    an annual report; her profile held her biography."""
+    dg = Person("Dr Vibha Dhawan", "https://teriin.org/profile/vibha-dhawan", "Committee",
+                "Director General")
+    targets = explicit("who is the current director general of TERI", registry=reg, people=[dg])
+    assert targets[0].reason == PERSON
+    assert targets[0].url == "https://teriin.org/profile/vibha-dhawan"
+    assert ("People - committee of directors", NAME) in [(t.name, t.reason) for t in targets]
+
+
+def test_a_named_person_outranks_a_post(reg):
+    dg = Person("Dr Vibha Dhawan", "https://teriin.org/profile/vibha-dhawan", "Committee",
+                "Director General")
+    sethi = Person("Mr Girish Sethi", "https://teriin.org/profile/girish-sethi", "Committee",
+                   "Senior Director, Energy")
+    targets = explicit("did Girish Sethi meet the director general", registry=reg,
+                       people=[dg, sethi])
+    assert [t.name for t in targets if t.reason == PERSON] == ["Mr Girish Sethi"]
+
+
 def test_one_page_is_kept_once_with_its_strongest_reason(reg):
     targets = explicit("climate change theme", registry=reg, theme="Climate Change")
     assert [(t.name, t.reason) for t in targets] == [("Climate Change Theme", NAME)]

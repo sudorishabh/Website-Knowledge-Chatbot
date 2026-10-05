@@ -485,6 +485,7 @@ def retrieve(
                         retrieval_log.bound(title_search),
                         search_query, query_vector,
                         limit=settings.retrieval_candidate_k,
+                        date_scope=date_conditions(filters) or None,
                     )
                     if use_title_leg
                     else None

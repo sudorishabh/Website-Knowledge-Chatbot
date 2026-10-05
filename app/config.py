@@ -239,6 +239,14 @@ class Settings(BaseSettings):
     # over the same filters, no model call. OFF answers with the headline alone,
     # as before. See `app.retrieval.structured.detail`.
     catalog_answer_detail_enabled: bool = True
+    # Count and list a name no facet holds — a series, programme or acronym
+    # ("WSDS events in 2026") — by the titles that carry it, in every spelling
+    # they use, and send a count of a kind of content to the catalog whatever
+    # route understanding chose; a year cut at the catalog's newest date reads
+    # as the year. Reads the website title table. OFF plans the name as before:
+    # a theme nobody has, a substring, or nothing. See
+    # `app.retrieval.structured.names`.
+    catalog_title_names_enabled: bool = True
     reranker_provider: str = "embedding"
     rerank_model: str = ""
     rerank_score_threshold: float = 0.0

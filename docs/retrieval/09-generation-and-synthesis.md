@@ -227,10 +227,11 @@ a list of questions:
 
 | Shape | For | Looks like |
 | --- | --- | --- |
-| Direct fact | who / when / how many / yes-no | The answer in the first sentence, then 2–4 sentences or a few bullets of surrounding detail; no headings |
+| Direct fact | when / where / how many / yes-no — never a question about a subject, even one starting "what is", nor one for a person | The answer in the first sentence, then 2–4 sentences or a few bullets of surrounding detail; no headings |
 | List | the members of a set — themes, centres, programmes, people | One opening sentence, then one bullet per item: **name** — the one-line description the context gives it; every item kept, in order |
 | Selection | the top, leading or key members of a set the context lists at length (more than about 15) | About 12–15 of them, most senior first, under 2–3 `###` headings by level; a `### By area` index; one closing sentence offering the full listing or one area |
-| Overview | "tell me about X", a subject covered from several angles | 1–3 opening sentences, then 2–5 `###` sections whose headings come from the material, 2–6 bullets each; a three-section answer may close with one tying sentence |
+| Overview | "tell me about X", "what is X", "explain X", "how does X work", "why does X matter" — a subject covered from several angles | 2–3 opening sentences, then 3–5 `###` sections, each a different angle the context covers (its kinds or how it works, why it matters, scale and progress, challenges, what the organisation does on it), headed from the material, 2–6 bullets each; draws on every block that adds something; a three-section answer may close with one tying sentence |
+| Person | "who is X", or who holds a post ("who is the director general") | The person and their current post in the first sentence, then a profile under 2–4 `###` headings of 2–4 bullets each (what they lead, career and earlier posts with years, education and expertise, other positions and honours), every detail the context holds; a post from a dated source is dated |
 | Comparison | several things across several dimensions | A Markdown table |
 
 Four more rules came from the people questions ("TERI top researchers"):
@@ -279,8 +280,40 @@ nine centres listed inline with `[1]` after each, and an overview of four
 paragraphs with some forty bold phrases. The model was left to invent a
 structure per answer and invented none.
 
+**A question about a subject is never a direct fact.** "What is renewable
+energy" and "why is biodiversity important" were read as definitions: a few
+lines from two of seven blocks, with 24,000–37,000 characters on the subject
+left unused. Measured on 2026-10-04 over twenty general questions, three runs
+each on shared blocks, the answers averaged 1,250 characters, 1.6 sections and
+two thirds of the blocks cited. The overview now names the angles a subject is
+usually covered from, each kept only where the context covers it, and the
+reminder tells the opening to say plainly what the subject is even when no
+block defines it, never "the sources describe …". That gave 2,150 characters,
+3.3 sections and four fifths of the blocks. A blind gpt-5.4 judge preferred
+the new answers in 57 of 60 pairs (completeness 3.5 → 4.9, accuracy 4.8 →
+4.9) with no more unsupported claims. Over eight controls (direct facts,
+lists, the capital of France) it was neutral or better, and the refusal held.
+
+**A question for a person is never a direct fact either.** "Who is the
+current director general of TERI" came back as her name and one line about an
+annual report, though the context held her biography. "Who" made it a direct
+fact. Named people fared little better: "who is Vibha Dhawan" got 390–800
+characters from a 2,200-character profile. Measured on 2026-10-04 over
+fourteen person questions on shared blocks (eight by post, four by name, two
+controls), the person shape took answers for a post from 290 to 860 characters
+and for a named person from 970 to 1,330. The blind judge preferred it 15–8 and
+11–1. Told only to give "a short profile", the model still wrote three
+sentences for most people; "2–4 bullets each" is what made the headings stick.
+On one point the judge and the user disagree. Asked "who is the senior director
+of energy", the judge leans to the name alone. The user, shown the two-sentence
+answer, called it bad, and the profile is kept for them. The holder's profile
+reaches the context through the post lookup ([13](13-priority-pages.md)).
+
 The direct-fact floor ("never a bare clause or a single sentence") stays: an
 abstract "be thorough" lost to the model's own pull toward one-line answers.
+The reminder repeats it ("never the fact alone", naming the dates, roles,
+scope and background to add), because beside "a subject is never one fact"
+the one-fact answers shrank to the fact.
 So does the anti-padding clause: every added sentence or bullet must rest on a
 cited block and say something new, because a shape with sections raises the
 temptation to fill them with restatement.
@@ -483,7 +516,15 @@ neither blocks nor corrects anything:
 - `numeric_mismatches(answer, blocks)` — numbers appearing in the answer but
   in none of its cited blocks (or, uncited, none of the blocks at all).
   Percent signs and thousands separators are normalised away to keep false
-  positives low.
+  positives low. A block is its header as well as its text: the model is
+  shown each block's title, edition and page date, and rule 9 asks it to
+  date its claims by them. Each number has one spelling ("05" and "5", "95.40"
+  and "95.4"), an abbreviated year range is read as its years ("2022–23"),
+  and a decimal also counts as its whole part (a footnote marker run into a
+  year, "2031.6"). The UI shows the flag as "Some figures in this answer
+  could not be verified". Reading the text alone, it fired on 55 of 196
+  answers measured on 2026-10-04, and all 87 figures it flagged were in the
+  context. With these changes it fired on 2 of 364.
 
 `validate_markers(answer, n_blocks)` is unconditional and cheap: it strips any
 `[n]` whose `n` falls outside `1..n_blocks` — a model citing a block that

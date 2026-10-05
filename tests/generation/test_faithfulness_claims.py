@@ -45,6 +45,33 @@ def test_numeric_checks_only_cited_blocks():
     assert fa.numeric_mismatches("Growth hit 55%.", blocks) == []
 
 
+def test_a_figure_from_the_block_header_is_sourced():
+    """Measured 2026-10-04: 77 of 87 flagged figures were dates and titles the
+    model was shown in a header and told to date its claims by — "the 2022–23
+    annual report also identifies her as Director-General"."""
+    blocks = [_block(1, "From the Director General's desk.", title="Annual Report 2022-2023",
+                     effective_start_date="2023-01-01")]
+    assert fa.numeric_mismatches("The 2022–23 annual report names her [1].", blocks) == []
+    assert fa.numeric_mismatches("A 2023 report names her [1].", blocks) == []
+    assert fa.numeric_mismatches("A 2019 report names her [1].", blocks) == ["2019"]
+
+
+def test_a_figure_written_another_way_is_the_same_figure():
+    blocks = [_block(1, "During 2004–5, 95.40% was collected; 165 million tonnes by 2031.6 "
+                        "The next survey is due 2023-09-21.")]
+    assert fa.numeric_mismatches("For 2004–05, 95.4% was collected [1].", blocks) == []
+    # "2031.6" is the year with a footnote marker run into it.
+    assert fa.numeric_mismatches("165 million tonnes by 2031 [1].", blocks) == []
+    # A date's month is not the end of a year range.
+    assert fa.numeric_mismatches("In 2009 it began [1].", blocks) == ["2009"]
+
+
+def test_an_abbreviated_year_range_is_read_as_its_years():
+    assert fa._numbers("2022–23 and 2004-5 and 1999-00") == {"2022", "2023", "2004", "2005",
+                                                             "1999", "2000"}
+    assert fa._numbers("1,234 on 2023-09-21") == {"1234", "2023", "9", "21"}
+
+
 def test_numeric_empty_cases():
     assert fa.numeric_mismatches("No figures here [1].", [_block(1, "text")]) == []
     assert fa.numeric_mismatches("42 things", []) == []

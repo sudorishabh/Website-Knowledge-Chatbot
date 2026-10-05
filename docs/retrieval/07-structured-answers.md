@@ -193,6 +193,92 @@ Two supporting mechanisms:
 
 ---
 
+## Names no facet holds: a series, programme or acronym, matched in titles
+
+"Tell me the count of all the WSDS related events that happened in 2026" was
+answered "the page does not give a count", while the catalog holds 19. WSDS is
+an event series. The catalog has no facet for a series; its events carry the
+name in their titles ("WSDS 2026 Thematic Track: …"). Measured 2026-10-05 over
+18 such questions, two runs each, query understanding put the name in the
+**theme** slot (WSDS, GRIHA, COP30, Act4Earth, BIPV, TADOX), where no theme has
+it and the count fell through to passage search; in the **title** slot in one
+spelling ("WSDS" missed the curtain raiser titled "World Sustainable
+Development Summit 2027", so 2026 had 18 events, and the full name alone found
+1); or **nowhere** ("how many Green Olympiad events happened" counted all
+1,082). Four of the 18 were routed to passage search outright, which cannot
+count.
+
+`names.py` makes the planner read the name wherever it landed
+(`planner._tool_call`, for counts, lists and breakdowns):
+
+1. a theme slot that will not be applied as asked (`planner._applied_theme`
+   is None): no theme has the name ("WSDS"), or the nearest one is broader
+   ("World Environment Day" resolves to Environment). A name-shaped value
+   always; for a count, any subject — a list keeps a subject by its topic
+   constraint, a count has nothing else to narrow it, and "how many events on
+   air quality in 2026" counted every event of the year. A count whose dropped
+   subject no title carries falls through (`tools._scope_guard`) rather than
+   counting everything;
+2. a title slot, unless the question asks about titles ("titled", a quoted
+   phrase — `names.asks_about_titles`);
+3. a name the question writes that no slot holds (`names.named_in`):
+   consecutive acronyms or capitalised words, holding an acronym ("WSDS", "CEO
+   Forum") or two words long ("Green Olympiad").
+
+The name becomes `RecordFilters.title_names` — every spelling titles use
+(`names.spellings`): as written; an acronym's expansion, found as a run of
+capitalised words whose initials are its letters in two or more titles and
+common beside any rival ("Sustainable Development in Goa" also has SDG's
+initials, in 3 titles against 14); or a full name's acronym. The catalog
+matches it as one word-bounded regular expression (`s.title REGEXP`), singular
+or plural, a space or hyphen allowed where letters meet digits ("COP 30"),
+because a substring is wrong for short names: "ITEC" is inside "architecture"
+and "COP" inside "cooperation". Unlike `topic_terms` it narrows counts and
+breakdowns as well as lists: it stands in for the facet the name was asked as,
+so it is in `ResolvedScope.as_kwargs` and every detail query shares it.
+
+Three limits keep it to names:
+
+- **Shape.** Outside the title slot, an acronym — as typed, or a word the
+  site's titles write only in capitals, typed in lower case ("wsds") — or
+  words the user capitalised. The theme slot is read in the question's own
+  casing, because the model capitalises freely: "renewable energy" stays a
+  subject, for the topic constraint and passage search.
+- **A type to count.** The question must name a kind of content besides the
+  name ("WSDS events", "GRIHA press releases"). "How many Darbari Seth Memorial
+  Lectures have there been" counts editions, which the series' page states
+  (25) and its event pages undercount, so it is left to the page.
+- **In the titles.** A name no title carries keeps its slot's old meaning.
+
+The organisation's own acronym, in 13% of titles, names nothing
+(`names._MAX_TITLE_SHARE`).
+
+The answer says what it counted — "There are **19 events** related to **WSDS**
+in 2026. Each of them names WSDS or World Sustainable Development Summit in its
+title." — and names the pages in the same scope whose text, not title, names it
+(`names.mentioned_in_text`, from the chunk text's full-text index, only when
+the name, a type and a period are the whole scope): "6 more events in 2026 name
+WSDS in their text rather than their title: CEO Forum 2026, …".
+
+Two more pieces close the same failure from the other side:
+
+- **A count goes to the catalog** (`query_processor._route_catalog_count`): a
+  count of a kind of content that understanding labelled `qa` ("how many
+  events were held on COP30") becomes a catalog count. Only when what is
+  counted is a content type (`names.counted_types`, from the content types'
+  own labels as whole phrases): "how many people attended", "how many MW does
+  the report cite" and "how many research staff" stay `qa`. A count of two
+  types at once ("events and news") spans every type, so the breakdown by type
+  gives both.
+- **A count the catalog made is not replaced by the graph.** After a catalog
+  answer `_prepare` still tries the graph, for relational questions read as
+  structured. For a count it no longer does
+  (`answer_structured` marks its own answers `catalog_answered`): "how many
+  publications by Vibha Dhawan" was "the knowledge graph records six" whenever
+  the graph answered before its timeout, and 41 when it did not.
+
+---
+
 ## Theme scope: Main, Other, and never volunteering Other by accident
 
 `theme_scope.py` decides, deterministically and independently of the LLM
@@ -287,8 +373,8 @@ headline used**, so the extra lines cannot disagree with the number above them:
 
 | Answer | Follows the headline with |
 | --- | --- |
-| A count of documents | The years they span and the busiest year; the content-type mix when the count spans types, or — for one type counted under an author, theme or tag — every type the same scope holds, the asked one in bold ("All publications by Dr Suneel Pandey (35)"); the five most recent items, linked, cited and with their authors (only the co-authors under one author), a page published twice under one title shown once; follow-ups that vary ("list them", "break them down by year") |
-| An honest zero | The nearest scope that is not empty: across all dates (and how recent the newest is) when a period emptied it, else across all content types, with that scope's type mix and its newest items |
+| A count of documents | The years they span and the busiest year; the content-type mix when the count spans types, or — for one type counted under an author, theme or tag — every type the same scope holds, the asked one in bold ("All publications by Dr Suneel Pandey (35)"); every item when there are no more than 25 (`ALL_ITEMS`), grouped under the month they date from, or the year when they span several ("February 2026 (18)"), else the five most recent — linked, cited and with their authors (only the co-authors under one author), a page published twice under one title shown once; for a title name, the pages only its text names; follow-ups that vary ("list them", "break them down by year"), none when every item is shown |
+| An honest zero | The nearest scope that is not empty: across all dates (and how recent the newest is) when a period emptied it; across all content types, with that scope's type mix and its newest items, when a type did; both for a subject under a type and a period |
 | A distinct count | The values themselves — all of them when few, else the five largest (for authors, the names that appear most often) |
 | A breakdown | The scope's total in the lead, the year span and peak or the leading group, and a note when a document can sit in several groups |
 | A list | Bylines on each item (only the co-authors in a list by one author); one document is shown as a card (type, date, authors, top-level themes) with an offer to answer from it; under one author, the other types they published (a list of one type) or the type mix (a cut list across types); a cut list offers the dimensions still open |
@@ -471,6 +557,9 @@ existing refusal in place.
 | The home page cannot be read for a theme listing | `priority.evidence.thematic_areas` returns `None` | No overview and no figures; the question goes to retrieval and the model, as before them | — |
 | `count_of` / `group_by` names an unsupported dimension | `_dimension_or_reject` / a `_GROUP_DIMENSIONS` miss | Refused with an explicit error, never a silent default | Fix the caller/plan |
 | Title substring was guessed from the question's subject, count is zero | `_title_guess_zero` | Falls through instead of reporting a corpus-wide zero | Semantic retrieval answers instead |
+| A series, programme or acronym arrives as a theme no one has, a title in one spelling, or not at all | `names.place` | Matched in titles by every spelling, word-bounded; the slot it came in is cleared | — |
+| A count of a kind of content arrives as `qa` | `query_processor._route_catalog_count` | Routed to a catalog count of that type | `_widen_content_question` still sends a text-conditioned count back to `qa` |
+| A zero under a type and a period, for a subject | `detail.for_zero` | The same subject's other dates, and its other types in the period ("no GRIHA events in 2025", 11 news items and press releases) | — |
 | Catalog query raises | `except Exception` around every `state.*` call | `ok=False, error="query failed"`, logged | Falls through |
 | Multi-call planner fails or returns nothing | `plan_multi` exception or empty | `None`, falls back to v1 `plan` | — |
 | Every planned call fails, none terminal | `_terminal_result` finds nothing | `answer_structured` returns `None` | Semantic retrieval is tried next |
@@ -497,6 +586,7 @@ existing refusal in place.
 | `entity_resolution_enabled` | `false` | Whether an ambiguous/missing name match becomes a terminal clarification (`true`) or is absorbed silently as before (`false`). Matching itself always runs. |
 | `structured_topic_constraint_enabled` | `true` | The topic-residual constraint (`topic.py`) that keeps a list from degenerating into "the newest N rows of a large bucket." |
 | `catalog_answer_detail_enabled` | `true` | Whether a catalog answer follows its headline with detail (`detail.py`). Off in the test suite unless a test turns it on (`tests/conftest.py`). |
+| `catalog_title_names_enabled` | `true` | Names matched in titles and counts routed to the catalog (`names.py`), and a year cut at the catalog's newest date read as the year. Reads the website title table. Off in the test suite unless a test turns it on. |
 
 ## Hand-off
 

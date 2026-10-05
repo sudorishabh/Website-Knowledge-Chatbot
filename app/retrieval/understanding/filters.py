@@ -76,14 +76,6 @@ def _parse_bound(value: str | None, *, field: str = "date") -> datetime | None:
     return parsed.replace(tzinfo=timezone.utc) if parsed else None
 
 
-#: A document id no point can carry, for a theme that resolved to no documents.
-#: Qdrant's `MatchAny(any=[])` is an empty disjunction whose meaning is not worth
-#: relying on, so "matches nothing" is stated with a value instead of an absence.
-#: The retriever's facet retry then recovers — a theme nobody is tagged with
-#: falls through to the plain semantic pull rather than refusing.
-_NO_SUCH_DOCUMENT = "\x00-no-document-in-this-theme"
-
-
 def _theme_condition(theme: str) -> Any:
     """Filter for a theme scope: the documents MySQL says are in it.
 
@@ -105,6 +97,15 @@ def _theme_condition(theme: str) -> Any:
     theme scope instead of applying a membership set it does not trust. Failing
     open matches the rest of this path: a MySQL outage degrades retrieval to
     plain semantic search rather than breaking it.
+
+    Also ``None`` when no document carries the theme. The theme vocabulary is
+    the set of names documents carry, so a name none carries is not a theme —
+    it is a word understanding put in the slot ("WSDS", an event series) — and
+    it still reaches search through the question's own words. It used to
+    become a filter matching nothing, left to the retriever's retry on an empty
+    pull; but the title leg does not take the filters, so one stray title hit
+    (a 2021 curtain raiser, for a question about 2026) kept the retry from
+    firing and every other leg searched an empty set.
     """
     from qdrant_client.models import FieldCondition, MatchAny
 
@@ -117,9 +118,10 @@ def _theme_condition(theme: str) -> Any:
             "without a theme filter.", theme,
         )
         return None
-    return FieldCondition(
-        key="document_id", match=MatchAny(any=ids or [_NO_SUCH_DOCUMENT])
-    )
+    if not ids:
+        logger.info("No document carries the theme %r; searching without it.", theme)
+        return None
+    return FieldCondition(key="document_id", match=MatchAny(any=ids))
 
 
 def _facet_filters(analysis: "QueryAnalysis") -> list[Any]:

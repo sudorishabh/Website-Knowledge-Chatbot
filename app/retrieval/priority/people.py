@@ -26,6 +26,10 @@ outranks a name spelt as listed: a misspelt reading is dropped when an exactly
 spelt name, or a reading explaining more of the question, covers the same
 words. "Dr Bhattacharjya" is therefore Mr Souvik Bhattacharjya, not a misspelt
 Dr Bhattacharya, while "Souvik Bhattacharya" still names him.
+
+A question naming nobody may ask for someone by their post — "who is the
+current director general", "the senior director of energy" — and is answered
+from the profile of whoever the listings give that title (:func:`holding`).
 """
 from __future__ import annotations
 
@@ -56,6 +60,22 @@ _ASPIRATE = re.compile(r"(?<=[b-df-hj-np-tv-z])h")
 #: A doubled letter ("Bhattacharya", "Bhatacharya").
 _DOUBLED = re.compile(r"(.)\1+")
 
+#: Where a listed title turns from the post to its area: "Senior Director,
+#: Energy", "Chairman - Governing Council", "Director – Business Development".
+_TITLE_SPLIT = re.compile(r"\s*,\s*|\s+[-–—]\s+")
+#: Words an area may be named without ("Water Waste and Natural Resources").
+_AREA_FILLER = frozenset({"and", "of", "the", "for", "in", "teri"})
+#: Shorthand for a post.
+_POST_SHORTHAND = {"dg": "director general"}
+#: Words that ask who held a post, not who holds it ("the first director
+#: general", "who was the chairman"). The listings say only who holds it now.
+_PAST = frozenset("""
+    first former formerly previous previously past founding founder earlier
+    was were until before predecessor predecessors served stepped retired
+    resigned succeeded preceded history
+""".split())
+_YEAR = re.compile(r"\b(?:19|20)\d\d\b")
+
 
 @dataclass(frozen=True)
 class Person:
@@ -79,6 +99,14 @@ class Person:
         than two of them — one letter is too common to say anything."""
         letters = "".join(t for t in normalize_text(self.name).split() if len(t) == 1)
         return letters if len(letters) > 1 else ""
+
+    @property
+    def post(self) -> tuple[str, frozenset[str]]:
+        """The title as the post held and the words of its area: "Senior
+        Director, Energy" is ("senior director", {"energy"}), "Chairman -
+        Governing Council" ("chairman", {"governing", "council"})."""
+        post, area = (_TITLE_SPLIT.split(self.title or "", maxsplit=1) + [""])[:2]
+        return normalize_text(post), frozenset(normalize_text(area).split()) - _AREA_FILLER
 
 
 def people_on(content: PageContent, listing: str) -> list[Person]:
@@ -228,3 +256,43 @@ def named_in(question: str, people: list[Person]) -> list[Person]:
     for reading in kept:
         ordered.setdefault(reading.person.parts, reading.person)
     return list(ordered.values())
+
+
+def holding(question: str, people: list[Person]) -> list[Person]:
+    """The people whose post ``question`` asks about: "who is the current
+    director general" is whoever the listings give that title.
+
+    The post must be in the question as a phrase, and so must every word of its
+    area, unless one person alone on the listings holds that post ("the
+    chairman"). The closest titles win, so "the senior director of electricity
+    and renewables" is the senior director, not the director of the same area.
+    More than two people at that closeness ("the members of the governing
+    council") is a question for the listing, not for profiles. A question about
+    a past holder names nobody here: the listings say who holds a post now.
+    """
+    text = normalize_text(question)
+    for short, full in _POST_SHORTHAND.items():
+        text = re.sub(rf"(?<!\w){short}(?!\w)", full, text)
+    words = set(text.split())
+    if words & _PAST or _YEAR.search(question):
+        return []
+    holders: dict[str, set[tuple[str, ...]]] = {}
+    for person in people:
+        holders.setdefault(person.post[0], set()).add(person.parts)
+    scored: list[tuple[int, Person]] = []
+    for person in people:
+        post, area = person.post
+        if not post or not re.search(rf"(?<!\w){re.escape(post)}(?!\w)", text):
+            continue
+        if area and area <= words:
+            scored.append((len(post.split()) + len(area), person))
+        elif len(holders[post]) == 1:
+            scored.append((len(post.split()), person))
+    if not scored:
+        return []
+    best = max(score for score, _ in scored)
+    found: dict[tuple[str, ...], Person] = {}
+    for score, person in scored:
+        if score == best:
+            found.setdefault(person.parts, person)
+    return list(found.values()) if len(found) <= 2 else []

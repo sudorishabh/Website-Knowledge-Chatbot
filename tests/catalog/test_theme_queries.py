@@ -276,16 +276,16 @@ def test_theme_condition_scopes_by_catalog_document_ids(monkeypatch):
     assert "s.source_type = %s" not in sql
 
 
-def test_theme_condition_matches_nothing_when_the_theme_has_no_documents(monkeypatch):
-    """Distinct from a lookup failure. The theme resolved; nobody is in it. The
-    retriever's facet retry then falls through to the plain semantic pull."""
+def test_a_theme_no_document_carries_is_dropped_from_search(monkeypatch):
+    """The theme vocabulary is the names documents carry, so a name none carries
+    is not a theme — "WSDS", an event series understanding put in the slot. It
+    used to become a filter matching nothing, which emptied every leg that takes
+    the filters while the title leg's one stray hit kept the empty-pull retry
+    from firing. Dropped, the name still reaches search as the question's words."""
     cursor = _FakeCursor(fetchall_results=[[]])
     _patch(monkeypatch, state, cursor)
 
-    condition = qp._theme_condition("Energy")
-
-    assert condition.key == "document_id"
-    assert condition.match.any == [qfilters._NO_SUCH_DOCUMENT]
+    assert qp._theme_condition("WSDS") is None
 
 
 def test_theme_condition_fails_open_when_the_catalog_cannot_answer(monkeypatch):

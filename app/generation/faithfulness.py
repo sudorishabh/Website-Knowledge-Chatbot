@@ -198,17 +198,47 @@ def verify(answer: str, blocks: "list[ContextBlock]") -> FaithfulnessReport:
 
 # Numbers/percents in answers, thousands separators tolerated ("1,234").
 _NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+# A year range with its end abbreviated ("2022–23", "2004-5"); never the
+# year-month of a date ("2023-09-21").
+_YEAR_RANGE = re.compile(
+    r"(?<![\d-])((?:19|20)\d\d)\s*[-–—/]\s*(\d{1,2})(?!\d|[.,]\d|[-–—/]\d)"
+)
+
+
+def _full_year(start: str, end: str) -> str:
+    year = int(start[: 4 - len(end)] + end)
+    return str(year + 10 ** len(end) if year < int(start) else year)
+
+
+def _value(token: str) -> str:
+    """One spelling per number: "1,234" and "1234", "05" and "5", "95.40"
+    and "95.4" are the same figure."""
+    whole, _, fraction = token.replace(",", "").partition(".")
+    whole, fraction = whole.lstrip("0") or "0", fraction.rstrip("0")
+    return f"{whole}.{fraction}" if fraction else whole
 
 
 def _numbers(text: str) -> set[str]:
-    return {m.replace(",", "") for m in _NUMBER.findall(text)}
+    text = _YEAR_RANGE.sub(lambda m: f"{m.group(1)} {_full_year(*m.groups())}", text)
+    return {_value(m) for m in _NUMBER.findall(text)}
 
 
 def numeric_mismatches(answer: str, blocks: "list[ContextBlock]") -> list[str]:
     """Numbers in the answer that appear in no cited block (all blocks when
     nothing is cited). Deterministic, no LLM — an observability signal, not a
     blocker; percent signs and thousands separators are normalized away to
-    keep false flags low."""
+    keep false flags low.
+
+    A block is its header as well as its text: the model is shown each block's
+    title, edition and page date, and rule 9 asks it to date what it reports
+    ("a 2023 report"), so those figures are sourced. Reading the text alone,
+    the check flagged 55 of 196 answers on 2026-10-04, and every one of the 87
+    figures it flagged was in the context: 77 in a header ("the 2022–23 annual
+    report"), the rest written another way — "2004–05" for "2004–5", "95.4%"
+    for "95.40%", "2031" for "2031.6" with a footnote marker run into it. Hence
+    the header, one spelling per number, and the whole part of a decimal."""
+    from app.generation.prompts import _source_hint
+
     if not blocks:
         return []
     stripped = _MARKER.sub(" ", answer)  # citation markers are not claims
@@ -216,8 +246,9 @@ def numeric_mismatches(answer: str, blocks: "list[ContextBlock]") -> list[str]:
     if not claimed:
         return []
     cited = extract_markers(answer)
-    texts = [b.text for b in blocks if not cited or b.n in cited]
     available: set[str] = set()
-    for text in texts:
-        available |= _numbers(text)
+    for block in blocks:
+        if not cited or block.n in cited:
+            available |= _numbers(f"{_source_hint(block.payload)}\n{block.text}")
+    available |= {n.partition(".")[0] for n in available}
     return sorted(n for n in claimed if n not in available)
