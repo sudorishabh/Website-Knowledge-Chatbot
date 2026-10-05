@@ -48,6 +48,12 @@ class RecordFilters:
     tag: str | None = None
     author: str | None = None
     title_contains: str | None = None
+    # A name no facet places — a series, programme or acronym ("WSDS") — in
+    # every spelling titles use ("WSDS", "World Sustainable Development
+    # Summit"). The title must carry one of them, word-bounded. Unlike
+    # `topic_terms` it narrows counts and breakdowns too: it stands in for the
+    # facet the name was asked as. See `app.retrieval.structured.names`.
+    title_names: tuple[str, ...] = ()
     # Subject words the closed facet set cannot express, kept so a list can still
     # be constrained by what the question is actually about. Any one of them must
     # appear in the title; rows matching more of them rank higher. See

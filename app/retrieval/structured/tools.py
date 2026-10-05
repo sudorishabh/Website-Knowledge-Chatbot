@@ -32,6 +32,7 @@ from app.retrieval.structured.entities import (
     scope_noun,
 )
 from app.retrieval.structured import detail as structured_detail
+from app.retrieval.structured import names
 from app.retrieval.structured import topic
 from app.retrieval.structured.filters import AmbiguousFilter, _parse_date, resolve_filters
 from app.retrieval.structured.rendering import (
@@ -62,7 +63,13 @@ def _period_label(filters: RecordFilters) -> str:
     raw bound, which is already what an exclusive end means."""
     df, dt = filters.date_from, filters.date_to
     lo, hi = _parse_date(df), _parse_date(dt)
-    if lo and hi and (lo.month, lo.day) == (1, 1) and hi == datetime(lo.year + 1, 1, 1):
+    if lo and hi and (lo.month, lo.day) == (1, 1) and (
+        hi == datetime(lo.year + 1, 1, 1)
+        or (hi < datetime(lo.year + 1, 1, 1) and _past_the_catalog(hi))
+    ):
+        # Understanding ends "in 2026" at the newest date the catalog holds, as
+        # its prompt asks; nothing lies past that bound, so it is still the year
+        # the user named, not "between 2026-01-01 and 2026-09-18".
         return f" in {lo.year}"
     if df and dt:
         last = inclusive_end(dt) or dt
@@ -72,6 +79,20 @@ def _period_label(filters: RecordFilters) -> str:
     if dt:
         return f" before {dt}"
     return ""
+
+
+def _past_the_catalog(bound: datetime) -> bool:
+    """Whether an exclusive end bound lies past the newest date the catalog
+    holds, so that it excludes nothing. False when that date is unknown, and
+    with `catalog_title_names_enabled` off, which this reading shipped under."""
+    if not names.enabled():
+        return False
+    try:
+        newest = _parse_date(state.effective_date_range()[1])
+    except Exception:
+        logger.debug("Catalog date range unavailable.", exc_info=True)
+        return False
+    return bool(newest) and bound > newest
 
 
 def _quoted(name: str) -> str:
@@ -112,6 +133,10 @@ def _scope_phrase(
         parts.append(f" on {mark(filters.theme)}")
     if filters.tag:
         parts.append(f" tagged {mark(filters.tag)}")
+    if filters.title_names:
+        # Named as the question named it; the basis sentence after a count's
+        # headline says the match is by title (see `names.basis`).
+        parts.append(f" related to {mark(filters.title_names[0])}")
     if filters.title_contains:
         parts.append(f" with '{filters.title_contains}' in the title")
     parts.append(_period_label(filters))
@@ -144,7 +169,8 @@ def _count_headline(total: int, noun: str, filters: RecordFilters) -> str:
     from whenever no theme or tag does; a person's own total elsewhere (books,
     papers in other venues) is not what the catalog counts."""
     rest = _scope_phrase(filters, mark=_bold, author=False)
-    placed = bool(filters.theme or filters.tag or filters.title_contains)
+    placed = bool(filters.theme or filters.tag or filters.title_contains
+                  or filters.title_names)
     site = "" if placed else " on the site"
     amount = figure(total, noun) if total else f"no {noun}"
     if filters.author:
@@ -217,11 +243,28 @@ def _entity_guard(tool: str, entity: str | None) -> ToolResult | None:
                       error=f"unknown entity {entity!r}")
 
 
-def _scope_guard(tool: str, entity: str | None, scope: Any) -> ToolResult | None:
+def _scope_guard(
+    tool: str, entity: str | None, scope: Any, *, counting: bool = False,
+) -> ToolResult | None:
     """The one pre-query guard shared by the filtered tools: a name that matched
-    several entities too closely to choose between. Returns None to proceed."""
+    several entities too closely to choose between. Returns None to proceed.
+
+    With ``counting``, also a count whose subject was dropped for matching a
+    broader theme and that nothing else narrows. A list keeps such a subject
+    by its topic constraint and, with `catalog_title_names_enabled`, a count by
+    its titles (see `names.place`); a count with neither counted everything —
+    "how many World Environment Day events" was all 1,082 — and falls through
+    instead."""
     if scope.ambiguous is not None:
         return _ambiguous_result(tool, entity, scope.ambiguous)
+    if (counting and names.enabled() and scope.theme_widened
+            and not scope.title_pattern and not scope.title_contains):
+        logger.info(
+            "The count's subject was dropped for the broader theme %r and nothing "
+            "narrows it; falling through.", scope.theme_widened,
+        )
+        return ToolResult(tool=tool, entity=entity, ok=False,
+                          error="subject broader than any theme, not in titles")
     return None
 
 
@@ -257,14 +300,6 @@ def _empty_result_miss(tool: str, entity: str | None, scope: Any) -> ToolResult 
     return None
 
 
-# Words showing the user asked about titles as such, rather than a subject the
-# intent layer funnelled into `title_contains`.
-_TITLE_QUESTION = re.compile(r"\b(titles?|titled|called|named|headlines?)\b", re.I)
-# A quoted phrase names a title verbatim ("the report called “Solar India”").
-# Double quotes only: an apostrophe is ordinary prose ("India's energy mix").
-_QUOTED_PHRASE = re.compile(r"[\"“”].+?[\"“”]")
-
-
 def _title_guess_zero(question: str | None, scope: Any) -> bool:
     """Whether an empty count came from a *guessed* title filter rather than a
     real absence, so the caller should fall through to semantic search instead of
@@ -288,7 +323,7 @@ def _title_guess_zero(question: str | None, scope: Any) -> bool:
         return False
     if not question:
         return True
-    return not (_TITLE_QUESTION.search(question) or _QUOTED_PHRASE.search(question))
+    return not names.asks_about_titles(question)
 
 
 def _applied_filters(bundle: str | None, filters: RecordFilters) -> dict[str, str]:
@@ -302,6 +337,7 @@ def _applied_filters(bundle: str | None, filters: RecordFilters) -> dict[str, st
         "theme": filters.theme,
         "tag": filters.tag,
         "title_contains": filters.title_contains,
+        "title_names": " / ".join(filters.title_names),
         "date_from": filters.date_from,
         "date_to": filters.date_to,
     }
@@ -517,7 +553,7 @@ def count_records(
         return guarded
     ent = get_entity(entity) if entity else None
     scope = resolve_filters(filters)
-    guarded = _scope_guard("count_records", entity, scope)
+    guarded = _scope_guard("count_records", entity, scope, counting=True)
     if guarded is not None:
         return guarded
     bundle = ent.name if ent else None
@@ -576,6 +612,9 @@ def count_records(
                                       source_labels=source_labels)
     else:
         rendered = _count_headline(total, entity_label(kind, total), scope.effective)
+        # A count by title name says that titles are what it counted.
+        basis = names.basis(scope.effective.title_names, total)
+        rendered = f"{rendered} {basis}" if basis else rendered
     # Section headings name the scope plainly: "All publications by Dr Suneel
     # Pandey (35)".
     heading_scope = _scope_phrase(scope.effective, mark=_plain)
@@ -589,6 +628,7 @@ def count_records(
             extra = structured_detail.for_count(
                 total, common=common, bundle=bundle, filters=scope.effective,
                 named_type=named_type, scope=heading_scope,
+                mentions=_title_name_mentions(scope, bundle=bundle, kind=kind),
             )
         else:
             extra = structured_detail.for_zero(
@@ -617,6 +657,25 @@ def count_records(
     return ToolResult(
         tool="count_records", entity=bundle, ok=True, data=data,
         citations=citations, rendered=rendered,
+    )
+
+
+def _title_name_mentions(scope: Any, *, bundle: str | None, kind: str) -> str:
+    """The sentence naming the pages a count or list by title name leaves out
+    because only their text names it, or "". Only when the name, a type and a
+    period are the whole scope: the text index cannot apply an author, theme or
+    tag, and a sentence over a wider scope than the headline's would claim
+    pages the headline excluded for another reason."""
+    effective = scope.effective
+    if not effective.title_names or effective.author or effective.theme or effective.tag:
+        return ""
+    pages = names.mentioned_in_text(
+        effective.title_names, bundle=bundle,
+        effective_from=scope.effective_from, effective_to=scope.effective_to,
+    )
+    return structured_detail.mentions_sentence(
+        pages, name=effective.title_names[0], noun=entity_label(kind, len(pages)),
+        period=_period_label(effective),
     )
 
 
@@ -723,6 +782,8 @@ def list_records(
             )
         rendered = structured_detail.for_list(
             len(records), total=total, filters=scope.effective, named=named, mix=mix,
+            mentions=_title_name_mentions(
+                scope, bundle=bundle, kind=scope_noun(bundle, by_author=False)),
         ).render_onto(rendered)
     return ToolResult(
         tool="list_records", entity=bundle, ok=True,
@@ -940,7 +1001,7 @@ def aggregate_records(
         return guarded
     ent = get_entity(entity) if entity else None
     scope = resolve_filters(filters)
-    guarded = _scope_guard("aggregate_records", entity, scope)
+    guarded = _scope_guard("aggregate_records", entity, scope, counting=True)
     if guarded is not None:
         return guarded
     bundle = ent.name if ent else None

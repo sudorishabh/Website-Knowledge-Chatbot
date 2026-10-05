@@ -61,7 +61,14 @@ def _sha(*parts: str) -> str:
 #: answered as an overview from the angles the context covers, never as one fact.
 #: 2026-10-04.16: a person asked for by post ("who is the director general") is
 #: answered from the holder's profile, and every person question as a profile.
-PIPELINE_REVISION = "2026-10-04.16"
+#: 2026-10-05.1: a series, programme or acronym no facet holds ("WSDS events in
+#: 2026") is counted and listed by its titles in every spelling, as is a
+#: count's subject no theme matches; a count of a kind of content goes to the
+#: catalog whatever route it was read as, and the graph no longer replaces it;
+#: a small count lists every item; a zero under a type and a period names the
+#: subject's other types; and a theme no document carries no longer empties
+#: passage search.
+PIPELINE_REVISION = "2026-10-05.1"
 
 
 def _pref_fingerprint() -> str:

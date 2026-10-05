@@ -58,6 +58,7 @@ def _catalog_filters(
     *,
     entity_type: str | None = None,
     title_contains: str | None = None,
+    title_pattern: str | None = None,
     topic_terms: Sequence[str] | None = None,
     author: str | None = None,
     theme: str | None = None,
@@ -96,6 +97,12 @@ def _catalog_filters(
     if title_contains:
         clauses.append("s.title LIKE %s")
         params.append(_like(title_contains))
+    if title_pattern:
+        # A name matched in titles by every spelling it has, word-bounded (see
+        # `app.retrieval.structured.names`): "ITEC" must not match
+        # "architecture", which `title_contains`'s substring would.
+        clauses.append("s.title REGEXP %s")
+        params.append(title_pattern)
     if topic_terms:
         # OR, not AND: a title rarely carries every word of a topic phrase
         # ("Who is adapting and how?" is a climate-adaptation paper whose title
@@ -149,6 +156,7 @@ def count_documents(
     *,
     entity_type: str | None = None,
     title_contains: str | None = None,
+    title_pattern: str | None = None,
     topic_terms: Sequence[str] | None = None,
     author: str | None = None,
     theme: str | None = None,
@@ -168,7 +176,7 @@ def count_documents(
     table = _table()
     joins, clauses, params, distinct = _catalog_filters(
         source_type, bundle, entity_type=entity_type, title_contains=title_contains,
-        topic_terms=topic_terms, author=author, theme=theme,
+        title_pattern=title_pattern, topic_terms=topic_terms, author=author, theme=theme,
         theme_group=theme_group, tag=tag,
         effective_from=effective_from, effective_to=effective_to,
     )
@@ -187,6 +195,7 @@ def list_documents(
     *,
     entity_type: str | None = None,
     title_contains: str | None = None,
+    title_pattern: str | None = None,
     topic_terms: Sequence[str] | None = None,
     author: str | None = None,
     theme: str | None = None,
@@ -206,7 +215,8 @@ def list_documents(
     table = _table()
     joins, clauses, params, needs_distinct = _catalog_filters(
         source_type, bundle, entity_type=entity_type,
-        title_contains=title_contains, topic_terms=topic_terms, author=author,
+        title_contains=title_contains, title_pattern=title_pattern,
+        topic_terms=topic_terms, author=author,
         theme=theme, theme_group=theme_group, tag=tag,
         effective_from=effective_from, effective_to=effective_to,
     )
@@ -253,6 +263,7 @@ def distribution(
     theme_group: str | None = None,
     tag: str | None = None,
     title_contains: str | None = None,
+    title_pattern: str | None = None,
     effective_from: datetime | None = None,
     effective_to: datetime | None = None,
     limit: int = 20,
@@ -283,7 +294,7 @@ def distribution(
     scope_group = None if group_by == "theme" else theme_group
     scope_joins, clauses, params, scoped = _catalog_filters(
         source_type, bundle, entity_type=entity_type,
-        title_contains=title_contains, author=author,
+        title_contains=title_contains, title_pattern=title_pattern, author=author,
         theme=theme, theme_group=scope_group, tag=tag,
         effective_from=effective_from, effective_to=effective_to,
     )
@@ -388,6 +399,7 @@ def count_distinct_values(
     *,
     entity_type: str | None = None,
     title_contains: str | None = None,
+    title_pattern: str | None = None,
     author: str | None = None,
     theme: str | None = None,
     theme_group: str | None = None,
@@ -415,7 +427,8 @@ def count_distinct_values(
     scope_group = None if dimension == "theme" else theme_group
     joins, clauses, params, _ = _catalog_filters(
         source_type, bundle, entity_type=entity_type, title_contains=title_contains,
-        author=author, theme=theme, theme_group=scope_group, tag=tag,
+        title_pattern=title_pattern, author=author, theme=theme,
+        theme_group=scope_group, tag=tag,
         effective_from=effective_from, effective_to=effective_to,
     )
     # A dedicated alias: the scope filters may already join the same facet table
@@ -450,6 +463,7 @@ def cross_distribution(
     bundle: str | None = None,
     entity_type: str | None = None,
     title_contains: str | None = None,
+    title_pattern: str | None = None,
     author: str | None = None,
     theme: str | None = None,
     theme_group: str | None = None,
@@ -486,7 +500,8 @@ def cross_distribution(
     table = _table()
     joins, clauses, params, _ = _catalog_filters(
         source_type, bundle, entity_type=entity_type, title_contains=title_contains,
-        author=author, theme=theme, theme_group=theme_group, tag=tag,
+        title_pattern=title_pattern, author=author, theme=theme,
+        theme_group=theme_group, tag=tag,
         effective_from=effective_from, effective_to=effective_to,
     )
     join_a, key_a, label_a = _dimension_sql(first, table, "ga")

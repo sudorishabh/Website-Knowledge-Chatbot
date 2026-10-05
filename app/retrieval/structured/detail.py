@@ -25,7 +25,7 @@ from typing import Any, Callable, Sequence
 from app.catalog import queries as state
 from app.retrieval.structured.entities import entity_label, scope_noun
 from app.retrieval.structured.rendering import (
-    figure, followup, item_line, number, record_date, section, tally,
+    figure, followup, item_line, md_link, number, record_date, section, tally,
 )
 from app.retrieval.structured.types import RecordFilters
 from app.schemas.query import Citation
@@ -36,6 +36,17 @@ logger = logging.getLogger(__name__)
 # enough that the answer stays a count rather than becoming a list. Five since
 # 2026-10-04: three read as a teaser beside a type mix and a span of years.
 RECENT_ITEMS = 5
+# Documents a count names in full rather than sampling its newest. "The count
+# of all the WSDS related events in 2026" is 19, and five of them read as a
+# sample of an answer that fits on the page. Above this a count keeps its
+# newest five, and asking to list them pages through the rest. A list asked
+# for in full ("list all ...") shows as many.
+ALL_ITEMS = 25
+# Month names for the headings a full listing is grouped under. Spelled out,
+# as `rendering` spells its abbreviations, so the process locale cannot change
+# them.
+_MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July",
+                "August", "September", "October", "November", "December")
 # Values a distinct count names beneath its number, and content types a type
 # breakdown names before folding the rest into "Other types".
 LEADING_VALUES = 5
@@ -238,19 +249,41 @@ def _latest_title(kind: str, *, total: int, shown: int) -> str:
     return f"All {number(total)} {plural}"
 
 
+def _by_period(records: Sequence[Any]) -> list[tuple[str, list[Any]]]:
+    """Records under the month they date from when all are from one year, else
+    under their year — newest first, as the records come. A record dated only
+    to its year goes under the year either way; one with no date, "Undated"."""
+    years = {str(getattr(r, "effective_start_date", None) or "")[:4] for r in records}
+    by_month = len(years) == 1
+    groups: dict[str, list[Any]] = {}
+    for r in records:
+        value = str(getattr(r, "effective_start_date", None) or "")
+        if not value[:4].isdigit():
+            label = "Undated"
+        elif (by_month and value[5:7].isdigit()
+              and getattr(r, "start_precision", None) != "year"):
+            label = f"{_MONTH_NAMES[int(value[5:7]) - 1]} {value[:4]}"
+        else:
+            label = value[:4]
+        groups.setdefault(label, []).append(r)
+    return list(groups.items())
+
+
 def recent_items(
     common: dict[str, Any], *, total: int, with_type: bool, kind: str,
-    listed_by: str | None = None,
+    listed_by: str | None = None, most: int = RECENT_ITEMS,
 ) -> tuple[str, list[dict[str, Any]]]:
-    """The newest documents in the scope, as a "Latest ..." section of linked
-    items with their authors and citations — only the co-authors when the scope
-    is one author's (``listed_by``). All of them when there are no more than
-    `RECENT_ITEMS`. ``kind`` names them ("publications", "research_papers")."""
+    """The newest ``most`` documents in the scope as linked items with their
+    authors and citations — only the co-authors when the scope is one author's
+    (``listed_by``) — under "Latest ...", or "All 3 ..." when that is every
+    one. More than `RECENT_ITEMS` are grouped by month or year when they span
+    more than one ("February 2026 (18)"). ``kind`` names them
+    ("publications", "research_papers")."""
     # A few spare rows, because the site publishes some pages twice under one
     # title (71 titles, the copy's URL ending "-0"), and a short list naming
     # the same paper twice reads as a mistake.
     fetched = _safe(
-        "recent", lambda: state.list_documents(**common, limit=RECENT_ITEMS + 3), []
+        "recent", lambda: state.list_documents(**common, limit=most + 3), []
     )
     seen: set[str] = set()
     records = []
@@ -259,15 +292,18 @@ def recent_items(
         if key not in seen:
             seen.add(key)
             records.append(r)
-    records = records[:RECENT_ITEMS]
+    records = records[:most]
     if not records:
         return "", []
     found = facets(records)
-    lines = [
-        item_line(r, with_type=with_type, listed_by=listed_by,
-                  authors=found.get(r.document_id, {}).get("authors", ()))
-        for r in records
-    ]
+
+    def lines(rows: Sequence[Any]) -> str:
+        return "\n".join(
+            item_line(r, with_type=with_type, listed_by=listed_by,
+                      authors=found.get(r.document_id, {}).get("authors", ()))
+            for r in rows
+        )
+
     citations = [
         Citation(
             n=i, type="website", title=r.title, url=r.url,
@@ -275,8 +311,37 @@ def recent_items(
         ).model_dump()
         for i, r in enumerate(records, start=1)
     ]
+    groups = _by_period(records) if len(records) > RECENT_ITEMS else []
+    if len(groups) > 1:
+        body = "\n\n".join(
+            section(f"{label} ({number(len(rows))})", lines(rows)) for label, rows in groups
+        )
+        return body, citations
     title = _latest_title(kind, total=total, shown=len(records))
-    return section(title, "\n".join(lines)), citations
+    return section(title, lines(records)), citations
+
+
+def mentions_sentence(
+    pages: Sequence[dict[str, str]], *, name: str, noun: str, period: str = "",
+) -> str:
+    """The pages a count by title name leaves out because only their text
+    names it: "5 more events in 2026 name WSDS in their text rather than their
+    title: A, B and 3 more." ``noun`` is the type's label for that many pages;
+    ``period`` the headline's period phrase (" in 2026")."""
+    if not pages:
+        return ""
+    shown = [md_link(p.get("title"), p.get("url")) for p in pages[:LEADING_VALUES]]
+    rest = len(pages) - len(shown)
+    if rest:
+        listed = f"{', '.join(shown)} and {number(rest)} more"
+    elif len(shown) > 1:
+        listed = f"{', '.join(shown[:-1])} and {shown[-1]}"
+    else:
+        listed = shown[0]
+    one = len(pages) == 1
+    return (f"{number(len(pages))} more {noun}{period} {'names' if one else 'name'} "
+            f"{name} in {'its' if one else 'their'} text rather than "
+            f"{'its' if one else 'their'} title: {listed}.")
 
 
 def _count_followup(
@@ -285,8 +350,9 @@ def _count_followup(
 ) -> str:
     """What to ask next. Only follow-ups the catalog route answers from the
     conversation are offered — "list them" and "break them down by year" were
-    checked live against the turn before them — and only dimensions that vary."""
-    if total <= RECENT_ITEMS:
+    checked live against the turn before them — and only dimensions that vary.
+    Nothing when the count already lists every one."""
+    if total <= ALL_ITEMS:
         return ""
     dimensions = []
     if len(years) > 1:
@@ -309,14 +375,15 @@ def _count_followup(
 
 def for_count(
     total: int, *, common: dict[str, Any], bundle: str | None, filters: RecordFilters,
-    named_type: str | None = None, scope: str = "",
+    named_type: str | None = None, scope: str = "", mentions: str = "",
 ) -> Detail:
     """Beneath "There are N <items>": when they date from (continuing the
     headline); how many are of the type the question named, when the count was
     widened past it; the type mix (when the count spans types), or everything
-    the same person, theme or tag has (when it does not); the most recent few;
-    and what to ask next. ``scope`` is the headline's scope in plain words
-    (" by Dr Vibha Dhawan in 2024")."""
+    the same person, theme or tag has (when it does not); every one of them up
+    to `ALL_ITEMS`, else the most recent few; ``mentions`` (see
+    `mentions_sentence`); and what to ask next. ``scope`` is the headline's
+    scope in plain words (" by Dr Vibha Dhawan in 2024")."""
     detail = Detail()
     if total <= 0:
         return detail
@@ -332,10 +399,13 @@ def for_count(
     detail.add(other_types_section(total, common=common, bundle=bundle,
                                    filters=filters, scope=scope))
     kind = scope_noun(bundle, by_author=bool(filters.author))
-    items, citations = recent_items(common, total=total, with_type=bundle is None,
-                                    kind=kind, listed_by=filters.author)
+    items, citations = recent_items(
+        common, total=total, with_type=bundle is None, kind=kind,
+        listed_by=filters.author, most=ALL_ITEMS if total <= ALL_ITEMS else RECENT_ITEMS,
+    )
     detail.add(items)
     detail.citations = citations
+    detail.add(mentions)
     detail.add(_count_followup(total, years=years, bundle=bundle, filters=filters))
     return detail
 
@@ -348,11 +418,16 @@ def for_zero(
 
     A zero under a period most often means the period, not the subject — "no
     events in 2030" is better followed by how many there are at all and how
-    recent the newest is. Failing that, a zero under a content type may be the
-    type: "no reports by Vibha Dhawan" is better followed by the 41 publications
-    there are, by type, and the newest of them. ``scope_without_period`` reads
-    in a sentence (names in bold); ``scope_without_type`` heads a section."""
+    recent the newest is. A zero under a content type may be the type: "no
+    reports by Vibha Dhawan" is better followed by the 41 publications there
+    are, by type, and the newest of them. A zero under both, for a subject, gets
+    both: there were no GRIHA *events* in 2025, while the GRIHA Summit and its
+    conclaves that year are in the news and press releases.
+    ``scope_without_period`` reads in a sentence (names in bold);
+    ``scope_without_type`` heads a section."""
     detail = Detail()
+    subject = (filters.author or filters.theme or filters.tag
+               or filters.title_contains or filters.title_names)
     if filters.date_from or filters.date_to:
         wider = {k: v for k, v in common.items()
                  if k not in ("effective_from", "effective_to")}
@@ -365,9 +440,9 @@ def for_zero(
                 f"Across all dates there {'is' if n == 1 else 'are'} "
                 f"{figure(n, noun(n))}{scope_without_period}{tail}"
             )
-        return detail
-    if bundle and (filters.author or filters.theme or filters.tag
-                   or filters.title_contains):
+        if not subject:
+            return detail
+    if bundle and subject:
         wider = {**common, "bundle": None}
         n = _safe("all types", lambda: state.count_documents(**wider), 0)
         if n:
@@ -409,18 +484,20 @@ def author_list_mix(
 
 def for_list(
     shown: int, *, total: int | None, filters: RecordFilters,
-    named: tuple[str, int | None] | None = None, mix: str = "",
+    named: tuple[str, int | None] | None = None, mix: str = "", mentions: str = "",
 ) -> Detail:
     """Beneath a list: how many are of the type the question named, when the
     list was widened past it (``named`` is that type and its count); ``mix``
-    (see `author_list_mix`); for a single document, that its content can be
-    asked about; for a page cut from a larger set, how to narrow it. Only the
-    dimensions the question has not already fixed are offered."""
+    (see `author_list_mix`); ``mentions`` (see `mentions_sentence`); for a
+    single document, that its content can be asked about; for a page cut from
+    a larger set, how to narrow it. Only the dimensions the question has not
+    already fixed are offered."""
     detail = Detail()
     # One document already shows its own type.
     if named is not None and (total or shown) > 1:
         detail.add(named_type_sentence(*named, of=f"the {number(total or shown)}"))
     detail.add(mix)
+    detail.add(mentions)
     if shown == 1 and not total:
         detail.add(followup("Ask me what it says, and I'll answer from the document itself."))
         return detail

@@ -73,6 +73,23 @@ def _catalog_answer_detail_off_by_default(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _catalog_title_names_off_by_default(monkeypatch):
+    """Keep the title-name reading out of unrelated tests.
+
+    The feature ships on, and with it on every test that plans a catalog
+    question would read the developer's website title table to decide whether
+    a name in it is titled — so a stubbed catalog would no longer be the whole
+    catalog the test sees. A test of the feature turns it on for itself and
+    stubs the titles.
+    """
+    from app.config import get_settings
+
+    monkeypatch.setattr(
+        get_settings(), "catalog_title_names_enabled", False, raising=False
+    )
+
+
+@pytest.fixture(autouse=True)
 def _knowledge_stage_off_by_default(monkeypatch):
     """Keep the ingest-path knowledge stage out of unrelated ingestion tests.
 

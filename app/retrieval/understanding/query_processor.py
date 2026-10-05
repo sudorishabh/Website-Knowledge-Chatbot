@@ -694,6 +694,43 @@ def _corrected_intent(question: str, intent: Intent) -> Intent:
     return "qa"
 
 
+def _route_catalog_count(question: str, analysis: QueryAnalysis) -> None:
+    """Send a count of a kind of content to the catalog when understanding read
+    it as qa.
+
+    Passage retrieval cannot count: given "how many events were held on COP30"
+    or "count the news items about the G20" it finds a few pages and says the
+    total is not stated. Measured 2026-10-05, four of 18 counts naming a
+    series went to qa, and "tell me the count of all the WSDS related events
+    that happened in 2026" did on one run of two. Only when what is counted is
+    a kind of content (see `names.counted_types`): "how many people attended"
+    stays qa. Runs before `_widen_content_question`, so a count conditioned on
+    the text ("how many reports discuss hydrogen") still goes back to qa.
+
+    A count of two kinds at once ("COP28 related events and news") spans every
+    type, whichever route it came by, so the answer's breakdown by type gives
+    both; understanding sets one type and the count answered the other not at
+    all."""
+    from app.retrieval.structured import names
+
+    counting = analysis.intent == "structured" and analysis.operation == "count"
+    if not names.enabled() or not (counting or (analysis.intent == "qa"
+                                                and not analysis.operation)):
+        return
+    counted = names.counted_types(question)
+    if not counted:
+        return
+    bundles = {names.type_bundle(phrase) for phrase in counted}
+    if not counting:
+        logger.info("Counting question read as qa; routing %s to the catalog.", counted)
+        analysis.intent = "structured"
+        analysis.operation = "count"
+        analysis.bundle = bundles.pop() if len(bundles) == 1 else None
+    elif len(bundles) > 1:
+        logger.info("A count of %s spans every type.", counted)
+        analysis.bundle = None
+
+
 # Operations a content predicate does not disturb. A theme listing is about the
 # vocabulary, not about documents ("what topics are discussed?"), and a
 # distribution is about the facets; neither has a type word to widen.
@@ -866,6 +903,9 @@ def process(question: str, history: Sequence[dict[str, str]] | None = None) -> P
     # A chitchat draw on a real question is unrecoverable downstream, so it is
     # checked against the corpus here rather than trusted. See `_corrected_intent`.
     analysis.intent = _corrected_intent(effective, analysis.intent)
+    # A count of a kind of content is the catalog's to answer, whatever route
+    # understanding chose. See `_route_catalog_count`.
+    _route_catalog_count(effective, analysis)
     # A type word is a filter only in a catalog-shaped question; one that
     # conditions on what the documents say spans every type. See `content_scope`.
     _widen_content_question(effective, analysis)

@@ -32,7 +32,7 @@ from typing import Any
 
 from app.config import get_settings
 from app.core.dates import parse_iso_date
-from app.retrieval.structured import topic
+from app.retrieval.structured import names, topic
 from app.retrieval.structured.types import RecordFilters
 
 logger = logging.getLogger(__name__)
@@ -173,6 +173,8 @@ class ResolvedScope:
 
     author: str | None = None
     title_contains: str | None = None
+    # `RecordFilters.title_names` as the pattern the catalog matches titles by.
+    title_pattern: str | None = None
     topic_terms: tuple[str, ...] = ()
     theme: str | None = None
     theme_group: str | None = None
@@ -190,16 +192,19 @@ class ResolvedScope:
 
     def as_kwargs(self) -> dict[str, Any]:
         """Filter kwargs shared by count_documents / list_documents /
-        distribution (author, theme, tag, dates). `title_contains` and
-        `topic_terms` are passed separately by the tools that use them — only the
-        row-returning list takes a topic constraint, because a count or a
+        distribution (author, theme, tag, a title name, dates). `title_contains`
+        and `topic_terms` are passed separately by the tools that use them — only
+        the row-returning list takes a topic constraint, because a count or a
         breakdown is about the facets and narrowing it by title words would
-        answer a different question."""
+        answer a different question. A title name is here with the facets
+        because it is one: the name the question asked for as a theme or a
+        title, which every reader of the scope must apply."""
         kwargs: dict[str, Any] = {
             "author": self.author,
             "theme": self.theme,
             "theme_group": self.theme_group,
             "tag": self.tag,
+            "title_pattern": self.title_pattern,
             "effective_from": self.effective_from,
             "effective_to": self.effective_to,
         }
@@ -257,6 +262,7 @@ def resolve_filters(filters: RecordFilters) -> ResolvedScope:
     return ResolvedScope(
         author=author.name,
         title_contains=filters.title_contains or None,
+        title_pattern=names.pattern(filters.title_names) if filters.title_names else None,
         topic_terms=tuple(filters.topic_terms or ()),
         theme=theme_name,
         # A named theme wins: "how many under Green Shipping" must answer even

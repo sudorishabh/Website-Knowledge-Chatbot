@@ -206,6 +206,14 @@ A **counting question** (`how many X`, `number of X`, `count of X`) is routed
 straight to `structured`, not `qa` — no prose answer to a "how many" claim is
 as trustworthy as a database count. Every other rescue lands on `qa`.
 
+The same holds off the chitchat branch. `_route_catalog_count`, run straight
+after `_corrected_intent`, sends a count the model labelled `qa` to the
+catalog when what it counts is a kind of content (`names.counted_types`):
+"how many events were held on COP30" and "count the news items about the G20"
+went to passage search, which found a few pages and said the total was not
+stated. "How many people attended" stays `qa`. See
+[07 — Structured Answers](07-structured-answers.md#names-no-facet-holds-a-series-programme-or-acronym-matched-in-titles).
+
 The override is one-directional by construction: a real greeting resolves
 neither probe and passes through untouched, which is what the test suite
 pins.
