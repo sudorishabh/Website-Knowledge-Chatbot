@@ -250,6 +250,12 @@ from Qdrant by id (`scoped_retrieval.search_within_documents`) and hands them
 back as one more ranking for RRF — it never replaces the base pull, only adds
 a signal RRF is free to discount.
 
+It takes none of the question's facets — a title match is meant to reach past
+a wrong facet guess — except its period (`date_scope`, from
+`filters.date_conditions`), which every leg keeps. Without it, "WSDS events in
+2026" matched a 2021 curtain raiser by title, the only candidate of the pull,
+and that one hit kept the facet-miss retry below from firing.
+
 ### Why two words, and computed rarity rather than a stopword list
 
 A bare word-overlap match would let the organisation's own name in every
@@ -370,6 +376,11 @@ nothing). The relaxation is recorded on the `rag.search_relaxed` span and in
 the retrieval log, never surfaced in the answer text — the widening is
 silent, which is exactly why the date condition is the one thing not dropped
 even here.
+
+A theme no document carries never reaches this retry: `_theme_condition`
+drops it up front, since the theme vocabulary is the names documents carry and
+a name none carries is a word the model put in the slot ("WSDS"). It used to
+become a filter matching nothing, which emptied every filtered leg.
 
 ---
 

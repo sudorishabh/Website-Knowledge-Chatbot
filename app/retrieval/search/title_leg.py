@@ -317,9 +317,17 @@ def _selective_terms(
 
 
 def title_search(
-    question: str, query_vector: Sequence[float], *, limit: int
+    question: str, query_vector: Sequence[float], *, limit: int,
+    date_scope: Sequence[Any] | None = None,
 ) -> list[Any]:
-    """Chunks of the documents this question names by title. ``[]`` when none."""
+    """Chunks of the documents this question names by title. ``[]`` when none.
+
+    ``date_scope`` is the question's period (see
+    `app.retrieval.understanding.filters.date_conditions`), kept as every other
+    leg keeps it. The leg takes no other filter — a title match is meant to
+    reach past a wrong facet guess — but a period is the user's own: "WSDS
+    events in 2026" matched the 2021 curtain raiser by title, the one candidate
+    of the whole pull."""
     ids = title_candidates(question)
     if not ids:
         return []
@@ -327,7 +335,8 @@ def title_search(
 
     try:
         hits = search_within_documents(
-            query_vector, ids, limit=limit, trace_stage="title_leg"
+            query_vector, ids, limit=limit, trace_stage="title_leg",
+            extra_filter=date_scope,
         )
     except Exception:
         logger.warning("Title-scoped search failed.", exc_info=True)
