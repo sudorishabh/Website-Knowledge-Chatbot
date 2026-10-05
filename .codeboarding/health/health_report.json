@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-04T12:01:49.216541+00:00",
-  "overall_score": 0.9854674346477624,
+  "timestamp": "2026-10-05T08:51:25.180909+00:00",
+  "overall_score": 0.9873144104803493,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2182,
+      "total_entities_checked": 2218,
       "findings_count": 21,
       "warning_count": 21,
-      "score": 0.9903758020164987,
+      "score": 0.9905320108205591,
       "finding_groups": [
         {
           "severity": "warning",
@@ -79,8 +79,8 @@
               "entity_name": "app.retrieval.retriever.retrieve",
               "file_path": "app/retrieval/retriever.py",
               "line_start": 316,
-              "line_end": 698,
-              "metric_value": 382
+              "line_end": 699,
+              "metric_value": 383
             },
             {
               "entity_name": "scripts.build_manual_review.main",
@@ -93,8 +93,8 @@
               "entity_name": "app.pipeline.query_pipeline._prepare",
               "file_path": "app/pipeline/query_pipeline.py",
               "line_start": 703,
-              "line_end": 974,
-              "metric_value": 271
+              "line_end": 983,
+              "metric_value": 280
             },
             {
               "entity_name": "tools.e2e_ingest_audit.run_audit.main",
@@ -183,8 +183,8 @@
             {
               "entity_name": "app.pipeline.query_pipeline.stream_answer",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 1105,
-              "line_end": 1271,
+              "line_start": 1114,
+              "line_end": 1280,
               "metric_value": 166
             },
             {
@@ -204,8 +204,8 @@
             {
               "entity_name": "app.retrieval.structured.tools.aggregate_records",
               "file_path": "app/retrieval/structured/tools.py",
-              "line_start": 885,
-              "line_end": 1045,
+              "line_start": 946,
+              "line_end": 1106,
               "metric_value": 160
             },
             {
@@ -226,10 +226,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 14,
-      "findings_count": 14,
-      "warning_count": 3,
-      "score": 0.29999999999999993,
+      "total_entities_checked": 11,
+      "findings_count": 11,
+      "warning_count": 2,
+      "score": 0.44999999999999996,
       "finding_groups": [
         {
           "severity": "info",
@@ -279,20 +279,6 @@
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_variable] \"camelot\" is not accessed",
-              "file_path": "app/ingestion/extractors/camelot_tables.py",
-              "line_start": 164,
-              "line_end": 164,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"_included\" is not accessed",
-              "file_path": "app/ingestion/extractors/drupal_extractor.py",
-              "line_start": 286,
-              "line_end": 286,
-              "metric_value": 0.0
-            },
-            {
               "entity_name": "[unused_variable] \"_principal\" is not accessed",
               "file_path": "app/api/chat.py",
               "line_start": 89,
@@ -300,17 +286,17 @@
               "metric_value": 0.0
             },
             {
+              "entity_name": "[unused_variable] \"_label\" is not accessed",
+              "file_path": "app/catalog/queries.py",
+              "line_start": 438,
+              "line_end": 438,
+              "metric_value": 0.0
+            },
+            {
               "entity_name": "[unused_variable] \"GRAPH_FACTS_KIND\" is not accessed",
               "file_path": "app/generation/prompts.py",
               "line_start": 6,
               "line_end": 6,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"_label\" is not accessed",
-              "file_path": "app/catalog/queries.py",
-              "line_start": 425,
-              "line_end": 425,
               "metric_value": 0.0
             }
           ]
@@ -325,13 +311,6 @@
               "file_path": "app/catalog/mentions.py",
               "line_start": 12,
               "line_end": 12,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_import] Import \"camelot\" is not accessed",
-              "file_path": "app/ingestion/extractors/camelot_tables.py",
-              "line_start": 164,
-              "line_end": 164,
               "metric_value": 0.0
             },
             {
@@ -367,12 +346,6 @@
     },
     {
       "file_path": "app/catalog/mentions.py",
-      "total_findings": 2,
-      "warning_findings": 1,
-      "composite_risk_score": 25.0
-    },
-    {
-      "file_path": "app/ingestion/extractors/camelot_tables.py",
       "total_findings": 2,
       "warning_findings": 1,
       "composite_risk_score": 25.0
@@ -463,6 +436,12 @@
     },
     {
       "file_path": "scripts/_build_graph_benchmark.py",
+      "total_findings": 1,
+      "warning_findings": 1,
+      "composite_risk_score": 15.0
+    },
+    {
+      "file_path": "app/knowledge/claims/validate.py",
       "total_findings": 1,
       "warning_findings": 1,
       "composite_risk_score": 15.0
