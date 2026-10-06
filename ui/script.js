@@ -40,49 +40,22 @@
       '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z"/>',
   };
   const SUGGESTIONS = [
-    {
-      verb: "Find",
-      rest: " India's renewable energy capacity targets",
-      icon: ICON.find,
-      bg: "#e7f0ff",
-      color: "#3b73d6",
-    },
-    {
-      verb: "Compare",
-      rest: " solar and wind energy adoption across states",
-      icon: ICON.compare,
-      bg: "#ece8ff",
-      color: "#6b53d6",
-    },
-    {
-      verb: "Track",
-      rest: " progress on India's net-zero commitments",
-      icon: ICON.track,
-      bg: "#e2f4f1",
-      color: "#1f9c86",
-    },
-    {
-      verb: "List",
-      rest: " key recommendations on sustainable water management",
-      icon: ICON.list,
-      bg: "#fdeaf3",
-      color: "#cc4f8e",
-    },
-    {
-      verb: "Analyze",
-      rest: " the main drivers of urban air pollution",
-      icon: ICON.analyze,
-      bg: "#e9f6e6",
-      color: "#4c9f38",
-    },
-    {
-      verb: "Suggest",
-      rest: " actions to improve industrial energy efficiency",
-      icon: ICON.suggest,
-      bg: "#fff1e0",
-      color: "#d9871f",
-    },
+    { text: "Find India's renewable energy capacity targets", icon: ICON.find },
+    { text: "Compare solar and wind energy adoption across states", icon: ICON.compare },
+    { text: "Track progress on India's net-zero commitments", icon: ICON.track },
+    { text: "List key recommendations on sustainable water management", icon: ICON.list },
+    { text: "Analyze the main drivers of urban air pollution", icon: ICON.analyze },
+    { text: "Suggest actions to improve industrial energy efficiency", icon: ICON.suggest },
   ];
+
+  // The widget's typefaces, linked from the host document: Chrome ignores
+  // @font-face declared inside a shadow root, but a family the document loads
+  // is usable within it. data-fonts="off" skips the request (for a host with a
+  // strict CSP); the font stacks then fall back to system faces.
+  const FONT_CSS =
+    "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600" +
+    "&family=Source+Serif+4:opsz,wght@8..60,600&display=swap";
+  const FONTS_ON = (cfg.fonts || "").trim().toLowerCase() !== "off";
 
   // Status words cycled while the bot is working, before the first token lands.
   const LOADER_PHASES = [
@@ -91,16 +64,28 @@
     "Generating your answer",
   ];
 
-  // Avatar shown to the left of every AI reply — a simple robot head, the
-  // conventional mark for an AI-generated response.
-  const BOT_AVATAR =
+  // The widget's mark, in the header and beside every AI reply: a sun rising
+  // over the horizon, for an institute working on energy. The sun takes the
+  // saffron accent and the ground lines take currentColor (see .sun__* rules).
+  const SUN_MARK =
+    '<svg class="sun" viewBox="0 0 24 24" fill="none" stroke-width="1.8" ' +
+    'stroke-linecap="round" aria-hidden="true">' +
+    '<path class="sun__rays" d="M12 6.5v2M5.3 9.3l1.4 1.4M18.7 9.3l-1.4 1.4"/>' +
+    '<path class="sun__disc" d="M6.5 16a5.5 5.5 0 0 1 11 0z"/>' +
+    '<path class="sun__ground" d="M3.5 16h17M7.5 19.5h9"/>' +
+    "</svg>";
+
+  // The copy action under a settled answer, and the tick it swaps to.
+  const COPY_ICON =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
     'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<circle cx="12" cy="3" r="1"/>' +
-    '<path d="M12 4v2"/>' +
-    '<rect x="4" y="6" width="16" height="14" rx="5"/>' +
-    '<circle cx="9" cy="13.5" r="1.4" fill="currentColor" stroke="none"/>' +
-    '<circle cx="15" cy="13.5" r="1.4" fill="currentColor" stroke="none"/>' +
+    '<rect x="9" y="9" width="11" height="11" rx="2"/>' +
+    '<path d="M5 15V6a2 2 0 0 1 2-2h8"/>' +
+    "</svg>";
+  const CHECK_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M5 12.5l4.5 4.5L19 7.5"/>' +
     "</svg>";
 
   // Caption mark for the PDF answer block. Outline and fold only — interior
@@ -146,17 +131,21 @@
   function openPanel() {
     isOpen = true;
     host.classList.add("open");
+    el.launcher.setAttribute("aria-expanded", "true");
     autoGrow();
     el.input.focus();
   }
   function closePanel() {
     isOpen = false;
     host.classList.remove("open");
+    el.launcher.setAttribute("aria-expanded", "false");
     hideCitePop(); // Escape can close the panel with a chip still hovered
   }
   function toggleExpand() {
     const expanded = host.classList.toggle("expanded");
-    el.expand.title = expanded ? "Shrink" : "Expand";
+    const label = expanded ? "Shrink" : "Expand";
+    el.expand.title = label;
+    el.expand.setAttribute("aria-label", label);
     el.input.focus();
   }
 
@@ -175,32 +164,26 @@
     el.input.focus();
   }
 
-  function renderCards() {
-    el.cards.innerHTML = "";
+  function renderSuggestions() {
+    el.suggestions.innerHTML = "";
     for (const s of SUGGESTIONS) {
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "card";
-      card.innerHTML =
-        '<span class="card__icon" style="background:' +
-        s.bg +
-        ";color:" +
-        s.color +
-        '">' +
-        '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
-        'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "suggestion";
+      item.innerHTML =
+        '<span class="suggestion__icon">' +
+        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
         s.icon +
         "</svg></span>" +
-        '<span class="card__text"><strong>' +
-        escapeHtml(s.verb) +
-        "</strong>" +
-        escapeHtml(s.rest) +
+        '<span class="suggestion__text">' +
+        escapeHtml(s.text) +
         "</span>";
-      card.addEventListener("click", () => {
-        el.input.value = (s.verb + s.rest).trim();
+      item.addEventListener("click", () => {
+        el.input.value = s.text;
         handleSend();
       });
-      el.cards.appendChild(card);
+      el.suggestions.appendChild(item);
     }
   }
 
@@ -210,24 +193,60 @@
   /* ---------------------------------------------------------------- *
    * Messages
    * ---------------------------------------------------------------- */
+  // A bot reply is the avatar beside a body column: the answer bubble, then the
+  // actions added once it settles. A user message is the bubble alone.
   function addMessage(role, text) {
     hideWelcome();
     const wrap = document.createElement("div");
     wrap.className = "msg msg--" + role;
+    let body = wrap;
     if (role === "bot") {
       const avatar = document.createElement("div");
       avatar.className = "msg__avatar";
       avatar.setAttribute("aria-hidden", "true");
-      avatar.innerHTML = BOT_AVATAR;
-      wrap.appendChild(avatar);
+      avatar.innerHTML = SUN_MARK;
+      body = document.createElement("div");
+      body.className = "msg__body";
+      wrap.append(avatar, body);
     }
     const bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.textContent = text;
-    wrap.appendChild(bubble);
+    body.appendChild(bubble);
     el.messages.appendChild(wrap);
     scrollToBottom();
-    return { wrap, bubble };
+    return { wrap, body, bubble };
+  }
+
+  // Actions under a settled answer. Copy takes the answer's markdown with the
+  // citation markers dropped: the chips they became don't survive a paste.
+  // The clipboard API needs a secure context, so plain-http hosts get no bar.
+  function addAnswerActions(body, answer) {
+    if (!navigator.clipboard) return;
+    const bar = document.createElement("div");
+    bar.className = "msg__actions";
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "action";
+    const idle = COPY_ICON + "<span>Copy</span>";
+    copy.innerHTML = idle;
+    let resetTimer = 0;
+    copy.addEventListener("click", () => {
+      navigator.clipboard
+        .writeText(stripMarkers(cleanBlockText(answer)))
+        .then(() => {
+          copy.innerHTML = CHECK_ICON + "<span>Copied</span>";
+          copy.classList.add("is-done");
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => {
+            copy.innerHTML = idle;
+            copy.classList.remove("is-done");
+          }, 1600);
+        })
+        .catch(() => {});
+    });
+    bar.appendChild(copy);
+    body.appendChild(bar);
   }
 
   function scrollToBottom() {
@@ -292,7 +311,7 @@
     autoGrow();
 
     setStreaming(true);
-    const { bubble } = addMessage("bot", "");
+    const { body, bubble } = addMessage("bot", "");
     startLoader(bubble);
 
     const epoch = chatEpoch;
@@ -308,6 +327,7 @@
         linkCitations(bubble, (sources && sources.citations) || []);
       } else bubble.textContent = "(no response)";
       if (sources) renderNumericWarning(bubble, sources);
+      if (answer) addAnswerActions(body, answer);
       history.push({ role: "user", content: text });
       history.push({ role: "assistant", content: answer });
     } catch (err) {
@@ -315,9 +335,10 @@
       bubble.classList.remove("bubble--pending");
       // Cancelled by "New chat": the bubble is already gone — stay silent.
       if ((err && err.name === "AbortError") || epoch !== chatEpoch) return;
+      // The alert icon is drawn by .bubble--error::before.
       bubble.classList.add("bubble--error");
       bubble.textContent =
-        "⚠ " + (err && err.message ? err.message : "request failed");
+        err && err.message ? err.message : "The request failed. Please try again.";
     } finally {
       if (currentAbort === ctrl) currentAbort = null;
       if (epoch === chatEpoch) setStreaming(false);
@@ -329,13 +350,22 @@
     const body = { question, history };
     if (top_k) body.top_k = top_k;
 
-    const res = await fetch(API_BASE + "/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal,
-    });
-    if (!res.ok || !res.body) throw new Error("HTTP " + res.status);
+    let res;
+    try {
+      res = await fetch(API_BASE + "/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal,
+      });
+    } catch (err) {
+      if (err && err.name === "AbortError") throw err; // "New chat": stays silent
+      throw new Error("Couldn't reach the assistant. Check your connection and try again.");
+    }
+    if (!res.ok || !res.body)
+      throw new Error(
+        "The assistant is unavailable right now (HTTP " + res.status + "). Please try again shortly.",
+      );
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -1036,9 +1066,9 @@
   function renderNumericWarning(bubble, sources) {
     if (!sources.numeric_mismatch) return;
     const warn = document.createElement("div");
-    warn.className = "answer-warn";
+    warn.className = "answer-warn"; // icon drawn by .answer-warn::before
     warn.textContent =
-      "⚠ Some figures in this answer could not be verified against the cited sources.";
+      "Some figures in this answer could not be verified against the cited sources.";
     bubble.appendChild(warn);
   }
 
@@ -1073,7 +1103,17 @@
    * Boot — build the Shadow DOM and wire events. Runs once <body> exists,
    * so the tag works whether placed in <head>, footer, or before </body>.
    * ---------------------------------------------------------------- */
+  function loadFonts() {
+    if (!FONTS_ON || document.getElementById("teri-rag-fonts")) return;
+    const link = document.createElement("link");
+    link.id = "teri-rag-fonts";
+    link.rel = "stylesheet";
+    link.href = FONT_CSS;
+    document.head.appendChild(link);
+  }
+
   function boot() {
+    loadFonts();
     host = document.createElement("div");
     host.id = "teri-rag-widget";
     root = host.attachShadow({ mode: "open" });
@@ -1089,7 +1129,7 @@
       expand: $("#expand"),
       messages: $("#messages"),
       welcome: $("#welcome"),
-      cards: $("#cards"),
+      suggestions: $("#suggestions"),
       input: $("#input"),
       send: $("#send"),
       citePop: $("#cite-pop"),
@@ -1131,7 +1171,7 @@
     // The card is placed once, so a scroll would leave it behind.
     el.messages.addEventListener("scroll", hideCitePop, { passive: true });
 
-    renderCards();
+    renderSuggestions();
     autoGrow();
   }
 
@@ -1143,50 +1183,59 @@
    * ================================================================ */
   function MARKUP() {
     return `
-      <button id="launcher" class="launcher" aria-label="Open ${escapeHtml(TITLE)}">
+      <button id="launcher" class="launcher" aria-label="Open ${escapeHtml(TITLE)}" aria-expanded="false">
         <svg class="launcher__chat" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
           <path fill="currentColor" d="M12 3C6.5 3 2 6.8 2 11.5c0 2.4 1.2 4.6 3.1 6.1-.1 1.2-.6 2.6-1.6 3.7 1.9-.2 3.5-.9 4.7-1.8 1.2.4 2.5.5 3.8.5 5.5 0 10-3.8 10-8.5S17.5 3 12 3z"/>
+          <circle class="launcher__dot" cx="8" cy="11.5" r="1.3"/>
+          <circle class="launcher__dot" cx="12" cy="11.5" r="1.3"/>
+          <circle class="launcher__dot" cx="16" cy="11.5" r="1.3"/>
         </svg>
-        <svg class="launcher__close" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-          <path fill="currentColor" d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7l1.4-1.4L10.6 10.6l6.3-6.3z"/>
+        <svg class="launcher__close" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18"/>
         </svg>
       </button>
 
       <section id="panel" class="panel" role="dialog" aria-label="${escapeHtml(TITLE)}">
         <header class="head">
           <div class="brand">
-            <span class="brand__title">${escapeHtml(TITLE)}</span>
+            <span class="brand__mark">${SUN_MARK}</span>
+            <span class="brand__text">
+              <span class="brand__title">${escapeHtml(TITLE)}</span>
+              <span class="brand__sub">Answers from TERI's research</span>
+            </span>
           </div>
           <div class="head__actions">
             <button id="new-chat" class="icon-btn" title="New chat" aria-label="New chat">
-              <span class="new-chat__label">New chat</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M17.6 3.6a2.1 2.1 0 0 1 3 3L13 14.2l-4 1 1-4z"/></svg>
             </button>
             <button id="expand" class="icon-btn" title="Expand" aria-label="Expand">
-              <svg class="ic-expand" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
-              <svg class="ic-compress" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v5H4M15 3v5h5M9 21v-5H4M15 21v-5h5"/></svg>
+              <svg class="ic-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6"/></svg>
+              <svg class="ic-compress" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4v6h6M10 20v-6H4M14 10l6-6M10 14l-6 6"/></svg>
             </button>
             <button id="close" class="icon-btn" title="Close" aria-label="Close">
-              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M18.3 5.7 13.4 10.6 18.3 15.5 16.9 16.9 12 12 7.1 16.9 5.7 15.5 10.6 10.6 5.7 5.7 7.1 4.3 12 9.2 16.9 4.3z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
             </button>
           </div>
         </header>
 
         <main id="messages" class="messages" aria-live="polite">
           <div id="welcome" class="welcome">
-            <h2 class="welcome__title">Welcome to ${escapeHtml(TITLE)}</h2>
-            <p class="welcome__hint">What would you like to explore today?</p>
-            <div id="cards" class="cards"></div>
+            <h2 class="welcome__title">What would you like to know?</h2>
+            <p class="welcome__hint">Ask about TERI's research, publications, people and projects. Every answer links to the sources it draws on.</p>
+            <div id="suggestions" class="suggestions"></div>
           </div>
         </main>
 
         <footer class="composer">
           <div class="composer__box">
             <textarea id="input" class="composer__input" rows="1"
-              placeholder="Ask about policies, best practices, or data insights"></textarea>
+              aria-label="Your question"
+              placeholder="Ask a question about TERI's work"></textarea>
             <button id="send" class="composer__send" title="Send" aria-label="Send">
-              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M3 20.5 21 12 3 3.5 3 10l12 2-12 2z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
             </button>
           </div>
+          <p class="composer__note">AI answers can be wrong. Check the linked sources.</p>
         </footer>
 
         <div id="cite-pop" class="cite-pop" aria-hidden="true"></div>
@@ -1196,243 +1245,333 @@
 
   /* ================================================================ *
    * Styles — fully scoped inside the shadow root.
-   * Tweak the TERI palette here once exact brand hex is confirmed.
+   *
+   * Indigo (#2D2F7D, the teriin.org navigation bar) carries the brand:
+   * header, user messages, send, launcher. Saffron, from the same
+   * site's call-to-action buttons, appears only in the sun mark. Every
+   * other surface is white or an indigo-tinted grey.
    * ================================================================ */
   function STYLES() {
     return `<style>
     :host {
-      /* ---- AI Sarthi palette (var names kept to minimise churn) ---- */
-      --teri-green: #25705e;
-      --teri-green-dark: #1c5648;
-      --teri-green-soft: #e3f0ec;
-      --teri-ink: #1f2330;
-      --teri-dim: #6b7280;
-      --teri-bg: #ffffff;
-      --teri-surface: #f4f6fb;
-      --teri-border: #e6e8ef;
-      --teri-user: var(--teri-green);
-      --teri-bad: #d64545;
-      --teri-warn: #c8860d;
-      --radius: 14px;
+      --brand: #2d2f7d;
+      --brand-deep: #1f2163;
+      --brand-mist: #eeeff8;
+      --brand-haze: #f6f6fb;
+      --sun: #f5b21b;
+      --ink: #1a1b3d;
+      --slate: #5d6080;
+      --line: #e3e4ef;
+      --line-strong: #d4d5e5;
+      --bad: #b4233a;
+      --bad-mist: #fcf0f2;
+      --warn: #84570a;
+      --warn-mist: #fff6e3;
+      --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+      --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+      /* Alert glyph for the error and unverified-figures notes, painted in
+         currentColor through a mask. */
+      --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16.5v.01'/%3E%3C/svg%3E");
 
       all: initial;
-      font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
-      font-size: 15px;
-      line-height: 1.5;
-      color: var(--teri-ink);
+      font-family: var(--sans);
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
     }
     *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    button { font: inherit; }
+    :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+    /* ---- Sun mark: saffron sun, ground lines in the surrounding colour ---- */
+    .sun__rays { stroke: var(--sun); }
+    .sun__disc { fill: var(--sun); }
+    .sun__ground { stroke: currentColor; }
 
     /* ---- Launcher ---- */
     .launcher {
       position: fixed;
-      right: 22px;
-      bottom: 22px;
-      width: 60px;
-      height: 60px;
+      right: 24px;
+      bottom: 24px;
+      width: 58px;
+      height: 58px;
       border: none;
       border-radius: 50%;
-      background: var(--teri-green);
+      background: var(--brand);
       color: #fff;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,.22);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 28px -8px rgba(45, 47, 125, .6), 0 2px 6px rgba(45, 47, 125, .25);
       z-index: 2147483646;
-      transition: transform .15s ease, background .15s ease;
+      transition: transform .2s var(--ease), background-color .2s ease;
     }
-    .launcher:hover { background: var(--teri-green-dark); transform: translateY(-2px); }
-    .launcher__close { display: none; }
-    :host(.open) .launcher__chat { display: none; }
-    :host(.open) .launcher__close { display: block; }
+    .launcher:hover { background: var(--brand-deep); transform: translateY(-2px); }
+    .launcher:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+    .launcher svg { grid-area: 1 / 1; transition: opacity .18s ease, transform .25s var(--ease); }
+    .launcher__dot { fill: var(--brand); transition: fill .2s ease; }
+    .launcher:hover .launcher__dot { fill: var(--brand-deep); }
+    .launcher__close { opacity: 0; transform: rotate(-90deg) scale(.6); }
+    :host(.open) .launcher__chat { opacity: 0; transform: rotate(90deg) scale(.6); }
+    :host(.open) .launcher__close { opacity: 1; transform: none; }
 
-    /* ---- Panel (same look docked or expanded; only size/position differ) ---- */
+    /* ---- Panel ---- */
     .panel {
       position: fixed;
-      right: 22px;
-      bottom: 94px;
-      width: 400px;
+      right: 24px;
+      bottom: 96px;
+      width: 404px;
       max-width: calc(100vw - 32px);
-      height: 620px;
-      max-height: calc(100vh - 120px);
-      background: linear-gradient(135deg, #e6f2ed 0%, #eef2fa 38%, #f6f0f7 70%, #fef5f2 100%);
-      border: 1px solid var(--teri-border);
-      border-radius: var(--radius);
-      box-shadow: 0 12px 40px rgba(0,0,0,.24);
+      height: 660px;
+      max-height: calc(100vh - 124px);
+      background: #fff;
+      border-radius: 18px;
+      box-shadow:
+        0 0 0 1px rgba(45, 47, 125, .08),
+        0 24px 56px -12px rgba(26, 27, 61, .32),
+        0 8px 18px -8px rgba(26, 27, 61, .14);
       display: none;
       flex-direction: column;
       overflow: hidden;
       z-index: 2147483646;
+      transform-origin: bottom right;
     }
-    :host(.open) .panel { display: flex; animation: pop .16s ease; }
-    @keyframes pop { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    :host(.open) .panel { display: flex; animation: panel-in .22s var(--ease); }
+    @keyframes panel-in {
+      from { opacity: 0; transform: translateY(10px) scale(.97); }
+      to   { opacity: 1; transform: none; }
+    }
 
-    /* Expanded: large floating dialog (not full-bleed), centred over a dimmed
-       backdrop; content still centred in a readable column. */
+    /* Expanded: a large dialog centred over a dimmed page, its content held to
+       a readable column. */
     :host(.expanded) .panel {
       inset: 0;
       margin: auto;
-      width: min(1100px, calc(100vw - 54px));
-      height: min(900px, calc(100vh - 54px));
-      max-width: calc(100vw - 64px);
-      max-height: calc(100vh - 64px);
-      border-radius: var(--radius);
-      box-shadow: 0 0 0 100vmax rgba(15,23,42,.45), 0 24px 60px rgba(0,0,0,.35);
+      width: min(1080px, calc(100vw - 48px));
+      height: min(880px, calc(100vh - 48px));
+      max-width: none;
+      max-height: none;
+      transform-origin: center;
+      box-shadow: 0 0 0 100vmax rgba(17, 18, 48, .5), 0 32px 80px -16px rgba(0, 0, 0, .45);
     }
     :host(.expanded) .messages,
     :host(.expanded) .composer {
-      padding-left: max(20px, calc((100% - 1040px) / 2));
-      padding-right: max(20px, calc((100% - 1040px) / 2));
+      padding-left: max(24px, calc((100% - 720px) / 2));
+      padding-right: max(24px, calc((100% - 720px) / 2));
     }
-    :host(.expanded) .composer { padding-bottom: 26px; }
-    :host(.expanded) .composer__box { max-width: 1040px; margin: 0 auto; border-radius: 18px; padding: 10px 10px 10px 18px; }
-    :host(.expanded) .composer__input { min-height: 48px; }
 
-    /* ---- Header: white bar with logo mark + dark title (AI Sarthi look) ---- */
+    /* ---- Header: the indigo band of the host site's navigation ---- */
     .head {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      background: #fff;
-      color: var(--teri-ink);
-      border-bottom: 1px solid var(--teri-border);
+      gap: 12px;
+      padding: 14px 10px 14px 16px;
+      background: var(--brand);
+      color: #fff;
     }
-    .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
-    .brand__title { font-weight: 700; font-size: 1.05rem; white-space: nowrap; letter-spacing: .01em; }
-    .head__actions { display: flex; align-items: center; gap: 6px; }
-
-    /* Expanded header just a touch larger. */
-    :host(.expanded) .head { padding: 14px 20px; }
-    :host(.expanded) .brand__title { font-size: 1.15rem; }
-
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .brand__mark {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .1);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+    }
+    .brand__mark svg { width: 25px; height: 25px; }
+    .brand__text { display: flex; flex-direction: column; min-width: 0; }
+    .brand__title,
+    .brand__sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .brand__title { font-size: 15.5px; font-weight: 600; line-height: 1.25; letter-spacing: .005em; }
+    .brand__sub { font-size: 12.5px; line-height: 1.35; color: rgba(255, 255, 255, .72); }
+    .head__actions { flex-shrink: 0; display: flex; align-items: center; gap: 2px; }
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: rgba(255, 255, 255, .8);
+      cursor: pointer;
+      transition: background-color .15s ease, color .15s ease;
+    }
+    .icon-btn:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+    .icon-btn:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+    .icon-btn svg { width: 18px; height: 18px; }
     .ic-compress { display: none; }
     :host(.expanded) .ic-expand { display: none; }
     :host(.expanded) .ic-compress { display: block; }
-
-    .icon-btn {
-      background: transparent;
-      border: none;
-      color: var(--teri-dim);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      padding: 4px;
-      border-radius: 6px;
-    }
-    .icon-btn:hover { background: var(--teri-surface); }
-    #new-chat {
-      padding: 5px 12px;
-      border: 1px solid var(--teri-border);
-      border-radius: 8px;
-      color: var(--teri-green);
-    }
-    #new-chat:hover { border-color: var(--teri-green); background: var(--teri-green-soft); }
-    .new-chat__label { font-size: .82rem; font-weight: 600; }
-    #close { color: var(--teri-bad); }
+    :host(.expanded) .head { padding: 16px 16px 16px 22px; }
 
     /* ---- Messages ---- */
     .messages {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      overscroll-behavior: contain;
+      padding: 22px 18px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      background: transparent;
+      gap: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-strong) transparent;
     }
 
-    .welcome { margin: auto 0; text-align: center; padding: 8px 4px; }
-    .welcome__title { margin: 0 0 4px; font-size: 1.4rem; font-weight: 700; letter-spacing: -.01em; color: var(--teri-ink); }
-    .welcome__hint { margin: 0 0 16px; font-size: .92rem; color: var(--teri-dim); }
-    .cards { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    .card {
+    /* ---- Welcome: a heading, one line of help, and a list of questions ---- */
+    .welcome { padding: 2px 2px 4px; }
+    .welcome__title {
+      margin: 0 0 6px;
+      font-family: var(--serif);
+      font-size: 25px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -.01em;
+      color: var(--brand);
+    }
+    .welcome__hint { margin: 0 0 20px; font-size: 14px; line-height: 1.55; color: var(--slate); }
+    /* One bordered list; the 1px grid gap over the hairline background draws
+       the dividers, so they stay crisp in one column or two. */
+    .suggestions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .suggestion {
       display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      text-align: left;
-      background: var(--teri-bg);
-      border: 1px solid var(--teri-border);
-      border-radius: 12px;
-      padding: 12px 13px;
-      font: inherit;
-      font-size: .82rem;
-      color: var(--teri-ink);
-      cursor: pointer;
-      transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
-    }
-    .card:hover { border-color: var(--teri-green); box-shadow: 0 4px 14px rgba(0,0,0,.07); transform: translateY(-1px); }
-    .card strong { font-weight: 700; }
-    .card__icon {
-      width: 34px; height: 34px;
-      border-radius: 9px;
-      display: inline-flex;
       align-items: center;
-      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 11px 14px 11px 12px;
+      border: none;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13.5px;
+      line-height: 1.4;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color .15s ease;
+    }
+    .suggestion:hover { background: var(--brand-haze); }
+    .suggestion:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+    .suggestion__icon {
       flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--brand-mist);
+      color: var(--brand);
+      transition: background-color .15s ease, color .15s ease;
     }
-    .card__text { line-height: 1.4; }
+    .suggestion:hover .suggestion__icon { background: var(--brand); color: #fff; }
 
-    /* Expanded body = AI Sarthi look: soft gradient, big centred welcome, 3 cols. */
-    :host(.expanded) .messages { background: linear-gradient(135deg, #e6f2ed 0%, #eef2fa 38%, #f6f0f7 70%, #fef5f2 100%); }
-    :host(.expanded) .welcome { margin-top: 7vh; }
-    :host(.expanded) .welcome__title { font-size: 2.25rem; margin-bottom: 8px; }
-    :host(.expanded) .welcome__hint { font-size: 1.05rem; margin-bottom: 28px; }
-    :host(.expanded) .cards {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      max-width: 1040px;
-      margin: 0 auto;
+    :host(.expanded) .welcome { margin-top: 6vh; }
+    :host(.expanded) .welcome__title { font-size: 34px; margin-bottom: 8px; }
+    :host(.expanded) .welcome__hint { font-size: 15.5px; margin-bottom: 26px; }
+    :host(.expanded) .suggestions { grid-template-columns: 1fr 1fr; }
+    :host(.expanded) .suggestion { padding: 14px 16px 14px 14px; font-size: 14px; }
+
+    /* ---- Message rows ---- */
+    .msg { display: flex; animation: msg-in .22s var(--ease) both; }
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
     }
-    :host(.expanded) .card { font-size: .9rem; padding: 16px; }
-    :host(.expanded) .msg { max-width: 92%; }
-    :host(.expanded) .msg--bot { max-width: 100%; }
-
-    .msg { display: flex; flex-direction: column; max-width: 96%; }
-    .msg--user { align-self: flex-end; align-items: flex-end; }
-    /* Bot replies span the full column width; the user bubble stays sized to
-       its content on the right. */
-    .msg--bot { align-self: stretch; max-width: 100%; flex-direction: row; align-items: flex-start; gap: 10px; }
-    .bubble {
-      padding: 9px 13px;
-      border-radius: var(--radius);
-      white-space: pre-wrap;
-      word-wrap: break-word;
+    .msg--user { justify-content: flex-end; }
+    .bubble { white-space: pre-wrap; overflow-wrap: break-word; }
+    .msg--user .bubble {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 18px 18px 5px 18px;
+      background: var(--brand);
+      color: #fff;
+      line-height: 1.5;
     }
-    .msg--user .bubble { background: var(--teri-user); color: #fff; border-bottom-right-radius: 4px; }
-    .msg--bot .bubble { flex: 1; background: transparent; border: none; padding: 3px 0; min-width: 0; }
-
-    /* AI avatar: a bare brand-green robot glyph (no disc), aligned to the first
-       line of the reply. */
+    /* Bot replies span the column as prose beside the mark; no bubble. */
+    .msg--bot { gap: 12px; align-items: flex-start; }
     .msg__avatar {
       flex-shrink: 0;
-      width: 26px;
-      height: 26px;
-      margin-top: 1px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--teri-green);
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--brand);
+      color: #fff;
     }
-    .msg__avatar svg { width: 22px; height: 22px; }
-    .bubble--pending { color: var(--teri-dim); }
+    .msg__avatar svg { width: 21px; height: 21px; }
+    .msg__body { flex: 1; min-width: 0; padding-top: 4px; }
+    .msg--bot .bubble { line-height: 1.65; }
+    :host(.expanded) .msg--bot .bubble { font-size: 15px; }
+    .bubble--pending { color: var(--slate); }
     .msg--bot .bubble--error {
-      color: var(--teri-bad);
-      border: 1px solid var(--teri-bad);
-      border-radius: var(--radius);
-      padding: 9px 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--bad-mist);
+      color: var(--bad);
+      line-height: 1.5;
+      white-space: normal;
+    }
+    .bubble--error::before,
+    .answer-warn::before {
+      content: "";
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      background: currentColor;
+      -webkit-mask: var(--alert-icon) center / contain no-repeat;
+              mask: var(--alert-icon) center / contain no-repeat;
     }
 
+    /* Actions under a settled answer. */
+    .msg__actions { display: flex; gap: 4px; margin: 8px 0 0 -9px; }
+    .action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 9px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--slate);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color .15s ease, color .15s ease;
+    }
+    .action:hover { background: var(--brand-haze); color: var(--brand); }
+    .action.is-done { color: var(--brand); }
+    .action svg { width: 15px; height: 15px; }
+
     /* ---- Working indicator: shimmering status word + bouncing dots ---- */
-    .loader { display: inline-flex; align-items: center; gap: 9px; }
+    .loader { display: inline-flex; align-items: center; gap: 10px; min-height: 24px; }
     .loader__text { display: inline-flex; }
     .loader__word {
       display: inline-block;
-      font-weight: 600;
+      font-weight: 500;
       background: linear-gradient(100deg,
-        var(--teri-dim) 25%, var(--teri-green) 45%,
-        var(--teri-green-dark) 55%, var(--teri-dim) 75%);
+        var(--slate) 25%, var(--brand) 45%,
+        #7376d0 55%, var(--slate) 75%);
       background-size: 220% 100%;
       -webkit-background-clip: text;
               background-clip: text;
@@ -1442,14 +1581,14 @@
     }
     .loader__dots { display: inline-flex; align-items: center; gap: 3px; }
     .loader__dots i {
-      width: 4px; height: 4px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
-      background: var(--teri-green);
+      background: var(--brand);
       animation: dot-bounce 1.2s ease-in-out infinite;
     }
     .loader__dots i:nth-child(2) { animation-delay: .18s; }
     .loader__dots i:nth-child(3) { animation-delay: .36s; }
-
     @keyframes shimmer {
       0%   { background-position: 220% 0; }
       100% { background-position: -20% 0; }
@@ -1462,123 +1601,132 @@
       0%, 80%, 100% { opacity: .3; transform: translateY(0); }
       40% { opacity: 1; transform: translateY(-3px); }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .loader__word, .loader__dots i { animation: none; }
-      .loader__word { -webkit-text-fill-color: var(--teri-green); color: var(--teri-green); }
-    }
 
-    .bubble p { margin: 0 0 .55rem; }
+    /* ---- Answer typography ---- */
+    .bubble > :first-child { margin-top: 0; }
     .bubble > :last-child { margin-bottom: 0; }
-    .bubble ul, .bubble ol { margin: 0 0 .55rem; padding-left: 1.25rem; }
-    .bubble li { margin: .12rem 0; }
+    .bubble p { margin: 0 0 .7em; }
+    .bubble ul, .bubble ol { margin: 0 0 .7em; padding-left: 1.3em; }
+    .bubble li { margin: .2em 0; }
+    .bubble li::marker { color: var(--slate); }
     .bubble h1, .bubble h2, .bubble h3, .bubble h4, .bubble h5, .bubble h6 {
-      margin: .3rem 0 .35rem; font-size: 1.02em;
+      margin: 1em 0 .4em;
+      font-size: 1.04em;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--ink);
     }
-    .bubble a { color: var(--teri-green-dark); }
+    .bubble strong { font-weight: 600; }
+    .bubble a {
+      color: var(--brand);
+      text-decoration: underline;
+      text-decoration-color: rgba(45, 47, 125, .35);
+      text-underline-offset: 2px;
+    }
+    .bubble a:hover { text-decoration-color: currentColor; }
     .bubble code {
-      background: var(--teri-surface);
-      border: 1px solid var(--teri-border);
-      border-radius: 4px;
-      padding: .05rem .3rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: .85em;
+      padding: .05em .35em;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--brand-haze);
+      font-family: var(--mono);
+      font-size: .86em;
     }
     .bubble pre {
-      background: var(--teri-surface);
-      border: 1px solid var(--teri-border);
-      border-radius: 8px;
-      padding: .6rem;
+      margin: 0 0 .7em;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--brand-haze);
       overflow-x: auto;
-      margin: 0 0 .55rem;
     }
-    .bubble pre code { background: none; border: none; padding: 0; }
+    .bubble pre code { padding: 0; border: none; background: none; }
 
-    .bubble .table-wrap { overflow-x: auto; margin: 0 0 .55rem; }
-    .bubble table { border-collapse: collapse; width: 100%; font-size: .86em; }
+    .bubble .table-wrap {
+      margin: 0 0 .8em;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+    .bubble table { width: 100%; border-collapse: collapse; font-size: .9em; line-height: 1.45; }
     .bubble th, .bubble td {
-      border: 1px solid var(--teri-border);
-      padding: 6px 10px;
+      padding: 8px 12px;
       text-align: left;
       vertical-align: top;
+      border-bottom: 1px solid var(--line);
     }
-    .bubble thead th { background: var(--teri-surface); font-weight: 700; }
-    .bubble tbody tr:nth-child(even) { background: rgba(0,0,0,.025); }
+    .bubble th + th, .bubble td + td { border-left: 1px solid var(--line); }
+    .bubble tbody tr:last-child td { border-bottom: none; }
+    .bubble thead th { background: var(--brand-mist); color: var(--brand-deep); font-weight: 600; }
+    .bubble tbody tr:nth-child(even) { background: var(--brand-haze); }
 
     /* ---- Answer blocks ---- */
     /* Website-sourced content is the answer proper, so it carries no container
-       of its own — it reads as plain prose on the bubble. Only the supplementary
-       PDF block is set apart, as a captioned card on the same surface + hairline
-       the code blocks and citation chips use, so it reads as part of that family
-       rather than a new device. */
+       of its own. Only the supplementary PDF block is set apart, on the same
+       tinted surface + hairline the code blocks and citation chips use. */
     .answer-block--pdf {
-      background: var(--teri-surface);
-      border: 1px solid var(--teri-border);
-      border-radius: 10px;
-      padding: 11px 13px;
-      margin: 2px 0 10px;
+      margin: 4px 0 .8em;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--brand-haze);
     }
-    /* Caption: the uppercase micro-label already used for the source groups, so
-       the panel is identified without competing with the answer's own headings. */
     .answer-block__label {
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-bottom: 7px;
-      font-size: .66rem;
+      margin-bottom: 8px;
+      font-size: 12.5px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      color: var(--teri-dim);
+      color: var(--brand);
     }
-    .answer-block__label svg { width: 13px; height: 13px; flex-shrink: 0; }
-    /* Markdown blocks carry their own bottom margin; drop the last one so the
-       container's padding sets the gap. */
+    .answer-block__label svg { width: 14px; height: 14px; flex-shrink: 0; }
     .answer-block--pdf > :last-child { margin-bottom: 0; }
 
     /* ---- Inline citations ---- */
     /* A site-name pill after the claim it supports; its hover card carries
-       the title and page. Muted so a cited paragraph still reads as prose, and
-       brand green on hover. The .bubble prefix outranks ".bubble a". */
+       the title and page. Muted so a cited paragraph still reads as prose,
+       solid indigo on hover. The .bubble prefix outranks ".bubble a". */
     .bubble .cite {
       display: inline-block;
       margin-left: 4px;
-      padding: 0 7px;
-      border: 1px solid var(--teri-border);
+      padding: 0 8px;
+      border: 1px solid var(--line);
       border-radius: 999px;
-      background: var(--teri-surface);
-      color: var(--teri-dim);
-      font-size: .7rem;
+      background: var(--brand-haze);
+      color: var(--slate);
+      font-size: 11.5px;
       font-weight: 500;
-      line-height: 1.6;
+      line-height: 1.65;
       vertical-align: 1px;
       text-decoration: none;
       white-space: nowrap;
-      transition: background .15s ease, border-color .15s ease, color .15s ease;
+      transition: background-color .15s ease, border-color .15s ease, color .15s ease;
     }
     .bubble .cite:hover,
     .bubble .cite:focus-visible {
-      background: var(--teri-green-soft);
-      border-color: var(--teri-green);
-      color: var(--teri-green-dark);
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
       outline: none;
     }
 
-    /* Hover card: a white card lifted off the answer by a soft two-layer
-       shadow. The site row names where the link goes, the title leads, and
-       the page/section sits beneath it. Never takes the pointer, so moving
-       across it cannot flicker it or swallow the chip's click. */
+    /* Hover card: lifted off the answer by an indigo-tinted shadow. The site
+       row names where the link goes, the title leads, and the page/section
+       sits beneath it. Never takes the pointer, so moving across it cannot
+       flicker it or swallow the chip's click. */
     .cite-pop {
       position: fixed;
       z-index: 10;
       width: max-content;
-      max-width: 280px;
-      padding: 10px 12px 11px;
+      max-width: 290px;
+      padding: 11px 13px 12px;
       background: #fff;
-      border: 1px solid var(--teri-border);
+      border: 1px solid var(--line);
       border-radius: 12px;
-      box-shadow: 0 12px 32px rgba(15, 23, 42, .14), 0 2px 6px rgba(15, 23, 42, .06);
-      color: var(--teri-ink);
-      font-size: .8rem;
+      box-shadow: 0 14px 34px -6px rgba(26, 27, 61, .2), 0 2px 6px rgba(26, 27, 61, .06);
+      color: var(--ink);
+      font-size: 13px;
       line-height: 1.4;
       pointer-events: none;
       opacity: 0;
@@ -1596,19 +1744,11 @@
       width: 10px;
       height: 10px;
       background: #fff;
-      border: 1px solid var(--teri-border);
+      border: 1px solid var(--line);
       transform: translateX(-50%) rotate(45deg);
     }
-    .cite-pop[data-placement="above"]::before {
-      bottom: -6px;
-      border-top: none;
-      border-left: none;
-    }
-    .cite-pop[data-placement="below"]::before {
-      top: -6px;
-      border-bottom: none;
-      border-right: none;
-    }
+    .cite-pop[data-placement="above"]::before { bottom: -6px; border-top: none; border-left: none; }
+    .cite-pop[data-placement="below"]::before { top: -6px; border-bottom: none; border-right: none; }
     .cite-pop.is-open {
       opacity: 1;
       visibility: visible;
@@ -1618,29 +1758,28 @@
     .cite-pop__site {
       display: flex;
       align-items: center;
-      gap: 7px;
-      color: var(--teri-dim);
-      font-size: .72rem;
+      gap: 8px;
+      color: var(--slate);
+      font-size: 12px;
       font-weight: 500;
     }
     .cite-pop__icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
       flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
       border-radius: 6px;
-      background: var(--teri-green-soft);
-      color: var(--teri-green);
+      background: var(--brand-mist);
+      color: var(--brand);
     }
-    .cite-pop__icon svg { width: 12px; height: 12px; }
+    .cite-pop__icon svg { width: 13px; height: 13px; }
     .cite-pop__host { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .cite-pop__open { display: inline-flex; color: var(--teri-green); }
+    .cite-pop__open { display: inline-flex; color: var(--brand); }
     .cite-pop__open svg { width: 13px; height: 13px; }
     .cite-pop__title {
-      margin-top: 7px;
-      font-size: .86rem;
+      margin-top: 8px;
+      font-size: 13.5px;
       font-weight: 600;
       line-height: 1.35;
       display: -webkit-box;
@@ -1648,81 +1787,116 @@
       -webkit-line-clamp: 3;
       overflow: hidden;
     }
-    .cite-pop__meta {
-      margin-top: 4px;
-      color: var(--teri-dim);
-      font-size: .72rem;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .cite-pop, .cite-pop[data-placement="below"] { transform: none; transition: none; }
+    .cite-pop__meta { margin-top: 4px; color: var(--slate); font-size: 12px; }
+
+    /* Unverified-figures notice: amber, under the answer. */
+    .answer-warn {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: var(--warn-mist);
+      color: var(--warn);
+      font-size: 12.5px;
+      line-height: 1.45;
+      white-space: normal;
     }
 
-    /* Unverified-figures notice: the amber token, under the answer. */
-    .answer-warn {
-      margin-top: 6px;
-      font-size: .78rem;
-      color: var(--teri-warn);
-      display: flex;
-      gap: 6px;
-      align-items: flex-start;
-    }
-    /* ---- Composer: a floating rounded box with the send button inside ---- */
-    .composer {
-      padding: 12px;
-      background: transparent;
-    }
+    /* ---- Composer: a rounded box with the send button inside ---- */
+    .composer { flex-shrink: 0; padding: 8px 16px 12px; background: #fff; }
     .composer__box {
       display: flex;
-      gap: 8px;
       align-items: flex-end;
-      width: 100%;
-      background: #fff;
-      border: 1px solid var(--teri-border);
-      border-radius: 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      gap: 8px;
       padding: 6px 6px 6px 14px;
+      background: #fff;
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      box-shadow: 0 1px 2px rgba(26, 27, 61, .04), 0 6px 18px -8px rgba(26, 27, 61, .14);
+      transition: border-color .15s ease, box-shadow .15s ease;
     }
-    .composer__box:focus-within { border-color: var(--teri-green); }
+    .composer__box:focus-within {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(45, 47, 125, .12);
+    }
     .composer__input {
       flex: 1;
-      resize: none;
+      min-width: 0;
       max-height: 120px;
-      overflow-y: hidden;
-      background: transparent;
-      border: none;
-      color: var(--teri-ink);
       padding: 8px 0;
+      resize: none;
+      overflow-y: hidden;
+      border: none;
+      background: transparent;
+      color: var(--ink);
       font: inherit;
-      line-height: 1.4;
+      line-height: 1.45;
     }
-    .composer__input:focus { outline: none; }
+    .composer__input::placeholder { color: #74779a; }
+    .composer__input:focus,
+    .composer__input:focus-visible { outline: none; }
     .composer__send {
       flex-shrink: 0;
-      width: 42px;
-      height: 42px;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      padding: 0;
       border: none;
-      border-radius: 50%;
-      background: var(--teri-green);
+      border-radius: 11px;
+      background: var(--brand);
       color: #fff;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      transition: background-color .15s ease, color .15s ease, transform .1s ease;
     }
-    .composer__send:hover { background: var(--teri-green-dark); }
-    .composer__send:disabled, .composer__send.busy { opacity: .55; cursor: not-allowed; }
+    .composer__send:hover { background: var(--brand-deep); }
+    .composer__send:active { transform: scale(.94); }
+    .composer__send svg { width: 18px; height: 18px; }
+    /* Nothing to send yet, or an answer still streaming: the button rests. */
+    .composer__box:has(.composer__input:placeholder-shown) .composer__send,
+    .composer__send:disabled,
+    .composer__send.busy {
+      background: var(--brand-mist);
+      color: #9496bd;
+      cursor: default;
+      transform: none;
+    }
+    .composer__note { margin: 8px 0 0; text-align: center; font-size: 11.5px; line-height: 1.4; color: var(--slate); }
+
+    :host(.expanded) .composer { padding-bottom: 20px; }
+    :host(.expanded) .composer__box { padding: 8px 8px 8px 18px; border-radius: 18px; }
+    :host(.expanded) .composer__input { min-height: 44px; font-size: 15px; }
 
     /* ---- Mobile: full screen ---- */
     @media (max-width: 480px) {
-      .panel {
-        right: 0; bottom: 0; left: 0; top: 0;
-        width: 100%; max-width: 100%;
-        height: 100%; max-height: 100%;
+      .panel,
+      :host(.expanded) .panel {
+        inset: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
         border-radius: 0;
+        box-shadow: none;
       }
+      .head { padding-top: max(14px, env(safe-area-inset-top)); }
+      .composer { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+      #expand { display: none; }
       .launcher { right: 16px; bottom: 16px; }
-      .cards, :host(.expanded) .cards { grid-template-columns: 1fr; }
-      :host(.expanded) .welcome__title { font-size: 1.5rem; }
+      :host(.expanded) .suggestions { grid-template-columns: 1fr; }
+      :host(.expanded) .welcome__title { font-size: 26px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+      .loader__word { -webkit-text-fill-color: var(--brand); color: var(--brand); }
     }
     </style>`;
   }
