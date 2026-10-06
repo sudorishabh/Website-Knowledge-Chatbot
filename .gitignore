@@ -38,6 +38,8 @@ desktop.ini
 # --- Local tooling ----------------------------------------------------------
 # Local-only agent settings (keep out of VCS even without global gitignore)
 .claude/settings.local.json
+# Claude Code agent worktrees: full checkouts git would list as embedded repos
+.claude/worktrees/
 # opencode MCP config: it pins this machine's absolute checkout path
 .opencode.json
 # Added by code-review-graph
@@ -89,4 +91,3 @@ reports/e2e_ingest_audit/*/documents/
 # Before/after snapshots and rerun lists from canary ingest runs. Like the
 # date-audit snapshots they measure one machine's corpus at one moment.
 reports/canary/
-redundant
