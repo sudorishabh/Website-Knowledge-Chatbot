@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-05T08:51:25.180909+00:00",
-  "overall_score": 0.9873144104803493,
+  "timestamp": "2026-10-06T06:32:22.918707+00:00",
+  "overall_score": 0.9874351211072664,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -10,10 +10,10 @@
         "javascript"
       ],
       "check_type": "standard",
-      "total_entities_checked": 61,
+      "total_entities_checked": 66,
       "findings_count": 2,
       "warning_count": 2,
-      "score": 0.9672131147540983,
+      "score": 0.9696969696969697,
       "finding_groups": [
         {
           "severity": "warning",
@@ -24,15 +24,15 @@
               "entity_name": "ui.script.<function>",
               "file_path": "ui/script.js",
               "line_start": 3,
-              "line_end": 1729,
-              "metric_value": 1726
+              "line_end": 1903,
+              "metric_value": 1900
             },
             {
               "entity_name": "ui.script.<function>.STYLES",
               "file_path": "ui/script.js",
-              "line_start": 1201,
-              "line_end": 1728,
-              "metric_value": 527
+              "line_start": 1254,
+              "line_end": 1902,
+              "metric_value": 648
             }
           ]
         }
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2218,
+      "total_entities_checked": 2235,
       "findings_count": 21,
       "warning_count": 21,
-      "score": 0.9905320108205591,
+      "score": 0.9906040268456375,
       "finding_groups": [
         {
           "severity": "warning",
