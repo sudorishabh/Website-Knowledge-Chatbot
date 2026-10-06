@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Protocol
 from app.core.models import CanonicalDocument, CanonicalSection, EntityRef, FileLink
+from app.ingestion.bylines import authors_from
 from app.ingestion.textutil import slugify as _slugify
 
 if TYPE_CHECKING:
@@ -52,12 +53,28 @@ def _matching(meta: dict[str, Any], *substrings: str) -> list[tuple[str, Any]]:
     ]
 
 
-def _pick_list(meta: dict[str, Any], *substrings: str) -> list[str]:
-    matches = _matching(meta, *substrings)
-    for _, value in matches:
-        if isinstance(value, (list, tuple)):
-            return _as_list(value)
-    return _as_list(matches[0][1]) if matches else []
+def author_fields(meta: dict[str, Any]) -> list[tuple[str, Any]]:
+    """The metadata fields a record's authors may be read from, in order —
+    the candidates `drupal_facets` picks one of."""
+    return _matching(meta, *AUTHOR_HINTS)
+
+
+def _authors(meta: dict[str, Any]) -> list[str]:
+    """The record's authors, from one field: the first list-valued author field,
+    else the first author field at all.
+
+    A field with no usable name in it is passed over for the next. Measured:
+    four research papers' people references resolve to account emails only
+    (``reetas@teri.res.in``), which are not names, while the byline beside them
+    reads "Sharma Reeta, Shekar Alpana C"."""
+    fields = [value for _, value in author_fields(meta)]
+    ordered = ([v for v in fields if isinstance(v, (list, tuple))]
+               + [v for v in fields if not isinstance(v, (list, tuple))])
+    for value in ordered:
+        names = authors_from(value)
+        if names:
+            return names
+    return []
 
 
 def _union_list(meta: dict[str, Any], *substrings: str) -> list[str]:
@@ -134,7 +151,9 @@ def drupal_facets(
     return {
         "categories": categories,
         "tags": _union_list(metadata, *TAG_HINTS),
-        "authors": _pick_list(metadata, *AUTHOR_HINTS),
+        # Read as a byline, not split on every comma: "Sehgal, Meena" is one
+        # person and "A and B" two (see app.ingestion.bylines).
+        "authors": _authors(metadata),
     }
 
 
