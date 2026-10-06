@@ -89,3 +89,4 @@ reports/e2e_ingest_audit/*/documents/
 # Before/after snapshots and rerun lists from canary ingest runs. Like the
 # date-audit snapshots they measure one machine's corpus at one moment.
 reports/canary/
+redundant
