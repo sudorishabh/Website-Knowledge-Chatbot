@@ -71,7 +71,10 @@ def _sha(*parts: str) -> str:
 #: 2026-10-17.1: presence, office, branch and location questions (typos
 #: forgiven) reach the regional centres, whose block carries each centre's
 #: address and contacts from the live contact page, and the answer gives them.
-PIPELINE_REVISION = "2026-10-17.1"
+#: 2026-10-17.3: the Centres of Excellence are a group of nine, each described
+#: and linked; a question naming one reads that centre's live page; the
+#: longest group phrase decides which group a question asks for.
+PIPELINE_REVISION = "2026-10-17.3"
 
 
 def _pref_fingerprint() -> str:

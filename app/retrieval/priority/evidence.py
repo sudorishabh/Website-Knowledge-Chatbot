@@ -57,6 +57,8 @@ CORPUS_MIN_SLOTS = 2
 MIN_PAGE_CHARS = 80
 #: People named in one question whose profiles are read.
 MAX_PEOPLE = 2
+#: Groups listed for one question ("regional centres and centres of excellence").
+MAX_GROUPS = 2
 #: Payload flag on a group block whose members carry their offices' addresses
 #: and contacts, which generation asks the answer to give
 #: (`app.generation.prompts.CONTACTS_FLAG`, pinned equal by a test).
@@ -512,7 +514,7 @@ def gather(
         if _page_count(targets) < settings.priority_max_pages and not lists_themes:
             found, evidence.similar_top = match.similar(query_vector, registry=registry, embed=embed)
             targets = match.ranked([*targets, *found])
-        groups = [t for t in targets if t.kind == GROUP_KIND][:1]
+        groups = [t for t in targets if t.kind == GROUP_KIND][:MAX_GROUPS]
         pages = match.ranked([*_contact_target(groups, registry),
                               *(t for t in targets if t.kind != GROUP_KIND)])
         pages = pages[: settings.priority_max_pages]

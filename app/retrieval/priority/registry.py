@@ -11,9 +11,10 @@ The file mixes two shapes, and the parser keeps them apart:
 
 * an entry with a URL is a **page** (``page_url``, or ``site_url`` on the
   regional centres — both spellings are in the file);
-* an entry with children and no URL is a **group** ("Regional centers"). A
-  group is not fetched: its own description and its members' names already
-  answer "what are the regional centres?".
+* an entry with children and no URL is a **group** ("Regional centers",
+  "Centres of Excellence"). A group is not fetched: its own description and its
+  members' names and descriptions already answer "what are the regional
+  centres?" — and the Centres of Excellence page itself gives only their names.
 
 Pages are flat: a page's own children are not read, and a warning says so. The
 themes are flat since 2026-09-25: one top-level page each, named "<theme>
@@ -44,6 +45,7 @@ DEFAULT_PATH = _REPO_ROOT / "data" / "priority_crawl_pages.json"
 
 THEME = "theme"
 CENTRE = "centre"
+EXCELLENCE = "excellence"
 PEOPLE = "people"
 PAGE = "page"
 
@@ -137,9 +139,45 @@ _EXTRA_ALIASES: dict[str, tuple[str, ...]] = {
     "/people/distinguished-fellows": (
         "distinguished fellow", "fellow emeritus", "fellows emeriti",
     ),
-    "/centre-of-excellence": (
-        "centre of excellence", "center of excellence", "centres of excellence",
-        "centers of excellence",
+    # The centres of excellence, by the short names people use and by those
+    # names with "centre of excellence" after them, so the whole of "the
+    # Mahindra-TERI Centre of Excellence" names that one centre.
+    "/concor-teri-centre-of-excellence": (
+        "concor", "concor teri", "concor teri centre of excellence",
+        "concor centre of excellence", "green and sustainable logistics",
+    ),
+    "/teri-centre-of-excellence-for-coastal-studies-and-resource-management": (
+        "coe csrm", "csrm", "centre of excellence for coastal studies",
+        "teri centre of excellence for coastal studies",
+        "coastal studies and resource management",
+    ),
+    "/press-release/nmcg-and-teri-come-together-launch-first-its-kind-centre-excellence-water-reuse": (
+        "ntcoe", "nmcg teri", "nmcg teri centre of excellence",
+        "centre of excellence on water reuse", "centre of excellence for water reuse",
+    ),
+    "/centre-of-excellence-for-energy-transition": (
+        "coeet", "centre of excellence for energy transition",
+        "centre of excellence on energy transition",
+        "energy transition centre of excellence",
+    ),
+    "/mahindra-teri-centre-of-excellence": (
+        "mahindra teri", "mahindra teri centre of excellence", "mahindra centre of excellence",
+        "mtcoe", "centre of excellence for sustainable habitat",
+    ),
+    "/national-centre-of-excellence-in-green-ports-and-shipping": (
+        "ncoegps", "green ports and shipping", "centre of excellence in green ports",
+    ),
+    "/ncearan-centre-of-excellence": (
+        "ncearan", "ncearan centre of excellence", "agricultural nanotechnology",
+    ),
+    "/teri-cfcl-centre-of-excellence-coe": (
+        "cfcl", "teri cfcl", "teri cfcl centre of excellence", "cfcl teri centre of excellence",
+        "cfcl centre of excellence", "chambal fertilisers",
+    ),
+    "/tata-chemicals-ltd-teri-centre-of-excellence-for-biochemicals": (
+        "tata chemicals", "tata chemicals teri", "tata chemicals teri centre of excellence",
+        "tata chemicals ltd teri centre of excellence", "tata chemicals centre of excellence",
+        "centre of excellence for biochemicals", "centre of excellence on biochemicals",
     ),
     "/technologies": ("teri technologies", "technologies developed by teri"),
     "/services": ("teri services", "services offered", "services of teri"),
@@ -174,6 +212,10 @@ _GROUP_ALIASES: dict[str, tuple[str, ...]] = {
         "presence in the country", "presence across the country",
         "where is teri located", "where is teri based", "teri headquarters",
         "headquarters of teri", "teri head office",
+    ),
+    EXCELLENCE: (
+        "centre of excellence", "center of excellence", "centres of excellence",
+        "centers of excellence", "teri coe",
     ),
 }
 
@@ -288,6 +330,9 @@ def _index(registry: Registry) -> dict[str, PriorityPage]:
 
 def _group_kind(name: str) -> str:
     lowered = name.lower()
+    # Before the regional centres: "Centres of Excellence" says "centre" too.
+    if "excellence" in lowered:
+        return EXCELLENCE
     if "centre" in lowered or "center" in lowered:
         return CENTRE
     return PAGE
