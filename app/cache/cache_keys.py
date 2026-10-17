@@ -84,7 +84,10 @@ def _sha(*parts: str) -> str:
 #: contributed", "who works on", "the team") is answered from that page's
 #: Team section, with the staff listings only for a choice among people,
 #: and a people listing stays one block.
-PIPELINE_REVISION = "2026-10-21.3"
+#: 2026-10-21.4: the themes asked for by another name ("research areas", "TERI
+#: divisions", "what sectors does TERI work in") are a theme listing, and one
+#: asking for nothing else gets the whole overview.
+PIPELINE_REVISION = "2026-10-21.4"
 
 
 def _pref_fingerprint() -> str:
