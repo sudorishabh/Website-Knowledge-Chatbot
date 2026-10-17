@@ -33,7 +33,7 @@ read:
 | 44 theme and regional-centre pages (`/climate`, `/goa`, …) | taxonomy terms rendered through Views (`theme_tabs`, `theme_experts`, `theme_projects`) | no — taxonomy terms are refused by design |
 | `/services`, `/people/*` (4) | Views routes | no |
 | `/profile/<slug>`, `/governing-council/<slug>` | user entities | no |
-| 11 institutional pages (`/policy`, `/announcements`, `/fcra-financials`, …) | ordinary `page` nodes | yes — and their stored copy is now ignored |
+| 12 institutional pages (`/policy`, `/announcements`, `/fcra-financials`, `/contact`, …) | ordinary `page` nodes | yes — and their stored copy is now ignored |
 
 Surveyed on 2026-09-24: every page answered in 0.05–0.94 s, server-rendered
 (no content loaded by script), with `Cache-Control: max-age=300` and an ETag.
@@ -88,7 +88,7 @@ Strongest first; none costs a model call.
 | --- | --- | --- |
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
 | `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
-| `group` | "regional centres", … → one block built from the list itself; nothing fetched | — |
+| `group` | one of the group's phrases ("regional centres", "pan India presence", "national presence", "where is TERI located"), a typo of one letter forgiven in words of five letters or more ("regional cenres"), or the organisation's name beside a plural word for the members ("which offices does TERI have") → one block built from the list itself, each centre carrying its address and contacts from the live contact page | — |
 | `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named. Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
 | `theme` | understanding resolved a theme facet that is a page on the list | yes |
 | `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next | yes |
@@ -126,6 +126,38 @@ scoped summary, which reads the catalog's documents on the theme, gives way to
 the page when the scope is the theme alone and the question names no kind of
 document (publications, reports, papers, briefs, news, …). A period, an author
 or a title in the scope keeps the summary.
+
+**Regional centres.** The file's "Regional centers" group is the answer to every
+question about where the organisation works from: its regional centres, its
+offices, branches, campuses and locations, its pan-India or national presence.
+The group's phrases cover that wording, and the organisation's name beside a
+plural word for the members ("does TERI have branches in other cities") asks
+for it in any word order. Plural only, since "TERI's Goa centre" is about one
+centre, which names its own page. A page the question names outside the group
+is taken out before the group is looked for, so "TERI centres of excellence"
+stays that one page. A typo of one letter is forgiven in the group's phrases
+only — "gender" is one letter from the announcements page's "tender".
+
+The centres' own pages give no address, so the contact page (`/contact`, on the
+list since 2026-10-17) is read with the group (`offices.py`). Its offices are
+runs of lines, each ending at its last `Tel:` / `Email:` / `Contact person:`
+line, and each is matched to its centre by the centre's names — first by the
+office's name ("TERI Gram", "TERI Himalayan Centre"), then by its address.
+Offices that are no listed centre (TERI Japan, the TERI School of Advanced
+Studies, a second office in Guwahati) are left out, and the headquarters
+follows the centres. The contact page is folded into the group's block rather
+than read as a page of its own, and the block cites it. A note beside the
+question (`prompts.contacts_note`) asks for every centre with its address and
+contacts, since the set shape alone gave each centre's one-line description.
+
+Measured on 2026-10-17 over eleven phrasings: before, only "regional centres"
+reached the group; "pan India presence", "national presence", "offices",
+"branches" and "where is TERI located" were answered from an annual report's
+one line that predates the Hyderabad centre, and "pan india presence" and
+"regional cenres" were read as small talk. After, all eleven listed the seven
+centres, and over two runs 21 of the 22 answers gave every centre's address,
+telephone, email and contact person; the other, "how many regional centres",
+gave the count and the seven names.
 
 **Calibration** (2026-09-24, 20 questions): most on-topic questions scored
 0.49–0.75 against the right page, every off-list question stayed below 0.46,
@@ -297,6 +329,7 @@ sections once; a page read itself took 83 ms.
 | Anything unexpected in `gather` | logged, no priority blocks, answer from the corpus |
 | A listed person's name misspelt ("PK bhatacharia") | read by sound, so the profile still leads; a lone word further out than its sound names nobody, and the answer comes from the corpus |
 | A person asked for by post ("who is the current director general") | the holder's profile leads, with the listing beside it; a past holder ("the first director general") is left to the corpus |
+| Contact page unreadable, or an office renamed past its centre's names | the centres are still listed with their descriptions and links; that centre (or all of them) without an address, and no contacts note; check `notes.priority_pages.reads` for "Contact Us" |
 
 ---
 

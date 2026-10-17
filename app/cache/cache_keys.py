@@ -68,7 +68,10 @@ def _sha(*parts: str) -> str:
 #: a small count lists every item; a zero under a type and a period names the
 #: subject's other types; and a theme no document carries no longer empties
 #: passage search.
-PIPELINE_REVISION = "2026-10-05.1"
+#: 2026-10-17.1: presence, office, branch and location questions (typos
+#: forgiven) reach the regional centres, whose block carries each centre's
+#: address and contacts from the live contact page, and the answer gives them.
+PIPELINE_REVISION = "2026-10-17.1"
 
 
 def _pref_fingerprint() -> str:
