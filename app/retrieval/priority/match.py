@@ -19,7 +19,9 @@ model call.
 * ``group`` — the question asks for a group's membership: one of the group's
   phrases ("regional centres", "pan India presence"), or the organisation's
   name beside a plural word for the members ("which offices does TERI have").
-  Answered from the list itself.
+  The longest phrase decides which group ("TERI centres of excellence" is not
+  the regional centres), and a question naming one member is about that
+  member. Answered from the list itself.
 * ``theme`` — query understanding resolved a theme facet that is a page on the
   list.
 * ``similar`` — the query vector sits close to one page's description, and
@@ -166,42 +168,62 @@ def _roughly(word: str, wanted: str, *, plural: bool) -> bool:
     return len(wanted) >= _TYPO_MIN_LETTERS and any(_one_edit_apart(word, f) for f in forms)
 
 
-def _has_roughly(words: str, phrase: str) -> bool:
-    """``_has``, forgiving one typo in each word of five letters or more:
-    "regional cenres" is "regional centres". For a group's phrases only: a
-    page's single-word names would catch real words ("gender" for "tender")."""
-    if _has(words, phrase):
-        return True
-    tokens, wanted = words.split(), phrase.split()
+def _rough_spans(tokens: Sequence[str], phrase: str) -> list[tuple[int, int]]:
+    """Everywhere ``phrase`` stands among ``tokens``, as token offsets,
+    forgiving one typo in each word of five letters or more: "regional cenres"
+    is "regional centres". Every place, since the triggers read the question
+    and its rewrite together and a phrase is often in both. For a group's
+    phrases only: a page's single-word names would catch real words ("gender"
+    for "tender")."""
+    wanted = phrase.split()
     last = len(wanted) - 1
-    return any(
-        all(_roughly(t, w, plural=j == last) for j, (t, w) in enumerate(zip(tokens[i:], wanted)))
-        for i in range(len(tokens) - last)
-    )
+    return [
+        (i, i + len(wanted)) for i in range(len(tokens) - last)
+        if all(_roughly(t, w, plural=j == last) for j, (t, w) in enumerate(zip(tokens[i:], wanted)))
+    ]
 
 
 def _without(words: str, phrases: Sequence[str]) -> str:
     """``words`` with every one of ``phrases`` cut out, leaving a break so the
-    words either side do not join into a phrase of their own."""
-    for phrase in phrases:
+    words either side do not join into a phrase of their own. Longest first,
+    so a page's full name goes before a short name inside it."""
+    for phrase in sorted(phrases, key=len, reverse=True):
         words = re.sub(_phrase(phrase), " | ", words)
     return words
 
 
-def _asks_for_group(group: PriorityGroup, words: str, named: Sequence[PriorityPage]) -> bool:
-    """Whether the question asks for ``group``'s membership.
+def _groups_asked_for(
+    groups: Sequence[PriorityGroup], words: str, named: Sequence[PriorityPage]
+) -> list[PriorityGroup]:
+    """The groups the question asks for the membership of, most specific first.
 
-    Read without the names of the pages it names outside the group: "TERI
-    centres of excellence" names that one page, and its "TERI centres" is not a
-    request for the regional centres.
+    Read without the names of the pages it names: "the Mahindra-TERI Centre of
+    Excellence" is one centre, and its "centre of excellence" is not a request
+    for all of them. Then the longest group phrase is read first and uses its
+    words up, so "TERI centres of excellence" asks for the centres of
+    excellence and its "TERI centres" is not a request for the regional
+    centres, while "regional centres and centres of excellence" asks for both.
+    Last, the organisation's name beside a plural word for a group's members.
     """
-    members = {m.key for m in group.members}
-    for page in named:
-        if page.key not in members:
-            words = _without(words, page.aliases)
-    if any(_has_roughly(words, alias) for alias in group.aliases):
-        return True
-    return bool(group.member_words & set(words.split())) and _ORG_WORDS.search(words) is not None
+    tokens = _without(words, [a for page in named for a in page.aliases]).split()
+    found: list[tuple[int, PriorityGroup, list[tuple[int, int]]]] = []
+    for group in groups:
+        spans = [s for alias in group.aliases for s in _rough_spans(tokens, alias)]
+        if spans:
+            found.append((max(end - start for start, end in spans), group, spans))
+    asked: list[PriorityGroup] = []
+    used: set[int] = set()
+    for _, group, spans in sorted(found, key=lambda f: -f[0]):
+        free = [(s, e) for s, e in spans if not used & set(range(s, e))]
+        if free:
+            asked.append(group)
+            used.update(i for s, e in free for i in range(s, e))
+    rest = [t for i, t in enumerate(tokens) if i not in used]
+    for group in groups:
+        if (group not in asked and group.member_words & set(rest)
+                and _ORG_WORDS.search(" ".join(rest)) is not None):
+            asked.append(group)
+    return asked
 
 
 def ranked(targets: Sequence[Target]) -> list[Target]:
@@ -237,9 +259,8 @@ def explicit(
     for person in (named_in(question, list(people)) or holding(question, list(people)))[:2]:
         targets.append(Target(person.name, PROFILE, PERSON, url=person.profile_url, person=person))
     named = [page for page in registry.pages if any(_has(words, a) for a in page.aliases)]
-    for group in registry.groups:
-        if _asks_for_group(group, words, named):
-            targets.append(Target(group.name, GROUP_KIND, GROUP, group=group))
+    for group in _groups_asked_for(registry.groups, words, named):
+        targets.append(Target(group.name, GROUP_KIND, GROUP, group=group))
     for page in named:
         targets.append(Target(page.name, page.kind, NAME, url=page.url, page=page))
     home = registry.home
