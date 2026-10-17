@@ -1,6 +1,6 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-17T14:47:41.333984+00:00",
+  "timestamp": "2026-10-17T14:50:27.654900+00:00",
   "overall_score": 0.9890725633319022,
   "check_summaries": [
     {
@@ -37,17 +37,6 @@
           ]
         }
       ]
-    },
-    {
-      "check_name": "circular_dependencies",
-      "description": "Detects circular dependencies between packages",
-      "languages": [
-        "javascript"
-      ],
-      "check_type": "circular_dependencies",
-      "cycles": [],
-      "packages_checked": 1,
-      "packages_in_cycles": 0
     },
     {
       "check_name": "unused_code_diagnostics",
@@ -229,68 +218,6 @@
           ]
         }
       ]
-    },
-    {
-      "check_name": "circular_dependencies",
-      "description": "Detects circular dependencies between packages",
-      "languages": [
-        "python"
-      ],
-      "check_type": "circular_dependencies",
-      "cycles": [
-        "app.retrieval.structured -> app.retrieval.search -> app.retrieval.structured",
-        "app.retrieval.structured -> app.retrieval.understanding -> app.retrieval.priority -> app.retrieval.context -> app.retrieval.search -> app.retrieval.structured",
-        "app.retrieval.structured -> app.retrieval.understanding -> app.retrieval.search -> app.retrieval.structured",
-        "app.retrieval.structured -> app.retrieval.understanding -> app.retrieval.structured",
-        "app.workers -> app -> app.workers",
-        "app.workers -> app.catalog -> app -> app.workers",
-        "app.workers -> app.catalog -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.change_detection -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.change_detection -> app.ingestion.extractors -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.chunking -> app.ingestion.extractors -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.extractors -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.knowledge.claims -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app -> app.workers"
-      ],
-      "packages_checked": 31,
-      "packages_in_cycles": 18
     },
     {
       "check_name": "unused_code_diagnostics",
