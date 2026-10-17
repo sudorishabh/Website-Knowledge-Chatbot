@@ -88,6 +88,37 @@ def test_a_group_is_asked_for_by_what_it_holds(reg):
     assert ("Regional centers", GROUP) in _hits("which regional centres does TERI have", reg)
 
 
+@pytest.mark.parametrize("question", [
+    "What is TERI's pan India presence?",
+    "pan-india presence",
+    "Tell me about TERI's national presence",
+    "TERI's presence across the country",
+    "Where are TERI's offices in India?",
+    "List all TERI branches and centres in India",
+    "Which centres does TERI have?",
+    "Does TERI have offices in other cities?",
+    "Where is TERI located?",
+    "where are your offices",
+    "TERI campuses",
+])
+def test_the_centres_are_asked_for_by_presence_offices_and_branches(reg, question):
+    """Measured 2026-10-17: of these only the "regional centres" wording reached
+    the list; the rest were answered from an annual report's one line, which
+    predates the Hyderabad centre."""
+    assert ("Regional centers", GROUP) in _hits(question, reg)
+
+
+@pytest.mark.parametrize("question", [
+    "TERI centres of excellence",
+    "what does TERI's Goa centre work on",
+    "how much water does a data centre use",
+    "TERI's presence at COP28",
+    "what is the TERI Centre for Sustainable Development Research",
+])
+def test_one_centre_or_another_page_is_not_the_centres(reg, question):
+    assert ("Regional centers", GROUP) not in _hits(question, reg)
+
+
 def test_the_theme_facet_names_its_page(reg):
     assert _hits("what does TERI do here", reg, theme="Water") == [("Water Theme", THEME_FACET)]
     assert _hits("what does TERI do here", reg, theme="climate change") == [

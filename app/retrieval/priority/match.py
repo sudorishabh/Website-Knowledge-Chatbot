@@ -16,8 +16,10 @@ model call.
   also whenever query understanding read the question as a theme listing; it
   gives way when the question names one theme, since that theme's own page
   answers it.
-* ``group`` — the question asks for a group's membership ("regional
-  centres"); answered from the list itself, nothing fetched.
+* ``group`` — the question asks for a group's membership: one of the group's
+  phrases ("regional centres", "pan India presence"), or the organisation's
+  name beside a plural word for the members ("which offices does TERI have").
+  Answered from the list itself.
 * ``theme`` — query understanding resolved a theme facet that is a page on the
   list.
 * ``similar`` — the query vector sits close to one page's description, and
@@ -95,6 +97,9 @@ PROFILE = "profile"
 GROUP_KIND = "group"
 
 _ORG = re.compile(r"\b(?:TERI(?:['’]s)?|The Energy and Resources Institute)\b\s*", re.I)
+#: The organisation named in normalized text. "your" is how a user addresses
+#: it through its assistant ("where are your offices").
+_ORG_WORDS = re.compile(r"(?<!\w)(?:teri|your|energy and resources institute)(?!\w)")
 
 
 @dataclass(frozen=True)
@@ -122,9 +127,37 @@ class Target:
                 "url": self.url, "score": round(self.score, 4)}
 
 
+def _phrase(phrase: str) -> str:
+    """Whole-word pattern for ``phrase``, tolerating a plural ("annual reports")."""
+    return rf"(?<!\w){re.escape(phrase)}s?(?!\w)"
+
+
 def _has(words: str, phrase: str) -> bool:
-    """Whole-word phrase match, tolerating a plural ("annual reports")."""
-    return re.search(rf"(?<!\w){re.escape(phrase)}s?(?!\w)", words) is not None
+    return re.search(_phrase(phrase), words) is not None
+
+
+def _without(words: str, phrases: Sequence[str]) -> str:
+    """``words`` with every one of ``phrases`` cut out, leaving a break so the
+    words either side do not join into a phrase of their own."""
+    for phrase in phrases:
+        words = re.sub(_phrase(phrase), " | ", words)
+    return words
+
+
+def _asks_for_group(group: PriorityGroup, words: str, named: Sequence[PriorityPage]) -> bool:
+    """Whether the question asks for ``group``'s membership.
+
+    Read without the names of the pages it names outside the group: "TERI
+    centres of excellence" names that one page, and its "TERI centres" is not a
+    request for the regional centres.
+    """
+    members = {m.key for m in group.members}
+    for page in named:
+        if page.key not in members:
+            words = _without(words, page.aliases)
+    if any(_has(words, alias) for alias in group.aliases):
+        return True
+    return bool(group.member_words & set(words.split())) and _ORG_WORDS.search(words) is not None
 
 
 def ranked(targets: Sequence[Target]) -> list[Target]:
@@ -159,12 +192,12 @@ def explicit(
     # would their name.
     for person in (named_in(question, list(people)) or holding(question, list(people)))[:2]:
         targets.append(Target(person.name, PROFILE, PERSON, url=person.profile_url, person=person))
+    named = [page for page in registry.pages if any(_has(words, a) for a in page.aliases)]
     for group in registry.groups:
-        if any(_has(words, alias) for alias in group.aliases):
+        if _asks_for_group(group, words, named):
             targets.append(Target(group.name, GROUP_KIND, GROUP, group=group))
-    for page in registry.pages:
-        if any(_has(words, alias) for alias in page.aliases):
-            targets.append(Target(page.name, page.kind, NAME, url=page.url, page=page))
+    for page in named:
+        targets.append(Target(page.name, page.kind, NAME, url=page.url, page=page))
     home = registry.home
     if themes_listing and home is not None:
         targets.append(Target(home.name, home.kind, NAME, url=home.url, page=home))

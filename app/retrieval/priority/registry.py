@@ -152,10 +152,28 @@ _EXTRA_ALIASES: dict[str, tuple[str, ...]] = {
     "/electricity-and-renewables": ("renewable energy", "renewables"),
 }
 
-# Phrases that ask for a group's membership rather than any one member.
+# Phrases that ask for a group's membership rather than any one member. For the
+# centres that is also the organisation's reach across the country ("pan India
+# presence") and where it is based: the centres are where it works from.
 _GROUP_ALIASES: dict[str, tuple[str, ...]] = {
-    CENTRE: ("regional centre", "regional center", "regional office", "centres of teri",
-             "centers of teri", "teri centres", "teri centers"),
+    CENTRE: (
+        "regional centre", "regional center", "regional office", "regional branch",
+        "regional branches", "regional campus", "regional campuses",
+        "centres of teri", "centers of teri", "teri centres", "teri centers",
+        "pan india presence", "national presence", "nationwide presence",
+        "all india presence", "presence in india", "presence across india",
+        "presence in the country", "presence across the country",
+        "where is teri located", "where is teri based", "teri headquarters",
+        "headquarters of teri", "teri head office",
+    ),
+}
+
+# Plural words for a group's members. Alongside the organisation's name, in any
+# order, they ask for the group too: "which offices does TERI have", "does TERI
+# have branches in other cities". Plural only, since "TERI's Goa centre" asks
+# about one member, which names its own page.
+_GROUP_MEMBER_WORDS: dict[str, frozenset[str]] = {
+    CENTRE: frozenset({"centres", "centers", "offices", "branches", "campuses", "locations"}),
 }
 
 
@@ -208,6 +226,9 @@ class PriorityGroup:
     kind: str
     members: tuple[PriorityPage, ...]
     aliases: tuple[str, ...] = ()
+    #: Plural words for the members, which ask for the group alongside the
+    #: organisation's name.
+    member_words: frozenset[str] = frozenset()
 
     @property
     def key(self) -> str:
@@ -313,6 +334,7 @@ def parse(raw: Any) -> Registry:
             kind=kind,
             members=tuple(members),
             aliases=_GROUP_ALIASES.get(kind, ()),
+            member_words=_GROUP_MEMBER_WORDS.get(kind, frozenset()),
         ))
     return Registry(pages=tuple(pages), groups=tuple(groups))
 
