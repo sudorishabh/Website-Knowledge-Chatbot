@@ -3,9 +3,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from app.retrieval.priority.extract import PageContent, Section, extract
 from app.retrieval.priority.registry import parse
-from app.retrieval.priority.themes import ThematicArea, areas_on
+from app.retrieval.priority.themes import (
+    ThematicArea,
+    areas_on,
+    asks_for_themes,
+    asks_only_for_themes,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 REGISTRY = parse([
@@ -68,3 +75,56 @@ def test_a_name_with_no_teaser_still_counts_when_the_page_list_knows_it():
 
 def test_a_page_without_the_section_lists_no_themes():
     assert areas_on(_page("Climate Change", heading="Key Projects"), REGISTRY) == []
+
+
+# Measured 2026-10-17: of these only the "thematic areas" and "themes" wordings
+# were answered with the seven areas; "TERI divisions" and "research areas" were
+# small talk, and "what are the divisions of TERI" listed a 2017 annual report's
+# divisions.
+LISTINGS = [
+    "What are TERI's research areas?",
+    "research areas",
+    "What research areas does TERI work in?",
+    "What are the divisions of TERI?",
+    "TERI divisions",
+    "Which research divisions does TERI have?",
+    "What are TERI's themes?",
+    "What are the main themes of TERI?",
+    "What areas does TERI work in?",
+    "TERI's areas of expertise",
+    "What fields does TERI work in?",
+    "What sectors does TERI work in?",
+    "TERI departments",
+    "thematic areas of TERI",
+    "what topics do you cover",
+    "How many research areas does TERI have?",
+]
+
+
+@pytest.mark.parametrize("question", LISTINGS)
+def test_the_themes_are_asked_for_by_many_names(question):
+    assert asks_for_themes(question)
+    assert asks_only_for_themes(question)
+
+
+@pytest.mark.parametrize("question", [
+    "TERI's research areas and their key projects",
+    "Which TERI themes have the most publications?",
+    "How many publications are there in each thematic area?",
+    "What are the research areas of Dr Vibha Dhawan?",
+    "What are the research areas in the climate change theme?",
+])
+def test_a_listing_that_asks_for_more_is_not_only_a_listing(question):
+    assert asks_for_themes(question)
+    assert not asks_only_for_themes(question)
+
+
+@pytest.mark.parametrize("question", [
+    "Which themes have the most publications?",   # a catalog count, no organisation
+    "tell me about the climate change theme",      # one theme
+    "Which division of TERI handles water?",       # one division
+    "What has TERI done in coastal areas?",
+    "What research has TERI done on air pollution?",
+])
+def test_other_questions_do_not_ask_for_the_themes(question):
+    assert not asks_for_themes(question)

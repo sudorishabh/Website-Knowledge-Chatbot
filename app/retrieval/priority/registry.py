@@ -20,7 +20,8 @@ Pages are flat: a page's own children are not read, and a warning says so. The
 themes are flat since 2026-09-25: one top-level page each, named "<theme>
 Theme" ("Climate Change Theme"), with no hierarchy between them. The list of
 themes itself is the home page's to give — its "Thematic Areas" section — so
-the phrases that ask for that list ("TERI's thematic areas") name the home page.
+a question asking for that list ("TERI's thematic areas", "TERI's research
+areas", "TERI divisions") names the home page.
 
 Nothing here touches the network.
 """
@@ -115,18 +116,26 @@ def one_edit_apart(a: str, b: str) -> bool:
     return short[i:] == long[i + 1:]
 
 
-#: Phrases that ask for the list of themes, which the home page gives. Tight on
-#: purpose — a page that matches leads the context — so a bare "themes" or
-#: "research area" is not one: "which themes have the most publications" is a
-#: catalog count, and a question the query understanding reads as a theme
-#: listing reaches the home page without any of these (``match.explicit``).
+#: Phrases that ask for the list of themes, which the home page gives, wherever
+#: they stand: the organisation's own name for them ("thematic areas") and the
+#: names people give them instead ("research areas", "areas of expertise"). A
+#: bare "themes" is not one — "which themes have the most publications" is a
+#: catalog count — and nor is a word that names much else besides
+#: (`THEMES_OVERVIEW_WORDS`); `app.retrieval.priority.themes.asks_for_themes`
+#: reads all of them.
 THEMES_OVERVIEW: tuple[str, ...] = (
-    "thematic area", "theme area", "themes area", "teri themes", "themes of teri",
-    "themes teri", "themes does teri", "themes at teri", "teri research area",
-    "research areas of teri", "teri focus area", "focus areas of teri",
-    "areas teri works", "areas does teri work", "teri areas of work",
-    "areas of work of teri",
+    "thematic area", "theme area", "themes area", "thematic division",
+    "research area", "areas of research", "research theme", "research division",
+    "research domain", "research field", "focus area", "areas of focus",
+    "areas of expertise", "expertise area", "areas of work", "work area",
 )
+
+#: Plural words that ask for the themes beside the organisation's name, in any
+#: order: "TERI divisions", "which departments does TERI have". The site has no
+#: divisions or departments of research any more; its thematic areas are what
+#: it is organised by.
+THEMES_OVERVIEW_WORDS: frozenset[str] = frozenset({"themes", "divisions", "departments",
+                                                   "verticals"})
 
 # Phrases that name a page outright, beyond its own name. Keyed by path, since
 # the names in the file are labels ("founder", "annoucements") rather than what
@@ -134,7 +143,7 @@ THEMES_OVERVIEW: tuple[str, ...] = (
 # topic far more often than it names a page, so those pages are reached through
 # the theme facet and the description match instead.
 _EXTRA_ALIASES: dict[str, tuple[str, ...]] = {
-    "/": (*THEMES_OVERVIEW, "home page", "homepage"),
+    "/": ("home page", "homepage"),
     "/history": ("founder", "founded", "history of teri", "teri history", "origin of teri"),
     "/mission-and-goals": (
         "teri mission", "mission of teri", "mission statement", "teri vision",
