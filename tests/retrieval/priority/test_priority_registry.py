@@ -134,9 +134,15 @@ def shipped():
     return parse(json.loads(registry.DEFAULT_PATH.read_text(encoding="utf-8")))
 
 
-def test_the_shipped_list_has_60_pages_with_unique_urls(shipped):
-    assert len(shipped.pages) == 60
-    assert len({p.key for p in shipped.pages}) == 60
+def test_the_shipped_list_has_61_pages_with_unique_urls(shipped):
+    assert len(shipped.pages) == 61
+    assert len({p.key for p in shipped.pages}) == 61
+
+
+def test_the_shipped_list_names_the_contact_page(shipped):
+    assert shipped.contact is not None
+    assert shipped.contact.url == "https://www.teriin.org/contact"
+    assert shipped.contact.kind == PAGE
 
 
 def test_every_shipped_page_is_on_the_organisations_site(shipped):

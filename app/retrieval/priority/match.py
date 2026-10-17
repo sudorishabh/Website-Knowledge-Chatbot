@@ -16,8 +16,10 @@ model call.
   also whenever query understanding read the question as a theme listing; it
   gives way when the question names one theme, since that theme's own page
   answers it.
-* ``group`` — the question asks for a group's membership ("regional
-  centres"); answered from the list itself, nothing fetched.
+* ``group`` — the question asks for a group's membership: one of the group's
+  phrases ("regional centres", "pan India presence"), or the organisation's
+  name beside a plural word for the members ("which offices does TERI have").
+  Answered from the list itself.
 * ``theme`` — query understanding resolved a theme facet that is a page on the
   list.
 * ``similar`` — the query vector sits close to one page's description, and
@@ -95,6 +97,9 @@ PROFILE = "profile"
 GROUP_KIND = "group"
 
 _ORG = re.compile(r"\b(?:TERI(?:['’]s)?|The Energy and Resources Institute)\b\s*", re.I)
+#: The organisation named in normalized text. "your" is how a user addresses
+#: it through its assistant ("where are your offices").
+_ORG_WORDS = re.compile(r"(?<!\w)(?:teri|your|energy and resources institute)(?!\w)")
 
 
 @dataclass(frozen=True)
@@ -122,9 +127,81 @@ class Target:
                 "url": self.url, "score": round(self.score, 4)}
 
 
+def _phrase(phrase: str) -> str:
+    """Whole-word pattern for ``phrase``, tolerating a plural ("annual reports")."""
+    return rf"(?<!\w){re.escape(phrase)}s?(?!\w)"
+
+
 def _has(words: str, phrase: str) -> bool:
-    """Whole-word phrase match, tolerating a plural ("annual reports")."""
-    return re.search(rf"(?<!\w){re.escape(phrase)}s?(?!\w)", words) is not None
+    return re.search(_phrase(phrase), words) is not None
+
+
+#: Shortest word in which a typo is forgiven. Shorter words sit one letter
+#: from too many others ("goa", "teri", "in").
+_TYPO_MIN_LETTERS = 5
+
+
+def _one_edit_apart(a: str, b: str) -> bool:
+    """Whether ``a`` becomes ``b`` by at most one inserted, dropped or changed
+    letter, or one swap of neighbouring letters."""
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        diff = [i for i, (x, y) in enumerate(zip(a, b)) if x != y]
+        return len(diff) == 1 or (
+            len(diff) == 2 and diff[1] == diff[0] + 1
+            and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
+        )
+    short, long = sorted((a, b), key=len)
+    i = next((i for i, (x, y) in enumerate(zip(short, long)) if x != y), len(short))
+    return short[i:] == long[i + 1:]
+
+
+def _roughly(word: str, wanted: str, *, plural: bool) -> bool:
+    forms = (wanted, f"{wanted}s") if plural else (wanted,)
+    if word in forms:
+        return True
+    return len(wanted) >= _TYPO_MIN_LETTERS and any(_one_edit_apart(word, f) for f in forms)
+
+
+def _has_roughly(words: str, phrase: str) -> bool:
+    """``_has``, forgiving one typo in each word of five letters or more:
+    "regional cenres" is "regional centres". For a group's phrases only: a
+    page's single-word names would catch real words ("gender" for "tender")."""
+    if _has(words, phrase):
+        return True
+    tokens, wanted = words.split(), phrase.split()
+    last = len(wanted) - 1
+    return any(
+        all(_roughly(t, w, plural=j == last) for j, (t, w) in enumerate(zip(tokens[i:], wanted)))
+        for i in range(len(tokens) - last)
+    )
+
+
+def _without(words: str, phrases: Sequence[str]) -> str:
+    """``words`` with every one of ``phrases`` cut out, leaving a break so the
+    words either side do not join into a phrase of their own."""
+    for phrase in phrases:
+        words = re.sub(_phrase(phrase), " | ", words)
+    return words
+
+
+def _asks_for_group(group: PriorityGroup, words: str, named: Sequence[PriorityPage]) -> bool:
+    """Whether the question asks for ``group``'s membership.
+
+    Read without the names of the pages it names outside the group: "TERI
+    centres of excellence" names that one page, and its "TERI centres" is not a
+    request for the regional centres.
+    """
+    members = {m.key for m in group.members}
+    for page in named:
+        if page.key not in members:
+            words = _without(words, page.aliases)
+    if any(_has_roughly(words, alias) for alias in group.aliases):
+        return True
+    return bool(group.member_words & set(words.split())) and _ORG_WORDS.search(words) is not None
 
 
 def ranked(targets: Sequence[Target]) -> list[Target]:
@@ -159,12 +236,12 @@ def explicit(
     # would their name.
     for person in (named_in(question, list(people)) or holding(question, list(people)))[:2]:
         targets.append(Target(person.name, PROFILE, PERSON, url=person.profile_url, person=person))
+    named = [page for page in registry.pages if any(_has(words, a) for a in page.aliases)]
     for group in registry.groups:
-        if any(_has(words, alias) for alias in group.aliases):
+        if _asks_for_group(group, words, named):
             targets.append(Target(group.name, GROUP_KIND, GROUP, group=group))
-    for page in registry.pages:
-        if any(_has(words, alias) for alias in page.aliases):
-            targets.append(Target(page.name, page.kind, NAME, url=page.url, page=page))
+    for page in named:
+        targets.append(Target(page.name, page.kind, NAME, url=page.url, page=page))
     home = registry.home
     if themes_listing and home is not None:
         targets.append(Target(home.name, home.kind, NAME, url=home.url, page=home))

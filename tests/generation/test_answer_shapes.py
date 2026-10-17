@@ -487,6 +487,62 @@ def test_the_note_reaches_the_human_turn_before_the_question(monkeypatch):
     assert human.index("People listings in this context") < human.index("Question: TERI top")
 
 
+def _centres(n, contacts=True):
+    from app.core.models.context import PRIORITY_PAGE_KIND, ContextBlock
+
+    payload = {"kind": PRIORITY_PAGE_KIND, "source_type": "website",
+               "title": "Regional centers", "priority_reason": "group"}
+    if contacts:
+        payload["member_contacts"] = True
+    return ContextBlock(n=n, text="Regional centers\n- Goa: Coastal work.\n  Address: Goa",
+                        payload=payload)
+
+
+def test_the_centres_contacts_are_asked_for_beside_the_question():
+    """Measured 2026-10-17: with every centre's address and contacts in the
+    block, "What are TERI's regional centres?" got each centre's description
+    alone; with this note, every answer over two runs of eleven phrasings gave
+    every centre's address, telephone, email and contact person."""
+    from app.generation.prompts import contacts_note
+
+    note = contacts_note([_centres(2)])
+    assert note.startswith("[2] Regional centers gives each centre's office")
+    assert "list every centre it gives" in note
+    assert "address, telephone, email and contact person beneath it" in note
+    assert "Then the headquarters" in note
+
+
+def test_the_contacts_note_is_absent_without_contacts_in_the_context():
+    from app.generation.prompts import contacts_note
+
+    assert contacts_note([_centres(1, contacts=False)]) == ""
+    assert contacts_note([_listing(1, "Distinguished Fellows")]) == ""
+
+
+def test_the_contacts_flag_matches_retrieval():
+    from app.generation.prompts import CONTACTS_FLAG
+    from app.retrieval.priority.evidence import MEMBER_CONTACTS
+
+    assert CONTACTS_FLAG == MEMBER_CONTACTS
+
+
+def test_the_contacts_note_reaches_the_human_turn_before_the_question(monkeypatch):
+    from langchain_core.runnables import RunnableLambda
+
+    from app.generation import answerer
+
+    seen: dict = {}
+
+    def capture(prompt_value):
+        seen["human"] = prompt_value.to_messages()[-1].content
+        return "an answer"
+
+    monkeypatch.setattr(answerer, "get_llm", lambda **_: RunnableLambda(capture))
+    answerer.generate_answer("Where is TERI located?", [_centres(1)])
+    human = seen["human"]
+    assert human.index("[1] Regional centers gives") < human.index("Question: Where is TERI")
+
+
 def test_a_list_of_current_people_leaves_out_the_former_ones():
     from app.generation.prompts import SHAPE_REMINDER
 
