@@ -88,7 +88,7 @@ Strongest first; none costs a model call.
 | --- | --- | --- |
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
 | `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
-| `group` | one of the group's phrases ("regional centres", "pan India presence", "national presence", "where is TERI located"), a typo of one letter forgiven in words of five letters or more ("regional cenres"), or the organisation's name beside a plural word for the members ("which offices does TERI have") → one block built from the list itself, each centre carrying its address and contacts from the live contact page | — |
+| `group` | one of the group's phrases ("regional centres", "pan India presence", "national presence", "where is TERI located"), a typo of one letter forgiven in words of five letters or more ("regional cenres"), or the organisation's name beside a plural word for the members ("which offices does TERI have") → one block built from the list itself, each centre carrying its address and contacts from the live contact page. Two groups: the regional centres and the Centres of Excellence. The longest group phrase decides which ("TERI centres of excellence" is not the regional centres), and a question naming one member reads that member's page instead | — |
 | `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named. Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
 | `theme` | understanding resolved a theme facet that is a page on the list | yes |
 | `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next | yes |
@@ -158,6 +158,35 @@ one line that predates the Hyderabad centre, and "pan india presence" and
 centres, and over two runs 21 of the 22 answers gave every centre's address,
 telephone, email and contact person; the other, "how many regional centres",
 gave the count and the seven names.
+
+**Centres of Excellence.** The live page (`/centre-of-excellence`) is an index
+of nine cards: a name and a "Read More" link each, 517 characters once
+extracted. Read as a page, it gave every question the names and nothing else,
+and corpus search filled the rest with old news about other centres (a 2009
+Urban Development centre, the UTC buildings centre) rather than the stored
+pages of the nine. Since 2026-10-17 the file lists them as a group, like the
+regional centres. Each member has its link and one line from its own page.
+The water-reuse centre (NTCoE) has its own site off teriin.org, so it is
+linked to TERI's launch press release instead. A broad question ("tell me
+about TERI's centres of excellence", "centre of excellance") gets the group's
+block, and a question naming one ("what is CoEET", "the Mahindra-TERI Centre
+of Excellence") reads that centre's live page. Each centre is named by its
+short name and by that name with "centre of excellence" after it, so the whole
+phrase names the one centre and not the group. The group has its own kind
+(`EXCELLENCE`), so the contact page is not read for it.
+
+Two groups can now share words, so the group phrases are read longest first,
+and each uses its words up: "TERI centres of excellence" asks for the Centres
+of Excellence, and its "TERI centres" is not a request for the regional
+centres. "Regional centres and centres of excellence" asks for both (at most
+`MAX_GROUPS`, 2). Every place a phrase stands counts, because the triggers read
+the question and its rewrite together.
+
+Measured on 2026-10-17 over sixteen questions: before, the seven broad ones
+described one to six of the nine centres, and "centre of excellance" was read
+as small talk. After, all seven described all nine, and the nine naming one
+centre each read that centre's live page. Three broad answers still add an
+older centre that a corpus page names, dated as such.
 
 **Calibration** (2026-09-24, 20 questions): most on-topic questions scored
 0.49–0.75 against the right page, every off-list question stayed below 0.46,
