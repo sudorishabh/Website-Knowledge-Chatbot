@@ -8,14 +8,15 @@ import pytest
 
 from app.retrieval.priority.extract import PageContent, Section, extract
 from app.retrieval.priority.offices import Office, by_centre, headquarters, offices_on
-from app.retrieval.priority.registry import DEFAULT_PATH, parse
+from app.retrieval.priority.registry import CENTRE, DEFAULT_PATH, parse
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
 @pytest.fixture(scope="module")
 def centres():
-    (group,) = parse(json.loads(DEFAULT_PATH.read_text(encoding="utf-8"))).groups
+    groups = parse(json.loads(DEFAULT_PATH.read_text(encoding="utf-8"))).groups
+    (group,) = [g for g in groups if g.kind == CENTRE]
     return group.members
 
 

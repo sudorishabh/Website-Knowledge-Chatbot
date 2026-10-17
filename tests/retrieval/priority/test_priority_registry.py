@@ -8,6 +8,7 @@ import pytest
 from app.retrieval.priority import registry
 from app.retrieval.priority.registry import (
     CENTRE,
+    EXCELLENCE,
     PAGE,
     PEOPLE,
     THEME,
@@ -134,9 +135,9 @@ def shipped():
     return parse(json.loads(registry.DEFAULT_PATH.read_text(encoding="utf-8")))
 
 
-def test_the_shipped_list_has_61_pages_with_unique_urls(shipped):
-    assert len(shipped.pages) == 61
-    assert len({p.key for p in shipped.pages}) == 61
+def test_the_shipped_list_has_69_pages_with_unique_urls(shipped):
+    assert len(shipped.pages) == 69
+    assert len({p.key for p in shipped.pages}) == 69
 
 
 def test_the_shipped_list_names_the_contact_page(shipped):
@@ -149,9 +150,27 @@ def test_every_shipped_page_is_on_the_organisations_site(shipped):
     assert shipped.hosts == frozenset({"teriin.org"})
 
 
-def test_the_shipped_list_has_only_the_regional_centres_group(shipped):
-    assert [g.name for g in shipped.groups] == ["Regional centers"]
-    assert len(shipped.groups[0].members) == 7
+def test_the_shipped_list_has_the_centres_of_excellence_and_regional_centres_groups(shipped):
+    assert [(g.name, g.kind, len(g.members)) for g in shipped.groups] == [
+        ("Centres of Excellence", EXCELLENCE, 9),
+        ("Regional centers", CENTRE, 7),
+    ]
+
+
+def test_every_centre_of_excellence_is_described_and_named_by_its_short_name(shipped):
+    """Measured 2026-10-17: the live Centres of Excellence page lists names
+    alone, and "tell me about TERI centre of excellence" described one centre
+    of nine."""
+    (excellence,) = [g for g in shipped.groups if g.kind == EXCELLENCE]
+    assert all(m.description and m.kind == EXCELLENCE for m in excellence.members)
+    short = {"concor", "coe csrm", "ntcoe", "coeet", "mahindra teri", "ncoegps", "ncearan",
+             "cfcl", "tata chemicals"}
+    assert short <= {a for m in excellence.members for a in m.aliases}
+
+
+def test_a_group_named_for_excellence_is_not_the_regional_centres():
+    assert registry._group_kind("Centres of Excellence") == EXCELLENCE
+    assert registry._group_kind("Regional centers") == CENTRE
 
 
 def test_the_shipped_themes_are_flat_and_the_home_page_is_listed(shipped):

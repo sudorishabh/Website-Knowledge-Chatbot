@@ -26,8 +26,54 @@
   },
   {
     "name": "Centres of Excellence",
-    "page_url": "https://teriin.org/centre-of-excellence",
-    "description": "Lists TERI's specialised Centres of Excellence, which bring together research, innovation, policy, capacity building, and partnerships around focused sustainability challenges."
+    "description": "TERI's specialised Centres of Excellence bring together research, innovation, policy, capacity building and partnerships around focused sustainability challenges. They are listed at https://teriin.org/centre-of-excellence.",
+    "children": [
+      {
+        "name": "CONCOR–TERI Centre of Excellence for Green and Sustainable Logistics",
+        "page_url": "https://teriin.org/concor-teri-centre-of-excellence",
+        "description": "Set up by TERI with support from Container Corporation of India (CONCOR) under the Ministry of Railways, it develops research-backed strategies for low-carbon freight: a modal shift to rail and cleaner fuels, green ratings for warehouses and decision-support tools for sustainable logistics."
+      },
+      {
+        "name": "TERI-Centre of Excellence for Coastal Studies and Resource Management (CoE-CSRM)",
+        "page_url": "https://teriin.org/TERI-centre-of-excellence-for-coastal-studies-and-resource-management",
+        "description": "Studies the links between land and water ecosystems in the coastal zone, and provides technical, advisory and outreach services for the sustainable management of coastal, marine and inland resources."
+      },
+      {
+        "name": "NMCG-TERI Centre of Excellence on Water Reuse (NTCoE)",
+        "page_url": "https://teriin.org/press-release/nmcg-and-teri-come-together-launch-first-its-kind-centre-excellence-water-reuse",
+        "description": "India's first Centre of Excellence on Water Reuse, launched in 2021 by the National Mission for Clean Ganga (NMCG) and TERI at TERI's Gwal Pahari campus in Gurugram, to foster research and innovation in wastewater treatment and water reuse."
+      },
+      {
+        "name": "Centre of Excellence for Energy Transition (CoEET)",
+        "page_url": "https://teriin.org/centre-of-excellence-for-energy-transition",
+        "description": "India's first Centre of Excellence on Energy Transition, established in 2025 at TERI's Institute of Energy Transition in Hyderabad with the Bureau of Energy Efficiency, for research, analysis and capacity building on energy transition."
+      },
+      {
+        "name": "Mahindra-TERI Centre of Excellence",
+        "page_url": "https://teriin.org/Mahindra-TERI-centre-of-excellence",
+        "description": "A joint research initiative of Mahindra Lifespaces and TERI on sustainable habitat, developing science-based solutions to cut the energy footprint of India's buildings, with a NABL-accredited lab for testing building materials."
+      },
+      {
+        "name": "National Centre of Excellence in Green Ports and Shipping",
+        "page_url": "https://teriin.org/national-centre-of-excellence-in-green-ports-and-shipping",
+        "description": "Established by the Ministry of Ports, Shipping and Waterways and TERI, and led by TERI from its Gurugram campus, it is the national hub for greening and decarbonising India's ports, shipping and vessels."
+      },
+      {
+        "name": "NCEARAN Centre of Excellence (Supported by DBT)",
+        "page_url": "https://teriin.org/NCEARAN-centre-of-excellence",
+        "description": "The National Centre of Excellence for Advanced Research in Agricultural Nanotechnology, supported by the Department of Biotechnology, researching safe green nanoproducts such as nano-fertilisers, nano-pesticides and nanocarriers."
+      },
+      {
+        "name": "TERI-CFCL Centre of Excellence (CoE)",
+        "page_url": "https://teriin.org/TERI-CFCL-centre-of-excellence-CoE",
+        "description": "Set up in 2024 by Chambal Fertilisers and Chemicals Limited (CFCL) and TERI to develop bio-, active-ingredient and nano-biotechnology agri-inputs that raise crop yields, improve soil health and reduce environmental impact."
+      },
+      {
+        "name": "Tata Chemicals Ltd.-TERI Centre of Excellence for Biochemicals",
+        "page_url": "https://teriin.org/tata-chemicals-ltd-TERI-centre-of-excellence-for-biochemicals",
+        "description": "Established by Tata Chemicals and TERI at TERI Gram, Gurugram, as an industry–academia bio-hub for innovative technologies for platform and specialty biochemicals."
+      }
+    ]
   },
   {
     "name": "founder",

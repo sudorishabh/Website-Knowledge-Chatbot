@@ -179,6 +179,32 @@ def test_the_most_specific_group_is_the_one_asked_for(question, groups):
     assert _groups(question) == groups
 
 
+@pytest.mark.parametrize("question", [
+    "Tell me about TERI centre of excellence",
+    "What are TERI's centres of excellence?",
+    "List all centers of excellence at TERI",
+    "What does each TERI centre of excellence work on?",
+    "centre of excellance",
+    "Which centre of excellence works on water reuse?",
+])
+def test_the_centres_of_excellence_are_asked_for_as_a_group(reg, question):
+    """Measured 2026-10-17: these read the live page's bare list of names, and
+    the answers described one to four centres of nine."""
+    assert _hits(question, reg) == [("Centres of Excellence", GROUP)]
+
+
+@pytest.mark.parametrize("question, page", [
+    ("What is CoEET?", "Centre of Excellence for Energy Transition (CoEET)"),
+    ("Tell me about the Mahindra-TERI Centre of Excellence", "Mahindra-TERI Centre of Excellence"),
+    ("What does the CONCOR-TERI Centre of Excellence do?",
+     "CONCOR–TERI Centre of Excellence for Green and Sustainable Logistics"),
+    ("What is NTCoE?", "NMCG-TERI Centre of Excellence on Water Reuse (NTCoE)"),
+    ("TERI-CFCL Centre of Excellence", "TERI-CFCL Centre of Excellence (CoE)"),
+])
+def test_one_centre_of_excellence_is_its_own_page(reg, question, page):
+    assert _hits(question, reg) == [(page, NAME)]
+
+
 def test_a_question_naming_one_member_is_about_that_member():
     assert _groups("tell me about the Mahindra-TERI Centre of Excellence", [_MAHINDRA]) == []
 

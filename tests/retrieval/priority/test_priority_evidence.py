@@ -214,6 +214,29 @@ def test_a_contact_question_reads_the_contact_page_as_a_page(_pages):
     assert got.blocks[0].payload["title"] == "Contact Us"
 
 
+EXCELLENCE_REGISTRY = parse([
+    {"name": "Contact Us", "page_url": "https://www.teriin.org/contact",
+     "description": "Addresses and contacts."},
+    {"name": "Centres of Excellence", "description": "Focused centres.", "children": [
+        {"name": "Mahindra-TERI Centre of Excellence",
+         "page_url": "https://teriin.org/Mahindra-TERI-centre-of-excellence",
+         "description": "Sustainable habitat."},
+    ]},
+])
+
+
+def test_the_centres_of_excellence_are_listed_with_no_fetch_and_no_contacts(_pages):
+    """Their own group, not the regional centres': the contact page is not
+    read for it and its block asks for no addresses."""
+    got = ev.gather("what are TERI's centres of excellence", query_vector=QUERY,
+                    registry=EXCELLENCE_REGISTRY, embed=_embed_on("\0never"))
+    (block,) = got.blocks
+    assert _pages == []
+    assert ("- Mahindra-TERI Centre of Excellence: Sustainable habitat. "
+            "(https://teriin.org/Mahindra-TERI-centre-of-excellence)") in block.text
+    assert ev.MEMBER_CONTACTS not in block.payload
+
+
 def test_the_list_of_themes_is_answered_from_the_home_page(_pages):
     got = _gather("what are TERI's thematic areas")
     assert [(t.name, t.reason) for t in got.targets] == [("Home", match.NAME)]
