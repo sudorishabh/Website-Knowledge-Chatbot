@@ -22,6 +22,7 @@ PAGES = {
     "https://teriin.org/people/committee-of-directors": "committee-of-directors.html",
     "https://teriin.org/profile/alekhya-datta": "profile-alekhya-datta.html",
     "https://teriin.org/fcra-financials": "fcra-financials.html",
+    "https://www.teriin.org/contact": "contact.html",
 }
 REGISTRY = parse([
     {"name": "Home", "page_url": "https://www.teriin.org",
@@ -152,6 +153,63 @@ def test_a_group_is_answered_from_the_list_without_a_fetch(_pages):
     assert block.payload["title"] == "Regional centers"
     assert "- Goa: Coastal work. (https://teriin.org/goa)" in block.text
     assert "https://teriin.org/goa" not in _pages
+
+
+CONTACT_REGISTRY = parse([
+    {"name": "Contact Us", "page_url": "https://www.teriin.org/contact",
+     "description": "Addresses and contacts."},
+    {"name": "Regional centers", "description": "Centres across India.", "children": [
+        {"name": "Goa", "site_url": "https://teriin.org/goa", "description": "Coastal work."},
+        {"name": "Gurugram", "site_url": "https://teriin.org/photo-story/teri-gram-gwal-pahari",
+         "description": "A campus."},
+    ]},
+])
+
+
+def _gather_centres(question):
+    return ev.gather(question, query_vector=QUERY, registry=CONTACT_REGISTRY,
+                     embed=_embed_on("\0never"))
+
+
+def test_the_centres_carry_their_addresses_from_the_contact_page(_pages):
+    """Measured 2026-10-17: "Where are TERI's offices in India?" gave addresses
+    for three offices, from a stored copy of the contact page dated 2018."""
+    got = _gather_centres("Where are TERI's offices in India?")
+    assert _pages == ["https://www.teriin.org/contact"]
+    (block,) = got.blocks
+    assert (
+        "- Goa: Coastal work. (https://teriin.org/goa)\n"
+        "  Office: TERI Western Regional Centre, Goa\n"
+        "  Address: 233/GH-2, Vasudha Colony, Alto-St. Cruz, Tiswadi, Goa - 403 202\n"
+        "  Tel: (+91 832) 245 9306, 245 9328\n"
+        "  Email: teriwrc@teri.res.in\n"
+        "  Contact person: Dr Raghab Ray"
+    ) in block.text
+    assert "  Office: TERI Gram" in block.text
+    assert "Headquarters:\n  Address: The Energy and Resources Institute (TERI)" in block.text
+    assert block.payload["source_url"] == "https://www.teriin.org/contact"
+    assert block.payload["fetched_at"] == "2026-09-24T10:00:00+00:00"
+
+
+def test_offices_that_are_no_listed_centre_are_left_out(_pages):
+    (block,) = _gather_centres("TERI regional centres").blocks
+    for other in ("TERI Japan", "School of Advanced Studies", "Centre for Himalayan Studies"):
+        assert other not in block.text
+
+
+def test_the_centres_are_still_listed_when_the_contact_page_cannot_be_read(monkeypatch):
+    monkeypatch.setattr(fetching, "fetch", lambda url, **kw: None)
+    (block,) = _gather_centres("TERI regional centres").blocks
+    assert "- Goa: Coastal work. (https://teriin.org/goa)" in block.text
+    assert "Office:" not in block.text
+    assert "source_url" not in block.payload
+
+
+def test_a_contact_question_reads_the_contact_page_as_a_page(_pages):
+    got = _gather_centres("TERI contact details")
+    assert [(t.name, t.reason) for t in got.targets] == [("Contact Us", match.NAME)]
+    assert "Darbari Seth Block" in got.blocks[0].text
+    assert got.blocks[0].payload["title"] == "Contact Us"
 
 
 def test_the_list_of_themes_is_answered_from_the_home_page(_pages):

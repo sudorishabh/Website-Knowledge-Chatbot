@@ -16,7 +16,9 @@ key) and carried into retrieval, which uses it three ways:
 Which sections become blocks: the opening section of every page the question
 is *about* (named, a person's profile, the theme facet, a description match),
 then the other sections that score at least ``priority_section_floor`` against
-the question, best first, up to ``priority_max_blocks`` in all.
+the question, best first, up to ``priority_max_blocks`` in all. A group is one
+block listing its members; for the regional centres the contact page is read
+too, and each centre's entry carries its office's address and contacts.
 """
 from __future__ import annotations
 
@@ -35,8 +37,15 @@ from app.retrieval.priority import fetch as fetching
 from app.retrieval.priority import match
 from app.retrieval.priority.extract import PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
+from app.retrieval.priority.offices import by_centre, headquarters, offices_on
 from app.retrieval.priority.people import Person, people_on
-from app.retrieval.priority.registry import PEOPLE, Registry, load_registry, normalize_url
+from app.retrieval.priority.registry import (
+    CENTRE,
+    PEOPLE,
+    Registry,
+    load_registry,
+    normalize_url,
+)
 from app.retrieval.priority.themes import ThemeListing, areas_on
 
 logger = logging.getLogger(__name__)
@@ -332,32 +341,69 @@ def _page_block(read: PageRead, section: Section, index: int, score: float) -> C
     )
 
 
-def _group_block(target: Target) -> ContextBlock:
+def _group_block(target: Target, contacts: PageRead | None = None) -> ContextBlock:
+    """The group's members, one entry each. With the contact page read, each
+    centre also carries its office's address and contacts, and the
+    headquarters follows the centres."""
     group = target.group
     assert group is not None
+    offices = offices_on(contacts.content) if contacts is not None and contacts.content else []
+    office_of = by_centre(offices, group.members)
     lines = [group.name]
     if group.description:
         lines.append(group.description)
     for member in group.members:
         lines.append(f"- {member.name}: {member.description} ({member.url})")
+        office = office_of.get(member.key)
+        if office is not None:
+            lines += [f"  {line}" for line in (f"Office: {office.name}", *office.details())]
+    head = headquarters(offices)
+    if head is not None:
+        lines.append("Headquarters:")
+        lines += [f"  {line}" for line in head.details()]
     text = "\n".join(lines)
-    return ContextBlock(
-        n=0,
-        text=text,
-        score=1.0,
-        payload={
-            "kind": PRIORITY_PAGE_KIND,
-            "source_type": "website",
-            "bundle": "priority_page",
-            "source_authority": 1.0,
-            "title": group.name,
-            "document_id": _doc_id(group.key),
-            "chunk_id": f"{_doc_id(group.key)}:0",
-            "priority_page": group.name,
-            "priority_reason": target.reason,
-            "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
-        },
-    )
+    payload: dict[str, Any] = {
+        "kind": PRIORITY_PAGE_KIND,
+        "source_type": "website",
+        "bundle": "priority_page",
+        "source_authority": 1.0,
+        "title": group.name,
+        "document_id": _doc_id(group.key),
+        "chunk_id": f"{_doc_id(group.key)}:0",
+        "priority_page": group.name,
+        "priority_reason": target.reason,
+        "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+    }
+    if offices and contacts is not None and contacts.fetched is not None:
+        # The addresses are the contact page's, so that is the page to cite.
+        payload.update({
+            "source_url": contacts.fetched.final_url or contacts.url,
+            "fetched_at": contacts.fetched.fetched_at.isoformat(timespec="seconds"),
+            "stale": contacts.fetched.stale,
+        })
+    return ContextBlock(n=0, text=text, score=1.0, payload=payload)
+
+
+def _asks_for_centres(targets: Sequence[Target]) -> bool:
+    return any(t.kind == GROUP_KIND and t.group is not None and t.group.kind == CENTRE
+               for t in targets)
+
+
+def _contact_target(groups: Sequence[Target], registry: Registry) -> list[Target]:
+    """The contact page, read when the centres are asked for: their own pages
+    give no address, and the contact page gives every one."""
+    contact = registry.contact
+    if contact is None or not _asks_for_centres(groups):
+        return []
+    return [Target(contact.name, contact.kind, match.GROUP, url=contact.url, page=contact)]
+
+
+def _contacts_for(targets: Sequence[Target], reads: Sequence[PageRead]) -> PageRead | None:
+    """The contact page's read, when the centres are asked for: it then goes
+    into their block rather than standing as a page of its own."""
+    if not _asks_for_centres(targets):
+        return None
+    return next((r for r in reads if r.target.page is not None and r.target.page.is_contact), None)
 
 
 def _select(
@@ -370,6 +416,8 @@ def _select(
 ) -> list[ContextBlock]:
     settings = get_settings()
     usable = [r for r in reads if r.content is not None and r.fetched is not None]
+    contacts = _contacts_for(targets, usable)
+    usable = [r for r in usable if r is not contacts]
     flat: list[tuple[PageRead, int, Section]] = [
         (r, i, s) for r in usable for i, s in enumerate(r.content.sections)
     ]
@@ -384,7 +432,7 @@ def _select(
         if len(chosen) >= limit:
             break
         if target.kind == GROUP_KIND:
-            chosen.append(_group_block(target))
+            chosen.append(_group_block(target, contacts))
             continue
         read = by_key.get(target.key)
         if read is None or target.reason not in ABOUT:
@@ -459,8 +507,10 @@ def gather(
         if _page_count(targets) < settings.priority_max_pages and not lists_themes:
             found, evidence.similar_top = match.similar(query_vector, registry=registry, embed=embed)
             targets = match.ranked([*targets, *found])
-        pages = [t for t in targets if t.kind != GROUP_KIND][: settings.priority_max_pages]
         groups = [t for t in targets if t.kind == GROUP_KIND][:1]
+        pages = match.ranked([*_contact_target(groups, registry),
+                              *(t for t in targets if t.kind != GROUP_KIND)])
+        pages = pages[: settings.priority_max_pages]
         evidence.targets = match.ranked([*pages, *groups])
         evidence.reads = _read_all(pages, registry)
         evidence.blocks = _select(evidence.targets, evidence.reads, evidence.query_vector,
