@@ -187,6 +187,8 @@ _BARE_SUBJECTS = [
     "green shipping",              # a listed page's own name
     "centres of excellence",       # a curated page phrase
     "Teri thematic area",          # the home page's theme-list phrase
+    "pan india presence",          # the regional centres, asked for by reach
+    "regional cenres",             # ... and with a typo (2026-10-17)
 ]
 
 

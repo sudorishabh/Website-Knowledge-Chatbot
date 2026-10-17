@@ -109,6 +109,35 @@ def test_the_centres_are_asked_for_by_presence_offices_and_branches(reg, questio
 
 
 @pytest.mark.parametrize("question", [
+    "regional cenres",
+    "TERI regional centrs",
+    "regoinal centers",
+    "pan india presense",
+])
+def test_a_typo_in_a_group_phrase_is_forgiven(reg, question):
+    """Measured 2026-10-17: "regional cenres" was read as small talk and the
+    user was asked what they meant."""
+    assert ("Regional centers", GROUP) in _hits(question, reg)
+
+
+@pytest.mark.parametrize("a, b, close", [
+    ("cenres", "centres", True),      # a letter dropped
+    ("centeres", "centres", True),    # a letter added
+    ("centrse", "centres", True),     # neighbours swapped
+    ("centros", "centres", True),     # a letter changed
+    ("cntrs", "centres", False),
+    ("gender", "tender", True),       # why page names are matched exactly
+])
+def test_one_edit_apart(a, b, close):
+    assert match._one_edit_apart(a, b) is close
+
+
+def test_a_typo_is_not_forgiven_in_a_short_word(reg):
+    assert ("Regional centers", GROUP) not in _hits("tery centres", reg)
+    assert ("Regional centers", GROUP) not in _hits("pun india presence", reg)
+
+
+@pytest.mark.parametrize("question", [
     "TERI centres of excellence",
     "what does TERI's Goa centre work on",
     "how much water does a data centre use",
