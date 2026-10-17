@@ -47,6 +47,10 @@ CENTRE = "centre"
 PEOPLE = "people"
 PAGE = "page"
 
+#: The contact page's path: the addresses and contacts of the headquarters and
+#: the regional centres, which the centres' own pages do not give.
+CONTACT_PATH = "/contact"
+
 #: How the file marks a theme page: "Climate Change Theme".
 _THEME_SUFFIX = re.compile(r"\s+theme$", re.I)
 
@@ -118,6 +122,11 @@ _EXTRA_ALIASES: dict[str, tuple[str, ...]] = {
     "/fcra-financials": ("fcra", "foreign contribution"),
     "/annual-reports": ("annual report",),
     "/alumni": ("alumni", "alumnus", "alumni association"),
+    "/contact": (
+        "contact details", "contact information", "contact number", "contact teri",
+        "phone number", "telephone number", "email address", "postal address",
+        "teri address", "address of teri",
+    ),
     "/people/committee-of-directors": (
         "committee of directors", "director general", "dg", "executive director",
         "directors of teri", "teri directors", "leadership team", "senior leadership",
@@ -198,6 +207,10 @@ class PriorityPage:
         return _path_of(self.key) == "/"
 
     @property
+    def is_contact(self) -> bool:
+        return _path_of(self.key) == CONTACT_PATH
+
+    @property
     def topic(self) -> str:
         """What the page is about: a theme page's name without its "Theme"."""
         return _THEME_SUFFIX.sub("", self.name) if self.kind == THEME else self.name
@@ -250,6 +263,11 @@ class Registry:
     def home(self) -> PriorityPage | None:
         """The home page, which gives the list of themes."""
         return next((p for p in self.pages if p.is_home), None)
+
+    @property
+    def contact(self) -> PriorityPage | None:
+        """The contact page, which gives the centres' addresses and contacts."""
+        return next((p for p in self.pages if p.is_contact), None)
 
     @property
     def keys(self) -> frozenset[str]:

@@ -46,6 +46,8 @@ def _hits(question, reg, **kw):
     ("what is green shipping", "Green Shipping Theme"),
     ("tell me about the WSDS", "World Sustainable Development Summit Theme"),
     ("Forest & Biodiversity work", "Forest & Biodiversity Theme"),
+    ("TERI contact details", "Contact Us"),
+    ("what is the phone number of TERI", "Contact Us"),
 ])
 def test_a_named_page_is_found(reg, question, page):
     assert (page, NAME) in _hits(question, reg)

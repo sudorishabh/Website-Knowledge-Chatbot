@@ -60,6 +60,11 @@
     "description": "Provides information about the TERI Alumni Association and its efforts to connect former members, facilitate knowledge sharing, mentoring, collaboration, and continued engagement with TERI."
   },
   {
+    "name": "Contact Us",
+    "page_url": "https://www.teriin.org/contact",
+    "description": "TERI's contact page: postal addresses, telephone numbers, email addresses and contact persons for its headquarters in New Delhi and each of its regional centres across India."
+  },
+  {
     "name": "People - committee of directors",
     "page_url": "https://teriin.org/people/committee-of-directors",
     "description": "Lists members of TERI's Committee of Directors and provides links to individual profiles containing their roles, expertise, and professional backgrounds.",
