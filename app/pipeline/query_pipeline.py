@@ -425,6 +425,19 @@ def _lists_themes(pq: ProcessedQuery) -> bool:
     return pq.analysis is not None and getattr(pq.analysis, "operation", None) == "list_themes"
 
 
+def _asks_only_for_themes(question: str) -> bool:
+    """Whether the wording asks for the list of themes and nothing else, by
+    whatever name ("TERI's research areas", "TERI divisions", "what sectors
+    does TERI work in"). Understanding reads most of these as passage questions
+    or small talk, so the wording decides: such a question is a theme listing,
+    and one that asks for nothing else is answered with the whole overview."""
+    if not get_settings().priority_pages_enabled:
+        return False
+    from app.retrieval.priority.themes import asks_only_for_themes
+
+    return asks_only_for_themes(question)
+
+
 def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
     """The deterministic priority triggers, or None with the feature off or for
     a question about one edition of a series (the edition's own PDF answers it)."""
@@ -759,7 +772,8 @@ def _prepare(
     # page the catalog cannot see ("who is on the governing council", "latest
     # tenders") must reach that page rather than be answered from the catalog.
     priority_targets = _priority_targets(question, pq)
-    themes_listing = _lists_themes(pq)
+    only_themes = _asks_only_for_themes(question)
+    themes_listing = only_themes or _lists_themes(pq)
     page_owned = _priority_overrides_catalog(
         priority_targets, themes_listing=themes_listing,
         about_authorship=_asks_for_authorship(question, pq),
@@ -777,8 +791,10 @@ def _prepare(
         _names_a_theme_page(target) for target in priority_targets or ()))
     # A listing that asks for nothing else is answered whole, theme by theme;
     # one that also asks for content ("…and their key projects") is the page's
-    # and the model's, with the figures after it.
-    if theme_digest_wanted and not caps & _CONTENT_CAPS:
+    # and the model's, with the figures after it. Its wording can say so when
+    # understanding's labels cannot: "TERI's research areas" is labelled a
+    # passage question, and asks for the list alone.
+    if theme_digest_wanted and (only_themes or not caps & _CONTENT_CAPS):
         overview = _theme_overview(question, pq)
         if overview is not None:
             return overview, None

@@ -348,6 +348,46 @@ def test_a_theme_listing_naming_one_theme_is_answered_from_its_page(wired, monke
     assert gen is not None and wired.log.retrieve
 
 
+def _passage_pq():
+    """A question understanding labelled a passage question, as it labels "TERI's
+    research areas" and "what are the divisions of TERI"."""
+    pq = _pq(intent="qa", analysis=qp.QueryAnalysis(search_query="q", intent="qa"))
+    pq.understanding = qp.QueryUnderstanding(query_rewrite="q", intents=[
+        qp.IntentPrediction(label="qa", confidence=0.9, rationale="")])
+    return pq
+
+
+@pytest.mark.parametrize("question", [
+    "What are TERI's research areas?",
+    "What are the divisions of TERI?",
+    "What sectors does TERI work in?",
+])
+def test_the_themes_asked_for_by_another_name_get_the_overview(wired, monkeypatch, digest,
+                                                                question):
+    """Measured 2026-10-17: these were answered from a Policy page's topics, a
+    2017 annual report's divisions and a list of programmes."""
+    _enable(monkeypatch)
+    _home_listing(wired, _passage_pq())
+    result, gen = pipe._prepare(question, history=None, top_k=None)
+    assert gen is None and result["answer"] == "There are **2 thematic areas**: ..."
+    assert wired.log.retrieve == [] and wired.log.structured == []
+
+
+def test_the_themes_asked_for_with_more_are_the_page_and_the_models(wired, monkeypatch,
+                                                                    digest):
+    _enable(monkeypatch)
+    _home_listing(wired, _passage_pq())
+    _, gen = pipe._prepare("TERI's research areas and their key projects", history=None,
+                           top_k=None)
+    assert digest.overview == [] and gen is not None and wired.log.retrieve
+
+
+def test_the_wording_decides_nothing_with_the_feature_off(wired, monkeypatch, digest):
+    wired.state.pq = _passage_pq()
+    _, gen = pipe._prepare("What are TERI's research areas?", history=None, top_k=None)
+    assert digest.overview == [] and gen is not None
+
+
 def test_the_home_page_does_not_overrule_a_count_over_the_themes(wired, monkeypatch):
     _enable(monkeypatch)
     wired.state.pq = _listing_pq("distribution")
