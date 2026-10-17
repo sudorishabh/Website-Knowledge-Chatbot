@@ -187,6 +187,9 @@ _BARE_SUBJECTS = [
     "green shipping",              # a listed page's own name
     "centres of excellence",       # a curated page phrase
     "Teri thematic area",          # the home page's theme-list phrase
+    "research areas",              # ... and the other names for the themes
+    "TERI divisions",              #     (2026-10-17)
+    "TERI departments",
 ]
 
 

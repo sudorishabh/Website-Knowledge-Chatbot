@@ -12,8 +12,10 @@ model call.
   more than one word ("climate change", "green shipping"), a theme's name with
   "theme" or "thematic" after it ("the water theme"), or a phrase curated in the
   registry ("director general", "tender", "founder"). The home page is named by
-  the phrases that ask for the list of themes ("TERI's thematic areas"), and
-  also whenever query understanding read the question as a theme listing; it
+  any question asking for the list of themes, by whatever name ("TERI's
+  thematic areas", "research areas", "TERI divisions":
+  `themes.asks_for_themes`), and also whenever query understanding read the
+  question as a theme listing; it
   gives way when the question names one theme, since that theme's own page
   answers it.
 * ``group`` — the question asks for a group's membership ("regional
@@ -58,6 +60,7 @@ from app.retrieval.priority.registry import (
     normalize_text,
     normalize_url,
 )
+from app.retrieval.priority.themes import asks_for_themes
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +169,7 @@ def explicit(
         if any(_has(words, alias) for alias in page.aliases):
             targets.append(Target(page.name, page.kind, NAME, url=page.url, page=page))
     home = registry.home
-    if themes_listing and home is not None:
+    if home is not None and (themes_listing or asks_for_themes(question)):
         targets.append(Target(home.name, home.kind, NAME, url=home.url, page=home))
     wanted = normalize_text(theme)
     if wanted:
