@@ -16,6 +16,7 @@ from app.generation.prompts import (
     CHITCHAT_SYSTEM_PROMPT,
     REFUSAL,
     SHAPE_REMINDER,
+    contacts_note,
     format_context_blocks,
     graph_facts_rule,
     has_graph_facts,
@@ -29,17 +30,18 @@ from app.generation.prompts import (
 logger = logging.getLogger(__name__)
 
 #: The human turn. `{notes}` is the per-request notes about this evidence — the
-#: supersession note, the people-listings note — each followed by a blank line,
-#: or the empty string, so a context that triggers neither renders exactly as it
-#: always has. Placed between the context and the question rather than in the
-#: system prompt: they are facts about *this* evidence, and the end of the human
-#: turn is where the model is looking when it starts to write. For the same
-#: reason `{shape}` — `prompts.SHAPE_REMINDER` — follows the question.
+#: supersession note, the people-listings note, the centres' contacts note —
+#: each followed by a blank line, or the empty string, so a context that
+#: triggers none renders exactly as it always has. Placed between the context
+#: and the question rather than in the system prompt: they are facts about
+#: *this* evidence, and the end of the human turn is where the model is looking
+#: when it starts to write. For the same reason `{shape}` —
+#: `prompts.SHAPE_REMINDER` — follows the question.
 _HUMAN_TURN = "Numbered context:\n{context}\n\n{notes}Question: {question}\n\n{shape}"
 
 
 def _notes(blocks: list[ContextBlock]) -> str:
-    notes = (supersession_note(blocks), staff_note(blocks))
+    notes = (supersession_note(blocks), staff_note(blocks), contacts_note(blocks))
     return "".join(f"{note}\n\n" for note in notes if note)
 
 # Prior turns threaded into the answer prompt so the model can resolve follow-up

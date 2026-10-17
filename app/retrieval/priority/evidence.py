@@ -57,6 +57,10 @@ CORPUS_MIN_SLOTS = 2
 MIN_PAGE_CHARS = 80
 #: People named in one question whose profiles are read.
 MAX_PEOPLE = 2
+#: Payload flag on a group block whose members carry their offices' addresses
+#: and contacts, which generation asks the answer to give
+#: (`app.generation.prompts.CONTACTS_FLAG`, pinned equal by a test).
+MEMBER_CONTACTS = "member_contacts"
 
 Embed = Callable[[list[str]], list[list[float]]]
 
@@ -380,6 +384,7 @@ def _group_block(target: Target, contacts: PageRead | None = None) -> ContextBlo
             "source_url": contacts.fetched.final_url or contacts.url,
             "fetched_at": contacts.fetched.fetched_at.isoformat(timespec="seconds"),
             "stale": contacts.fetched.stale,
+            MEMBER_CONTACTS: True,
         })
     return ContextBlock(n=0, text=text, score=1.0, payload=payload)
 

@@ -1075,6 +1075,39 @@ def staff_note(blocks: "list[ContextBlock]") -> str:
     )
 
 
+#: Set on a group block whose members carry their offices' addresses and
+#: contacts (`app.retrieval.priority.evidence.MEMBER_CONTACTS`, pinned equal by
+#: a test). A plain string, as `STAFF_REASON` is.
+CONTACTS_FLAG = "member_contacts"
+
+
+def contacts_note(blocks: "list[ContextBlock]") -> str:
+    """A note for the human turn when the context lists the regional centres
+    with their offices' addresses and contacts.
+
+    Empty for every other context. Measured 2026-10-17: with every centre's
+    address, telephone, email and contact person in the block, "What are
+    TERI's regional centres?", "Where is TERI located?" and "What is TERI's pan
+    India presence?" were answered with each centre's one-line description and
+    nothing else — the set shape asks for the description alone — and only a
+    question saying "offices" or "contact details" got the addresses. The
+    reader asking where the organisation is wants to be able to reach it.
+    """
+    block = next((b for b in blocks if b.payload.get(CONTACTS_FLAG)), None)
+    if block is None:
+        return ""
+    name = str(block.payload.get("title") or "").strip()
+    return (
+        f"[{block.n}] {name} gives each centre's office with its address, "
+        "telephone, email and contact person, and the headquarters' too. "
+        "Whatever the question asks of the centres — which, where, how many — "
+        "list every centre it gives: **name** — its one-line description, then "
+        "its address, telephone, email and contact person beneath it as "
+        "sub-bullets, written as the block gives them. Then the headquarters, "
+        "the same way."
+    )
+
+
 def supersession_note(blocks: "list[ContextBlock]") -> str:
     """A dates note for the human turn, when the context carries a supersession.
 

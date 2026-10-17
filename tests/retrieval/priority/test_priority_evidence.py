@@ -189,6 +189,7 @@ def test_the_centres_carry_their_addresses_from_the_contact_page(_pages):
     assert "Headquarters:\n  Address: The Energy and Resources Institute (TERI)" in block.text
     assert block.payload["source_url"] == "https://www.teriin.org/contact"
     assert block.payload["fetched_at"] == "2026-09-24T10:00:00+00:00"
+    assert block.payload[ev.MEMBER_CONTACTS] is True
 
 
 def test_offices_that_are_no_listed_centre_are_left_out(_pages):
@@ -203,6 +204,7 @@ def test_the_centres_are_still_listed_when_the_contact_page_cannot_be_read(monke
     assert "- Goa: Coastal work. (https://teriin.org/goa)" in block.text
     assert "Office:" not in block.text
     assert "source_url" not in block.payload
+    assert ev.MEMBER_CONTACTS not in block.payload
 
 
 def test_a_contact_question_reads_the_contact_page_as_a_page(_pages):
