@@ -68,7 +68,10 @@ def _sha(*parts: str) -> str:
 #: a small count lists every item; a zero under a type and a period names the
 #: subject's other types; and a theme no document carries no longer empties
 #: passage search.
-PIPELINE_REVISION = "2026-10-05.1"
+#: 2026-10-17.2: the themes asked for by another name ("research areas", "TERI
+#: divisions", "what sectors does TERI work in") are a theme listing, and one
+#: asking for nothing else gets the whole overview.
+PIPELINE_REVISION = "2026-10-17.2"
 
 
 def _pref_fingerprint() -> str:
