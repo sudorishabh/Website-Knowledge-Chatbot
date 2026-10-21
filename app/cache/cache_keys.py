@@ -87,7 +87,9 @@ def _sha(*parts: str) -> str:
 #: 2026-10-21.4: the themes asked for by another name ("research areas", "TERI
 #: divisions", "what sectors does TERI work in") are a theme listing, and one
 #: asking for nothing else gets the whole overview.
-PIPELINE_REVISION = "2026-10-21.4"
+#: 2026-10-21.5: "themes" alone gets the overview rather than a clarification,
+#: and a live page whose connection fails outright is asked for once more.
+PIPELINE_REVISION = "2026-10-21.5"
 
 
 def _pref_fingerprint() -> str:
