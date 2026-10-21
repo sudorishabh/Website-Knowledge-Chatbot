@@ -92,6 +92,29 @@ def normalize_text(text: str | None) -> str:
     return _NON_WORD.sub(" ", lowered).strip()
 
 
+#: Shortest word in which a typo is forgiven. Shorter words sit one letter
+#: from too many others ("goa", "teri", "in").
+TYPO_MIN_LETTERS = 5
+
+
+def one_edit_apart(a: str, b: str) -> bool:
+    """Whether ``a`` becomes ``b`` by at most one inserted, dropped or changed
+    letter, or one swap of neighbouring letters."""
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        diff = [i for i, (x, y) in enumerate(zip(a, b)) if x != y]
+        return len(diff) == 1 or (
+            len(diff) == 2 and diff[1] == diff[0] + 1
+            and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
+        )
+    short, long = sorted((a, b), key=len)
+    i = next((i for i, (x, y) in enumerate(zip(short, long)) if x != y), len(short))
+    return short[i:] == long[i + 1:]
+
+
 #: Phrases that ask for the list of themes, which the home page gives. Tight on
 #: purpose — a page that matches leads the context — so a bare "themes" or
 #: "research area" is not one: "which themes have the most publications" is a

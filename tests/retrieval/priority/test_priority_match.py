@@ -25,6 +25,7 @@ from app.retrieval.priority.registry import (
     PriorityGroup,
     PriorityPage,
     normalize_text,
+    one_edit_apart,
     parse,
 )
 
@@ -137,7 +138,7 @@ def test_a_typo_in_a_group_phrase_is_forgiven(reg, question):
     ("gender", "tender", True),       # why page names are matched exactly
 ])
 def test_one_edit_apart(a, b, close):
-    assert match._one_edit_apart(a, b) is close
+    assert one_edit_apart(a, b) is close
 
 
 def test_a_typo_is_not_forgiven_in_a_short_word(reg):

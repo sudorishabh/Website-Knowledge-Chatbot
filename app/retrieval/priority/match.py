@@ -56,11 +56,13 @@ from app.retrieval.priority.registry import (
     CENTRE,
     PEOPLE,
     THEME,
+    TYPO_MIN_LETTERS,
     PriorityGroup,
     PriorityPage,
     Registry,
     normalize_text,
     normalize_url,
+    one_edit_apart,
 )
 
 logger = logging.getLogger(__name__)
@@ -138,34 +140,11 @@ def _has(words: str, phrase: str) -> bool:
     return re.search(_phrase(phrase), words) is not None
 
 
-#: Shortest word in which a typo is forgiven. Shorter words sit one letter
-#: from too many others ("goa", "teri", "in").
-_TYPO_MIN_LETTERS = 5
-
-
-def _one_edit_apart(a: str, b: str) -> bool:
-    """Whether ``a`` becomes ``b`` by at most one inserted, dropped or changed
-    letter, or one swap of neighbouring letters."""
-    if a == b:
-        return True
-    if abs(len(a) - len(b)) > 1:
-        return False
-    if len(a) == len(b):
-        diff = [i for i, (x, y) in enumerate(zip(a, b)) if x != y]
-        return len(diff) == 1 or (
-            len(diff) == 2 and diff[1] == diff[0] + 1
-            and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
-        )
-    short, long = sorted((a, b), key=len)
-    i = next((i for i, (x, y) in enumerate(zip(short, long)) if x != y), len(short))
-    return short[i:] == long[i + 1:]
-
-
 def _roughly(word: str, wanted: str, *, plural: bool) -> bool:
     forms = (wanted, f"{wanted}s") if plural else (wanted,)
     if word in forms:
         return True
-    return len(wanted) >= _TYPO_MIN_LETTERS and any(_one_edit_apart(word, f) for f in forms)
+    return len(wanted) >= TYPO_MIN_LETTERS and any(one_edit_apart(word, f) for f in forms)
 
 
 def _rough_spans(tokens: Sequence[str], phrase: str) -> list[tuple[int, int]]:
