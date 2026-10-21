@@ -74,7 +74,10 @@ def _sha(*parts: str) -> str:
 #: 2026-10-17.3: the Centres of Excellence are a group of nine, each described
 #: and linked; a question naming one reads that centre's live page; the
 #: longest group phrase decides which group a question asks for.
-PIPELINE_REVISION = "2026-10-17.3"
+#: 2026-10-21.1: a theme named by part of its name ("the marine theme") reads
+#: that theme's live page; one several themes share ("the biofuel theme") is
+#: asked about, and the reply chooses one or all of them.
+PIPELINE_REVISION = "2026-10-21.1"
 
 
 def _pref_fingerprint() -> str:
