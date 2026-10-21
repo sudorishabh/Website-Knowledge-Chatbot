@@ -87,7 +87,7 @@ Strongest first; none costs a model call.
 | Reason | Fires when | Opening section admitted |
 | --- | --- | --- |
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
-| `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), part of a theme's topic before "theme" or after "theme on/of" ("the marine theme", and each of the three biofuel themes for "the biofuel theme"; see *Themes named in part* below), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
+| `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), part of a theme's topic before "theme" or after "theme on/of" ("the marine theme", and each of the three biofuel themes for "the biofuel theme"; see *Themes named in part* below), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by any question asking for the list of themes, by whatever name ("TERI's thematic areas", "research areas", "TERI divisions", "what sectors does TERI work in" — `themes.asks_for_themes`), or by any question understanding read as a theme listing | yes |
 | `group` | one of the group's phrases ("regional centres", "pan India presence", "national presence", "where is TERI located"), a typo of one letter forgiven in words of five letters or more ("regional cenres"), or the organisation's name beside a plural word for the members ("which offices does TERI have") → one block built from the list itself, each centre carrying its address and contacts from the live contact page. Two groups: the regional centres and the Centres of Excellence. The longest group phrase decides which ("TERI centres of excellence" is not the regional centres), and a question naming one member reads that member's page instead | — |
 | `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named, and held back when the question asks for a theme's or centre's team as it stands (see **Teams** below). Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
 | `theme` | understanding resolved a theme facet that is a page on the list, or part of a page's name ("biofuel" in "summarize TERI's biofuel research") | yes |
@@ -109,9 +109,28 @@ the seven areas with a line on each. So a question asking for the list reads
 the home page, and one naming a theme reads that theme's page instead — the
 home page gives way whenever a theme is named ("the climate change thematic
 area"). A theme listing adds no page by description match, since it is about
-no one theme. The overview phrases are deliberately tight: a page that matches
-leads the context, and "which themes have the most publications" is a catalog
-count — the home page overrules the catalog only for a `list_themes` reading.
+no one theme. A bare "themes" does not ask for the list: "which themes have
+the most publications" is a catalog count, and the home page overrules the
+catalog only for a theme listing.
+
+People ask for the list by many names, and `themes.asks_for_themes` hears
+them: a phrase that asks for it anywhere ("research areas", "areas of
+expertise", "focus areas"), a plural word that does beside the organisation's
+name ("TERI divisions", "which departments does TERI have"), or the fields it
+works in ("what sectors does TERI work in"). Understanding reads most of these
+as passage questions or small talk, so the wording decides: a question that
+asks for the list and nothing else (`asks_only_for_themes` — nothing left once
+the request, the organisation's name and the words any question is made of are
+taken out) is a theme listing, and gets the whole overview whatever
+understanding labelled it. One that asks for more ("TERI's research areas and
+their key projects", "the research areas of Dr Vibha Dhawan") is answered as
+before. Measured 2026-10-17 over fifteen wordings: before, five got the
+overview and two more the seven areas mixed with a Policy page's topics or a
+list of programmes; "TERI divisions", "TERI departments" and "research areas"
+were small talk, "what are the divisions of TERI" listed a 2017 annual report's divisions,
+and "what sectors does TERI work in" a list of programmes. After, all fifteen
+got the overview, and four controls (two catalog counts, one theme, one topic)
+were unchanged.
 When understanding reads a theme listing *and* names a theme, the home page
 gives way as above and the catalog declines the listing too (see
 [07](07-structured-answers.md#the-tools)), so the named theme's page answers.

@@ -7,6 +7,11 @@ priority page list describes every theme page in one full sentence, so a theme
 is described from there, and from its teaser only when the list has no page
 for it.
 
+People ask for the themes by many names — research areas, divisions,
+departments, the fields or sectors the organisation works in — and
+:func:`asks_for_themes` hears them all, so that every one of them reaches the
+home page's list.
+
 Nothing here touches the network: :func:`app.retrieval.priority.evidence.thematic_areas`
 reads the page.
 """
@@ -16,7 +21,14 @@ import re
 from dataclasses import dataclass
 
 from app.retrieval.priority.extract import PageContent
-from app.retrieval.priority.registry import THEME, PriorityPage, Registry, normalize_text
+from app.retrieval.priority.registry import (
+    THEME,
+    THEMES_OVERVIEW,
+    THEMES_OVERVIEW_WORDS,
+    PriorityPage,
+    Registry,
+    normalize_text,
+)
 
 #: The home page section that lists the themes, normalized.
 SECTION = "thematic areas"
@@ -98,3 +110,70 @@ def areas_on(content: PageContent, registry: Registry) -> list[ThematicArea]:
         areas.append(ThematicArea(name=line, description=description,
                                   url=page.url if page is not None else None))
     return areas
+
+
+# -- questions that ask for the themes ---------------------------------------------
+
+#: The organisation in normalized text, or the assistant standing for it ("what
+#: divisions do you have").
+_ORG = re.compile(r"(?<!\w)(?:teri|your?|(?:the )?energy and resources institute)(?!\w)")
+#: "What sectors does TERI work in", "the areas TERI works on": the fields the
+#: organisation works in are its themes.
+_WORKS_IN = re.compile(
+    r"(?<!\w)(?:areas|fields|sectors|domains|disciplines|topics|subjects)(?:\s+\w+){0,3}?"
+    r"\s+(?:teri|you)\s+(?:works?|working|focus(?:es|ed)?|operates?|operating|"
+    r"speciali[sz](?:e|es|ed)|research(?:es)?|covers?|covering)(?!\w)"
+)
+#: The words a request for a list is made of, whatever it lists, and the verbs
+#: it asks what the organisation does with ("what research areas does TERI
+#: work in").
+_QUESTION_WORDS = frozenset(
+    """
+    what which whats are is was were be the a an of do does did have has had list
+    show tell give name me us about all its it their main major key core different
+    various current currently primary please kind kinds type types in on at to for
+    by and or can could would i we want know how many number
+    work works working focus focuses cover covers
+    """.split()
+)
+
+
+def _phrase(phrase: str) -> str:
+    """Whole-word pattern for ``phrase``, tolerating a plural."""
+    return rf"(?<!\w){re.escape(phrase)}s?(?!\w)"
+
+
+def asks_for_themes(question: str) -> bool:
+    """Whether ``question`` asks for the organisation's themes, by any of the
+    names people give them: a phrase that asks for them anywhere ("research
+    areas", "areas of expertise"), a plural word that does beside the
+    organisation's name ("TERI divisions", "which departments does TERI
+    have"), or the fields it works in ("what sectors does TERI work in")."""
+    words = normalize_text(question)
+    if any(re.search(_phrase(p), words) for p in THEMES_OVERVIEW):
+        return True
+    if _WORKS_IN.search(words):
+        return True
+    return bool(THEMES_OVERVIEW_WORDS & set(words.split())) and _ORG.search(words) is not None
+
+
+def asks_only_for_themes(question: str) -> bool:
+    """Whether ``question`` asks for the list of themes and for nothing else:
+    once the request, the organisation's name and the words any question is
+    made of are taken out, nothing is left.
+
+    Measured 2026-10-17: "TERI's research areas", "TERI divisions" and "what
+    fields does TERI work in" were read as passage questions or small talk, and
+    answered with the themes mixed into a Policy page's topics, with the
+    divisions of a 2017 annual report, or not at all. Read as a listing, each
+    gets the home page's seven areas. "TERI's research areas and their key
+    projects" leaves "projects", and "which TERI themes have the most
+    publications" leaves "most publications": both are answered as before.
+    """
+    if not asks_for_themes(question):
+        return False
+    words = normalize_text(question)
+    for phrase in THEMES_OVERVIEW:
+        words = re.sub(_phrase(phrase), " ", words)
+    words = _ORG.sub(" ", _WORKS_IN.sub(" ", words))
+    return all(w in _QUESTION_WORDS or w in THEMES_OVERVIEW_WORDS for w in words.split())

@@ -99,10 +99,12 @@ def test_a_theme_is_named_by_its_topic_with_or_without_theme_after_it():
     assert {"energy theme", "energy thematic"} <= set(energy.aliases)
 
 
-def test_the_home_page_is_named_by_the_phrases_that_ask_for_the_themes():
+def test_the_home_page_is_found_and_named_as_itself():
+    """The questions asking for its list of themes reach it through
+    `themes.asks_for_themes`, which reads more than phrases."""
     reg = parse(SAMPLE)
     assert reg.home is not None and reg.home.key == "teriin.org/" and reg.home.kind == PAGE
-    assert set(registry.THEMES_OVERVIEW) <= set(reg.home.aliases)
+    assert {"home page", "homepage"} <= set(reg.home.aliases)
     assert not any(p.is_home for p in reg.pages if p is not reg.home)
 
 

@@ -65,6 +65,9 @@ def test_a_named_page_is_found(reg, question, page):
     "Teri thematic areas",
     "What are TERI's research areas?",
     "which themes does TERI work on",
+    "research areas",
+    "TERI divisions",
+    "What fields does TERI work in?",
 ])
 def test_asking_for_the_themes_names_the_home_page(reg, question):
     assert _hits(question, reg) == [("Home", NAME)]
