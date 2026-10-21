@@ -25,7 +25,7 @@ import threading
 import time
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
-from typing import Callable
+from typing import Any, Callable
 
 from app.config import get_settings
 
@@ -150,6 +150,30 @@ def fetch(
         return page
 
 
+#: Attempts at a page whose connection fails outright.
+_ATTEMPTS = 2
+
+
+def _get(url: str, headers: dict[str, str], timeout: float) -> Any:
+    """The response for ``url``, asked again once if the connection fails
+    outright. Measured 2026-10-21: a theme page's read failed in 21 ms, while
+    the site answered every other request, and the answer fell back to old
+    documents; a kept-alive connection the site had closed between questions
+    fails like that, and a fresh one succeeds. A timeout is not asked again,
+    so a slow site costs one timeout, not two."""
+    import requests
+
+    for attempt in range(1, _ATTEMPTS + 1):
+        try:
+            return _get_session().get(url, headers=headers, timeout=timeout,
+                                      allow_redirects=True, stream=True)
+        except requests.ConnectionError as exc:
+            if isinstance(exc, requests.Timeout) or attempt == _ATTEMPTS:
+                raise
+            logger.info("Priority page %s: the connection failed (%s); trying again.", url, exc)
+    raise AssertionError("unreachable")
+
+
 def _download(
     url: str,
     previous: FetchedPage | None,
@@ -166,8 +190,7 @@ def _download(
             headers["If-Modified-Since"] = previous.last_modified
     started = time.monotonic()
     try:
-        response = _get_session().get(url, headers=headers, timeout=timeout,
-                                      allow_redirects=True, stream=True)
+        response = _get(url, headers, timeout)
     except Exception as exc:
         logger.warning("Priority page %s could not be fetched: %s", url, exc)
         return None

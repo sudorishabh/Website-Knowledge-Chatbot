@@ -151,3 +151,35 @@ def test_an_oversized_body_is_refused(monkeypatch):
     monkeypatch.setattr(fetch, "MAX_BYTES", 10)
     _use(monkeypatch, _Session(_Response()))
     assert fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS) is None
+
+
+
+def test_a_connection_that_fails_outright_is_tried_once_more(monkeypatch):
+    """Measured 2026-10-21: a read failed in 21 ms on a connection the site had
+    closed, and the answer fell back to old documents."""
+    import requests
+
+    session = _use(monkeypatch, _Session(
+        requests.ConnectionError("Connection aborted: RemoteDisconnected"), _Response()))
+    page = fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS)
+    assert page is not None and page.html == HTML
+    assert len(session.calls) == 2
+
+
+def test_a_connection_that_keeps_failing_is_tried_twice_at_most(monkeypatch):
+    import requests
+
+    session = _use(monkeypatch, _Session(
+        requests.ConnectionError("refused"), requests.ConnectionError("refused")))
+    assert fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS) is None
+    assert len(session.calls) == 2
+
+
+@pytest.mark.parametrize("slow", ["connect", "read"])
+def test_a_timeout_is_not_tried_again(monkeypatch, slow):
+    import requests
+
+    error = requests.ConnectTimeout("slow") if slow == "connect" else requests.ReadTimeout("slow")
+    session = _use(monkeypatch, _Session(error, _Response()))
+    assert fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS) is None
+    assert len(session.calls) == 1
