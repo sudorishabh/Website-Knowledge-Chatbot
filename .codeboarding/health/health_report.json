@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-17T14:50:27.654900+00:00",
-  "overall_score": 0.9890725633319022,
+  "timestamp": "2026-10-21T10:52:02.792584+00:00",
+  "overall_score": 0.98918402039949,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2256,
+      "total_entities_checked": 2280,
       "findings_count": 21,
       "warning_count": 21,
-      "score": 0.9906914893617021,
+      "score": 0.9907894736842106,
       "finding_groups": [
         {
           "severity": "warning",
@@ -92,9 +92,9 @@
             {
               "entity_name": "app.pipeline.query_pipeline._prepare",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 703,
-              "line_end": 983,
-              "metric_value": 280
+              "line_start": 734,
+              "line_end": 1019,
+              "metric_value": 285
             },
             {
               "entity_name": "tools.e2e_ingest_audit.run_audit.main",
@@ -174,17 +174,17 @@
               "metric_value": 177
             },
             {
-              "entity_name": "app.pipeline.query_pipeline.stream_answer",
-              "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 1114,
-              "line_end": 1280,
-              "metric_value": 166
-            },
-            {
               "entity_name": "scripts.backfill_edition_and_titles.main",
               "file_path": "scripts/backfill_edition_and_titles.py",
               "line_start": 58,
               "line_end": 224,
+              "metric_value": 166
+            },
+            {
+              "entity_name": "app.pipeline.query_pipeline.stream_answer",
+              "file_path": "app/pipeline/query_pipeline.py",
+              "line_start": 1150,
+              "line_end": 1316,
               "metric_value": 166
             },
             {
