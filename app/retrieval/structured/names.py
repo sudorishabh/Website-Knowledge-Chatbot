@@ -342,6 +342,16 @@ def in_titles(names: Sequence[str]) -> bool:
     return any(compiled.search(title) for title in titles)
 
 
+def titled(names: Sequence[str]) -> int:
+    """How many website titles carry one of ``names``; 0 when the titles are
+    unavailable."""
+    titles, _ = _load()
+    if not titles or not names:
+        return 0
+    compiled = re.compile(pattern(names))
+    return sum(1 for title in titles if compiled.search(title))
+
+
 def _runs(text: str) -> list[list[str]]:
     """The words of ``text`` in runs, split wherever anything but a space or a
     hyphen separates two of them: "WSDS-related events, in 2026" is

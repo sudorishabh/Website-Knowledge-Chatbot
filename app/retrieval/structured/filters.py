@@ -26,6 +26,7 @@ only in Qdrant payloads (see docs/retire-term-tables-plan.md).
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Any
@@ -152,6 +153,61 @@ def resolve_tag(tag: str | None) -> str | None:
     unlike the previous UUID-linked design there is no longer a case where a tag
     has nothing to match against."""
     return _resolve_name(_TAG, tag).name
+
+
+#: How long a theme's page count is reused, as the titles are.
+_THEME_SIZE_TTL_SECONDS = 300.0
+_theme_sizes: dict[str, tuple[float, int]] = {}
+
+
+def _theme_size(theme: str) -> int | None:
+    """How many website pages carry ``theme``; None when the catalog cannot say."""
+    now = time.monotonic()
+    cached = _theme_sizes.get(theme)
+    if cached is not None and now - cached[0] < _THEME_SIZE_TTL_SECONDS:
+        return cached[1]
+    from app.catalog import queries
+
+    try:
+        size = queries.count_documents(source_type="website", entity_type="node", theme=theme)
+    except Exception:
+        logger.debug("Could not count the pages of theme %r.", theme, exc_info=True)
+        return None
+    _theme_sizes[theme] = (now, size)
+    return size
+
+
+def covers_topic(requested: str | None, resolved: str | None) -> bool:
+    """Whether the pages tagged with the theme ``resolved`` are the pages about
+    ``requested``, a topic named by part of the theme's name.
+
+    Resolution lets part of a theme's name stand for the theme ("climate" for
+    "Climate Change"), which is right when the theme holds the topic. Measured
+    2026-10-21, the narrower themes often hold a corner of it: "how many
+    publications on biofuels" counted the one page tagged "Advanced Biofuels &
+    Biochemicals" while 42 titles name biofuels; "marine" was 3 pages against
+    30 titles, "renewables" 95 against 191, while "climate" was 1,220 against
+    926. The titles naming a topic are the least it holds, so a theme tagged on
+    fewer pages is not the topic, and the titles count it instead
+    (`names.place`). A theme named in full is what was asked for, whatever it
+    holds. Only with titles to fall back on, and True when the catalog cannot
+    say, leaving the theme as it was."""
+    if not (requested and resolved) or not (names.enabled() and topic.enabled()):
+        return True
+    if topic.faithful_theme(resolved, requested):
+        return True  # every word of the theme's name was asked for
+    size = _theme_size(resolved)
+    if size is None:
+        return True
+    return size >= names.titled(names.spellings(requested))
+
+
+def stands_for_topic(requested: str | None, resolved: str | None) -> bool:
+    """Whether filtering on the theme ``resolved`` answers a question about
+    ``requested``: it says the same thing (`topic.faithful_theme`) and holds the
+    topic (:func:`covers_topic`). The planner and the tools ask this alike, so
+    they agree on which themes are applied."""
+    return topic.faithful_theme(requested, resolved) and covers_topic(requested, resolved)
 
 
 @dataclass
