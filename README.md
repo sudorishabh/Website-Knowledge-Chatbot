@@ -467,7 +467,6 @@ document is already indexed and committed before the layer runs. See
 ├── tests/                        Mirrors app/; ~200 test modules
 ├── ui/                           Embeddable chat widget (script.js) and preview page
 ├── reports/                      Tracked evaluation and audit evidence
-├── redundant/                    Archived docs and an old copy of the tests (excluded from pytest)
 ├── docker-compose.yml            Qdrant + Neo4j
 ├── requirements.txt
 ├── pytest.ini
@@ -1137,8 +1136,7 @@ pytest tests/ingestion tests/catalog                                 # write pat
 ```
 
 - `tests/` mirrors `app/`. A module's tests sit in the matching directory.
-- `pytest.ini` scopes collection to `tests/` and excludes `redundant/`, which
-  holds an archived copy of the suite whose module names would collide.
+- `pytest.ini` scopes collection to `tests/`.
 - The suite is offline by default. `tests/conftest.py` switches off the
   retrieval trace, priority pages and the knowledge hook, so a developer's
   `.env` does not leak in. Tests marked `llm` skip without Azure credentials.
@@ -1223,8 +1221,6 @@ These are stated plainly so that nobody has to rediscover them from the code:
 | [`GRAPH_DB_REPORT.md`](GRAPH_DB_REPORT.md) | The Neo4j knowledge graph end to end |
 | [`ui/README.md`](ui/README.md) | Widget embedding, branding, Drupal integration, CORS |
 | [`tools/local_tests/README.md`](tools/local_tests/README.md), [`tools/e2e_ingest_audit/README.md`](tools/e2e_ingest_audit/README.md) | The developer harnesses |
-
-`redundant/` holds superseded documents and is kept for history only.
 
 ---
 
