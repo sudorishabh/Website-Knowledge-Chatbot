@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-21T13:10:04.917101+00:00",
-  "overall_score": 0.988576858108108,
+  "timestamp": "2026-10-21T13:58:07.068670+00:00",
+  "overall_score": 0.9857172643869891,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2293,
+      "total_entities_checked": 2317,
       "findings_count": 21,
       "warning_count": 21,
-      "score": 0.9908416921064108,
+      "score": 0.9909365558912386,
       "finding_groups": [
         {
           "severity": "warning",
@@ -92,9 +92,9 @@
             {
               "entity_name": "app.pipeline.query_pipeline._prepare",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 758,
-              "line_end": 1050,
-              "metric_value": 292
+              "line_start": 803,
+              "line_end": 1108,
+              "metric_value": 305
             },
             {
               "entity_name": "tools.e2e_ingest_audit.run_audit.main",
@@ -174,17 +174,17 @@
               "metric_value": 177
             },
             {
+              "entity_name": "app.pipeline.query_pipeline.stream_answer",
+              "file_path": "app/pipeline/query_pipeline.py",
+              "line_start": 1240,
+              "line_end": 1409,
+              "metric_value": 169
+            },
+            {
               "entity_name": "scripts.backfill_edition_and_titles.main",
               "file_path": "scripts/backfill_edition_and_titles.py",
               "line_start": 58,
               "line_end": 224,
-              "metric_value": 166
-            },
-            {
-              "entity_name": "app.pipeline.query_pipeline.stream_answer",
-              "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 1181,
-              "line_end": 1347,
               "metric_value": 166
             },
             {
@@ -226,10 +226,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 9,
-      "findings_count": 9,
-      "warning_count": 2,
-      "score": 0.55,
+      "total_entities_checked": 15,
+      "findings_count": 15,
+      "warning_count": 5,
+      "score": 0.25,
       "finding_groups": [
         {
           "severity": "info",
@@ -265,13 +265,6 @@
               "metric_value": 0.0
             },
             {
-              "entity_name": "[unused_variable] \"_label\" is not accessed",
-              "file_path": "app/catalog/queries.py",
-              "line_start": 438,
-              "line_end": 438,
-              "metric_value": 0.0
-            },
-            {
               "entity_name": "[unused_variable] \"request\" is not accessed",
               "file_path": "app/core/clients/embeddings.py",
               "line_start": 76,
@@ -279,10 +272,38 @@
               "metric_value": 0.0
             },
             {
+              "entity_name": "[unused_variable] \"_label\" is not accessed",
+              "file_path": "app/catalog/queries.py",
+              "line_start": 450,
+              "line_end": 450,
+              "metric_value": 0.0
+            },
+            {
               "entity_name": "[unused_variable] \"GRAPH_FACTS_KIND\" is not accessed",
               "file_path": "app/generation/prompts.py",
               "line_start": 6,
               "line_end": 6,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"_has\" is not accessed",
+              "file_path": "app/retrieval/priority/people.py",
+              "line_start": 281,
+              "line_end": 281,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"_parse_bound\" is not accessed",
+              "file_path": "app/retrieval/understanding/query_processor.py",
+              "line_start": 27,
+              "line_end": 27,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_variable] \"_theme_condition\" is not accessed",
+              "file_path": "app/retrieval/understanding/query_processor.py",
+              "line_start": 28,
+              "line_end": 28,
               "metric_value": 0.0
             }
           ]
@@ -305,6 +326,34 @@
               "line_start": 6,
               "line_end": 6,
               "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_import] Import \"_parse_bound\" is not accessed",
+              "file_path": "app/retrieval/understanding/query_processor.py",
+              "line_start": 27,
+              "line_end": 27,
+              "metric_value": 0.0
+            },
+            {
+              "entity_name": "[unused_import] Import \"_theme_condition\" is not accessed",
+              "file_path": "app/retrieval/understanding/query_processor.py",
+              "line_start": 28,
+              "line_end": 28,
+              "metric_value": 0.0
+            }
+          ]
+        },
+        {
+          "severity": "warning",
+          "threshold": 0,
+          "description": "Functions/methods defined but never called",
+          "entities": [
+            {
+              "entity_name": "[unused_function] Function \"_has\" is not accessed",
+              "file_path": "app/retrieval/priority/people.py",
+              "line_start": 281,
+              "line_end": 281,
+              "metric_value": 0.0
             }
           ]
         }
@@ -312,6 +361,12 @@
     }
   ],
   "file_summaries": [
+    {
+      "file_path": "app/retrieval/understanding/query_processor.py",
+      "total_findings": 4,
+      "warning_findings": 2,
+      "composite_risk_score": 50.0
+    },
     {
       "file_path": "ui/script.js",
       "total_findings": 2,
@@ -338,6 +393,12 @@
     },
     {
       "file_path": "app/generation/prompts.py",
+      "total_findings": 2,
+      "warning_findings": 1,
+      "composite_risk_score": 25.0
+    },
+    {
+      "file_path": "app/retrieval/priority/people.py",
       "total_findings": 2,
       "warning_findings": 1,
       "composite_risk_score": 25.0
@@ -416,18 +477,6 @@
     },
     {
       "file_path": "scripts/backfill_edition_and_titles.py",
-      "total_findings": 1,
-      "warning_findings": 1,
-      "composite_risk_score": 15.0
-    },
-    {
-      "file_path": "scripts/_build_graph_benchmark.py",
-      "total_findings": 1,
-      "warning_findings": 1,
-      "composite_risk_score": 15.0
-    },
-    {
-      "file_path": "app/knowledge/claims/validate.py",
       "total_findings": 1,
       "warning_findings": 1,
       "composite_risk_score": 15.0
