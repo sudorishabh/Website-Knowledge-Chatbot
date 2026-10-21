@@ -4,10 +4,13 @@ The title table and the theme counts are stubbed, so nothing here touches MySQL.
 """
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from app.config import get_settings
-from app.retrieval.structured import filters, names
+from app.retrieval.structured import filters, names, planner
+from app.retrieval.structured.types import RecordFilters
 
 #: Pages tagged with each theme, as the catalog stood on 2026-10-21.
 TAGGED = {
@@ -30,6 +33,8 @@ TITLES = [
 def catalog(monkeypatch):
     monkeypatch.setattr(get_settings(), "catalog_title_names_enabled", True)
     monkeypatch.setattr(names, "_load", lambda: (TITLES, {}))
+    monkeypatch.setattr("app.catalog.state.website_titles",
+                        lambda: [(str(i), title, None) for i, title in enumerate(TITLES)])
     asked: list[str] = []
 
     def count_documents(**kw):
@@ -90,3 +95,52 @@ def test_a_catalog_that_cannot_count_leaves_the_theme_as_it_was(catalog, monkeyp
 
     monkeypatch.setattr("app.catalog.queries.count_documents", broken)
     assert filters.covers_topic("biofuels", "Advanced Biofuels & Biochemicals")
+
+
+# -- planning and resolving ------------------------------------------------------
+
+RESOLVED = {
+    "biofuels": "Advanced Biofuels & Biochemicals",
+    "marine": "Marine and Coastal",
+    "climate": "Climate Change",
+}
+
+_SLOTS = dict(
+    operation="count", bundle=None, theme=None, tags=[], author=None,
+    title_contains=None, group_by=None, secondary_group_by=None,
+    count_of="records", limit=10, date_from=None, date_to=None, year=None,
+)
+
+
+@pytest.fixture
+def resolving(catalog, monkeypatch):
+    monkeypatch.setattr(filters, "resolve_theme", lambda name: RESOLVED.get((name or "").lower()))
+    monkeypatch.setattr(filters, "_resolve_name", lambda kind, value: filters._NameMatch(
+        RESOLVED.get((value or "").lower()) if kind == "theme" else value, "accept"))
+    return catalog
+
+
+def _plan(question, **slots):
+    return planner.plan(SimpleNamespace(**{**_SLOTS, **slots}), question=question).calls[0]
+
+
+def test_a_count_on_a_topic_its_theme_holds_a_corner_of_is_counted_by_title(resolving):
+    call = _plan("how many publications on biofuels", theme="biofuels")
+    assert call.filters.theme is None
+    assert call.filters.title_names == ("biofuels",)
+
+
+def test_a_list_on_such_a_topic_is_constrained_by_its_words(resolving):
+    call = _plan("list publications on marine", operation="list", theme="marine")
+    assert "marine" in call.filters.topic_terms
+
+
+def test_a_count_on_a_topic_its_theme_holds_keeps_the_theme(resolving):
+    call = _plan("how many publications on climate", theme="climate")
+    assert call.filters.theme == "climate" and call.filters.title_names == ()
+
+
+def test_the_tools_drop_the_theme_the_planner_did(resolving):
+    scope = filters.resolve_filters(RecordFilters(theme="marine"))
+    assert scope.theme is None and scope.theme_widened == "Marine and Coastal"
+    assert filters.resolve_filters(RecordFilters(theme="climate")).theme == "Climate Change"

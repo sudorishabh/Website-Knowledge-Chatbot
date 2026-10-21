@@ -303,11 +303,12 @@ def resolve_filters(filters: RecordFilters) -> ResolvedScope:
     # than the ask. Filtering on those is worse than not filtering: it looks
     # precise and returns the newest rows of a huge bucket. When the substitution
     # widens the question, drop the theme and let the caller constrain by the
-    # words instead (see `topic.residual_topic`).
+    # words instead (see `topic.residual_topic`). Likewise a theme named by part
+    # of its name that holds only a corner of the topic (see `covers_topic`).
     theme_name = theme.name
     widened = None
     if (theme_name and topic.enabled()
-            and not topic.faithful_theme(filters.theme, theme_name)):
+            and not stands_for_topic(filters.theme, theme_name)):
         logger.info(
             "Theme %r resolved to the broader %r; filtering on the topic words "
             "instead so the list is not widened to the whole theme.",

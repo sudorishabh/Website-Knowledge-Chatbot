@@ -96,13 +96,13 @@ def _applied_theme(requested: str | None) -> str | None:
     if not requested:
         return None
     try:
-        from app.retrieval.structured.filters import resolve_theme
+        from app.retrieval.structured.filters import resolve_theme, stands_for_topic
 
         resolved = resolve_theme(requested)
     except Exception:
         logger.debug("Theme resolution unavailable at plan time.", exc_info=True)
         return None
-    return requested if resolved and topic.faithful_theme(requested, resolved) else None
+    return requested if resolved and stands_for_topic(requested, resolved) else None
 
 
 #: Operations whose rows a name in the question can constrain. Not a lookup,
