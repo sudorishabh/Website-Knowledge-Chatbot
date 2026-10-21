@@ -466,15 +466,17 @@ def explicit_targets(
     *,
     theme: str | None = None,
     themes_listing: bool = False,
+    reply: str | None = None,
     registry: Registry | None = None,
 ) -> list[Target]:
     """The deterministic triggers for ``question``: cheap enough to run before
-    routing, which needs them to decide whether a catalog answer may stand."""
+    routing, which needs them to decide whether a catalog answer may stand.
+    ``reply`` answers "which theme did you mean?" about ``question``."""
     registry = registry or load_registry()
     if not registry.pages:
         return []
     return match.explicit(question, registry=registry, people=listed_people(registry),
-                          theme=theme, themes_listing=themes_listing)
+                          theme=theme, themes_listing=themes_listing, reply=reply)
 
 
 def gather(

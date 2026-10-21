@@ -234,7 +234,52 @@ def test_the_theme_facet_names_its_page(reg):
 
 
 def test_a_theme_facet_off_the_list_names_nothing(reg):
-    assert _hits("what does TERI do here", reg, theme="Microbes") == []
+    assert _hits("what does TERI do here", reg, theme="Solar") == []
+
+
+BIOFUELS = [
+    "Advanced Biofuels & Biochemicals Theme",
+    "Pyrolytic Biofuels, Biochar & Green Chemicals Theme",
+    "Microbial Biofuels and Biochemicals Theme",
+]
+
+
+@pytest.mark.parametrize("question, page", [
+    ("tell me about the marine theme", "Marine and Coastal Theme"),
+    ("what is the city theme", "Cities Theme"),
+    ("tell me about the microbial theme", "Microbial Biofuels and Biochemicals Theme"),
+])
+def test_part_of_a_themes_name_names_its_page(reg, question, page):
+    """Measured 2026-10-21: none of 25 such questions reached a theme page."""
+    assert _hits(question, reg) == [(page, NAME)]
+
+
+def test_part_of_a_name_several_themes_share_names_each_of_them(reg):
+    assert _hits("tell me about biofuel theme", reg) == [(name, NAME) for name in BIOFUELS]
+
+
+def test_part_of_a_themes_name_takes_the_place_of_the_list(reg):
+    """"thematic area" is an overview phrase, but "the biofuel thematic area"
+    is about the biofuel themes."""
+    hits = _hits("what is the biofuel thematic area about", reg)
+    assert hits == [(name, NAME) for name in BIOFUELS]
+
+
+def test_a_theme_facet_that_is_part_of_a_name_names_its_pages(reg):
+    assert _hits("summarize TERI's research here", reg, theme="biofuel") == [
+        (name, THEME_FACET) for name in BIOFUELS
+    ]
+
+
+@pytest.mark.parametrize("reply, chosen", [
+    ("2", [BIOFUELS[1]]),
+    ("microbial", [BIOFUELS[2]]),
+    ("all", BIOFUELS),
+])
+def test_a_reply_chooses_among_the_themes_a_name_fits(reg, reply, chosen):
+    assert _hits("tell me about biofuel theme", reg, reply=reply) == [
+        (name, NAME) for name in chosen
+    ]
 
 
 def test_a_named_person_leads_with_their_profile(reg):

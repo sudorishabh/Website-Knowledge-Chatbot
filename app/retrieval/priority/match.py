@@ -10,7 +10,9 @@ model call.
   person's profile.
 * ``name`` — the question names a page outright: its own name when that is
   more than one word ("climate change", "green shipping"), a theme's name with
-  "theme" or "thematic" after it ("the water theme"), or a phrase curated in the
+  "theme" or "thematic" after it ("the water theme") or part of it ("the marine
+  theme", and "the biofuel theme" for each of the three it fits; see
+  :mod:`~app.retrieval.priority.theme_names`), or a phrase curated in the
   registry ("director general", "tender", "founder"). The home page is named by
   the phrases that ask for the list of themes ("TERI's thematic areas"), and
   also whenever query understanding read the question as a theme listing; it
@@ -23,7 +25,8 @@ model call.
   the regional centres), and a question naming one member is about that
   member. Answered from the list itself.
 * ``theme`` — query understanding resolved a theme facet that is a page on the
-  list.
+  list, or part of a page's name ("biofuel" in "summarize TERI's biofuel
+  research").
 * ``similar`` — the query vector sits close to one page's description, and
   clearly closer than to any other. Calibrated on 2026-09-24 over 20 questions:
   with the organisation's name stripped from the descriptions, most on-topic
@@ -51,6 +54,7 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 from app.config import get_settings
+from app.retrieval.priority import theme_names
 from app.retrieval.priority.people import Person, holding, named_in
 from app.retrieval.priority.registry import (
     CENTRE,
@@ -217,6 +221,21 @@ def ranked(targets: Sequence[Target]) -> list[Target]:
     return sorted(best.values(), key=lambda t: (STRENGTH[t.reason], -t.score))
 
 
+def _themes_named_in_part(
+    question: str, registry: Registry, *, theme: str | None, reply: str | None
+) -> list[Target]:
+    """The theme pages a part of a theme's name fits: a name when the question
+    says "theme", the theme facet when only understanding does. Every page a
+    mention fits, unless ``reply`` chooses among them."""
+    targets: list[Target] = []
+    for mention in theme_names.mentions(question, registry, facet=theme):
+        if reply and mention.ambiguous:
+            mention = mention.narrowed(reply)
+        reason = NAME if mention.named else THEME_FACET
+        targets += [Target(p.name, p.kind, reason, url=p.url, page=p) for p in mention.pages]
+    return targets
+
+
 def explicit(
     question: str,
     *,
@@ -224,11 +243,14 @@ def explicit(
     people: Sequence[Person] = (),
     theme: str | None = None,
     themes_listing: bool = False,
+    reply: str | None = None,
 ) -> list[Target]:
     """The deterministic triggers: people, names, groups, the theme facet.
 
     ``themes_listing`` says query understanding read the question as a request
     for the list of themes, which names the home page whatever the wording.
+    ``reply`` answers "which theme did you mean?" about a theme ``question``
+    named in part, and keeps the themes it chooses.
     """
     words = normalize_text(question)
     targets: list[Target] = []
@@ -250,6 +272,7 @@ def explicit(
         for page in registry.pages:
             if page.kind in (THEME, CENTRE) and normalize_text(page.topic) == wanted:
                 targets.append(Target(page.name, page.kind, THEME_FACET, url=page.url, page=page))
+    targets += _themes_named_in_part(question, registry, theme=theme, reply=reply)
     if any(t.reason == NAME and t.kind == THEME for t in targets):
         # "the climate change thematic area" is about one theme, not the list.
         targets = [t for t in targets if not (t.page is not None and t.page.is_home)]
