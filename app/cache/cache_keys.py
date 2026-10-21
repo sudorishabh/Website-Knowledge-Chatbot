@@ -89,7 +89,10 @@ def _sha(*parts: str) -> str:
 #: asking for nothing else gets the whole overview.
 #: 2026-10-21.5: "themes" alone gets the overview rather than a clarification,
 #: and a live page whose connection fails outright is asked for once more.
-PIPELINE_REVISION = "2026-10-21.5"
+#: 2026-10-21.6: people on the theme and centre Team sections are recognised by
+#: name, and a question for a named person's work adds the projects that name
+#: them in a role and, after the answer, their latest publications.
+PIPELINE_REVISION = "2026-10-21.6"
 
 
 def _pref_fingerprint() -> str:

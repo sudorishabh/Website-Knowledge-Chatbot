@@ -21,12 +21,17 @@ asking for people, a theme or centre page opens with its Team section instead.
 A group is one block listing its members; for the regional centres the contact
 page is read too, and each centre's entry carries its office's address and
 contacts.
+
+For a question about a named person's work, the evidence also carries the
+project passages that name them in a role (``projects``), merged after the
+pages and before the corpus.
 """
 from __future__ import annotations
 
 import hashlib
 import logging
 import math
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -40,7 +45,14 @@ from app.retrieval.priority import match, theme_names
 from app.retrieval.priority.extract import MAX_SECTION_CHARS, PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.offices import by_centre, headquarters, offices_on
-from app.retrieval.priority.people import Person, people_on
+from app.retrieval.priority.people import (
+    Person,
+    is_team_section,
+    people_on,
+    team_index,
+    team_people,
+)
+from app.retrieval.priority.projects import person_projects
 from app.retrieval.priority.registry import (
     CENTRE,
     PEOPLE,
@@ -67,8 +79,6 @@ MAX_GROUPS = 2
 #: and contacts, which generation asks the answer to give
 #: (`app.generation.prompts.CONTACTS_FLAG`, pinned equal by a test).
 MEMBER_CONTACTS = "member_contacts"
-#: The section title a theme or centre page gives its list of people.
-TEAM_HEADING = "team"
 #: The payload field that marks a Team block with whose team it is.
 TEAM_OF = "team_of"
 #: A people listing is kept as one block up to this size. It answers a people
@@ -117,6 +127,10 @@ class PriorityEvidence:
     #: The question asks for people, so a theme or centre page leads with its
     #: Team section rather than its introduction.
     people: bool = False
+    #: For a question about a named person's work, the project passages that
+    #: name them in a role (`projects.person_projects`). Kept apart from
+    #: `blocks`, which `extend` reselects from the pages read.
+    projects: list[ContextBlock] = field(default_factory=list)
 
     # -- the cache key -------------------------------------------------------------
     def fingerprint(self) -> dict[str, Any]:
@@ -168,7 +182,8 @@ class PriorityEvidence:
                               people=self.people)
 
     def merge(self, blocks: Sequence[ContextBlock], *, limit: int, token_budget: int) -> list[ContextBlock]:
-        """This question's priority blocks first, then the corpus's, numbered.
+        """This question's priority blocks first, then its project passages,
+        then the corpus's, numbered.
 
         With ``priority_own_slots`` on, ``limit`` and ``token_budget`` are the
         corpus's, and the priority blocks come on top of both: a question that
@@ -185,11 +200,12 @@ class PriorityEvidence:
         """
         from app.retrieval.context.builder import _count_tokens
 
+        own = [*self.blocks, *self.projects]
         if get_settings().priority_own_slots:
-            limit += len(self.blocks)
-            token_budget += sum(_count_tokens(b.text) for b in self.blocks)
+            limit += len(own)
+            token_budget += sum(_count_tokens(b.text) for b in own)
         reserved = min(CORPUS_MIN_SLOTS, len(blocks))
-        lead = self.blocks[: max(0, limit - reserved)]
+        lead = own[: max(0, limit - reserved)]
         merged: list[ContextBlock] = []
         spent = 0
         texts: set[str] = set()
@@ -222,6 +238,11 @@ class PriorityEvidence:
                 for b in self.blocks
             ],
             "stored_copies_dropped": self.suppressed,
+            "projects": [
+                {"person": b.payload.get("project_of"), "role": b.payload.get("project_role"),
+                 "title": b.payload.get("title"), "url": b.payload.get("source_url")}
+                for b in self.projects
+            ],
         }
 
     def _note(self) -> None:
@@ -238,6 +259,23 @@ def _usable(html: str) -> bool:
     return len(extract(html, "https://teriin.org/").text) >= MIN_PAGE_CHARS
 
 
+#: Extracted pages by URL, section cut and HTML digest. The people index reads
+#: every listing, theme and centre page for every question; extracting all 45
+#: each time cost ~150 ms warm on 2026-09-28, against ~15 ms for the listings.
+_extracted: dict[tuple[str, int, str], PageContent] = {}
+_MAX_EXTRACTED = 256
+
+
+def _extract(html: str, url: str, max_chars: int) -> PageContent:
+    key = (url, max_chars, hashlib.sha256(html.encode("utf-8")).hexdigest())
+    content = _extracted.get(key)
+    if content is None:
+        if len(_extracted) >= _MAX_EXTRACTED:
+            _extracted.clear()
+        content = _extracted[key] = extract(html, url, max_chars=max_chars)
+    return content
+
+
 def _read(target: Target, registry: Registry) -> PageRead:
     url = target.url or ""
     started = time.monotonic()
@@ -245,8 +283,8 @@ def _read(target: Target, registry: Registry) -> PageRead:
     read = PageRead(target, url, fetched=fetched)
     if fetched is not None:
         listing = target.page is not None and target.page.kind == PEOPLE
-        content = extract(fetched.html, fetched.final_url or url,
-                          max_chars=LISTING_MAX_CHARS if listing else MAX_SECTION_CHARS)
+        content = _extract(fetched.html, fetched.final_url or url,
+                           LISTING_MAX_CHARS if listing else MAX_SECTION_CHARS)
         if len(content.text) >= MIN_PAGE_CHARS:
             read.content = content
     read.ms = (time.monotonic() - started) * 1000
@@ -262,16 +300,82 @@ def _read_all(targets: Sequence[Target], registry: Registry) -> list[PageRead]:
 
 
 def listed_people(registry: Registry) -> list[Person]:
-    """Everyone on the people listings, read live (and cached with the pages).
-    A listing that cannot be read contributes nobody; the question then goes to
-    the corpus, as it would for a name that is not listed."""
+    """Everyone on the people listings, read live (and cached with the pages),
+    then everyone on the theme and centre Team sections as last read: someone
+    on both is matched to the listing's profile. A page that cannot be read
+    contributes nobody; the question then goes to the corpus, as it would for a
+    name that is not listed."""
     listings = [p for p in registry.pages if p.kind == PEOPLE]
     targets = [Target(p.name, p.kind, match.NAME, url=p.url, page=p) for p in listings]
     people: list[Person] = []
     for read in _read_all(targets, registry):
         if read.content is not None:
             people.extend(people_on(read.content, read.target.name))
-    return people
+    return [*people, *team_roster(registry)]
+
+
+# -- the Team roster ---------------------------------------------------------------
+#
+# The Team sections are spread over 45 theme and centre pages. Read on the
+# question path, they cost 2.4 s cold on 2026-09-28 and several page timeouts
+# when the site was slow, again whenever the pages' cache expired. So, as the
+# graph's entity index does, the roster is read off the question path: a stale
+# roster is re-read in the background and the question uses the last one, so
+# the first question after a start knows only the listings.
+
+#: Read in a background thread. Tests set it off, to read in the caller.
+ROSTER_IN_BACKGROUND = True
+
+
+@dataclass
+class _Roster:
+    people: list[Person] = field(default_factory=list)
+    expires: float = 0.0
+    reading: bool = False
+
+
+_rosters: dict[Registry, _Roster] = {}
+_roster_lock = threading.Lock()
+
+
+def _read_roster(registry: Registry, roster: _Roster) -> None:
+    try:
+        pages = [p for p in registry.pages if p.kind in (THEME, CENTRE)]
+        targets = [Target(p.name, p.kind, match.NAME, url=p.url, page=p) for p in pages]
+        people = [person for read in _read_all(targets, registry) if read.content is not None
+                  for person in team_people(read.content, read.target.name)]
+        with _roster_lock:
+            roster.people = people
+            roster.expires = time.monotonic() + get_settings().priority_cache_ttl
+    except Exception:
+        logger.warning("The theme and centre Team sections could not be read; "
+                       "keeping the last roster.", exc_info=True)
+    finally:
+        with _roster_lock:
+            roster.reading = False
+
+
+def team_roster(registry: Registry) -> list[Person]:
+    """Everyone on the theme and centre Team sections, as last read. Never
+    waits on a read unless ``ROSTER_IN_BACKGROUND`` is off."""
+    with _roster_lock:
+        roster = _rosters.setdefault(registry, _Roster())
+        start = time.monotonic() >= roster.expires and not roster.reading
+        if start:
+            roster.reading = True
+    if start:
+        if ROSTER_IN_BACKGROUND:
+            threading.Thread(target=_read_roster, args=(registry, roster),
+                             name="team-roster", daemon=True).start()
+        else:
+            _read_roster(registry, roster)
+    with _roster_lock:
+        return list(roster.people)
+
+
+def clear_roster() -> None:
+    with _roster_lock:
+        _rosters.clear()
 
 
 def thematic_areas(registry: Registry | None = None) -> ThemeListing | None:
@@ -366,7 +470,7 @@ def _page_block(read: PageRead, section: Section, index: int, score: float) -> C
         },
     )
     page = read.target.page
-    if page is not None and page.kind in (THEME, CENTRE) and _is_team(section):
+    if page is not None and page.kind in (THEME, CENTRE) and is_team_section(section):
         # Whose team this is, for the answer's note on people.
         block.payload[TEAM_OF] = content.title or read.target.name
     return block
@@ -436,15 +540,6 @@ def _contacts_for(targets: Sequence[Target], reads: Sequence[PageRead]) -> PageR
     if not _asks_for_centres(targets):
         return None
     return next((r for r in reads if r.target.page is not None and r.target.page.is_contact), None)
-
-
-def _is_team(section: Section) -> bool:
-    return (section.heading or "").strip().lower() == TEAM_HEADING
-
-
-def team_index(content: PageContent) -> int | None:
-    """Where a page's Team section is, if it has one."""
-    return next((i for i, s in enumerate(content.sections) if _is_team(s)), None)
 
 
 def _team_pages(targets: Sequence[Target]) -> list[Target]:
@@ -600,6 +695,9 @@ def gather(
                                   people=evidence.people)
         if held and not any(b.payload.get(TEAM_OF) for b in evidence.blocks):
             evidence.extend(held)
+        if match.asks_for_work(question):
+            evidence.projects = [block for t in people if t.person is not None
+                                 for block in person_projects(t.person.name)]
     except Exception:
         logger.warning("Priority pages failed for this question; answering from "
                        "the corpus alone.", exc_info=True)

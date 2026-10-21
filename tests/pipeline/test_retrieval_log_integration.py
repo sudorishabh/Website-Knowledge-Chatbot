@@ -159,7 +159,7 @@ def _wire_stream(monkeypatch, blocks):
     monkeypatch.setattr(pipe, "_prepare", lambda q, **kw: (None, generation))
     monkeypatch.setattr(
         pipe, "generate_stream",
-        lambda q, b, history=None, answer_format=None, plan_directive="":
+        lambda q, b, history=None, answer_format=None, plan_directive="", notes=():
             iter(["the answer ", "[1]"]),
     )
     monkeypatch.setattr(pipe, "_persist", lambda gen, result: None)

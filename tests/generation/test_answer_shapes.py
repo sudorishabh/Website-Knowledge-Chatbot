@@ -497,6 +497,24 @@ def test_a_team_beside_the_listings_is_the_base_the_listings_add_to():
         [_team(1, "Climate Change"), _listing(2, "Committee of Directors")])
 
 
+def test_the_projects_naming_a_person_are_named_beside_the_question():
+    from app.core.models.context import ContextBlock
+    from app.generation.prompts import projects_note
+
+    blocks = [ContextBlock(n=n, text="Team: Ms A", payload={"project_of": "Ms A"}) for n in (2, 3)]
+    assert projects_note(blocks) == (
+        "Projects that name Ms A in a role: [2], [3]. For their work, name each of "
+        "these projects with the role the passage gives them.")
+    assert projects_note([_listing(1, "Committee of Directors")]) == ""
+
+
+def test_the_project_field_matches_retrieval():
+    from app.generation.prompts import PROJECT_OF
+    from app.retrieval.priority.projects import PROJECT_OF as RETRIEVAL_PROJECT_OF
+
+    assert PROJECT_OF == RETRIEVAL_PROJECT_OF
+
+
 def test_the_team_field_matches_retrieval():
     from app.generation.prompts import TEAM_OF
     from app.retrieval.priority.evidence import TEAM_OF as RETRIEVAL_TEAM_OF
@@ -583,6 +601,33 @@ def test_the_contacts_note_reaches_the_human_turn_before_the_question(monkeypatc
     answerer.generate_answer("Where is TERI located?", [_centres(1)])
     human = seen["human"]
     assert human.index("[1] Regional centers gives") < human.index("Question: Where is TERI")
+
+
+def test_a_pipeline_note_reaches_the_human_turn_beside_the_block_notes(monkeypatch):
+    """The publications list is added after the answer by the pipeline, which
+    the blocks cannot say; without the note the answer lists them too."""
+    from langchain_core.runnables import RunnableLambda
+
+    from app.generation import answerer
+    from app.generation.prompts import publications_note
+
+    seen: dict = {}
+
+    def capture(prompt_value):
+        seen["human"] = prompt_value.to_messages()[-1].content
+        return "an answer"
+
+    monkeypatch.setattr(answerer, "get_llm", lambda **_: RunnableLambda(capture))
+    note = publications_note(["Ms Suruchi Bhadwal"])
+    answerer.generate_answer("Suruchi Bhadwal work", [_listing(1, "Profile")], notes=(note,))
+    human = seen["human"]
+    assert human.index(note) < human.index("Question: Suruchi Bhadwal work")
+    # What the reader sees, not an instruction to leave something out, which
+    # two answers in nine repeated to the reader.
+    assert note == ("The reader is shown a list of the latest publications by Ms Suruchi "
+                    "Bhadwal straight after this answer. Write about the rest of their "
+                    "work: do not list their publications, and do not refer to that list.")
+    assert publications_note([]) == ""
 
 
 def test_a_list_of_current_people_leaves_out_the_former_ones():
