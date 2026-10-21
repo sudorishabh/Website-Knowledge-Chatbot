@@ -77,7 +77,10 @@ def _sha(*parts: str) -> str:
 #: 2026-10-21.1: a theme named by part of its name ("the marine theme") reads
 #: that theme's live page; one several themes share ("the biofuel theme") is
 #: asked about, and the reply chooses one or all of them.
-PIPELINE_REVISION = "2026-10-21.1"
+#: 2026-10-21.2: a count or list on a topic its theme holds a corner of ("how
+#: many publications on biofuels") is counted by title, and a near-tie between
+#: theme pages sharing the question's words reads each of them.
+PIPELINE_REVISION = "2026-10-21.2"
 
 
 def _pref_fingerprint() -> str:

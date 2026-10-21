@@ -156,6 +156,21 @@ Two outcomes worth knowing about specifically:
   paper). An unfaithful substitution is dropped (`theme_widened` records what
   it would have been, for diagnostics only), and the caller falls through to
   constraining by the topic's own words instead — see below.
+- **A theme named by part of its name must also *hold* the topic.**
+  `filters.covers_topic(requested, resolved)`: the catalog's narrower themes
+  are tagged on a handful of pages, so a faithful substitution can still be a
+  corner of the topic. Measured 2026-10-21: "how many publications on
+  biofuels" counted the one page tagged "Advanced Biofuels & Biochemicals"
+  while 42 titles name biofuels; "marine" was 3 pages against 30 titles,
+  "renewables" 95 against 191. The titles naming a topic are the least it
+  holds, so a theme tagged on fewer pages than that is dropped like an
+  unfaithful one, and a count is counted by title (`names.place`), a list
+  constrained by the topic's words. "climate" (1,220 tagged, 926 titled)
+  keeps Climate Change, and a theme named in full keeps its tag whatever it
+  holds. The planner (`_applied_theme`) and the tools (`resolve_filters`)
+  both ask `filters.stands_for_topic`, which is faithfulness and coverage
+  together. Only with `catalog_title_names_enabled`, since the titles are
+  what replaces the theme; a theme's page count is reused for five minutes.
 
 ---
 
@@ -547,6 +562,7 @@ existing refusal in place.
 | Author/theme/tag name matches nothing plausible | `resolve.classify_band` = `MISS` | `entity_resolution_enabled` on: terminal "no X matching" / off: filters on the name as typed | — |
 | Author/theme/tag name matches two candidates too closely | `classify_band` = `AMBIGUOUS` | `entity_resolution_enabled` on: terminal clarification / off: takes the top candidate | User picks one |
 | Theme resolves to something broader than asked | `topic.faithful_theme` fails | Theme dropped; falls back to a topic-term constraint | — |
+| Theme named in part is tagged on fewer pages than titles name the topic | `filters.covers_topic` fails | Theme dropped; a count is counted by title, a list constrained by the topic words | — |
 | Question's subject has no covering facet | `topic.residual_topic` non-empty, `topic.enabled()` | Rows constrained by the residual words; ranked by match count | — |
 | Question asks about people, not documents | `topic.wants_person`, no `author` set | Structured path declines outright (`None`) — unless it asks about authorship itself ("which authors published the most", "how many authors"), which is a breakdown or count the catalog records | Semantic retrieval answers instead |
 | "How many authors / themes / content types" arrives as a document count | `answerer._counted_noun` | `count_of` set from the noun; an unscoped theme count becomes the theme listing (a distinct count includes sub-theme rows) | — |
