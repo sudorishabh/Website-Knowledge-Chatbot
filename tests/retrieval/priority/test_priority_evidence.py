@@ -109,12 +109,17 @@ def test_a_named_page_leads_with_its_opening_section():
 
 
 def test_other_sections_are_admitted_only_above_the_floor():
-    got = _gather("who works on climate change", embed=_embed_on("Suruchi Bhadwal"))
+    got = _gather("what does TERI do on climate change", embed=_embed_on("Suruchi Bhadwal"))
     headings = [b.payload.get("section_heading") for b in got.blocks]
     assert headings[0] is None
     assert "Team" in headings
     assert "Events" not in headings
     assert len(got.blocks) <= 3
+
+
+def test_asking_who_works_on_a_theme_leads_with_its_team():
+    got = _gather("who works on climate change", embed=_embed_on("Suruchi Bhadwal"))
+    assert got.blocks[0].payload.get("section_heading") == "Team"
 
 
 def test_blocks_are_capped():
@@ -130,6 +135,94 @@ def test_a_question_for_the_organisations_people_reads_the_people_listing():
         ("People - committee of directors", match.STAFF)
     ]
     assert got.blocks and "Vibha Dhawan" in got.blocks[0].text
+
+
+@pytest.mark.parametrize("question", [
+    "climate change theme team",
+    "who are the members of the climate change theme",
+    "top climate change theme researchers",
+])
+def test_a_people_question_about_a_theme_leads_with_its_team(question):
+    """Measured 2026-09-28: the theme's introduction and the listings' openings
+    filled the three blocks, and the Team section never reached the answer."""
+    got = _gather(question)
+    lead = got.blocks[0]
+    assert lead.payload["priority_page"] == "Climate Change Theme"
+    assert lead.payload["section_heading"] == "Team"
+    assert "Suruchi Bhadwal" in lead.text and "K Venkatramana" in lead.text
+    assert not any("post-Paris agreement era" in b.text for b in got.blocks)
+
+
+def test_a_team_question_is_answered_by_the_team_alone():
+    """The page's Team section is the team; the staff listings would pad it
+    with people who are not on it."""
+    got = _gather("climate change theme team")
+    assert [(t.name, t.reason) for t in got.targets] == [("Climate Change Theme", match.NAME)]
+    assert got.blocks[0].payload["team_of"] == "Climate Change"
+
+
+def test_a_question_for_the_top_people_reads_the_listings_beside_the_team():
+    got = _gather("top climate change theme researchers")
+    assert [(t.name, t.reason) for t in got.targets] == [
+        ("Climate Change Theme", match.NAME),
+        ("People - committee of directors", match.STAFF),
+    ]
+    assert got.blocks[0].payload["team_of"] == "Climate Change"
+    assert "Vibha Dhawan" in got.blocks[1].text
+    assert "team_of" not in got.blocks[1].payload
+
+
+def test_a_team_question_on_a_page_with_no_team_reads_the_listings(monkeypatch):
+    serve = fetching.fetch
+
+    def fetch(url, **kw):
+        if url != "https://teriin.org/goa":
+            return serve(url, **kw)
+        return fetching.FetchedPage(
+            url=url, final_url=url, fetched_at=datetime(2026, 9, 24, 10, 0, tzinfo=timezone.utc),
+            html="<html><body><div class='region-content'><h1>Goa</h1><p>The Western "
+                 "Regional Centre works on coastal ecology, marine resources and water "
+                 "management.</p></div></body></html>",
+        )
+
+    monkeypatch.setattr(fetching, "fetch", fetch)
+    got = _gather("goa team")
+    assert [(t.name, t.reason) for t in got.targets] == [
+        ("Goa", match.NAME), ("People - committee of directors", match.STAFF),
+    ]
+    assert "Vibha Dhawan" in got.blocks[1].text
+
+
+def test_a_people_listing_is_read_as_one_block_past_the_section_cut(monkeypatch):
+    """The Committee of Directors listing was 2,353 characters against a 2,400
+    cut; split, its second half would reach the answer only by score."""
+    people = "".join(f"<h4><a href='/profile/p{i}'>Dr Person Number {i}</a></h4>"
+                     f"<div>Director, Area of Research Number {i}</div>" for i in range(60))
+    html = f"<div class='region-content'><h1>Committee of Directors</h1>{people}</div>"
+    monkeypatch.setattr(fetching, "fetch", lambda url, **kw: fetching.FetchedPage(
+        url=url, final_url=url, html=html,
+        fetched_at=datetime(2026, 9, 24, 10, 0, tzinfo=timezone.utc)))
+    committee = next(p for p in REGISTRY.pages if p.name.startswith("People"))
+    read = ev._read(match.Target(committee.name, committee.kind, match.STAFF,
+                                 url=committee.url, page=committee), REGISTRY)
+    assert len(read.content.text) > ev.MAX_SECTION_CHARS
+    assert len(read.content.sections) == 1
+    assert "Dr Person Number 59" in read.content.sections[0].text
+
+
+def test_a_question_about_a_theme_itself_still_leads_with_its_introduction():
+    got = _gather("what does the climate change theme work on")
+    assert "post-Paris agreement era" in got.blocks[0].text
+
+
+def test_a_page_with_no_team_keeps_its_introduction():
+    content = ev.extract("<html><body><h1>Goa</h1><p>Coastal ecology work.</p></body></html>",
+                         "https://teriin.org/goa")
+    goa = next(p for p in REGISTRY.pages if p.name == "Goa")
+    read = ev.PageRead(match.Target(goa.name, goa.kind, match.NAME, url=goa.url, page=goa),
+                       goa.url, content=content)
+    assert ev.team_index(content) is None
+    assert ev._opening(read, people=True) == 0
 
 
 def test_a_question_about_nothing_on_the_list_reads_nothing(_pages):

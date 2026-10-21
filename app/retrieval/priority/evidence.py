@@ -16,9 +16,11 @@ key) and carried into retrieval, which uses it three ways:
 Which sections become blocks: the opening section of every page the question
 is *about* (named, a person's profile, the theme facet, a description match),
 then the other sections that score at least ``priority_section_floor`` against
-the question, best first, up to ``priority_max_blocks`` in all. A group is one
-block listing its members; for the regional centres the contact page is read
-too, and each centre's entry carries its office's address and contacts.
+the question, best first, up to ``priority_max_blocks`` in all. For a question
+asking for people, a theme or centre page opens with its Team section instead.
+A group is one block listing its members; for the regional centres the contact
+page is read too, and each centre's entry carries its office's address and
+contacts.
 """
 from __future__ import annotations
 
@@ -35,13 +37,14 @@ from app.core.models.context import PRIORITY_PAGE_KIND, ContextBlock, source_kin
 from app.observability import retrieval_log
 from app.retrieval.priority import fetch as fetching
 from app.retrieval.priority import match, theme_names
-from app.retrieval.priority.extract import PageContent, Section, extract
+from app.retrieval.priority.extract import MAX_SECTION_CHARS, PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.offices import by_centre, headquarters, offices_on
 from app.retrieval.priority.people import Person, people_on
 from app.retrieval.priority.registry import (
     CENTRE,
     PEOPLE,
+    THEME,
     Registry,
     load_registry,
     normalize_url,
@@ -64,6 +67,15 @@ MAX_GROUPS = 2
 #: and contacts, which generation asks the answer to give
 #: (`app.generation.prompts.CONTACTS_FLAG`, pinned equal by a test).
 MEMBER_CONTACTS = "member_contacts"
+#: The section title a theme or centre page gives its list of people.
+TEAM_HEADING = "team"
+#: The payload field that marks a Team block with whose team it is.
+TEAM_OF = "team_of"
+#: A people listing is kept as one block up to this size. It answers a people
+#: question whole, and cut at `MAX_SECTION_CHARS` its second half would reach
+#: the answer only by score. The Committee of Directors listing was 2,353
+#: characters on 2026-09-28.
+LISTING_MAX_CHARS = 2 * MAX_SECTION_CHARS
 
 Embed = Callable[[list[str]], list[list[float]]]
 
@@ -102,6 +114,9 @@ class PriorityEvidence:
     similar_top: list[dict] = field(default_factory=list)
     suppressed: int = 0
     embed: Embed | None = None
+    #: The question asks for people, so a theme or centre page leads with its
+    #: Team section rather than its introduction.
+    people: bool = False
 
     # -- the cache key -------------------------------------------------------------
     def fingerprint(self) -> dict[str, Any]:
@@ -149,7 +164,8 @@ class PriorityEvidence:
         reads = _read_all(new, self.registry)
         self.reads.extend(reads)
         self.blocks = _select(self.targets, self.reads, self.query_vector,
-                              limit=settings.priority_max_blocks, embed=self.embed)
+                              limit=settings.priority_max_blocks, embed=self.embed,
+                              people=self.people)
 
     def merge(self, blocks: Sequence[ContextBlock], *, limit: int, token_budget: int) -> list[ContextBlock]:
         """This question's priority blocks first, then the corpus's, numbered.
@@ -163,8 +179,9 @@ class PriorityEvidence:
         Why on: "TERI top researchers" read three live pages and kept three
         corpus slots of a six-block, 1,900-token context against a 9,000-token
         budget, and the three went to short news items. The pages are bounded
-        (``priority_max_blocks`` sections of ``MAX_SECTION_CHARS`` each), so
-        their own room costs at most ~1,800 tokens of prompt.
+        (``priority_max_blocks`` sections of ``MAX_SECTION_CHARS`` each, a
+        people listing ``LISTING_MAX_CHARS``), so their own room costs at most
+        ~1,800 tokens of prompt, ~3,600 when all three are listings.
         """
         from app.retrieval.context.builder import _count_tokens
 
@@ -227,7 +244,9 @@ def _read(target: Target, registry: Registry) -> PageRead:
     fetched = fetching.fetch(url, allowed_hosts=registry.hosts, validate=_usable)
     read = PageRead(target, url, fetched=fetched)
     if fetched is not None:
-        content = extract(fetched.html, fetched.final_url or url)
+        listing = target.page is not None and target.page.kind == PEOPLE
+        content = extract(fetched.html, fetched.final_url or url,
+                          max_chars=LISTING_MAX_CHARS if listing else MAX_SECTION_CHARS)
         if len(content.text) >= MIN_PAGE_CHARS:
             read.content = content
     read.ms = (time.monotonic() - started) * 1000
@@ -324,7 +343,7 @@ def _page_block(read: PageRead, section: Section, index: int, score: float) -> C
     content, fetched = read.content, read.fetched
     assert content is not None and fetched is not None
     key = normalize_url(read.url)
-    return ContextBlock(
+    block = ContextBlock(
         n=0,
         text=section.text,
         score=score,
@@ -346,6 +365,11 @@ def _page_block(read: PageRead, section: Section, index: int, score: float) -> C
             "stale": fetched.stale,
         },
     )
+    page = read.target.page
+    if page is not None and page.kind in (THEME, CENTRE) and _is_team(section):
+        # Whose team this is, for the answer's note on people.
+        block.payload[TEAM_OF] = content.title or read.target.name
+    return block
 
 
 def _group_block(target: Target, contacts: PageRead | None = None) -> ContextBlock:
@@ -414,6 +438,38 @@ def _contacts_for(targets: Sequence[Target], reads: Sequence[PageRead]) -> PageR
     return next((r for r in reads if r.target.page is not None and r.target.page.is_contact), None)
 
 
+def _is_team(section: Section) -> bool:
+    return (section.heading or "").strip().lower() == TEAM_HEADING
+
+
+def team_index(content: PageContent) -> int | None:
+    """Where a page's Team section is, if it has one."""
+    return next((i for i, s in enumerate(content.sections) if _is_team(s)), None)
+
+
+def _team_pages(targets: Sequence[Target]) -> list[Target]:
+    """The theme and centre pages the question is about."""
+    return [t for t in targets if t.reason in ABOUT
+            and t.page is not None and t.page.kind in (THEME, CENTRE)]
+
+
+def _opening(read: PageRead, *, people: bool) -> int:
+    """The section a page the question is about leads with: its introduction,
+    or, for a question asking for people, a theme or centre page's Team.
+
+    Measured 2026-09-28: "climate change theme team" read the Climate Change
+    page and both staff listings, and the three opening sections filled the
+    three blocks, so the Team section, the page's list of its people, never
+    reached the answer. A page with no Team section keeps its introduction.
+    """
+    page = read.target.page
+    if people and page is not None and page.kind in (THEME, CENTRE):
+        team = team_index(read.content)
+        if team is not None:
+            return team
+    return 0
+
+
 def _select(
     targets: Sequence[Target],
     reads: Sequence[PageRead],
@@ -421,6 +477,7 @@ def _select(
     *,
     limit: int,
     embed: Embed | None,
+    people: bool = False,
 ) -> list[ContextBlock]:
     settings = get_settings()
     usable = [r for r in reads if r.content is not None and r.fetched is not None]
@@ -445,9 +502,10 @@ def _select(
         read = by_key.get(target.key)
         if read is None or target.reason not in ABOUT:
             continue
-        section = read.content.sections[0]
-        chosen.append(_page_block(read, section, 0, scores.get((id(read), 0), 0.0)))
-        taken.add((id(read), 0))
+        index = _opening(read, people=people)
+        section = read.content.sections[index]
+        chosen.append(_page_block(read, section, index, scores.get((id(read), index), 0.0)))
+        taken.add((id(read), index))
     # Then whatever else on those pages answers the question best.
     rest = sorted(
         ((scores.get((id(r), i), 0.0), r, i, s) for r, i, s in flat if (id(r), i) not in taken),
@@ -504,7 +562,7 @@ def gather(
     a theme listing reaches the home page."""
     registry = registry or load_registry()
     evidence = PriorityEvidence(registry=registry, query_vector=list(query_vector or []),
-                                embed=embed)
+                                embed=embed, people=match.asks_for_people(question))
     if not registry.pages:
         return evidence
     settings = get_settings()
@@ -519,7 +577,11 @@ def gather(
         # would otherwise reach (see `match.staff_listings`).
         staff = match.staff_listings(question, query_vector, registry=registry,
                                      targets=targets, embed=embed)
-        targets = match.ranked([*targets, *staff])
+        # "The climate change team" is the theme page's own list of its people,
+        # and the listings would only pad it with people who are not on it. They
+        # are held back, and read after all if the page shows no team.
+        held = staff if match.asks_for_team(question) and _team_pages(targets) else []
+        targets = match.ranked([*targets, *([] if held else staff)])
         # A question for the list of themes is about no one theme, so a
         # description match would only add a page the answer does not need.
         lists_themes = any(t.page is not None and t.page.is_home for t in targets)
@@ -534,7 +596,10 @@ def gather(
         evidence.targets = match.ranked([*pages, *groups])
         evidence.reads = _read_all(pages, registry)
         evidence.blocks = _select(evidence.targets, evidence.reads, evidence.query_vector,
-                                  limit=settings.priority_max_blocks, embed=embed)
+                                  limit=settings.priority_max_blocks, embed=embed,
+                                  people=evidence.people)
+        if held and not any(b.payload.get(TEAM_OF) for b in evidence.blocks):
+            evidence.extend(held)
     except Exception:
         logger.warning("Priority pages failed for this question; answering from "
                        "the corpus alone.", exc_info=True)

@@ -100,6 +100,33 @@ _STAFF_WORDS = frozenset(
     leader leaders leadership employee employees faculty
     """.split()
 )
+#: The nouns that ask for a theme's or centre's own people: the Team its page
+#: shows. "Members" is here and not above, because "which countries are members
+#: of the ISA" is no reason to read two staff listings, while "the members of
+#: the climate change theme" is that page's team.
+_TEAM_WORDS = frozenset({"team", "teams", "member", "members"})
+#: Asking who stands behind an area's work names no people noun: "who
+#: contributed to the biofuel theme", "who works on air quality", "the
+#: contributors". With a theme's or centre's page that is its team. The verbs
+#: count only after "who": "what has the theme contributed" asks for its work.
+_CONTRIBUTOR_WORDS = frozenset({"contributor", "contributors"})
+_WHO = frozenset({"who", "whom"})
+_ROLE_VERBS = frozenset(
+    """
+    work works working worked contribute contributes contributed contributing
+    involved behind lead leads led head heads headed run runs manage manages
+    managed responsible charge
+    """.split()
+)
+#: Words that ask for a choice among people. "The top climate change
+#: researchers" is a choice by seniority, which the staff listings' titles give,
+#: so it reads them beside the theme's team; "the climate change team" does not.
+_RANKING_WORDS = frozenset(
+    """
+    top leading lead leads senior key best prominent eminent notable renowned
+    head heads chief main leader leaders leadership
+    """.split()
+)
 
 PROFILE = "profile"
 GROUP_KIND = "group"
@@ -325,6 +352,30 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
 def asks_for_staff(question: str) -> bool:
     """Whether the question asks for the organisation's people as a group."""
     return bool(set(normalize_text(question).split()) & _STAFF_WORDS)
+
+
+def _asks_who_works(words: set[str]) -> bool:
+    """Whether the words ask who does an area's work: its contributors, or
+    "who" with a verb of working on, contributing to or leading it."""
+    return bool(words & _CONTRIBUTOR_WORDS) or bool(words & _WHO and words & _ROLE_VERBS)
+
+
+def asks_for_people(question: str) -> bool:
+    """Whether the question asks for people at all — the organisation's, or a
+    theme's or centre's team — so a theme page answers with its Team section.
+    Measured 2026-10-21: "people who have contributed in the Advanced Biofuels
+    and Biochemicals" read that page's introduction, and its Team section,
+    which names the four people asked for, never reached the answer."""
+    words = set(normalize_text(question).split())
+    return bool(words & (_STAFF_WORDS | _TEAM_WORDS)) or _asks_who_works(words)
+
+
+def asks_for_team(question: str) -> bool:
+    """Whether the question asks for a team as it stands ("the climate change
+    team", "members of the water theme", "who contributed to it") rather than
+    for a choice among people ("who leads it", "its top researchers")."""
+    words = set(normalize_text(question).split())
+    return (bool(words & _TEAM_WORDS) or _asks_who_works(words)) and not words & _RANKING_WORDS
 
 
 def staff_listings(

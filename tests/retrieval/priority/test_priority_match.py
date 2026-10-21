@@ -515,6 +515,49 @@ class TestStaffListings:
         assert [t.name for t in found] == ["People - committee of directors",
                                            "people - governing council"]
 
+    @pytest.mark.parametrize("question, people, staff", [
+        ("who are the members of the climate change theme", True, False),
+        ("climate change theme team", True, True),
+        ("top climate change researchers", True, True),
+        ("what does the climate change theme work on", False, False),
+    ])
+    def test_members_ask_for_a_team_but_not_for_the_staff_listings(self, question, people, staff):
+        assert match.asks_for_people(question) is people
+        assert match.asks_for_staff(question) is staff
+
+    @pytest.mark.parametrize("question, team", [
+        ("climate change theme team", True),
+        ("who are the members of the water theme", True),
+        ("top climate change theme team", False),   # a choice, by seniority
+        ("who leads the climate change team", False),
+        ("climate change researchers", False),
+    ])
+    def test_a_team_as_it_stands_is_told_from_a_choice_among_people(self, question, team):
+        assert match.asks_for_team(question) is team
+
+    @pytest.mark.parametrize("question, team", [
+        ("people who have contributed in the Advanced Biofuels and Biochemicals", True),
+        ("Who contributed to The Advanced Biofuels and Biochemicals?", True),
+        ("contributors to the water theme", True),
+        ("who works on the climate change theme", True),
+        ("who is involved in the Green Shipping theme", True),
+        ("who leads the Air theme", False),          # a choice, by seniority
+        ("who heads the Cities theme", False),
+    ])
+    def test_asking_who_does_an_areas_work_asks_for_people(self, question, team):
+        """Measured 2026-10-21: "people who have contributed in the Advanced
+        Biofuels and Biochemicals" never read that page's Team section."""
+        assert match.asks_for_people(question)
+        assert match.asks_for_team(question) is team
+
+    @pytest.mark.parametrize("question", [
+        "what has the biofuel theme contributed to India",
+        "what work does the water theme do",
+        "who wrote the net-zero paper",
+    ])
+    def test_work_without_asking_who_does_it_asks_for_no_people(self, question):
+        assert not match.asks_for_people(question)
+
     def test_staff_is_an_about_reason(self):
         # So each listing's opening section is admitted whatever it scores.
         assert match.STAFF in match.ABOUT

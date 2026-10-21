@@ -80,7 +80,11 @@ def _sha(*parts: str) -> str:
 #: 2026-10-21.2: a count or list on a topic its theme holds a corner of ("how
 #: many publications on biofuels") is counted by title, and a near-tie between
 #: theme pages sharing the question's words reads each of them.
-PIPELINE_REVISION = "2026-10-21.2"
+#: 2026-10-21.3: a people question about a theme or centre ("people who
+#: contributed", "who works on", "the team") is answered from that page's
+#: Team section, with the staff listings only for a choice among people,
+#: and a people listing stays one block.
+PIPELINE_REVISION = "2026-10-21.3"
 
 
 def _pref_fingerprint() -> str:
