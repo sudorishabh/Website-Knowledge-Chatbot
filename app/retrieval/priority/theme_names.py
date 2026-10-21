@@ -215,6 +215,27 @@ def mentions(text: str, registry: Registry, *, facet: str | None = None) -> list
     return list(kept.values())
 
 
+def topic_mentions(text: str, registry: Registry) -> list[Mention]:
+    """Every run of theme-name words in ``text``, "theme" said or not, as
+    unnamed mentions: "TERI's work on biofuels" has "biofuels", which fits the
+    three biofuel themes. Too loose to name a page by itself ("air" and "water"
+    are everyday words), so it only explains which pages a question already
+    sits close to (`match.similar`)."""
+    vocabulary = _vocabulary(registry)
+    tokens = normalize_text(text).split()
+    found: list[Mention] = []
+    i = 0
+    while i < len(tokens):
+        run = _run(tokens[i:], vocabulary) if tokens[i] != "and" else []
+        if not run:
+            i += 1
+            continue
+        found += [m for m in _mentions_of(tuple(run), registry, named=False, plural=False)
+                  if len(m.pages) <= MAX_FITS]
+        i += len(run)
+    return found
+
+
 def to_ask_about(found: Sequence[Mention]) -> Mention | None:
     """The mention to ask "which did you mean?" about: one that fits several
     pages, when no other mention already picks one of them."""

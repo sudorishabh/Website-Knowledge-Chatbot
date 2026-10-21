@@ -372,15 +372,38 @@ def staff_listings(
             for p in chosen[:MAX_STAFF_LISTINGS]]
 
 
+def _tied_by_name(
+    question: str, scored: Sequence[tuple[float, PriorityPage]], registry: Registry,
+    *, margin: float,
+) -> list[Target]:
+    """The pages a near-tie is between, when they are themes that share words
+    of the question: "TERI's work on biofuels" sat at 0.500, 0.488 and 0.456
+    against the three biofuel themes (measured 2026-10-21), a tie that read
+    none of them. Each page the shared words fit and that is within ``margin``
+    of the best, the best among them; [] for a tie the words do not explain."""
+    best_score, best = scored[0]
+    close = {page.key: score for score, page in scored if best_score - score < margin}
+    for mention in theme_names.topic_mentions(question, registry):
+        if best not in mention.pages:
+            continue
+        tied = [page for page in mention.pages if page.key in close]
+        if len(tied) > 1:
+            return [Target(p.name, p.kind, SIMILAR, url=p.url, score=close[p.key], page=p)
+                    for p in tied]
+    return []
+
+
 def similar(
     query_vector: Sequence[float],
     *,
     registry: Registry,
     embed: Callable[[list[str]], list[list[float]]] | None = None,
+    question: str = "",
 ) -> tuple[list[Target], list[dict]]:
     """The one page whose description the query is clearly about, if any, plus
-    the top scores for the trace. Never raises: a failed embedding costs this
-    trigger, not the question."""
+    the top scores for the trace. A near-tie between themes ``question`` names
+    by a shared word reads each of them. Never raises: a failed embedding costs
+    this trigger, not the question."""
     if not query_vector or not registry.pages:
         return [], []
     settings = get_settings()
@@ -400,5 +423,6 @@ def similar(
     if best_score < settings.priority_match_threshold:
         return [], top
     if best_score - runner_up < settings.priority_match_margin:
-        return [], top
+        return _tied_by_name(question, scored, registry,
+                             margin=settings.priority_match_margin), top
     return [Target(best.name, best.kind, SIMILAR, url=best.url, score=best_score, page=best)], top

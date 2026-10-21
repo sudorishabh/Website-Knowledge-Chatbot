@@ -524,7 +524,8 @@ def gather(
         # description match would only add a page the answer does not need.
         lists_themes = any(t.page is not None and t.page.is_home for t in targets)
         if _page_count(targets) < settings.priority_max_pages and not lists_themes:
-            found, evidence.similar_top = match.similar(query_vector, registry=registry, embed=embed)
+            found, evidence.similar_top = match.similar(query_vector, registry=registry,
+                                                        embed=embed, question=question)
             targets = match.ranked([*targets, *found])
         groups = [t for t in targets if t.kind == GROUP_KIND][:MAX_GROUPS]
         pages = match.ranked([*_contact_target(groups, registry),

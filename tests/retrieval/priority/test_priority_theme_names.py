@@ -6,7 +6,13 @@ import json
 import pytest
 
 from app.retrieval.priority.registry import DEFAULT_PATH, parse
-from app.retrieval.priority.theme_names import MAX_FITS, mentions, same_word, to_ask_about
+from app.retrieval.priority.theme_names import (
+    MAX_FITS,
+    mentions,
+    same_word,
+    to_ask_about,
+    topic_mentions,
+)
 
 BIOFUELS = [
     "Advanced Biofuels & Biochemicals Theme",
@@ -124,3 +130,17 @@ def test_names_joined_by_and_are_read_apart(reg):
 def test_a_reply_chooses_among_the_themes(reg, reply, chosen):
     (mention,) = mentions("tell me about biofuel theme", reg)
     assert [p.name for p in mention.narrowed(reply).pages] == chosen
+
+
+
+def test_a_question_names_themes_in_part_without_saying_theme(reg):
+    found = topic_mentions("tell me about TERI's work on biofuels", reg)
+    assert [[p.name for p in m.pages] for m in found] == [BIOFUELS]
+    assert not found[0].named
+
+
+def test_every_run_of_theme_words_is_read(reg):
+    found = topic_mentions("air pollution and public health in cities", reg)
+    assert [[p.name for p in m.pages] for m in found] == [
+        ["Air Theme"], ["Environment and Public Health Theme"], ["Cities Theme"],
+    ]
