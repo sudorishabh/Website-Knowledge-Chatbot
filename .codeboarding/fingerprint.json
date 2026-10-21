@@ -87,7 +87,7 @@
     "app/generation/date_claims.py": "55ee1265e8e8272e",
     "app/generation/__init__.py": "f3827356ac8359c5",
     "app/generation/answerer.py": "b068ba33e7aa68f4",
-    "app/pipeline/query_pipeline.py": "90111ac454e0897a",
+    "app/pipeline/query_pipeline.py": "c910dd08a3d05492",
     "app/pipeline/summarize.py": "b345f0c32f696f5c",
     "app/pipeline/__init__.py": "12071e46ed50014d",
     "app/observability/tracing.py": "6950668d7e004cbd",
@@ -205,8 +205,8 @@
     "app/retrieval/priority/registry.py": "38139a8c2a3d6db8",
     "app/retrieval/priority/extract.py": "0b5ffeb3cb0c0906",
     "app/retrieval/priority/theme_names.py": "506c6cfce1a74e84",
-    "app/retrieval/priority/fetch.py": "9a8becd4a87ff3ce",
-    "app/retrieval/priority/themes.py": "c440847884b9091f",
+    "app/retrieval/priority/fetch.py": "84e258d03dd5d3fa",
+    "app/retrieval/priority/themes.py": "181d152a77caceba",
     "app/retrieval/priority/people.py": "986eda9ae1bce694",
     "app/retrieval/priority/evidence.py": "7adabf904525e973",
     "app/retrieval/priority/__init__.py": "5696a5d12b1fdf61",
@@ -369,7 +369,7 @@
     "docs/retrieval/03-query-understanding.md": "a4830d511c8e720b",
     "docs/retrieval/01-overview.md": "6980bdf53a3ed947",
     "docs/retrieval/README.md": "8b1be28f498b0d0c",
-    "docs/retrieval/13-priority-pages.md": "f7b3c7188dcd577f",
+    "docs/retrieval/13-priority-pages.md": "1e6d89b4e74a88fa",
     "docs/retrieval/11-observability-and-logging.md": "aa75a91c7c35f7da",
     "docs/retrieval/09-generation-and-synthesis.md": "1425e82e3a04dfef"
   }
