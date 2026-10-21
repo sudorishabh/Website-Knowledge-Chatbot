@@ -109,12 +109,17 @@ def test_a_named_page_leads_with_its_opening_section():
 
 
 def test_other_sections_are_admitted_only_above_the_floor():
-    got = _gather("who works on climate change", embed=_embed_on("Suruchi Bhadwal"))
+    got = _gather("what does TERI do on climate change", embed=_embed_on("Suruchi Bhadwal"))
     headings = [b.payload.get("section_heading") for b in got.blocks]
     assert headings[0] is None
     assert "Team" in headings
     assert "Events" not in headings
     assert len(got.blocks) <= 3
+
+
+def test_asking_who_works_on_a_theme_leads_with_its_team():
+    got = _gather("who works on climate change", embed=_embed_on("Suruchi Bhadwal"))
+    assert got.blocks[0].payload.get("section_heading") == "Team"
 
 
 def test_blocks_are_capped():
