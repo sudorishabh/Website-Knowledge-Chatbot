@@ -34,7 +34,7 @@ from app.config import get_settings
 from app.core.models.context import PRIORITY_PAGE_KIND, ContextBlock, source_kind
 from app.observability import retrieval_log
 from app.retrieval.priority import fetch as fetching
-from app.retrieval.priority import match
+from app.retrieval.priority import match, theme_names
 from app.retrieval.priority.extract import PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.offices import by_centre, headquarters, offices_on
@@ -46,6 +46,7 @@ from app.retrieval.priority.registry import (
     load_registry,
     normalize_url,
 )
+from app.retrieval.priority.theme_names import Mention
 from app.retrieval.priority.themes import ThemeListing, areas_on
 
 logger = logging.getLogger(__name__)
@@ -477,6 +478,15 @@ def explicit_targets(
         return []
     return match.explicit(question, registry=registry, people=listed_people(registry),
                           theme=theme, themes_listing=themes_listing, reply=reply)
+
+
+def theme_to_ask_about(
+    question: str, *, theme: str | None = None, registry: Registry | None = None
+) -> Mention | None:
+    """The theme ``question`` names by a part of its name that several themes
+    share ("the biofuel theme"), to ask which one it meant; None otherwise."""
+    registry = registry or load_registry()
+    return theme_names.to_ask_about(theme_names.mentions(question, registry, facet=theme))
 
 
 def gather(
