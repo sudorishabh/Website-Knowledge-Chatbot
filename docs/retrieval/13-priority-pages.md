@@ -111,7 +111,13 @@ home page gives way whenever a theme is named ("the climate change thematic
 area"). A theme listing adds no page by description match, since it is about
 no one theme. A bare "themes" does not ask for the list: "which themes have
 the most publications" is a catalog count, and the home page overrules the
-catalog only for a theme listing.
+catalog only for a theme listing. The word alone in a request does ("themes",
+"what are the themes", "list all themes"): such a question gets the overview
+ahead of any clarification or small-talk reply, since it is neither unclear
+nor small talk (measured 2026-10-21, "themes" was asked "could you say what
+topic" whenever understanding read it as unclear). In a conversation the
+rewrite must ask for the themes alone too, so "and its themes?" after a
+question about the summit is the summit's.
 
 People ask for the list by many names, and `themes.asks_for_themes` hears
 them: a phrase that asks for it anywhere ("research areas", "areas of
@@ -430,6 +436,7 @@ sections once; a page read itself took 83 ms.
 | Scenario | Response |
 | --- | --- |
 | Site down or slow for a page | last good copy, marked stale in the header; never read before → no block, corpus only |
+| Connection fails outright (a kept-alive connection the site closed) | asked once more on a fresh connection (`fetch._get`); a timeout is not asked again, so a slow site costs one timeout. Before (2026-10-21), a theme page's read failed in 21 ms and the answer fell back to old documents |
 | Page answers 200 with no content (maintenance) | treated as a failure (< 80 characters extracted) |
 | Redirect off the site | refused |
 | Embedding service down | similarity trigger skipped; opening sections still admitted |

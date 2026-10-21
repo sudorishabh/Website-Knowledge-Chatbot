@@ -425,22 +425,32 @@ def _lists_themes(pq: ProcessedQuery) -> bool:
     return pq.analysis is not None and getattr(pq.analysis, "operation", None) == "list_themes"
 
 
-def _asks_only_for_themes(question: str) -> bool:
+def _asks_only_for_themes(
+    question: str, pq: ProcessedQuery, history: list[dict[str, str]] | None = None
+) -> bool:
     """Whether the wording asks for the list of themes and nothing else, by
     whatever name ("TERI's research areas", "TERI divisions", "what sectors
-    does TERI work in"). Understanding reads most of these as passage questions
-    or small talk, so the wording decides: such a question is a theme listing,
-    and one that asks for nothing else is answered with the whole overview."""
+    does TERI work in", "themes"). Understanding reads most of these as passage
+    questions, small talk or unclear, so the wording decides: such a question
+    is a theme listing, and one that asks for nothing else is answered with the
+    whole overview. In a conversation the rewrite must say so too: "and its
+    themes?" after a question about the summit asks for the summit's."""
     if not get_settings().priority_pages_enabled:
         return False
     from app.retrieval.priority.themes import asks_only_for_themes
 
-    return asks_only_for_themes(question)
+    if not asks_only_for_themes(question):
+        return False
+    return not history or asks_only_for_themes(pq.search_query or question)
 
 
-def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
+def _priority_targets(
+    question: str, pq: ProcessedQuery, *, themes_listing: bool | None = None
+) -> list[Any] | None:
     """The deterministic priority triggers, or None with the feature off or for
-    a question about one edition of a series (the edition's own PDF answers it)."""
+    a question about one edition of a series (the edition's own PDF answers it).
+    ``themes_listing`` says the question asks for the list of themes, which
+    names the home page; by default, whether understanding read it so."""
     if not get_settings().priority_pages_enabled or pq.edition is not None:
         return None
     from app.retrieval.priority.evidence import explicit_targets
@@ -452,8 +462,9 @@ def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
         text, reply = f"{pq.clarified_from}\n{pq.search_query}", question
     try:
         with span("rag.priority_targets") as s:
+            listing = _lists_themes(pq) if themes_listing is None else themes_listing
             targets = explicit_targets(text, theme=_priority_theme(pq),
-                                       themes_listing=_lists_themes(pq), reply=reply)
+                                       themes_listing=listing, reply=reply)
             s.set("targets", len(targets))
         return targets
     except Exception:  # pragma: no cover - defence in depth; the call never raises
@@ -773,11 +784,16 @@ def _prepare(
     # the feature is on and no clarification is already open (see
     # `app.retrieval.understanding.clarify.pending`), so with the flag off this
     # is always None and the line below is unreachable.
-    if pq.clarification is not None:
+    #
+    # Neither for a question whose wording asks for the list of themes and
+    # nothing else: it is not unclear and not small talk, whatever understanding
+    # labelled it ("themes" was asked "could you say what topic", 2026-10-21).
+    only_themes = _asks_only_for_themes(question, pq, history)
+    if pq.clarification is not None and not only_themes:
         return _clarification_result(
             pq.clarification, answer_format=pq.answer_format
         ), None
-    if pq.intent == "chitchat":
+    if pq.intent == "chitchat" and not only_themes:
         return _empty("chitchat", chitchat(question, history)), None
 
     # A request for the annual-report series itself — list it, or count it.
@@ -802,9 +818,8 @@ def _prepare(
     # The priority pages' cheap triggers, ahead of routing: a question naming a
     # page the catalog cannot see ("who is on the governing council", "latest
     # tenders") must reach that page rather than be answered from the catalog.
-    priority_targets = _priority_targets(question, pq)
-    only_themes = _asks_only_for_themes(question)
     themes_listing = only_themes or _lists_themes(pq)
+    priority_targets = _priority_targets(question, pq, themes_listing=themes_listing)
     page_owned = _priority_overrides_catalog(
         priority_targets, themes_listing=themes_listing,
         about_authorship=_asks_for_authorship(question, pq),
