@@ -34,7 +34,7 @@ from app.config import get_settings
 from app.core.models.context import PRIORITY_PAGE_KIND, ContextBlock, source_kind
 from app.observability import retrieval_log
 from app.retrieval.priority import fetch as fetching
-from app.retrieval.priority import match
+from app.retrieval.priority import match, theme_names
 from app.retrieval.priority.extract import PageContent, Section, extract
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.offices import by_centre, headquarters, offices_on
@@ -46,6 +46,7 @@ from app.retrieval.priority.registry import (
     load_registry,
     normalize_url,
 )
+from app.retrieval.priority.theme_names import Mention
 from app.retrieval.priority.themes import ThemeListing, areas_on
 
 logger = logging.getLogger(__name__)
@@ -466,15 +467,26 @@ def explicit_targets(
     *,
     theme: str | None = None,
     themes_listing: bool = False,
+    reply: str | None = None,
     registry: Registry | None = None,
 ) -> list[Target]:
     """The deterministic triggers for ``question``: cheap enough to run before
-    routing, which needs them to decide whether a catalog answer may stand."""
+    routing, which needs them to decide whether a catalog answer may stand.
+    ``reply`` answers "which theme did you mean?" about ``question``."""
     registry = registry or load_registry()
     if not registry.pages:
         return []
     return match.explicit(question, registry=registry, people=listed_people(registry),
-                          theme=theme, themes_listing=themes_listing)
+                          theme=theme, themes_listing=themes_listing, reply=reply)
+
+
+def theme_to_ask_about(
+    question: str, *, theme: str | None = None, registry: Registry | None = None
+) -> Mention | None:
+    """The theme ``question`` names by a part of its name that several themes
+    share ("the biofuel theme"), to ask which one it meant; None otherwise."""
+    registry = registry or load_registry()
+    return theme_names.to_ask_about(theme_names.mentions(question, registry, facet=theme))
 
 
 def gather(
@@ -512,7 +524,8 @@ def gather(
         # description match would only add a page the answer does not need.
         lists_themes = any(t.page is not None and t.page.is_home for t in targets)
         if _page_count(targets) < settings.priority_max_pages and not lists_themes:
-            found, evidence.similar_top = match.similar(query_vector, registry=registry, embed=embed)
+            found, evidence.similar_top = match.similar(query_vector, registry=registry,
+                                                        embed=embed, question=question)
             targets = match.ranked([*targets, *found])
         groups = [t for t in targets if t.kind == GROUP_KIND][:MAX_GROUPS]
         pages = match.ranked([*_contact_target(groups, registry),

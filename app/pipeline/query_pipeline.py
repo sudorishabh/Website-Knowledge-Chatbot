@@ -432,16 +432,47 @@ def _priority_targets(question: str, pq: ProcessedQuery) -> list[Any] | None:
         return None
     from app.retrieval.priority.evidence import explicit_targets
 
+    text, reply = _priority_text(question, pq), None
+    if pq.clarified_from:
+        # This turn answers a question back ("which theme did you mean?"): the
+        # question it answers names the pages, and this turn chooses among them.
+        text, reply = f"{pq.clarified_from}\n{pq.search_query}", question
     try:
         with span("rag.priority_targets") as s:
-            targets = explicit_targets(_priority_text(question, pq), theme=_priority_theme(pq),
-                                       themes_listing=_lists_themes(pq))
+            targets = explicit_targets(text, theme=_priority_theme(pq),
+                                       themes_listing=_lists_themes(pq), reply=reply)
             s.set("targets", len(targets))
         return targets
     except Exception:  # pragma: no cover - defence in depth; the call never raises
         logger.warning("Priority page triggers failed; continuing without them.",
                        exc_info=True)
         return None
+
+
+def _theme_clarification(question: str, pq: ProcessedQuery) -> Clarification | None:
+    """"Which one did you mean?" for a theme named by a part of its name that
+    several themes share. Measured 2026-10-21: "tell me about biofuel theme"
+    fits three theme pages, read none, and was summarised from the one catalog
+    document tagged with one of them.
+
+    None with clarification or priority pages off, and on the turn that answers
+    a clarification, so it is asked at most once: that turn's reply chooses
+    (see `_priority_targets`), and a reply that chooses none reads them all."""
+    settings = get_settings()
+    if (not (settings.clarification_enabled and settings.priority_pages_enabled)
+            or pq.clarified_from is not None or pq.edition is not None):
+        return None
+    from app.retrieval.priority.evidence import theme_to_ask_about
+
+    mention = theme_to_ask_about(_priority_text(question, pq), theme=_priority_theme(pq))
+    if mention is None:
+        return None
+    return Clarification(
+        question=(f'TERI has {len(mention.pages)} themes that match "{mention.phrase}". '
+                  'Which one did you mean? You can also say "all".'),
+        options=[page.topic for page in mention.pages],
+        kind="theme",
+    )
 
 
 def _names_a_theme_page(target: Any) -> bool:
@@ -764,6 +795,13 @@ def _prepare(
         priority_targets, themes_listing=themes_listing,
         about_authorship=_asks_for_authorship(question, pq),
     )
+    catalog_route = pq.intent == "structured" and not page_owned
+    # A theme named by part of a name several themes share is asked about,
+    # unless the catalog answers the question: a count or a list is its own.
+    if not catalog_route:
+        clarification = _theme_clarification(question, pq)
+        if clarification is not None:
+            return _clarification_result(clarification, answer_format=pq.answer_format), None
     # A query that needs both catalog facts and document content: keep the
     # deterministic catalog answer and prefix it onto the grounded content answer.
     # Not for a theme listing a live page owns: the catalog's list of themes
@@ -793,8 +831,6 @@ def _prepare(
     # worth showing. When the scope was genuinely empty the listing comes back empty
     # too, so the redundant case costs one query on a path that is already refusing.
     db_consulted = combined
-
-    catalog_route = pq.intent == "structured" and not page_owned
 
     if catalog_route:
         from app.retrieval.structured.answerer import answer_structured

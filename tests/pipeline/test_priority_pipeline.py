@@ -38,7 +38,7 @@ class _Evidence:
 @pytest.fixture
 def wired(monkeypatch):
     log = SimpleNamespace(retrieve=[], lookup=[], gather=[], structured=[], targets=[],
-                          listing=[])
+                          listing=[], replies=[])
     state = SimpleNamespace(pq=_pq(), targets=[], evidence=_Evidence())
 
     monkeypatch.setattr(pipe, "process", lambda q, h: state.pq)
@@ -58,9 +58,10 @@ def wired(monkeypatch):
 
     monkeypatch.setattr("app.cache.semantic_cache.lookup", fake_lookup)
 
-    def fake_targets(question, *, theme=None, themes_listing=False, registry=None):
+    def fake_targets(question, *, theme=None, themes_listing=False, reply=None, registry=None):
         log.targets.append((question, theme))
         log.listing.append(themes_listing)
+        log.replies.append(reply)
         return list(state.targets)
 
     def fake_gather(question, *, query_vector, theme=None, explicit=None, **kw):
@@ -477,3 +478,59 @@ def test_other_combined_questions_keep_their_catalog_section(wired, monkeypatch,
     _, gen = pipe._prepare("How many climate change projects are there and what do they cover?",
                            history=None, top_k=None)
     assert db_sections and gen.db_prefix.startswith("The collection covers")
+
+
+
+# -- a theme named by part of a name several themes share ------------------------
+
+BIOFUEL_THEMES = [
+    "Advanced Biofuels & Biochemicals",
+    "Pyrolytic Biofuels, Biochar & Green Chemicals",
+    "Microbial Biofuels and Biochemicals",
+]
+
+
+def _biofuel_pq(intent="scoped_summary", **kw):
+    analysis = qp.QueryAnalysis(search_query="Tell me about the biofuel theme.", intent=intent,
+                                theme="biofuel", operation=kw.pop("operation", None))
+    return _pq(intent=intent, original="tell me about biofuel theme",
+               search_query="Tell me about the biofuel theme.", analysis=analysis, **kw)
+
+
+@pytest.fixture
+def clarifying(monkeypatch):
+    _enable(monkeypatch)
+    monkeypatch.setattr(get_settings(), "clarification_enabled", True)
+
+
+def test_a_theme_several_themes_share_is_asked_about(wired, clarifying, summaries):
+    """Measured 2026-10-21: summarised from one catalog document instead."""
+    wired.state.pq = _biofuel_pq()
+    result, gen = pipe._prepare("tell me about biofuel theme", history=None, top_k=None)
+    assert gen is None and result["intent"] == "clarification"
+    assert result["clarification"]["options"] == BIOFUEL_THEMES
+    assert '"biofuel"' in result["clarification"]["question"]
+    assert summaries == [] and wired.log.retrieve == []
+
+
+def test_a_catalog_question_on_such_a_theme_is_not_asked_about(wired, clarifying):
+    wired.state.pq = _biofuel_pq(intent="structured", operation="count")
+    result, _ = pipe._prepare("how many projects are in the biofuel theme",
+                              history=None, top_k=None)
+    assert result["answer"] == "catalog answer"
+
+
+def test_without_clarification_every_theme_that_fits_is_read(wired, monkeypatch, summaries):
+    _enable(monkeypatch)
+    monkeypatch.setattr(get_settings(), "clarification_enabled", False)
+    wired.state.pq = _biofuel_pq(intent="qa")
+    result, gen = pipe._prepare("tell me about biofuel theme", history=None, top_k=None)
+    assert result is None and wired.log.retrieve[0]["priority"] is wired.state.evidence
+
+
+def test_the_reply_chooses_among_the_themes_of_the_question_it_answers(wired, clarifying):
+    wired.state.pq = _biofuel_pq(intent="qa", clarified_from="tell me about biofuel theme")
+    result, gen = pipe._prepare("2", history=None, top_k=None)
+    assert result is None
+    assert wired.log.targets[0][0] == "tell me about biofuel theme\nTell me about the biofuel theme."
+    assert wired.log.replies == ["2"]

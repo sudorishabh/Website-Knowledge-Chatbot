@@ -87,11 +87,11 @@ Strongest first; none costs a model call.
 | Reason | Fires when | Opening section admitted |
 | --- | --- | --- |
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
-| `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
+| `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), part of a theme's topic before "theme" or after "theme on/of" ("the marine theme", and each of the three biofuel themes for "the biofuel theme"; see *Themes named in part* below), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by a phrase asking for the list of themes ("TERI's thematic areas", "themes area TERI works on"), or by any question understanding read as a theme listing | yes |
 | `group` | one of the group's phrases ("regional centres", "pan India presence", "national presence", "where is TERI located"), a typo of one letter forgiven in words of five letters or more ("regional cenres"), or the organisation's name beside a plural word for the members ("which offices does TERI have") → one block built from the list itself, each centre carrying its address and contacts from the live contact page. Two groups: the regional centres and the Centres of Excellence. The longest group phrase decides which ("TERI centres of excellence" is not the regional centres), and a question naming one member reads that member's page instead | — |
 | `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named. Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
-| `theme` | understanding resolved a theme facet that is a page on the list | yes |
-| `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next | yes |
+| `theme` | understanding resolved a theme facet that is a page on the list, or part of a page's name ("biofuel" in "summarize TERI's biofuel research") | yes |
+| `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next; or, in a near-tie, each theme page a run of the question's words fits that sits within the margin of the best ("TERI's work on biofuels" sat at 0.500, 0.488 and 0.456 against the three biofuel themes and read none of them). A tie the words do not explain reads nothing, as before | yes |
 | `surfaced` | retrieval ranked a listed page's stored copy within the top `n` | no — sections by score only |
 
 A single common word never names a page on its own ("water", "policy",
@@ -126,6 +126,29 @@ scoped summary, which reads the catalog's documents on the theme, gives way to
 the page when the scope is the theme alone and the question names no kind of
 document (publications, reports, papers, briefs, news, …). A period, an author
 or a title in the scope keeps the summary.
+
+**Themes named in part** (`theme_names.py`). People name a theme by part of its
+name: "the marine theme" for Marine and Coastal, "the city theme" for Cities,
+"the biofuel theme" when three themes carry the word (Advanced Biofuels &
+Biochemicals; Pyrolytic Biofuels, Biochar & Green Chemicals; Microbial
+Biofuels and Biochemicals). Measured 2026-10-21, none of 25 such questions
+reached a theme page, and "tell me about biofuel theme" was summarised from the
+one catalog document tagged with one of the three. A mention is the run of
+theme-name words beside "theme" or "thematic", or after "theme on/of", or
+understanding's theme facet. It fits every theme page whose name holds all of
+its words; a page named by those words exactly wins ("environmental" is
+Environment, not Environment and Public Health). Words compare loosely: plural,
+one typo in five letters or more, or a shared stem ("agricultural").
+"themes" after words that fit one page is not a name ("TERI's research themes"
+asks for the list), and a mention fitting more than four pages names none
+("the sustainable theme").
+
+When a singular "theme" fits several pages, the pipeline asks which one
+(`_theme_clarification`, with `clarification_enabled`), listing them; the
+catalog route is never interrupted. The reply chooses by number, ordinal or
+name, or "all"; a reply that chooses none reads them all, since the user has
+been asked once. "themes", understanding's facet alone, or clarification off
+reads every page the mention fits, within `priority_max_pages`.
 
 **Regional centres.** The file's "Regional centers" group is the answer to every
 question about where the organisation works from: its regional centres, its

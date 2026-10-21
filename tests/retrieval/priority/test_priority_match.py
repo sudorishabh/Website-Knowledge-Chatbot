@@ -25,6 +25,7 @@ from app.retrieval.priority.registry import (
     PriorityGroup,
     PriorityPage,
     normalize_text,
+    one_edit_apart,
     parse,
 )
 
@@ -137,7 +138,7 @@ def test_a_typo_in_a_group_phrase_is_forgiven(reg, question):
     ("gender", "tender", True),       # why page names are matched exactly
 ])
 def test_one_edit_apart(a, b, close):
-    assert match._one_edit_apart(a, b) is close
+    assert one_edit_apart(a, b) is close
 
 
 def test_a_typo_is_not_forgiven_in_a_short_word(reg):
@@ -233,7 +234,52 @@ def test_the_theme_facet_names_its_page(reg):
 
 
 def test_a_theme_facet_off_the_list_names_nothing(reg):
-    assert _hits("what does TERI do here", reg, theme="Microbes") == []
+    assert _hits("what does TERI do here", reg, theme="Solar") == []
+
+
+BIOFUELS = [
+    "Advanced Biofuels & Biochemicals Theme",
+    "Pyrolytic Biofuels, Biochar & Green Chemicals Theme",
+    "Microbial Biofuels and Biochemicals Theme",
+]
+
+
+@pytest.mark.parametrize("question, page", [
+    ("tell me about the marine theme", "Marine and Coastal Theme"),
+    ("what is the city theme", "Cities Theme"),
+    ("tell me about the microbial theme", "Microbial Biofuels and Biochemicals Theme"),
+])
+def test_part_of_a_themes_name_names_its_page(reg, question, page):
+    """Measured 2026-10-21: none of 25 such questions reached a theme page."""
+    assert _hits(question, reg) == [(page, NAME)]
+
+
+def test_part_of_a_name_several_themes_share_names_each_of_them(reg):
+    assert _hits("tell me about biofuel theme", reg) == [(name, NAME) for name in BIOFUELS]
+
+
+def test_part_of_a_themes_name_takes_the_place_of_the_list(reg):
+    """"thematic area" is an overview phrase, but "the biofuel thematic area"
+    is about the biofuel themes."""
+    hits = _hits("what is the biofuel thematic area about", reg)
+    assert hits == [(name, NAME) for name in BIOFUELS]
+
+
+def test_a_theme_facet_that_is_part_of_a_name_names_its_pages(reg):
+    assert _hits("summarize TERI's research here", reg, theme="biofuel") == [
+        (name, THEME_FACET) for name in BIOFUELS
+    ]
+
+
+@pytest.mark.parametrize("reply, chosen", [
+    ("2", [BIOFUELS[1]]),
+    ("microbial", [BIOFUELS[2]]),
+    ("all", BIOFUELS),
+])
+def test_a_reply_chooses_among_the_themes_a_name_fits(reg, reply, chosen):
+    assert _hits("tell me about biofuel theme", reg, reply=reply) == [
+        (name, NAME) for name in chosen
+    ]
 
 
 def test_a_named_person_leads_with_their_profile(reg):
@@ -316,6 +362,45 @@ class TestSimilarity:
 
     def test_a_close_runner_up_matches_nothing(self):
         targets, _ = similar([0.7, 0.68, 0.0, 0.0], registry=self._registry(), embed=self._embed)
+        assert targets == []
+
+    @staticmethod
+    def _themes():
+        return parse([
+            {"name": "Advanced Biofuels & Biochemicals Theme", "page_url": "https://teriin.org/a",
+             "description": "Advanced."},
+            {"name": "Pyrolytic Biofuels, Biochar & Green Chemicals Theme",
+             "page_url": "https://teriin.org/p", "description": "Pyrolytic."},
+            {"name": "Microbial Biofuels and Biochemicals Theme", "page_url": "https://teriin.org/m",
+             "description": "Microbial."},
+            {"name": "Air Theme", "page_url": "https://teriin.org/air", "description": "Air."},
+        ])
+
+    @staticmethod
+    def _theme_embed(texts):
+        axes = {"Advanced": [1.0, 0, 0, 0], "Pyrolytic": [0, 1.0, 0, 0],
+                "Microbial": [0, 0, 1.0, 0], "Air": [0, 0, 0, 1.0]}
+        return [next(v for k, v in axes.items() if t.startswith(k)) for t in texts]
+
+    def test_a_tie_between_themes_sharing_the_questions_word_reads_each(self):
+        """Measured 2026-10-21: "TERI's work on biofuels" sat at 0.500, 0.488
+        and 0.456 against the three biofuel themes and read none of them."""
+        targets, _ = similar([0.50, 0.46, 0.49, 0.0], registry=self._themes(),
+                             embed=self._theme_embed,
+                             question="tell me about TERI's work on biofuels")
+        assert [(t.name, t.reason) for t in targets] == [
+            ("Advanced Biofuels & Biochemicals Theme", SIMILAR),
+            ("Pyrolytic Biofuels, Biochar & Green Chemicals Theme", SIMILAR),
+            ("Microbial Biofuels and Biochemicals Theme", SIMILAR),
+        ]
+
+    @pytest.mark.parametrize("question, vector", [
+        ("tell me about TERI's work", [0.50, 0.46, 0.49, 0.0]),
+        ("biofuels and air quality", [0.60, 0.0, 0.0, 0.58]),
+    ])
+    def test_a_tie_the_questions_words_do_not_explain_reads_nothing(self, question, vector):
+        targets, _ = similar(vector, registry=self._themes(), embed=self._theme_embed,
+                             question=question)
         assert targets == []
 
     def test_descriptions_are_embedded_once(self):

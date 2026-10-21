@@ -10,7 +10,9 @@ model call.
   person's profile.
 * ``name`` — the question names a page outright: its own name when that is
   more than one word ("climate change", "green shipping"), a theme's name with
-  "theme" or "thematic" after it ("the water theme"), or a phrase curated in the
+  "theme" or "thematic" after it ("the water theme") or part of it ("the marine
+  theme", and "the biofuel theme" for each of the three it fits; see
+  :mod:`~app.retrieval.priority.theme_names`), or a phrase curated in the
   registry ("director general", "tender", "founder"). The home page is named by
   the phrases that ask for the list of themes ("TERI's thematic areas"), and
   also whenever query understanding read the question as a theme listing; it
@@ -23,7 +25,8 @@ model call.
   the regional centres), and a question naming one member is about that
   member. Answered from the list itself.
 * ``theme`` — query understanding resolved a theme facet that is a page on the
-  list.
+  list, or part of a page's name ("biofuel" in "summarize TERI's biofuel
+  research").
 * ``similar`` — the query vector sits close to one page's description, and
   clearly closer than to any other. Calibrated on 2026-09-24 over 20 questions:
   with the organisation's name stripped from the descriptions, most on-topic
@@ -51,16 +54,19 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 from app.config import get_settings
+from app.retrieval.priority import theme_names
 from app.retrieval.priority.people import Person, holding, named_in
 from app.retrieval.priority.registry import (
     CENTRE,
     PEOPLE,
     THEME,
+    TYPO_MIN_LETTERS,
     PriorityGroup,
     PriorityPage,
     Registry,
     normalize_text,
     normalize_url,
+    one_edit_apart,
 )
 
 logger = logging.getLogger(__name__)
@@ -138,34 +144,11 @@ def _has(words: str, phrase: str) -> bool:
     return re.search(_phrase(phrase), words) is not None
 
 
-#: Shortest word in which a typo is forgiven. Shorter words sit one letter
-#: from too many others ("goa", "teri", "in").
-_TYPO_MIN_LETTERS = 5
-
-
-def _one_edit_apart(a: str, b: str) -> bool:
-    """Whether ``a`` becomes ``b`` by at most one inserted, dropped or changed
-    letter, or one swap of neighbouring letters."""
-    if a == b:
-        return True
-    if abs(len(a) - len(b)) > 1:
-        return False
-    if len(a) == len(b):
-        diff = [i for i, (x, y) in enumerate(zip(a, b)) if x != y]
-        return len(diff) == 1 or (
-            len(diff) == 2 and diff[1] == diff[0] + 1
-            and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
-        )
-    short, long = sorted((a, b), key=len)
-    i = next((i for i, (x, y) in enumerate(zip(short, long)) if x != y), len(short))
-    return short[i:] == long[i + 1:]
-
-
 def _roughly(word: str, wanted: str, *, plural: bool) -> bool:
     forms = (wanted, f"{wanted}s") if plural else (wanted,)
     if word in forms:
         return True
-    return len(wanted) >= _TYPO_MIN_LETTERS and any(_one_edit_apart(word, f) for f in forms)
+    return len(wanted) >= TYPO_MIN_LETTERS and any(one_edit_apart(word, f) for f in forms)
 
 
 def _rough_spans(tokens: Sequence[str], phrase: str) -> list[tuple[int, int]]:
@@ -238,6 +221,21 @@ def ranked(targets: Sequence[Target]) -> list[Target]:
     return sorted(best.values(), key=lambda t: (STRENGTH[t.reason], -t.score))
 
 
+def _themes_named_in_part(
+    question: str, registry: Registry, *, theme: str | None, reply: str | None
+) -> list[Target]:
+    """The theme pages a part of a theme's name fits: a name when the question
+    says "theme", the theme facet when only understanding does. Every page a
+    mention fits, unless ``reply`` chooses among them."""
+    targets: list[Target] = []
+    for mention in theme_names.mentions(question, registry, facet=theme):
+        if reply and mention.ambiguous:
+            mention = mention.narrowed(reply)
+        reason = NAME if mention.named else THEME_FACET
+        targets += [Target(p.name, p.kind, reason, url=p.url, page=p) for p in mention.pages]
+    return targets
+
+
 def explicit(
     question: str,
     *,
@@ -245,11 +243,14 @@ def explicit(
     people: Sequence[Person] = (),
     theme: str | None = None,
     themes_listing: bool = False,
+    reply: str | None = None,
 ) -> list[Target]:
     """The deterministic triggers: people, names, groups, the theme facet.
 
     ``themes_listing`` says query understanding read the question as a request
     for the list of themes, which names the home page whatever the wording.
+    ``reply`` answers "which theme did you mean?" about a theme ``question``
+    named in part, and keeps the themes it chooses.
     """
     words = normalize_text(question)
     targets: list[Target] = []
@@ -271,6 +272,7 @@ def explicit(
         for page in registry.pages:
             if page.kind in (THEME, CENTRE) and normalize_text(page.topic) == wanted:
                 targets.append(Target(page.name, page.kind, THEME_FACET, url=page.url, page=page))
+    targets += _themes_named_in_part(question, registry, theme=theme, reply=reply)
     if any(t.reason == NAME and t.kind == THEME for t in targets):
         # "the climate change thematic area" is about one theme, not the list.
         targets = [t for t in targets if not (t.page is not None and t.page.is_home)]
@@ -370,15 +372,38 @@ def staff_listings(
             for p in chosen[:MAX_STAFF_LISTINGS]]
 
 
+def _tied_by_name(
+    question: str, scored: Sequence[tuple[float, PriorityPage]], registry: Registry,
+    *, margin: float,
+) -> list[Target]:
+    """The pages a near-tie is between, when they are themes that share words
+    of the question: "TERI's work on biofuels" sat at 0.500, 0.488 and 0.456
+    against the three biofuel themes (measured 2026-10-21), a tie that read
+    none of them. Each page the shared words fit and that is within ``margin``
+    of the best, the best among them; [] for a tie the words do not explain."""
+    best_score, best = scored[0]
+    close = {page.key: score for score, page in scored if best_score - score < margin}
+    for mention in theme_names.topic_mentions(question, registry):
+        if best not in mention.pages:
+            continue
+        tied = [page for page in mention.pages if page.key in close]
+        if len(tied) > 1:
+            return [Target(p.name, p.kind, SIMILAR, url=p.url, score=close[p.key], page=p)
+                    for p in tied]
+    return []
+
+
 def similar(
     query_vector: Sequence[float],
     *,
     registry: Registry,
     embed: Callable[[list[str]], list[list[float]]] | None = None,
+    question: str = "",
 ) -> tuple[list[Target], list[dict]]:
     """The one page whose description the query is clearly about, if any, plus
-    the top scores for the trace. Never raises: a failed embedding costs this
-    trigger, not the question."""
+    the top scores for the trace. A near-tie between themes ``question`` names
+    by a shared word reads each of them. Never raises: a failed embedding costs
+    this trigger, not the question."""
     if not query_vector or not registry.pages:
         return [], []
     settings = get_settings()
@@ -398,5 +423,6 @@ def similar(
     if best_score < settings.priority_match_threshold:
         return [], top
     if best_score - runner_up < settings.priority_match_margin:
-        return [], top
+        return _tied_by_name(question, scored, registry,
+                             margin=settings.priority_match_margin), top
     return [Target(best.name, best.kind, SIMILAR, url=best.url, score=best_score, page=best)], top
