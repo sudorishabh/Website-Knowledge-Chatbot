@@ -574,3 +574,38 @@ def test_the_reply_chooses_among_the_themes_of_the_question_it_answers(wired, cl
     assert result is None
     assert wired.log.targets[0][0] == "tell me about biofuel theme\nTell me about the biofuel theme."
     assert wired.log.replies == ["2"]
+
+
+
+# -- "themes" alone ---------------------------------------------------------------
+
+@pytest.mark.parametrize("unclear", [True, False])
+def test_themes_alone_gets_the_overview_however_understanding_read_it(
+    wired, monkeypatch, digest, unclear
+):
+    """Measured 2026-10-21: "themes" was asked "could you say what topic" when
+    understanding read it as unclear, and got the overview when it read it as
+    a theme listing."""
+    from app.retrieval.understanding import clarify
+
+    _enable(monkeypatch)
+    asked = clarify.Clarification(question="Could you say what topic?") if unclear else None
+    _home_listing(wired, _pq(intent="chitchat", original="themes", search_query="themes",
+                             clarification=asked))
+    monkeypatch.setattr(pipe, "chitchat", lambda q, h: pytest.fail("answered as small talk"))
+    result, gen = pipe._prepare("themes", history=None, top_k=None)
+    assert gen is None and result["answer"] == "There are **2 thematic areas**: ..."
+    assert wired.log.listing == [True]
+
+
+def test_a_follow_up_asking_for_something_elses_themes_is_not_the_overview(
+    wired, monkeypatch, digest
+):
+    _enable(monkeypatch)
+    wired.state.pq = _pq(original="and its themes?",
+                         search_query="What are the themes of WSDS 2026?")
+    history = [{"role": "user", "content": "tell me about WSDS 2026"},
+               {"role": "assistant", "content": "WSDS 2026 was held in New Delhi."}]
+    result, gen = pipe._prepare("and its themes?", history=history, top_k=None)
+    assert digest.overview == [] and gen is not None
+    assert wired.log.listing == [False]

@@ -138,6 +138,13 @@ _QUESTION_WORDS = frozenset(
 )
 
 
+#: The themes by their own name. Beside other words it is a facet ("which
+#: themes have the most publications"); alone in a request ("themes", "what
+#: are the themes", "list all themes") it can ask for nothing but the list.
+#: Plural only: "what is the theme" asks about one thing already in view.
+_THEMES_WORD = "themes"
+
+
 def _phrase(phrase: str) -> str:
     """Whole-word pattern for ``phrase``, tolerating a plural."""
     return rf"(?<!\w){re.escape(phrase)}s?(?!\w)"
@@ -169,10 +176,15 @@ def asks_only_for_themes(question: str) -> bool:
     gets the home page's seven areas. "TERI's research areas and their key
     projects" leaves "projects", and "which TERI themes have the most
     publications" leaves "most publications": both are answered as before.
+
+    "themes" alone counts too, though `asks_for_themes` does not take it.
+    Measured 2026-10-21: the bare "themes" got the overview when understanding
+    read it as a theme listing, and was asked "could you say what topic" when
+    it read it as unclear.
     """
-    if not asks_for_themes(question):
-        return False
     words = normalize_text(question)
+    if not (asks_for_themes(question) or _THEMES_WORD in words.split()):
+        return False
     for phrase in THEMES_OVERVIEW:
         words = re.sub(_phrase(phrase), " ", words)
     words = _ORG.sub(" ", _WORKS_IN.sub(" ", words))

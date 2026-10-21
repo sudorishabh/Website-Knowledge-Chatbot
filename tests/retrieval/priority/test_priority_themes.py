@@ -128,3 +128,19 @@ def test_a_listing_that_asks_for_more_is_not_only_a_listing(question):
 ])
 def test_other_questions_do_not_ask_for_the_themes(question):
     assert not asks_for_themes(question)
+
+
+
+@pytest.mark.parametrize("question, only", [
+    ("themes", True),
+    ("Themes?", True),
+    ("what are the themes", True),
+    ("list all themes", True),
+    ("which themes have the most publications", False),
+    ("what is the theme", False),
+    ("themes of WSDS 2026", False),
+])
+def test_the_word_themes_alone_asks_only_for_the_themes(question, only):
+    """Measured 2026-10-21: the bare "themes" was asked "could you say what
+    topic" whenever understanding read it as unclear."""
+    assert asks_only_for_themes(question) is only
