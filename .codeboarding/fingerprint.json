@@ -1,11 +1,11 @@
 {
   "files": {
     "docker-compose.yml": "2c6869c5a9ae7585",
-    "pytest.ini": "aee271047fe879e5",
+    "pytest.ini": "fa1501c21509ec7e",
     "GRAPH_DB_REPORT.md": "8cb8e5205d306890",
     "SESSION_LOG_graph_and_date_migration.md": "19c34d6af156a0c6",
     "requirements.txt": "8e1b4735744eb1ed",
-    "README.md": "2fbeaef01e0742da",
+    "README.md": "0f89cfd0fc5551fd",
     "CLAUDE.md": "73795531870c88bd",
     "tools/__init__.py": "ede00c0310929de3",
     "tools/local_tests/db_checks.py": "a4bb051d743d1e66",

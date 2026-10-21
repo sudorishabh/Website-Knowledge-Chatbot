@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated_at": "2026-10-21T13:04:49.621924+00:00",
-    "source_tree_hash": "afcf4c1c6605c199c5ed48e9452e1b1d1581b58f6b39cb3a4d79526f68ab7c29",
+    "generated_at": "2026-10-21T13:10:08.218960+00:00",
+    "source_tree_hash": "b7dcd7696c730a92da00fd5b4f0196163780e2ce090738d37fa0fb7284bd0a75",
     "repo_name": ".codeboarding-target",
     "depth_level": 2,
     "depth_cap": 2,
@@ -33159,6 +33159,2226 @@
       ],
       "components_relations": [
         {
+          "relation": "inspects graph predicates and schemas from",
+          "src_name": "Retrieval and Search Engine",
+          "dst_name": "Knowledge Graph and Claims Extraction",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate",
+              "call_sites": [
+                {
+                  "line": 179,
+                  "column": 18
+                }
+              ],
+              "description": "Queries predicates and entities for graph retrieval planning"
+            }
+          ],
+          "src_id": "1.1",
+          "dst_id": "1.3",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate",
+              "call_sites": [
+                {
+                  "line": 179,
+                  "column": 18
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate.entity_valued",
+              "call_sites": [
+                {
+                  "line": 179,
+                  "column": 18
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.get",
+              "call_sites": [
+                {
+                  "line": 173,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.two_hop",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate",
+              "call_sites": [
+                {
+                  "line": 297,
+                  "column": 29
+                },
+                {
+                  "line": 297,
+                  "column": 64
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.two_hop",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate.entity_valued",
+              "call_sites": [
+                {
+                  "line": 297,
+                  "column": 29
+                },
+                {
+                  "line": 297,
+                  "column": 64
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.two_hop",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.get",
+              "call_sites": [
+                {
+                  "line": 294,
+                  "column": 47
+                },
+                {
+                  "line": 294,
+                  "column": 65
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.entity_index",
+              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex",
+              "call_sites": [
+                {
+                  "line": 285,
+                  "column": 26
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.entity_index",
+              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex.load",
+              "call_sites": [
+                {
+                  "line": 285,
+                  "column": 26
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
+              "target": "app/knowledge/candidates.py|app.knowledge.candidates.ResolutionContext",
+              "call_sites": [
+                {
+                  "line": 412,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
+              "target": "app/knowledge/extract.py|app.knowledge.extract.extract_mentions",
+              "call_sites": [
+                {
+                  "line": 362,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
+              "target": "app/knowledge/gazetteer.py|app.knowledge.gazetteer.get_gazetteer",
+              "call_sites": [
+                {
+                  "line": 364,
+                  "column": 19
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
+              "target": "app/knowledge/resolver.py|app.knowledge.resolver.Decision",
+              "call_sites": [
+                {
+                  "line": 417,
+                  "column": 21
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
+              "target": "app/knowledge/resolver.py|app.knowledge.resolver.Decision.canonical",
+              "call_sites": [
+                {
+                  "line": 417,
+                  "column": 21
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
+              "target": "app/knowledge/resolver.py|app.knowledge.resolver.resolve_mention",
+              "call_sites": [
+                {
+                  "line": 416,
+                  "column": 20
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router.route",
+              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex",
+              "call_sites": [
+                {
+                  "line": 596,
+                  "column": 29
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router.route",
+              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex.load",
+              "call_sites": [
+                {
+                  "line": 596,
+                  "column": 29
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/approved_aliases.py|app.retrieval.understanding.approved_aliases.lookup_mentions",
+              "target": "app/knowledge/types.py|app.knowledge.types.Mention",
+              "call_sites": [
+                {
+                  "line": 431,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.load",
+              "target": "app/knowledge/normalize.py|app.knowledge.normalize.normalize_project",
+              "call_sites": [
+                {
+                  "line": 168,
+                  "column": 26
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.match",
+              "target": "app/knowledge/normalize.py|app.knowledge.normalize.normalize",
+              "call_sites": [
+                {
+                  "line": 192,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.lookup_mentions",
+              "target": "app/knowledge/types.py|app.knowledge.types.Mention",
+              "call_sites": [
+                {
+                  "line": 282,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/relational.py|app.retrieval.understanding.relational.read_relational",
+              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.is_known",
+              "call_sites": [
+                {
+                  "line": 164,
+                  "column": 18
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "queries catalog records and state from",
+          "src_name": "Retrieval and Search Engine",
+          "dst_name": "Catalog Store and State Management",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever._supplement_attachments",
+              "target": "app/catalog/queries.py|app.catalog.queries.attachments_for",
+              "call_sites": [
+                {
+                  "line": 82,
+                  "column": 31
+                }
+              ],
+              "description": "Queries attachments and facets from the catalog"
+            }
+          ],
+          "src_id": "1.1",
+          "dst_id": "1.4",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever._supplement_attachments",
+              "target": "app/catalog/queries.py|app.catalog.queries.attachments_for",
+              "call_sites": [
+                {
+                  "line": 82,
+                  "column": 31
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/title_leg.py|app.retrieval.search.title_leg.title_candidates",
+              "target": "app/catalog/state.py|app.catalog.state.website_titles",
+              "call_sites": [
+                {
+                  "line": 154,
+                  "column": 35
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail._type_rows",
+              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
+              "call_sites": [
+                {
+                  "line": 161,
+                  "column": 32
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail._years",
+              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
+              "call_sites": [
+                {
+                  "line": 120,
+                  "column": 41
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.facets",
+              "target": "app/catalog/queries.py|app.catalog.queries.facets_for",
+              "call_sites": [
+                {
+                  "line": 464,
+                  "column": 42
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_count",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
+              "call_sites": [
+                {
+                  "line": 395,
+                  "column": 33
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_distinct",
+              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
+              "call_sites": [
+                {
+                  "line": 628,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_zero",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
+              "call_sites": [
+                {
+                  "line": 434,
+                  "column": 46
+                },
+                {
+                  "line": 447,
+                  "column": 46
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_zero",
+              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
+              "call_sites": [
+                {
+                  "line": 436,
+                  "column": 52
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.other_types_section",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
+              "call_sites": [
+                {
+                  "line": 213,
+                  "column": 51
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.recent_items",
+              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
+              "call_sites": [
+                {
+                  "line": 286,
+                  "column": 33
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.scope_total",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
+              "call_sites": [
+                {
+                  "line": 561,
+                  "column": 41
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.theme_counts",
+              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
+              "call_sites": [
+                {
+                  "line": 524,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.theme_latest",
+              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
+              "call_sites": [
+                {
+                  "line": 540,
+                  "column": 37
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/entities.py|app.retrieval.structured.entities.present_bundles",
+              "target": "app/catalog/queries.py|app.catalog.queries.available_bundles",
+              "call_sites": [
+                {
+                  "line": 142,
+                  "column": 37
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/resolve.py|app.retrieval.structured.resolve._cached_author_names",
+              "target": "app/catalog/queries.py|app.catalog.queries.distinct_authors",
+              "call_sites": [
+                {
+                  "line": 230,
+                  "column": 26
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/resolve.py|app.retrieval.structured.resolve._theme_candidates",
+              "target": "app/catalog/queries.py|app.catalog.queries.theme_vocabulary",
+              "call_sites": [
+                {
+                  "line": 213,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._past_the_catalog",
+              "target": "app/catalog/queries.py|app.catalog.queries.effective_date_range",
+              "call_sites": [
+                {
+                  "line": 91,
+                  "column": 36
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._resolve_chain",
+              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
+              "call_sites": [
+                {
+                  "line": 818,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._scope_total",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
+              "call_sites": [
+                {
+                  "line": 690,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.aggregate_records",
+              "target": "app/catalog/queries.py|app.catalog.queries.cross_distribution",
+              "call_sites": [
+                {
+                  "line": 1029,
+                  "column": 19
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.aggregate_records",
+              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
+              "call_sites": [
+                {
+                  "line": 1031,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.count_records",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_distinct_values",
+              "call_sites": [
+                {
+                  "line": 583,
+                  "column": 19
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.count_records",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
+              "call_sites": [
+                {
+                  "line": 585,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.list_records",
+              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
+              "call_sites": [
+                {
+                  "line": 732,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.list_themes",
+              "target": "app/catalog/queries.py|app.catalog.queries.theme_vocabulary",
+              "call_sites": [
+                {
+                  "line": 1179,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/topic.py|app.retrieval.structured.topic._ubiquitous",
+              "target": "app/catalog/state.py|app.catalog.state.website_titles",
+              "call_sites": [
+                {
+                  "line": 189,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._read_series_rows",
+              "target": "app/catalog/db.py|app.catalog.db.state_table",
+              "call_sites": [
+                {
+                  "line": 163,
+                  "column": 53
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/approved_aliases.py|app.retrieval.understanding.approved_aliases.ApprovedAliasIndex.load",
+              "target": "app/catalog/db.py|app.catalog.db.state_table",
+              "call_sites": [
+                {
+                  "line": 233,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/catalog_prompt.py|app.retrieval.understanding.catalog_prompt.catalog_coverage_directive",
+              "target": "app/catalog/queries.py|app.catalog.queries.effective_date_range",
+              "call_sites": [
+                {
+                  "line": 206,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/catalog_prompt.py|app.retrieval.understanding.catalog_prompt.catalog_inventory_directive",
+              "target": "app/catalog/queries.py|app.catalog.queries.available_bundles",
+              "call_sites": [
+                {
+                  "line": 164,
+                  "column": 32
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/filters.py|app.retrieval.understanding.filters._theme_condition",
+              "target": "app/catalog/queries.py|app.catalog.queries.theme_document_ids",
+              "call_sites": [
+                {
+                  "line": 114,
+                  "column": 19
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.load",
+              "target": "app/catalog/db.py|app.catalog.db.state_table",
+              "call_sites": [
+                {
+                  "line": 154,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters._resolve_tag_name",
+              "target": "app/catalog/queries.py|app.catalog.queries.find_tag",
+              "call_sites": [
+                {
+                  "line": 92,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters._theme_size",
+              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
+              "call_sites": [
+                {
+                  "line": 172,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names._load",
+              "target": "app/catalog/state.py|app.catalog.state.website_titles",
+              "call_sites": [
+                {
+                  "line": 208,
+                  "column": 50
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "builds context models using client connections in",
+          "src_name": "Retrieval and Search Engine",
+          "dst_name": "Infrastructure Clients and Domain Models",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 77,
+                  "column": 14
+                }
+              ],
+              "description": "Builds context blocks using vector store clients and models"
+            }
+          ],
+          "src_id": "1.1",
+          "dst_id": "1.5",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._admit",
+              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
+              "call_sites": [
+                {
+                  "line": 311,
+                  "column": 13
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 77,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._same_source_two_formats",
+              "target": "app/core/models/context.py|app.core.models.context.source_kind",
+              "call_sites": [
+                {
+                  "line": 224,
+                  "column": 13
+                },
+                {
+                  "line": 224,
+                  "column": 29
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._citation_from_block",
+              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
+              "call_sites": [
+                {
+                  "line": 114,
+                  "column": 8
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._source_from_payload",
+              "target": "app/core/models/context.py|app.core.models.context.page_span",
+              "call_sites": [
+                {
+                  "line": 65,
+                  "column": 18
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._source_type",
+              "target": "app/core/models/context.py|app.core.models.context.source_kind",
+              "call_sites": [
+                {
+                  "line": 54,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._with_page",
+              "target": "app/core/models/context.py|app.core.models.context.page_span",
+              "call_sites": [
+                {
+                  "line": 23,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/facts.py|app.retrieval.graph.facts.as_block",
+              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
+              "call_sites": [
+                {
+                  "line": 266,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_chunks",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 69,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_documents",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 139,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/traverse.py|app.retrieval.graph.traverse.run_template",
+              "target": "app/core/clients/graph.py|app.core.clients.graph.read_session",
+              "call_sites": [
+                {
+                  "line": 167,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever._merge_graph_and_retrieval",
+              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
+              "call_sites": [
+                {
+                  "line": 248,
+                  "column": 48
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
+              "call_sites": [
+                {
+                  "line": 399,
+                  "column": 28
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/core/models/context.py|app.core.models.context.is_priority_page",
+              "call_sites": [
+                {
+                  "line": 689,
+                  "column": 63
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
+              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
+              "call_sites": [
+                {
+                  "line": 134,
+                  "column": 66
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 129,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._llm_semantic",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 498,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker.is_graph_facts_payload",
+              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
+              "call_sites": [
+                {
+                  "line": 197,
+                  "column": 21
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval._scroll_leads",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 100,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval.lead_parents",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 174,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies._distinct",
+              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
+              "call_sites": [
+                {
+                  "line": 149,
+                  "column": 26
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies._leg_search",
+              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
+              "call_sites": [
+                {
+                  "line": 238,
+                  "column": 32
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies.corrective_query",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 288,
+                  "column": 13
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies.corrective_requery",
+              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
+              "call_sites": [
+                {
+                  "line": 330,
+                  "column": 26
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies.perspectives",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
+              "call_sites": [
+                {
+                  "line": 199,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/temporal_gate.py|app.retrieval.search.temporal_gate._as_date",
+              "target": "app/core/dates.py|app.core.dates.parse_iso_date",
+              "call_sites": [
+                {
+                  "line": 178,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.StructuredQuery.date_to",
+              "target": "app/core/dates.py|app.core.dates.exclusive_end",
+              "call_sites": [
+                {
+                  "line": 120,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.parse_structured",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 134,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.parse_structured",
+              "target": "app/core/dates.py|app.core.dates.current_date_directive",
+              "call_sites": [
+                {
+                  "line": 142,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._period_label",
+              "target": "app/core/dates.py|app.core.dates.inclusive_end",
+              "call_sites": [
+                {
+                  "line": 75,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._read_series_rows",
+              "target": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
+              "call_sites": [
+                {
+                  "line": 161,
+                  "column": 10
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._requested",
+              "target": "app/core/editions.py|app.core.editions.find_editions",
+              "call_sites": [
+                {
+                  "line": 236,
+                  "column": 13
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._series",
+              "target": "app/core/editions.py|app.core.editions.normalise_edition",
+              "call_sites": [
+                {
+                  "line": 194,
+                  "column": 19
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/approved_aliases.py|app.retrieval.understanding.approved_aliases.ApprovedAliasIndex.load",
+              "target": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
+              "call_sites": [
+                {
+                  "line": 234,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/filters.py|app.retrieval.understanding.filters._parse_bound",
+              "target": "app/core/dates.py|app.core.dates.parse_iso_date",
+              "call_sites": [
+                {
+                  "line": 75,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.load",
+              "target": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
+              "call_sites": [
+                {
+                  "line": 156,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor.QueryScope.date_to",
+              "target": "app/core/dates.py|app.core.dates.exclusive_end",
+              "call_sites": [
+                {
+                  "line": 148,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor._understanding_messages",
+              "target": "app/core/dates.py|app.core.dates.current_date_directive",
+              "call_sites": [
+                {
+                  "line": 396,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor._voted_understanding.sample",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
+              "call_sites": [
+                {
+                  "line": 417,
+                  "column": 21
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor.process",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 883,
+                  "column": 21
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters._parse_date",
+              "target": "app/core/dates.py|app.core.dates.parse_iso_date",
+              "call_sites": [
+                {
+                  "line": 140,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.mentioned_in_text",
+              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
+              "call_sites": [
+                {
+                  "line": 509,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/planner.py|app.retrieval.structured.planner._PlannedCall.date_to",
+              "target": "app/core/dates.py|app.core.dates.exclusive_end",
+              "call_sites": [
+                {
+                  "line": 327,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/planner.py|app.retrieval.structured.planner.plan_multi",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 420,
+                  "column": 17
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/planner.py|app.retrieval.structured.planner.plan_multi",
+              "target": "app/core/dates.py|app.core.dates.current_date_directive",
+              "call_sites": [
+                {
+                  "line": 428,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence.drop_stored_copies",
+              "target": "app/core/models/context.py|app.core.models.context.source_kind",
+              "call_sites": [
+                {
+                  "line": 142,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._default_embed",
+              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
+              "call_sites": [
+                {
+                  "line": 303,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._group_block",
+              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
+              "call_sites": [
+                {
+                  "line": 416,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._page_block",
+              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
+              "call_sites": [
+                {
+                  "line": 346,
+                  "column": 13
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/match.py|app.retrieval.priority.match._default_embed",
+              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
+              "call_sites": [
+                {
+                  "line": 320,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "records retrieval traces and metrics to",
+          "src_name": "Retrieval and Search Engine",
+          "dst_name": "Observability and Telemetry",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
+              "call_sites": [
+                {
+                  "line": 78,
+                  "column": 24
+                }
+              ],
+              "description": "Records retrieval steps and metrics"
+            }
+          ],
+          "src_id": "1.1",
+          "dst_id": "1.6",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
+              "call_sites": [
+                {
+                  "line": 78,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_chunks",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
+              "call_sites": [
+                {
+                  "line": 73,
+                  "column": 28
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_documents._scroll",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
+              "call_sites": [
+                {
+                  "line": 144,
+                  "column": 28
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy._record",
+              "target": "app/observability/metrics.py|app.observability.metrics.record_event",
+              "call_sites": [
+                {
+                  "line": 405,
+                  "column": 9
+                },
+                {
+                  "line": 407,
+                  "column": 13
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.attempt",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.bound",
+              "call_sites": [
+                {
+                  "line": 577,
+                  "column": 27
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.attempt._finish",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.record",
+              "call_sites": [
+                {
+                  "line": 504,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/traverse.py|app.retrieval.graph.traverse.run_template",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.graph_call",
+              "call_sites": [
+                {
+                  "line": 149,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever._gate_temporal",
+              "target": "app/observability/tracing.py|app.observability.tracing.Span",
+              "call_sites": [
+                {
+                  "line": 741,
+                  "column": 15
+                },
+                {
+                  "line": 742,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever._gate_temporal",
+              "target": "app/observability/tracing.py|app.observability.tracing.Span.set",
+              "call_sites": [
+                {
+                  "line": 741,
+                  "column": 15
+                },
+                {
+                  "line": 742,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever._gate_temporal",
+              "target": "app/observability/tracing.py|app.observability.tracing.span",
+              "call_sites": [
+                {
+                  "line": 739,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
+              "target": "app/observability/tracing.py|app.observability.tracing.Span",
+              "call_sites": [
+                {
+                  "line": 142,
+                  "column": 15
+                },
+                {
+                  "line": 143,
+                  "column": 15
+                },
+                {
+                  "line": 144,
+                  "column": 15
+                },
+                {
+                  "line": 145,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
+              "target": "app/observability/tracing.py|app.observability.tracing.Span.set",
+              "call_sites": [
+                {
+                  "line": 142,
+                  "column": 15
+                },
+                {
+                  "line": 143,
+                  "column": 15
+                },
+                {
+                  "line": 144,
+                  "column": 15
+                },
+                {
+                  "line": 145,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
+              "target": "app/observability/tracing.py|app.observability.tracing.span",
+              "call_sites": [
+                {
+                  "line": 138,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.bound",
+              "call_sites": [
+                {
+                  "line": 460,
+                  "column": 35
+                },
+                {
+                  "line": 464,
+                  "column": 39
+                },
+                {
+                  "line": 474,
+                  "column": 39
+                },
+                {
+                  "line": 485,
+                  "column": 39
+                },
+                {
+                  "line": 508,
+                  "column": 47
+                },
+                {
+                  "line": 527,
+                  "column": 47
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.note",
+              "call_sites": [
+                {
+                  "line": 519,
+                  "column": 39
+                },
+                {
+                  "line": 564,
+                  "column": 23
+                },
+                {
+                  "line": 602,
+                  "column": 27
+                },
+                {
+                  "line": 618,
+                  "column": 23
+                },
+                {
+                  "line": 680,
+                  "column": 27
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/observability/tracing.py|app.observability.tracing.Span",
+              "call_sites": [
+                {
+                  "line": 518,
+                  "column": 28
+                },
+                {
+                  "line": 536,
+                  "column": 28
+                },
+                {
+                  "line": 540,
+                  "column": 28
+                },
+                {
+                  "line": 546,
+                  "column": 28
+                },
+                {
+                  "line": 547,
+                  "column": 28
+                },
+                {
+                  "line": 553,
+                  "column": 28
+                },
+                {
+                  "line": 560,
+                  "column": 11
+                },
+                {
+                  "line": 599,
+                  "column": 15
+                },
+                {
+                  "line": 600,
+                  "column": 15
+                },
+                {
+                  "line": 601,
+                  "column": 15
+                },
+                {
+                  "line": 617,
+                  "column": 11
+                },
+                {
+                  "line": 635,
+                  "column": 15
+                },
+                {
+                  "line": 636,
+                  "column": 15
+                },
+                {
+                  "line": 637,
+                  "column": 15
+                },
+                {
+                  "line": 638,
+                  "column": 15
+                },
+                {
+                  "line": 650,
+                  "column": 15
+                },
+                {
+                  "line": 678,
+                  "column": 15
+                },
+                {
+                  "line": 679,
+                  "column": 15
+                },
+                {
+                  "line": 689,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/observability/tracing.py|app.observability.tracing.Span.set",
+              "call_sites": [
+                {
+                  "line": 518,
+                  "column": 28
+                },
+                {
+                  "line": 536,
+                  "column": 28
+                },
+                {
+                  "line": 540,
+                  "column": 28
+                },
+                {
+                  "line": 546,
+                  "column": 28
+                },
+                {
+                  "line": 547,
+                  "column": 28
+                },
+                {
+                  "line": 553,
+                  "column": 28
+                },
+                {
+                  "line": 560,
+                  "column": 11
+                },
+                {
+                  "line": 599,
+                  "column": 15
+                },
+                {
+                  "line": 600,
+                  "column": 15
+                },
+                {
+                  "line": 601,
+                  "column": 15
+                },
+                {
+                  "line": 617,
+                  "column": 11
+                },
+                {
+                  "line": 635,
+                  "column": 15
+                },
+                {
+                  "line": 636,
+                  "column": 15
+                },
+                {
+                  "line": 637,
+                  "column": 15
+                },
+                {
+                  "line": 638,
+                  "column": 15
+                },
+                {
+                  "line": 650,
+                  "column": 15
+                },
+                {
+                  "line": 678,
+                  "column": 15
+                },
+                {
+                  "line": 679,
+                  "column": 15
+                },
+                {
+                  "line": 689,
+                  "column": 15
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/observability/tracing.py|app.observability.tracing.span",
+              "call_sites": [
+                {
+                  "line": 398,
+                  "column": 14
+                },
+                {
+                  "line": 450,
+                  "column": 10
+                },
+                {
+                  "line": 494,
+                  "column": 26
+                },
+                {
+                  "line": 523,
+                  "column": 26
+                },
+                {
+                  "line": 538,
+                  "column": 26
+                },
+                {
+                  "line": 544,
+                  "column": 26
+                },
+                {
+                  "line": 551,
+                  "column": 26
+                },
+                {
+                  "line": 596,
+                  "column": 14
+                },
+                {
+                  "line": 612,
+                  "column": 10
+                },
+                {
+                  "line": 624,
+                  "column": 14
+                },
+                {
+                  "line": 647,
+                  "column": 14
+                },
+                {
+                  "line": 660,
+                  "column": 10
+                },
+                {
+                  "line": 664,
+                  "column": 14
+                },
+                {
+                  "line": 673,
+                  "column": 14
+                },
+                {
+                  "line": 686,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
+              "call_sites": [
+                {
+                  "line": 137,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval._scroll_leads",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
+              "call_sites": [
+                {
+                  "line": 88,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.mentioned_in_text",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
+              "call_sites": [
+                {
+                  "line": 503,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence._note",
+              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.note",
+              "call_sites": [
+                {
+                  "line": 228,
+                  "column": 23
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "loads settings from",
+          "src_name": "Retrieval and Search Engine",
+          "dst_name": "Application Configuration and Lifecycle",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder.build_context",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 350,
+                  "column": 16
+                }
+              ],
+              "description": "Loads configuration settings for retrieval and context building"
+            }
+          ],
+          "src_id": "1.1",
+          "dst_id": "1.9",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 76,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder.build_context",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 350,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_chunks",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 68,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_documents",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 138,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/pipeline.py|app.retrieval.graph.pipeline.answer",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 155,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.attempt",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 535,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.enabled_classes",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 236,
+                  "column": 20
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/shadow.py|app.retrieval.graph.shadow._write",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 101,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/graph/shadow.py|app.retrieval.graph.shadow.observe",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 148,
+                  "column": 24
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever._observe_in_shadow",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 306,
+                  "column": 20
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 133,
+                  "column": 20
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 348,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 126,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._cohere_semantic",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 599,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._cross_encoder_semantic",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 541,
+                  "column": 18
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._load_cross_encoder",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 582,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker.rerank",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 683,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval._scroll_leads",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 80,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval.lead_parents",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 175,
+                  "column": 33
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies._distinct",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 138,
+                  "column": 31
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.answer_structured",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 544,
+                  "column": 8
+                },
+                {
+                  "line": 557,
+                  "column": 29
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.enabled",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 69,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/topic.py|app.retrieval.structured.topic.enabled",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 109,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/clarify.py|app.retrieval.understanding.clarify.decide",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 378,
+                  "column": 27
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor.process",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 860,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters.resolve_filters",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 282,
+                  "column": 14
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.enabled",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 137,
+                  "column": 25
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.mentioned_in_text",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 502,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence.extend",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 157,
+                  "column": 20
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence.merge",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 188,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._select",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 482,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.gather",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 568,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/match.py|app.retrieval.priority.match.similar",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 463,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/registry.py|app.retrieval.priority.registry.configured_path",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 438,
+                  "column": 27
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/retrieval/priority/fetch.py|app.retrieval.priority.fetch.fetch",
+              "target": "app/config.py|app.config.get_settings",
+              "call_sites": [
+                {
+                  "line": 128,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
           "relation": "synchronizes projected graph structures with",
           "src_name": "Document Ingestion and Processing",
           "dst_name": "Knowledge Graph and Claims Extraction",
@@ -37660,2406 +39880,6 @@
           ]
         },
         {
-          "relation": "invokes language models via clients in",
-          "src_name": "Generation and Answer Synthesis",
-          "dst_name": "Infrastructure Clients and Domain Models",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/generation/answerer.py|app.generation.answerer.generate_answer",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
-              "call_sites": [
-                {
-                  "line": 178,
-                  "column": 22
-                }
-              ],
-              "description": "Executes LLM completions for answer generation and structured planning"
-            }
-          ],
-          "src_id": "1.8",
-          "dst_id": "1.5",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/generation/answer_plan.py|app.generation.answer_plan.extract_requirements",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 82,
-                  "column": 13
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/answerer.py|app.generation.answerer.chitchat",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
-              "call_sites": [
-                {
-                  "line": 102,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/answerer.py|app.generation.answerer.generate_answer",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
-              "call_sites": [
-                {
-                  "line": 178,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/answerer.py|app.generation.answerer.generate_stream",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
-              "call_sites": [
-                {
-                  "line": 216,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/faithfulness.py|app.generation.faithfulness._claim_supported",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 158,
-                  "column": 29
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/faithfulness.py|app.generation.faithfulness._extract_claims",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 147,
-                  "column": 26
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/prompts.py|app.generation.prompts._source_hint",
-              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
-              "call_sites": [
-                {
-                  "line": 891,
-                  "column": 8
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/prompts.py|app.generation.prompts._source_hint",
-              "target": "app/core/models/context.py|app.core.models.context.is_priority_page",
-              "call_sites": [
-                {
-                  "line": 913,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/prompts.py|app.generation.prompts._source_hint",
-              "target": "app/core/models/context.py|app.core.models.context.page_span",
-              "call_sites": [
-                {
-                  "line": 932,
-                  "column": 18
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/prompts.py|app.generation.prompts.has_graph_facts",
-              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
-              "call_sites": [
-                {
-                  "line": 829,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/generation/prompts.py|app.generation.prompts.today_anchor",
-              "target": "app/core/dates.py|app.core.dates.today_utc",
-              "call_sites": [
-                {
-                  "line": 704,
-                  "column": 13
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "initializes tracing and observability in",
-          "src_name": "Application Configuration and Lifecycle",
-          "dst_name": "Observability and Telemetry",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/app_factory.py|app.app_factory.create_base_app",
-              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
-              "call_sites": [
-                {
-                  "line": 60,
-                  "column": 5
-                }
-              ],
-              "description": "App factory initializes observability tracing on startup"
-            }
-          ],
-          "src_id": "1.9",
-          "dst_id": "1.6",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/app_factory.py|app.app_factory.create_base_app",
-              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
-              "call_sites": [
-                {
-                  "line": 60,
-                  "column": 5
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "inspects graph predicates and schemas from",
-          "src_name": "Retrieval and Search Engine",
-          "dst_name": "Knowledge Graph and Claims Extraction",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate",
-              "call_sites": [
-                {
-                  "line": 179,
-                  "column": 18
-                }
-              ],
-              "description": "Queries predicates and entities for graph retrieval planning"
-            }
-          ],
-          "src_id": "1.1",
-          "dst_id": "1.3",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate",
-              "call_sites": [
-                {
-                  "line": 179,
-                  "column": 18
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate.entity_valued",
-              "call_sites": [
-                {
-                  "line": 179,
-                  "column": 18
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.sides_for",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.get",
-              "call_sites": [
-                {
-                  "line": 173,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.two_hop",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate",
-              "call_sites": [
-                {
-                  "line": 297,
-                  "column": 29
-                },
-                {
-                  "line": 297,
-                  "column": 64
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.two_hop",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.Predicate.entity_valued",
-              "call_sites": [
-                {
-                  "line": 297,
-                  "column": 29
-                },
-                {
-                  "line": 297,
-                  "column": 64
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/plans.py|app.retrieval.graph.plans.two_hop",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.get",
-              "call_sites": [
-                {
-                  "line": 294,
-                  "column": 47
-                },
-                {
-                  "line": 294,
-                  "column": 65
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.entity_index",
-              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex",
-              "call_sites": [
-                {
-                  "line": 285,
-                  "column": 26
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.entity_index",
-              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex.load",
-              "call_sites": [
-                {
-                  "line": 285,
-                  "column": 26
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
-              "target": "app/knowledge/candidates.py|app.knowledge.candidates.ResolutionContext",
-              "call_sites": [
-                {
-                  "line": 412,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
-              "target": "app/knowledge/extract.py|app.knowledge.extract.extract_mentions",
-              "call_sites": [
-                {
-                  "line": 362,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
-              "target": "app/knowledge/gazetteer.py|app.knowledge.gazetteer.get_gazetteer",
-              "call_sites": [
-                {
-                  "line": 364,
-                  "column": 19
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
-              "target": "app/knowledge/resolver.py|app.knowledge.resolver.Decision",
-              "call_sites": [
-                {
-                  "line": 417,
-                  "column": 21
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
-              "target": "app/knowledge/resolver.py|app.knowledge.resolver.Decision.canonical",
-              "call_sites": [
-                {
-                  "line": 417,
-                  "column": 21
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router._resolve_entities",
-              "target": "app/knowledge/resolver.py|app.knowledge.resolver.resolve_mention",
-              "call_sites": [
-                {
-                  "line": 416,
-                  "column": 20
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router.route",
-              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex",
-              "call_sites": [
-                {
-                  "line": 596,
-                  "column": 29
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/router.py|app.retrieval.graph.router.route",
-              "target": "app/knowledge/candidates.py|app.knowledge.candidates.EntityIndex.load",
-              "call_sites": [
-                {
-                  "line": 596,
-                  "column": 29
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/approved_aliases.py|app.retrieval.understanding.approved_aliases.lookup_mentions",
-              "target": "app/knowledge/types.py|app.knowledge.types.Mention",
-              "call_sites": [
-                {
-                  "line": 431,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.load",
-              "target": "app/knowledge/normalize.py|app.knowledge.normalize.normalize_project",
-              "call_sites": [
-                {
-                  "line": 168,
-                  "column": 26
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.match",
-              "target": "app/knowledge/normalize.py|app.knowledge.normalize.normalize",
-              "call_sites": [
-                {
-                  "line": 192,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.lookup_mentions",
-              "target": "app/knowledge/types.py|app.knowledge.types.Mention",
-              "call_sites": [
-                {
-                  "line": 282,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/relational.py|app.retrieval.understanding.relational.read_relational",
-              "target": "app/knowledge/claims/predicates.py|app.knowledge.claims.predicates.is_known",
-              "call_sites": [
-                {
-                  "line": 164,
-                  "column": 18
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "queries catalog records and state from",
-          "src_name": "Retrieval and Search Engine",
-          "dst_name": "Catalog Store and State Management",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever._supplement_attachments",
-              "target": "app/catalog/queries.py|app.catalog.queries.attachments_for",
-              "call_sites": [
-                {
-                  "line": 82,
-                  "column": 31
-                }
-              ],
-              "description": "Queries attachments and facets from the catalog"
-            }
-          ],
-          "src_id": "1.1",
-          "dst_id": "1.4",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever._supplement_attachments",
-              "target": "app/catalog/queries.py|app.catalog.queries.attachments_for",
-              "call_sites": [
-                {
-                  "line": 82,
-                  "column": 31
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/title_leg.py|app.retrieval.search.title_leg.title_candidates",
-              "target": "app/catalog/state.py|app.catalog.state.website_titles",
-              "call_sites": [
-                {
-                  "line": 154,
-                  "column": 35
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail._type_rows",
-              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
-              "call_sites": [
-                {
-                  "line": 161,
-                  "column": 32
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail._years",
-              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
-              "call_sites": [
-                {
-                  "line": 120,
-                  "column": 41
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.facets",
-              "target": "app/catalog/queries.py|app.catalog.queries.facets_for",
-              "call_sites": [
-                {
-                  "line": 464,
-                  "column": 42
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_count",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
-              "call_sites": [
-                {
-                  "line": 395,
-                  "column": 33
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_distinct",
-              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
-              "call_sites": [
-                {
-                  "line": 628,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_zero",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
-              "call_sites": [
-                {
-                  "line": 434,
-                  "column": 46
-                },
-                {
-                  "line": 447,
-                  "column": 46
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.for_zero",
-              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
-              "call_sites": [
-                {
-                  "line": 436,
-                  "column": 52
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.other_types_section",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
-              "call_sites": [
-                {
-                  "line": 213,
-                  "column": 51
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.recent_items",
-              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
-              "call_sites": [
-                {
-                  "line": 286,
-                  "column": 33
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.scope_total",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
-              "call_sites": [
-                {
-                  "line": 561,
-                  "column": 41
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.theme_counts",
-              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
-              "call_sites": [
-                {
-                  "line": 524,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.theme_latest",
-              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
-              "call_sites": [
-                {
-                  "line": 540,
-                  "column": 37
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/entities.py|app.retrieval.structured.entities.present_bundles",
-              "target": "app/catalog/queries.py|app.catalog.queries.available_bundles",
-              "call_sites": [
-                {
-                  "line": 142,
-                  "column": 37
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/resolve.py|app.retrieval.structured.resolve._cached_author_names",
-              "target": "app/catalog/queries.py|app.catalog.queries.distinct_authors",
-              "call_sites": [
-                {
-                  "line": 230,
-                  "column": 26
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/resolve.py|app.retrieval.structured.resolve._theme_candidates",
-              "target": "app/catalog/queries.py|app.catalog.queries.theme_vocabulary",
-              "call_sites": [
-                {
-                  "line": 213,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._past_the_catalog",
-              "target": "app/catalog/queries.py|app.catalog.queries.effective_date_range",
-              "call_sites": [
-                {
-                  "line": 91,
-                  "column": 36
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._resolve_chain",
-              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
-              "call_sites": [
-                {
-                  "line": 818,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._scope_total",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
-              "call_sites": [
-                {
-                  "line": 690,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.aggregate_records",
-              "target": "app/catalog/queries.py|app.catalog.queries.cross_distribution",
-              "call_sites": [
-                {
-                  "line": 1029,
-                  "column": 19
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.aggregate_records",
-              "target": "app/catalog/queries.py|app.catalog.queries.distribution",
-              "call_sites": [
-                {
-                  "line": 1031,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.count_records",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_distinct_values",
-              "call_sites": [
-                {
-                  "line": 583,
-                  "column": 19
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.count_records",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
-              "call_sites": [
-                {
-                  "line": 585,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.list_records",
-              "target": "app/catalog/queries.py|app.catalog.queries.list_documents",
-              "call_sites": [
-                {
-                  "line": 732,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools.list_themes",
-              "target": "app/catalog/queries.py|app.catalog.queries.theme_vocabulary",
-              "call_sites": [
-                {
-                  "line": 1179,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/topic.py|app.retrieval.structured.topic._ubiquitous",
-              "target": "app/catalog/state.py|app.catalog.state.website_titles",
-              "call_sites": [
-                {
-                  "line": 189,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._read_series_rows",
-              "target": "app/catalog/db.py|app.catalog.db.state_table",
-              "call_sites": [
-                {
-                  "line": 163,
-                  "column": 53
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/approved_aliases.py|app.retrieval.understanding.approved_aliases.ApprovedAliasIndex.load",
-              "target": "app/catalog/db.py|app.catalog.db.state_table",
-              "call_sites": [
-                {
-                  "line": 233,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/catalog_prompt.py|app.retrieval.understanding.catalog_prompt.catalog_coverage_directive",
-              "target": "app/catalog/queries.py|app.catalog.queries.effective_date_range",
-              "call_sites": [
-                {
-                  "line": 206,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/catalog_prompt.py|app.retrieval.understanding.catalog_prompt.catalog_inventory_directive",
-              "target": "app/catalog/queries.py|app.catalog.queries.available_bundles",
-              "call_sites": [
-                {
-                  "line": 164,
-                  "column": 32
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/filters.py|app.retrieval.understanding.filters._theme_condition",
-              "target": "app/catalog/queries.py|app.catalog.queries.theme_document_ids",
-              "call_sites": [
-                {
-                  "line": 114,
-                  "column": 19
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.load",
-              "target": "app/catalog/db.py|app.catalog.db.state_table",
-              "call_sites": [
-                {
-                  "line": 154,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters._resolve_tag_name",
-              "target": "app/catalog/queries.py|app.catalog.queries.find_tag",
-              "call_sites": [
-                {
-                  "line": 92,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters._theme_size",
-              "target": "app/catalog/queries.py|app.catalog.queries.count_documents",
-              "call_sites": [
-                {
-                  "line": 172,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names._load",
-              "target": "app/catalog/state.py|app.catalog.state.website_titles",
-              "call_sites": [
-                {
-                  "line": 208,
-                  "column": 50
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "builds context models using client connections in",
-          "src_name": "Retrieval and Search Engine",
-          "dst_name": "Infrastructure Clients and Domain Models",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 77,
-                  "column": 14
-                }
-              ],
-              "description": "Builds context blocks using vector store clients and models"
-            }
-          ],
-          "src_id": "1.1",
-          "dst_id": "1.5",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._admit",
-              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
-              "call_sites": [
-                {
-                  "line": 311,
-                  "column": 13
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 77,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._same_source_two_formats",
-              "target": "app/core/models/context.py|app.core.models.context.source_kind",
-              "call_sites": [
-                {
-                  "line": 224,
-                  "column": 13
-                },
-                {
-                  "line": 224,
-                  "column": 29
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._citation_from_block",
-              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
-              "call_sites": [
-                {
-                  "line": 114,
-                  "column": 8
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._source_from_payload",
-              "target": "app/core/models/context.py|app.core.models.context.page_span",
-              "call_sites": [
-                {
-                  "line": 65,
-                  "column": 18
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._source_type",
-              "target": "app/core/models/context.py|app.core.models.context.source_kind",
-              "call_sites": [
-                {
-                  "line": 54,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/context/citations.py|app.retrieval.context.citations._with_page",
-              "target": "app/core/models/context.py|app.core.models.context.page_span",
-              "call_sites": [
-                {
-                  "line": 23,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/facts.py|app.retrieval.graph.facts.as_block",
-              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
-              "call_sites": [
-                {
-                  "line": 266,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_chunks",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 69,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_documents",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 139,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/traverse.py|app.retrieval.graph.traverse.run_template",
-              "target": "app/core/clients/graph.py|app.core.clients.graph.read_session",
-              "call_sites": [
-                {
-                  "line": 167,
-                  "column": 22
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever._merge_graph_and_retrieval",
-              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
-              "call_sites": [
-                {
-                  "line": 248,
-                  "column": 48
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
-              "call_sites": [
-                {
-                  "line": 399,
-                  "column": 28
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/core/models/context.py|app.core.models.context.is_priority_page",
-              "call_sites": [
-                {
-                  "line": 689,
-                  "column": 63
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
-              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
-              "call_sites": [
-                {
-                  "line": 134,
-                  "column": 66
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 129,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._llm_semantic",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 498,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker.is_graph_facts_payload",
-              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
-              "call_sites": [
-                {
-                  "line": 197,
-                  "column": 21
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval._scroll_leads",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 100,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval.lead_parents",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 174,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies._distinct",
-              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
-              "call_sites": [
-                {
-                  "line": 149,
-                  "column": 26
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies._leg_search",
-              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
-              "call_sites": [
-                {
-                  "line": 238,
-                  "column": 32
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies.corrective_query",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 288,
-                  "column": 13
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies.corrective_requery",
-              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.embed_query",
-              "call_sites": [
-                {
-                  "line": 330,
-                  "column": 26
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies.perspectives",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
-              "call_sites": [
-                {
-                  "line": 199,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/temporal_gate.py|app.retrieval.search.temporal_gate._as_date",
-              "target": "app/core/dates.py|app.core.dates.parse_iso_date",
-              "call_sites": [
-                {
-                  "line": 178,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.StructuredQuery.date_to",
-              "target": "app/core/dates.py|app.core.dates.exclusive_end",
-              "call_sites": [
-                {
-                  "line": 120,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.parse_structured",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 134,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.parse_structured",
-              "target": "app/core/dates.py|app.core.dates.current_date_directive",
-              "call_sites": [
-                {
-                  "line": 142,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/tools.py|app.retrieval.structured.tools._period_label",
-              "target": "app/core/dates.py|app.core.dates.inclusive_end",
-              "call_sites": [
-                {
-                  "line": 75,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._read_series_rows",
-              "target": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
-              "call_sites": [
-                {
-                  "line": 161,
-                  "column": 10
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._requested",
-              "target": "app/core/editions.py|app.core.editions.find_editions",
-              "call_sites": [
-                {
-                  "line": 236,
-                  "column": 13
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/annual_report_editions.py|app.retrieval.understanding.annual_report_editions._series",
-              "target": "app/core/editions.py|app.core.editions.normalise_edition",
-              "call_sites": [
-                {
-                  "line": 194,
-                  "column": 19
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/approved_aliases.py|app.retrieval.understanding.approved_aliases.ApprovedAliasIndex.load",
-              "target": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
-              "call_sites": [
-                {
-                  "line": 234,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/filters.py|app.retrieval.understanding.filters._parse_bound",
-              "target": "app/core/dates.py|app.core.dates.parse_iso_date",
-              "call_sites": [
-                {
-                  "line": 75,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/partial_titles.py|app.retrieval.understanding.partial_titles.PartialTitleIndex.load",
-              "target": "app/core/clients/database.py|app.core.clients.database.mysql_connection",
-              "call_sites": [
-                {
-                  "line": 156,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor.QueryScope.date_to",
-              "target": "app/core/dates.py|app.core.dates.exclusive_end",
-              "call_sites": [
-                {
-                  "line": 148,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor._understanding_messages",
-              "target": "app/core/dates.py|app.core.dates.current_date_directive",
-              "call_sites": [
-                {
-                  "line": 396,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor._voted_understanding.sample",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
-              "call_sites": [
-                {
-                  "line": 417,
-                  "column": 21
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor.process",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 883,
-                  "column": 21
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters._parse_date",
-              "target": "app/core/dates.py|app.core.dates.parse_iso_date",
-              "call_sites": [
-                {
-                  "line": 140,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.mentioned_in_text",
-              "target": "app/core/clients/vector_store.py|app.core.clients.vector_store.get_qdrant_client",
-              "call_sites": [
-                {
-                  "line": 509,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/planner.py|app.retrieval.structured.planner._PlannedCall.date_to",
-              "target": "app/core/dates.py|app.core.dates.exclusive_end",
-              "call_sites": [
-                {
-                  "line": 327,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/planner.py|app.retrieval.structured.planner.plan_multi",
-              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
-              "call_sites": [
-                {
-                  "line": 420,
-                  "column": 17
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/planner.py|app.retrieval.structured.planner.plan_multi",
-              "target": "app/core/dates.py|app.core.dates.current_date_directive",
-              "call_sites": [
-                {
-                  "line": 428,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence.drop_stored_copies",
-              "target": "app/core/models/context.py|app.core.models.context.source_kind",
-              "call_sites": [
-                {
-                  "line": 142,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._default_embed",
-              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
-              "call_sites": [
-                {
-                  "line": 303,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._group_block",
-              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
-              "call_sites": [
-                {
-                  "line": 416,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._page_block",
-              "target": "app/core/models/context.py|app.core.models.context.ContextBlock",
-              "call_sites": [
-                {
-                  "line": 346,
-                  "column": 13
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/match.py|app.retrieval.priority.match._default_embed",
-              "target": "app/core/clients/embeddings.py|app.core.clients.embeddings.get_embeddings",
-              "call_sites": [
-                {
-                  "line": 320,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "records retrieval traces and metrics to",
-          "src_name": "Retrieval and Search Engine",
-          "dst_name": "Observability and Telemetry",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
-              "call_sites": [
-                {
-                  "line": 78,
-                  "column": 24
-                }
-              ],
-              "description": "Records retrieval steps and metrics"
-            }
-          ],
-          "src_id": "1.1",
-          "dst_id": "1.6",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
-              "call_sites": [
-                {
-                  "line": 78,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_chunks",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
-              "call_sites": [
-                {
-                  "line": 73,
-                  "column": 28
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_documents._scroll",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
-              "call_sites": [
-                {
-                  "line": 144,
-                  "column": 28
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy._record",
-              "target": "app/observability/metrics.py|app.observability.metrics.record_event",
-              "call_sites": [
-                {
-                  "line": 405,
-                  "column": 9
-                },
-                {
-                  "line": 407,
-                  "column": 13
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.attempt",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.bound",
-              "call_sites": [
-                {
-                  "line": 577,
-                  "column": 27
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.attempt._finish",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.record",
-              "call_sites": [
-                {
-                  "line": 504,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/traverse.py|app.retrieval.graph.traverse.run_template",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.graph_call",
-              "call_sites": [
-                {
-                  "line": 149,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever._gate_temporal",
-              "target": "app/observability/tracing.py|app.observability.tracing.Span",
-              "call_sites": [
-                {
-                  "line": 741,
-                  "column": 15
-                },
-                {
-                  "line": 742,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever._gate_temporal",
-              "target": "app/observability/tracing.py|app.observability.tracing.Span.set",
-              "call_sites": [
-                {
-                  "line": 741,
-                  "column": 15
-                },
-                {
-                  "line": 742,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever._gate_temporal",
-              "target": "app/observability/tracing.py|app.observability.tracing.span",
-              "call_sites": [
-                {
-                  "line": 739,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
-              "target": "app/observability/tracing.py|app.observability.tracing.Span",
-              "call_sites": [
-                {
-                  "line": 142,
-                  "column": 15
-                },
-                {
-                  "line": 143,
-                  "column": 15
-                },
-                {
-                  "line": 144,
-                  "column": 15
-                },
-                {
-                  "line": 145,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
-              "target": "app/observability/tracing.py|app.observability.tracing.Span.set",
-              "call_sites": [
-                {
-                  "line": 142,
-                  "column": 15
-                },
-                {
-                  "line": 143,
-                  "column": 15
-                },
-                {
-                  "line": 144,
-                  "column": 15
-                },
-                {
-                  "line": 145,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
-              "target": "app/observability/tracing.py|app.observability.tracing.span",
-              "call_sites": [
-                {
-                  "line": 138,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.bound",
-              "call_sites": [
-                {
-                  "line": 460,
-                  "column": 35
-                },
-                {
-                  "line": 464,
-                  "column": 39
-                },
-                {
-                  "line": 474,
-                  "column": 39
-                },
-                {
-                  "line": 485,
-                  "column": 39
-                },
-                {
-                  "line": 508,
-                  "column": 47
-                },
-                {
-                  "line": 527,
-                  "column": 47
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.note",
-              "call_sites": [
-                {
-                  "line": 519,
-                  "column": 39
-                },
-                {
-                  "line": 564,
-                  "column": 23
-                },
-                {
-                  "line": 602,
-                  "column": 27
-                },
-                {
-                  "line": 618,
-                  "column": 23
-                },
-                {
-                  "line": 680,
-                  "column": 27
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/observability/tracing.py|app.observability.tracing.Span",
-              "call_sites": [
-                {
-                  "line": 518,
-                  "column": 28
-                },
-                {
-                  "line": 536,
-                  "column": 28
-                },
-                {
-                  "line": 540,
-                  "column": 28
-                },
-                {
-                  "line": 546,
-                  "column": 28
-                },
-                {
-                  "line": 547,
-                  "column": 28
-                },
-                {
-                  "line": 553,
-                  "column": 28
-                },
-                {
-                  "line": 560,
-                  "column": 11
-                },
-                {
-                  "line": 599,
-                  "column": 15
-                },
-                {
-                  "line": 600,
-                  "column": 15
-                },
-                {
-                  "line": 601,
-                  "column": 15
-                },
-                {
-                  "line": 617,
-                  "column": 11
-                },
-                {
-                  "line": 635,
-                  "column": 15
-                },
-                {
-                  "line": 636,
-                  "column": 15
-                },
-                {
-                  "line": 637,
-                  "column": 15
-                },
-                {
-                  "line": 638,
-                  "column": 15
-                },
-                {
-                  "line": 650,
-                  "column": 15
-                },
-                {
-                  "line": 678,
-                  "column": 15
-                },
-                {
-                  "line": 679,
-                  "column": 15
-                },
-                {
-                  "line": 689,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/observability/tracing.py|app.observability.tracing.Span.set",
-              "call_sites": [
-                {
-                  "line": 518,
-                  "column": 28
-                },
-                {
-                  "line": 536,
-                  "column": 28
-                },
-                {
-                  "line": 540,
-                  "column": 28
-                },
-                {
-                  "line": 546,
-                  "column": 28
-                },
-                {
-                  "line": 547,
-                  "column": 28
-                },
-                {
-                  "line": 553,
-                  "column": 28
-                },
-                {
-                  "line": 560,
-                  "column": 11
-                },
-                {
-                  "line": 599,
-                  "column": 15
-                },
-                {
-                  "line": 600,
-                  "column": 15
-                },
-                {
-                  "line": 601,
-                  "column": 15
-                },
-                {
-                  "line": 617,
-                  "column": 11
-                },
-                {
-                  "line": 635,
-                  "column": 15
-                },
-                {
-                  "line": 636,
-                  "column": 15
-                },
-                {
-                  "line": 637,
-                  "column": 15
-                },
-                {
-                  "line": 638,
-                  "column": 15
-                },
-                {
-                  "line": 650,
-                  "column": 15
-                },
-                {
-                  "line": 678,
-                  "column": 15
-                },
-                {
-                  "line": 679,
-                  "column": 15
-                },
-                {
-                  "line": 689,
-                  "column": 15
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/observability/tracing.py|app.observability.tracing.span",
-              "call_sites": [
-                {
-                  "line": 398,
-                  "column": 14
-                },
-                {
-                  "line": 450,
-                  "column": 10
-                },
-                {
-                  "line": 494,
-                  "column": 26
-                },
-                {
-                  "line": 523,
-                  "column": 26
-                },
-                {
-                  "line": 538,
-                  "column": 26
-                },
-                {
-                  "line": 544,
-                  "column": 26
-                },
-                {
-                  "line": 551,
-                  "column": 26
-                },
-                {
-                  "line": 596,
-                  "column": 14
-                },
-                {
-                  "line": 612,
-                  "column": 10
-                },
-                {
-                  "line": 624,
-                  "column": 14
-                },
-                {
-                  "line": 647,
-                  "column": 14
-                },
-                {
-                  "line": 660,
-                  "column": 10
-                },
-                {
-                  "line": 664,
-                  "column": 14
-                },
-                {
-                  "line": 673,
-                  "column": 14
-                },
-                {
-                  "line": 686,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
-              "call_sites": [
-                {
-                  "line": 137,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval._scroll_leads",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
-              "call_sites": [
-                {
-                  "line": 88,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.mentioned_in_text",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.qdrant_call",
-              "call_sites": [
-                {
-                  "line": 503,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence._note",
-              "target": "app/observability/retrieval_log/recorder.py|app.observability.retrieval_log.recorder.note",
-              "call_sites": [
-                {
-                  "line": 228,
-                  "column": 23
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
-          "relation": "loads settings from",
-          "src_name": "Retrieval and Search Engine",
-          "dst_name": "Application Configuration and Lifecycle",
-          "evidence": "",
-          "key_edges": [
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder.build_context",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 350,
-                  "column": 16
-                }
-              ],
-              "description": "Loads configuration settings for retrieval and context building"
-            }
-          ],
-          "src_id": "1.1",
-          "dst_id": "1.9",
-          "is_static": true,
-          "all_edges": [
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder._fetch_parents",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 76,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/context/builder.py|app.retrieval.context.builder.build_context",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 350,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_chunks",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 68,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/hydrate.py|app.retrieval.graph.hydrate.hydrate_documents",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 138,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/pipeline.py|app.retrieval.graph.pipeline.answer",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 155,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.attempt",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 535,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/policy.py|app.retrieval.graph.policy.enabled_classes",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 236,
-                  "column": 20
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/shadow.py|app.retrieval.graph.shadow._write",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 101,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/graph/shadow.py|app.retrieval.graph.shadow.observe",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 148,
-                  "column": 24
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever._observe_in_shadow",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 306,
-                  "column": 20
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.graph_blocks_for",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 133,
-                  "column": 20
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/retriever.py|app.retrieval.retriever.retrieve",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 348,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/hybrid_search.py|app.retrieval.search.hybrid_search.search",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 126,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._cohere_semantic",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 599,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._cross_encoder_semantic",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 541,
-                  "column": 18
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker._load_cross_encoder",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 582,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/reranker.py|app.retrieval.search.reranker.rerank",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 683,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval._scroll_leads",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 80,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/scoped_retrieval.py|app.retrieval.search.scoped_retrieval.lead_parents",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 175,
-                  "column": 33
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/search/strategies.py|app.retrieval.search.strategies._distinct",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 138,
-                  "column": 31
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/answerer.py|app.retrieval.structured.answerer.answer_structured",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 544,
-                  "column": 8
-                },
-                {
-                  "line": 557,
-                  "column": 29
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/detail.py|app.retrieval.structured.detail.enabled",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 69,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/topic.py|app.retrieval.structured.topic.enabled",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 109,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/clarify.py|app.retrieval.understanding.clarify.decide",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 378,
-                  "column": 27
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/understanding/query_processor.py|app.retrieval.understanding.query_processor.process",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 860,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/filters.py|app.retrieval.structured.filters.resolve_filters",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 282,
-                  "column": 14
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.enabled",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 137,
-                  "column": 25
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/structured/names.py|app.retrieval.structured.names.mentioned_in_text",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 502,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence.extend",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 157,
-                  "column": 20
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.PriorityEvidence.merge",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 188,
-                  "column": 12
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence._select",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 482,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/evidence.py|app.retrieval.priority.evidence.gather",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 568,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/match.py|app.retrieval.priority.match.similar",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 463,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/registry.py|app.retrieval.priority.registry.configured_path",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 438,
-                  "column": 27
-                }
-              ],
-              "description": ""
-            },
-            {
-              "source": "app/retrieval/priority/fetch.py|app.retrieval.priority.fetch.fetch",
-              "target": "app/config.py|app.config.get_settings",
-              "call_sites": [
-                {
-                  "line": 128,
-                  "column": 16
-                }
-              ],
-              "description": ""
-            }
-          ]
-        },
-        {
           "relation": "dispatches retrieval requests and validates schemas with",
           "src_name": "API Endpoints and Pipeline Orchestration",
           "dst_name": "Retrieval and Search Engine",
@@ -42317,6 +42137,186 @@
                 {
                   "line": 884,
                   "column": 17
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "invokes language models via clients in",
+          "src_name": "Generation and Answer Synthesis",
+          "dst_name": "Infrastructure Clients and Domain Models",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/generation/answerer.py|app.generation.answerer.generate_answer",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
+              "call_sites": [
+                {
+                  "line": 178,
+                  "column": 22
+                }
+              ],
+              "description": "Executes LLM completions for answer generation and structured planning"
+            }
+          ],
+          "src_id": "1.8",
+          "dst_id": "1.5",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/generation/answer_plan.py|app.generation.answer_plan.extract_requirements",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 82,
+                  "column": 13
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/answerer.py|app.generation.answerer.chitchat",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
+              "call_sites": [
+                {
+                  "line": 102,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/answerer.py|app.generation.answerer.generate_answer",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
+              "call_sites": [
+                {
+                  "line": 178,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/answerer.py|app.generation.answerer.generate_stream",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_llm",
+              "call_sites": [
+                {
+                  "line": 216,
+                  "column": 22
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/faithfulness.py|app.generation.faithfulness._claim_supported",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 158,
+                  "column": 29
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/faithfulness.py|app.generation.faithfulness._extract_claims",
+              "target": "app/core/clients/llm.py|app.core.clients.llm.get_structured_llm",
+              "call_sites": [
+                {
+                  "line": 147,
+                  "column": 26
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/prompts.py|app.generation.prompts._source_hint",
+              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
+              "call_sites": [
+                {
+                  "line": 891,
+                  "column": 8
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/prompts.py|app.generation.prompts._source_hint",
+              "target": "app/core/models/context.py|app.core.models.context.is_priority_page",
+              "call_sites": [
+                {
+                  "line": 913,
+                  "column": 12
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/prompts.py|app.generation.prompts._source_hint",
+              "target": "app/core/models/context.py|app.core.models.context.page_span",
+              "call_sites": [
+                {
+                  "line": 932,
+                  "column": 18
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/prompts.py|app.generation.prompts.has_graph_facts",
+              "target": "app/core/models/context.py|app.core.models.context.is_graph_facts",
+              "call_sites": [
+                {
+                  "line": 829,
+                  "column": 16
+                }
+              ],
+              "description": ""
+            },
+            {
+              "source": "app/generation/prompts.py|app.generation.prompts.today_anchor",
+              "target": "app/core/dates.py|app.core.dates.today_utc",
+              "call_sites": [
+                {
+                  "line": 704,
+                  "column": 13
+                }
+              ],
+              "description": ""
+            }
+          ]
+        },
+        {
+          "relation": "initializes tracing and observability in",
+          "src_name": "Application Configuration and Lifecycle",
+          "dst_name": "Observability and Telemetry",
+          "evidence": "",
+          "key_edges": [
+            {
+              "source": "app/app_factory.py|app.app_factory.create_base_app",
+              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
+              "call_sites": [
+                {
+                  "line": 60,
+                  "column": 5
+                }
+              ],
+              "description": "App factory initializes observability tracing on startup"
+            }
+          ],
+          "src_id": "1.9",
+          "dst_id": "1.6",
+          "is_static": true,
+          "all_edges": [
+            {
+              "source": "app/app_factory.py|app.app_factory.create_base_app",
+              "target": "app/observability/tracing.py|app.observability.tracing.init_observability",
+              "call_sites": [
+                {
+                  "line": 60,
+                  "column": 5
                 }
               ],
               "description": ""
