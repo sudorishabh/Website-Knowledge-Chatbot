@@ -440,6 +440,25 @@ def test_a_page_that_cannot_be_read_contributes_nothing():
     assert got.describe()["reads"][0]["ok"] is False
 
 
+def test_a_page_that_errors_costs_only_itself(monkeypatch):
+    """An error reading one page used to reach `gather`'s catch-all and drop
+    every page of the question, a named person's profile with it."""
+    serve = fetching.fetch
+
+    def fetch(url, **kw):
+        if url == "https://teriin.org/climate":
+            raise RuntimeError("unexpected")
+        return serve(url, **kw)
+
+    monkeypatch.setattr(fetching, "fetch", fetch)
+    got = _gather("Alekhya Datta and the climate change theme")
+    assert "Electrical engineer" in got.blocks[0].text
+    assert {r["url"]: r["ok"] for r in got.describe()["reads"]} == {
+        "https://teriin.org/profile/alekhya-datta": True,
+        "https://teriin.org/climate": False,
+    }
+
+
 def test_linked_documents_arrive_as_links():
     got = _gather("FCRA financials", embed=_embed_on("\0never"))
     assert "(https://teriin.org/sites/default/files/files/fcra-receipts/" in got.blocks[0].text
