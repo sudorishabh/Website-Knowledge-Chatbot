@@ -460,11 +460,14 @@ def _passage_pq():
     "What are TERI's research areas?",
     "What are the divisions of TERI?",
     "What sectors does TERI work in?",
+    "How many divisions are there in TERI?",
+    "divisons of teri",
 ])
 def test_the_themes_asked_for_by_another_name_get_the_overview(wired, monkeypatch, digest,
                                                                 question):
     """Measured 2026-10-17: these were answered from a Policy page's topics, a
-    2017 annual report's divisions and a list of programmes."""
+    2017 annual report's divisions and a list of programmes; 2026-10-22, the
+    count from a 2013-14 report and the misspelt divisions from four."""
     _enable(monkeypatch)
     _home_listing(wired, _passage_pq())
     result, gen = pipe._prepare(question, history=None, top_k=None)
@@ -677,21 +680,23 @@ def test_the_reply_chooses_among_the_themes_of_the_question_it_answers(wired, cl
 
 # -- "themes" alone ---------------------------------------------------------------
 
+@pytest.mark.parametrize("question", ["themes", "divisions", "teri division"])
 @pytest.mark.parametrize("unclear", [True, False])
 def test_themes_alone_gets_the_overview_however_understanding_read_it(
-    wired, monkeypatch, digest, unclear
+    wired, monkeypatch, digest, unclear, question
 ):
     """Measured 2026-10-21: "themes" was asked "could you say what topic" when
     understanding read it as unclear, and got the overview when it read it as
-    a theme listing."""
+    a theme listing. Measured 2026-10-22: "divisions" was asked the same, and
+    "teri division" "could you clarify what you mean"."""
     from app.retrieval.understanding import clarify
 
     _enable(monkeypatch)
     asked = clarify.Clarification(question="Could you say what topic?") if unclear else None
-    _home_listing(wired, _pq(intent="chitchat", original="themes", search_query="themes",
+    _home_listing(wired, _pq(intent="chitchat", original=question, search_query=question,
                              clarification=asked))
     monkeypatch.setattr(pipe, "chitchat", lambda q, h: pytest.fail("answered as small talk"))
-    result, gen = pipe._prepare("themes", history=None, top_k=None)
+    result, gen = pipe._prepare(question, history=None, top_k=None)
     assert gen is None and result["answer"] == "There are **2 thematic areas**: ..."
     assert wired.log.listing == [True]
 
