@@ -139,6 +139,20 @@ THEMES_OVERVIEW: tuple[str, ...] = (
 THEMES_OVERVIEW_WORDS: frozenset[str] = frozenset({"themes", "divisions", "departments",
                                                    "verticals"})
 
+#: The words a request for a list is made of, whatever it lists, and the verbs
+#: it asks what the organisation does with ("what research areas does TERI
+#: work in"). What a question leaves once these are taken out is what it asks
+#: for besides the list.
+LIST_REQUEST_WORDS: frozenset[str] = frozenset(
+    """
+    what which whats are is was were be the a an of do does did have has had list
+    show tell give name me us about all its it their main major key core different
+    various current currently primary please kind kinds type types in on at to for
+    by and or can could would i we want know how many number
+    work works working focus focuses cover covers
+    """.split()
+)
+
 # Phrases that name a page outright, beyond its own name. Keyed by path, since
 # the names in the file are labels ("founder", "annoucements") rather than what
 # anyone types. Only distinctive phrases: a bare "policy" or "energy" names a
