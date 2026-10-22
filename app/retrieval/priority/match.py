@@ -60,6 +60,7 @@ from app.retrieval.priority import theme_names
 from app.retrieval.priority.people import Person, holding, named_in
 from app.retrieval.priority.registry import (
     CENTRE,
+    LIST_REQUEST_WORDS,
     PEOPLE,
     THEME,
     TYPO_MIN_LETTERS,
@@ -248,6 +249,35 @@ def _groups_asked_for(
                 and _ORG_WORDS.search(" ".join(rest)) is not None):
             asked.append(group)
     return asked
+
+
+#: Words that say no more of a group's members than that they exist: "how many
+#: centres of excellence are there", "the names of the centres TERI has set up".
+_EXISTENCE_WORDS = frozenset(
+    """
+    there names exist exists existing established set up run runs operates
+    """.split()
+)
+
+
+def asks_only_for_group(question: str, group: PriorityGroup) -> bool:
+    """Whether ``question`` asks for ``group``'s list of members and nothing
+    else: once the group's phrases, the organisation's name and the words any
+    request for a list is made of are taken out, nothing is left.
+
+    "List all centres of excellence", "tell me about TERI's centres of
+    excellence" and "how many centres of excellance are there" ask for the list;
+    "centres of excellence working on water" leaves "water", and "the
+    Mahindra-TERI centre of excellence" leaves "mahindra teri", which is one
+    member's to answer."""
+    tokens = normalize_text(question).split()
+    used = {i for alias in group.aliases for start, end in _rough_spans(tokens, alias)
+            for i in range(start, end)}
+    if not used:
+        return False
+    rest = _ORG_WORDS.sub(" ", " ".join(t for i, t in enumerate(tokens) if i not in used))
+    allowed = LIST_REQUEST_WORDS | _EXISTENCE_WORDS | group.member_words
+    return all(w in allowed for w in rest.split())
 
 
 def ranked(targets: Sequence[Target]) -> list[Target]:

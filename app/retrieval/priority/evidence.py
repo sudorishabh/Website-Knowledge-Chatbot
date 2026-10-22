@@ -43,6 +43,7 @@ from app.observability import retrieval_log
 from app.retrieval.priority import fetch as fetching
 from app.retrieval.priority import match, theme_names
 from app.retrieval.priority.extract import MAX_SECTION_CHARS, PageContent, Section, extract
+from app.retrieval.priority.listings import GroupListing, members_on
 from app.retrieval.priority.match import ABOUT, GROUP_KIND, SURFACED, Target
 from app.retrieval.priority.offices import by_centre, headquarters, offices_on
 from app.retrieval.priority.people import (
@@ -57,6 +58,7 @@ from app.retrieval.priority.registry import (
     CENTRE,
     PEOPLE,
     THEME,
+    PriorityGroup,
     Registry,
     load_registry,
     normalize_url,
@@ -393,6 +395,25 @@ def thematic_areas(registry: Registry | None = None) -> ThemeListing | None:
     if not areas:
         return None
     return ThemeListing(areas=tuple(areas), url=home.url, title=read.content.title)
+
+
+def group_listing(group: PriorityGroup, registry: Registry | None = None) -> GroupListing | None:
+    """The members ``group``'s listing page names, read live (and cached with
+    the pages). None when the group names no listing page, or the page cannot
+    be read or names no one, so the caller answers as it would without it."""
+    if not group.listing_url:
+        return None
+    registry = registry or load_registry()
+    read = _read(Target(group.name, GROUP_KIND, match.GROUP, url=group.listing_url, group=group),
+                 registry)
+    if read.content is None or read.fetched is None:
+        return None
+    names = members_on(read.content)
+    if not names:
+        return None
+    return GroupListing(group=group.name, names=tuple(names),
+                        url=read.fetched.final_url or group.listing_url,
+                        title=read.content.title)
 
 
 # -- choosing sections -----------------------------------------------------------------

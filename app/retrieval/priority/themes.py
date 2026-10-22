@@ -22,6 +22,7 @@ from dataclasses import dataclass
 
 from app.retrieval.priority.extract import PageContent
 from app.retrieval.priority.registry import (
+    LIST_REQUEST_WORDS,
     THEME,
     THEMES_OVERVIEW,
     THEMES_OVERVIEW_WORDS,
@@ -124,18 +125,6 @@ _WORKS_IN = re.compile(
     r"\s+(?:teri|you)\s+(?:works?|working|focus(?:es|ed)?|operates?|operating|"
     r"speciali[sz](?:e|es|ed)|research(?:es)?|covers?|covering)(?!\w)"
 )
-#: The words a request for a list is made of, whatever it lists, and the verbs
-#: it asks what the organisation does with ("what research areas does TERI
-#: work in").
-_QUESTION_WORDS = frozenset(
-    """
-    what which whats are is was were be the a an of do does did have has had list
-    show tell give name me us about all its it their main major key core different
-    various current currently primary please kind kinds type types in on at to for
-    by and or can could would i we want know how many number
-    work works working focus focuses cover covers
-    """.split()
-)
 
 
 #: The themes by their own name. Beside other words it is a facet ("which
@@ -188,4 +177,4 @@ def asks_only_for_themes(question: str) -> bool:
     for phrase in THEMES_OVERVIEW:
         words = re.sub(_phrase(phrase), " ", words)
     words = _ORG.sub(" ", _WORKS_IN.sub(" ", words))
-    return all(w in _QUESTION_WORDS or w in THEMES_OVERVIEW_WORDS for w in words.split())
+    return all(w in LIST_REQUEST_WORDS or w in THEMES_OVERVIEW_WORDS for w in words.split())

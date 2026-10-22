@@ -14,7 +14,9 @@ The file mixes two shapes, and the parser keeps them apart:
 * an entry with children and no URL is a **group** ("Regional centers",
   "Centres of Excellence"). A group is not fetched: its own description and its
   members' names and descriptions already answer "what are the regional
-  centres?" — and the Centres of Excellence page itself gives only their names.
+  centres?". A group may name the live page that lists its members
+  (``listing_url``): the Centres of Excellence page lists their names, and a
+  question asking for that list and nothing else is answered from it alone.
 
 Pages are flat: a page's own children are not read, and a warning says so. The
 themes are flat since 2026-09-25: one top-level page each, named "<theme>
@@ -136,6 +138,20 @@ THEMES_OVERVIEW: tuple[str, ...] = (
 #: it is organised by.
 THEMES_OVERVIEW_WORDS: frozenset[str] = frozenset({"themes", "divisions", "departments",
                                                    "verticals"})
+
+#: The words a request for a list is made of, whatever it lists, and the verbs
+#: it asks what the organisation does with ("what research areas does TERI
+#: work in"). What a question leaves once these are taken out is what it asks
+#: for besides the list.
+LIST_REQUEST_WORDS: frozenset[str] = frozenset(
+    """
+    what which whats are is was were be the a an of do does did have has had list
+    show tell give name me us about all its it their main major key core different
+    various current currently primary please kind kinds type types in on at to for
+    by and or can could would i we want know how many number
+    work works working focus focuses cover covers
+    """.split()
+)
 
 # Phrases that name a page outright, beyond its own name. Keyed by path, since
 # the names in the file are labels ("founder", "annoucements") rather than what
@@ -316,6 +332,8 @@ class PriorityGroup:
     #: Plural words for the members, which ask for the group alongside the
     #: organisation's name.
     member_words: frozenset[str] = frozenset()
+    #: The live page that lists the members, when the file names one.
+    listing_url: str | None = None
 
     @property
     def key(self) -> str:
@@ -349,7 +367,8 @@ class Registry:
 
     @property
     def hosts(self) -> frozenset[str]:
-        return frozenset(k.split("/", 1)[0] for k in _index(self))
+        listings = (normalize_url(g.listing_url) for g in self.groups if g.listing_url)
+        return frozenset(k.split("/", 1)[0] for k in (*_index(self), *listings))
 
 
 @lru_cache(maxsize=4)
@@ -430,6 +449,7 @@ def parse(raw: Any) -> Registry:
             members=tuple(members),
             aliases=_GROUP_ALIASES.get(kind, ()),
             member_words=_GROUP_MEMBER_WORDS.get(kind, frozenset()),
+            listing_url=str(entry.get("listing_url") or "").strip() or None,
         ))
     return Registry(pages=tuple(pages), groups=tuple(groups))
 

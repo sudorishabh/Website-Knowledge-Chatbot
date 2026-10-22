@@ -739,6 +739,58 @@ def _theme_overview(question: str, pq: ProcessedQuery) -> dict[str, Any] | None:
     }
 
 
+def _listed_group(
+    question: str, pq: ProcessedQuery, history: list[dict[str, str]] | None = None
+) -> Any | None:
+    """The group whose list of members is all ``question`` asks for, when the
+    group names its live listing page; None otherwise, and with priority pages
+    off. The wording decides, as it does for the themes: understanding labels
+    "list all centres of excellence" a catalog lookup, and may take a bare
+    "centres of excellence" for small talk or an unclear question. In a
+    conversation the rewrite must ask for the list too."""
+    if not get_settings().priority_pages_enabled:
+        return None
+    from app.retrieval.priority.match import asks_only_for_group
+    from app.retrieval.priority.registry import load_registry
+
+    for group in load_registry().groups:
+        if not group.listing_url or not asks_only_for_group(question, group):
+            continue
+        if history and not asks_only_for_group(pq.search_query or question, group):
+            continue
+        return group
+    return None
+
+
+def _group_listing(group: Any, pq: ProcessedQuery) -> dict[str, Any] | None:
+    """The whole answer to a request for a group's list of members and nothing
+    more: the names its live listing page gives, citing that page alone. No
+    model call, no catalog and no corpus. Measured 2026-10-22: "list all centres
+    of excellence" was answered from the group's block and four corpus
+    passages, a 2009 Urban Development centre and the ICC-TERI CSR centre among
+    them. None when the page cannot be read or names no one, leaving the
+    question to the pages and the model as before."""
+    with span("rag.group_listing") as s:
+        from app.retrieval.priority.evidence import group_listing
+        from app.retrieval.priority.listings import listing_answer
+
+        try:
+            listing = group_listing(group)
+        except Exception:
+            logger.warning("Group listing failed; answering from the pages.", exc_info=True)
+            return None
+        s.set("members", len(listing.names) if listing is not None else 0)
+    if listing is None:
+        return None
+    answer = listing_answer(
+        listing, output_format="table" if pq.answer_format == "table" else "default")
+    return {
+        **_empty(pq.intent, answer, answer_format=pq.answer_format),
+        "citations": [Citation(n=1, type="website", title=listing.title or listing.group,
+                               url=listing.url).model_dump()],
+    }
+
+
 def _catalog_listing(pq: ProcessedQuery, question: str) -> dict[str, Any] | None:
     """The catalog's take on a content question retrieval could not ground, or None
     to refuse as before.
@@ -833,13 +885,21 @@ def _prepare(
     # Neither for a question whose wording asks for the list of themes and
     # nothing else: it is not unclear and not small talk, whatever understanding
     # labelled it ("themes" was asked "could you say what topic", 2026-10-21).
+    # The same holds for a group's list ("centres of excellence").
     only_themes = _asks_only_for_themes(question, pq, history)
-    if pq.clarification is not None and not only_themes:
+    listed_group = _listed_group(question, pq, history)
+    if pq.clarification is not None and not (only_themes or listed_group):
         return _clarification_result(
             pq.clarification, answer_format=pq.answer_format
         ), None
-    if pq.intent == "chitchat" and not only_themes:
+    if pq.intent == "chitchat" and not (only_themes or listed_group):
         return _empty("chitchat", chitchat(question, history)), None
+    # A request for a group's list and nothing else is its live listing page's
+    # alone: one source, and no corpus passage on some other or older member.
+    if listed_group is not None:
+        listing = _group_listing(listed_group, pq)
+        if listing is not None:
+            return listing, None
 
     # A request for the annual-report series itself — list it, or count it.
     # Terminal *before* retrieval, unlike the single-document lookup below:

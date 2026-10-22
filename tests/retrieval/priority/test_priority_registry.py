@@ -83,6 +83,23 @@ def test_a_group_lists_its_members():
     assert [m.name for m in centres.members] == ["Goa"]
 
 
+def test_a_group_may_name_the_live_page_listing_its_members():
+    reg = parse([{"name": "Centres of Excellence",
+                  "listing_url": "https://lists.example.org/centre-of-excellence",
+                  "children": [{"name": "Concor", "page_url": "https://teriin.org/concor"}]}])
+    (excellence,) = reg.groups
+    assert excellence.listing_url == "https://lists.example.org/centre-of-excellence"
+    # A listing page is fetched, so its host is one the fetcher may reach.
+    assert "lists.example.org" in reg.hosts
+    # It is the group's page, not one of the pages a question can name.
+    assert [p.name for p in reg.pages] == ["Concor"]
+
+
+def test_a_group_without_a_listing_page_has_none():
+    (centres,) = parse(SAMPLE).groups
+    assert centres.listing_url is None
+
+
 def test_a_single_common_word_is_not_a_name_that_matches():
     reg = parse(SAMPLE)
     assert "policy" not in _page(reg, "/policy").aliases
@@ -168,6 +185,12 @@ def test_every_centre_of_excellence_is_described_and_named_by_its_short_name(shi
     short = {"concor", "coe csrm", "ntcoe", "coeet", "mahindra teri", "ncoegps", "ncearan",
              "cfcl", "tata chemicals"}
     assert short <= {a for m in excellence.members for a in m.aliases}
+
+
+def test_the_shipped_centres_of_excellence_name_their_live_listing_page(shipped):
+    groups = {g.kind: g for g in shipped.groups}
+    assert groups[EXCELLENCE].listing_url == "https://teriin.org/centre-of-excellence"
+    assert groups[CENTRE].listing_url is None
 
 
 def test_a_group_named_for_excellence_is_not_the_regional_centres():

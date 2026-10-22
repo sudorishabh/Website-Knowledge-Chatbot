@@ -12,11 +12,13 @@ from app.core.models.context import ContextBlock
 from app.generation.prompts import publications_note
 from app.pipeline import query_pipeline as pipe
 from app.retrieval.priority import evidence as ev
+from app.retrieval.priority.listings import GroupListing
 from app.retrieval.priority.match import GROUP, NAME, PERSON, THEME_FACET, Target
 from app.retrieval.priority.people import Person
 from app.retrieval.priority.registry import CENTRE, PAGE, THEME, PriorityGroup, PriorityPage
 from app.retrieval.priority.themes import ThematicArea, ThemeListing
 from app.retrieval.understanding import query_processor as qp
+from app.retrieval.understanding.clarify import Clarification
 
 BLOCK = ContextBlock(n=1, text="corpus text", payload={"source_type": "website", "title": "Doc"})
 
@@ -207,6 +209,99 @@ def test_the_regional_centres_group_overrules_the_catalog(wired, monkeypatch):
     wired.state.targets = [Target("Regional centers", "group", GROUP, group=group)]
     result, _ = pipe._prepare("which regional centres does TERI have", history=None, top_k=None)
     assert wired.log.structured == []
+
+
+COE_LISTING = GroupListing(
+    group="Centres of Excellence", names=("CoEET", "Mahindra-TERI Centre of Excellence"),
+    url="https://teriin.org/centre-of-excellence", title="Centres of Excellence",
+)
+
+
+@pytest.fixture
+def coe_page(monkeypatch):
+    """The Centres of Excellence listing page, stubbed; records each group read."""
+    calls = SimpleNamespace(read=[], listing=COE_LISTING)
+
+    def fake_group_listing(group, registry=None):
+        calls.read.append(group.name)
+        return calls.listing
+
+    monkeypatch.setattr(ev, "group_listing", fake_group_listing)
+    return calls
+
+
+@pytest.mark.parametrize("question", [
+    "list all centres of excellence",
+    "tell me about all the Centres of Excellence",
+    "What are TERI's centres of excellence?",
+])
+def test_the_centres_of_excellence_are_listed_from_their_live_page_alone(
+    wired, monkeypatch, coe_page, question,
+):
+    """Measured 2026-10-22: these were answered from the group's block and
+    corpus passages on a 2009 Urban Development centre, the ICC-TERI CSR centre
+    and 2016 Mahindra news, citing four to eight sources."""
+    _enable(monkeypatch)
+    wired.state.pq = _pq(intent="structured")
+    result, gen = pipe._prepare(question, history=None, top_k=None)
+    assert gen is None
+    assert result["answer"].startswith("TERI has 2 Centres of Excellence:\n\n1. CoEET\n")
+    assert [(c["title"], c["url"]) for c in result["citations"]] == [
+        ("Centres of Excellence", "https://teriin.org/centre-of-excellence")]
+    assert coe_page.read == ["Centres of Excellence"]
+    assert wired.log.retrieve == [] and wired.log.structured == [] and wired.log.gather == []
+
+
+@pytest.mark.parametrize("pq", [
+    _pq(intent="chitchat"),
+    _pq(clarification=Clarification(question="Could you say which topic?")),
+])
+def test_a_list_taken_for_small_talk_or_unclear_is_still_listed(wired, monkeypatch, coe_page, pq):
+    _enable(monkeypatch)
+    wired.state.pq = pq
+    result, gen = pipe._prepare("centre of excellance", history=None, top_k=None)
+    assert gen is None and result["citations"][0]["url"] == COE_LISTING.url
+
+
+@pytest.mark.parametrize("question", [
+    "tell me about the Mahindra-TERI Centre of Excellence",
+    "Which centre of excellence works on water reuse?",
+    "regional centres and centres of excellence",
+])
+def test_one_centre_or_more_than_the_list_is_left_to_the_pages(wired, monkeypatch, coe_page,
+                                                              question):
+    _enable(monkeypatch)
+    _, gen = pipe._prepare(question, history=None, top_k=None)
+    assert coe_page.read == []
+    assert gen is not None and wired.log.retrieve
+
+
+def test_an_unreadable_listing_page_leaves_the_list_to_the_pages(wired, monkeypatch, coe_page):
+    _enable(monkeypatch)
+    coe_page.listing = None
+    _, gen = pipe._prepare("list all centres of excellence", history=None, top_k=None)
+    assert coe_page.read == ["Centres of Excellence"]
+    assert gen is not None and wired.log.retrieve
+
+
+def test_the_listing_page_is_not_read_with_the_feature_off(wired, coe_page):
+    pipe._prepare("list all centres of excellence", history=None, top_k=None)
+    assert coe_page.read == []
+
+
+@pytest.mark.parametrize("rewrite, listed", [
+    ("What are TERI's centres of excellence?", True),
+    ("Which of TERI's centres of excellence work on water reuse?", False),
+])
+def test_a_follow_up_is_listed_only_when_its_rewrite_asks_for_the_list(
+    wired, monkeypatch, coe_page, rewrite, listed,
+):
+    _enable(monkeypatch)
+    wired.state.pq = _pq(search_query=rewrite)
+    result, gen = pipe._prepare("and its centres of excellence?",
+                                history=[{"role": "user", "content": "x"}], top_k=None)
+    assert (gen is None) is listed
+    assert coe_page.read == (["Centres of Excellence"] if listed else [])
 
 
 HOME = PriorityPage(name="Home", url="https://www.teriin.org", description="", kind=PAGE)

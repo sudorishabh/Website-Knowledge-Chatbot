@@ -213,6 +213,39 @@ def test_a_question_naming_one_member_is_about_that_member():
     assert _groups("tell me about the Mahindra-TERI Centre of Excellence", [_MAHINDRA]) == []
 
 
+def _excellence(reg):
+    return next(g for g in reg.groups if g.kind == "excellence")
+
+
+@pytest.mark.parametrize("question", [
+    "list all centres of excellence",
+    "tell me about all the Centres of Excellence",
+    "What are TERI's centres of excellence?",
+    "How many centres of excellence are there?",
+    "centre of excellance",
+    "Which centers of excellence has TERI set up?",
+    "give me the names of your centres of excellence",
+    # The question and its rewrite, read together.
+    "List all centers of excellence at TERI\nList all centers of excellence at TERI.",
+])
+def test_a_request_for_the_centres_of_excellence_alone_asks_only_for_their_list(reg, question):
+    """Measured 2026-10-22: "list all centres of excellence" was answered from
+    the group's block and four corpus passages — a 2009 Urban Development
+    centre and the ICC-TERI CSR centre among them — for a list one page gives."""
+    assert match.asks_only_for_group(question, _excellence(reg))
+
+
+@pytest.mark.parametrize("question", [
+    "Which centre of excellence works on water reuse?",
+    "What does each TERI centre of excellence work on?",
+    "Tell me about the Mahindra-TERI Centre of Excellence",
+    "regional centres and centres of excellence",
+    "what are TERI's regional centres",
+])
+def test_a_question_asking_more_than_the_list_is_not_only_for_it(reg, question):
+    assert not match.asks_only_for_group(question, _excellence(reg))
+
+
 def test_a_full_name_is_cut_out_before_a_short_name_inside_it():
     assert "excellence" not in match._without(
         "mahindra teri centre of excellence", ["mahindra teri", "mahindra teri centre of excellence"])

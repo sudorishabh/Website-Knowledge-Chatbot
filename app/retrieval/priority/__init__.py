@@ -20,9 +20,11 @@ Reading order:
 * :mod:`.people` — who the people listings name, and whether a question names them.
 * :mod:`.themes` — the themes the home page lists, each described from the page list.
 * :mod:`.offices` — the offices the contact page lists, and which centre each is.
+* :mod:`.listings` — the members a group's own listing page names, as an answer.
 * :mod:`.match` — which pages a question needs, and the reason for each.
 * :mod:`.evidence` — the entry points: ``explicit_targets`` before routing,
-  ``gather`` before the cache, ``thematic_areas`` for the list of themes, and
-  the ``PriorityEvidence`` retrieval uses to drop stored copies and lead the
+  ``gather`` before the cache, ``thematic_areas`` for the list of themes,
+  ``group_listing`` for a group's list of members, and the
+  ``PriorityEvidence`` retrieval uses to drop stored copies and lead the
   context.
 """

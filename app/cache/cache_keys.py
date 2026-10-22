@@ -92,7 +92,9 @@ def _sha(*parts: str) -> str:
 #: 2026-10-21.6: people on the theme and centre Team sections are recognised by
 #: name, and a question for a named person's work adds the projects that name
 #: them in a role and, after the answer, their latest publications.
-PIPELINE_REVISION = "2026-10-21.6"
+#: 2026-10-22.1: a request for the Centres of Excellence and nothing else is
+#: answered with the names their live page lists, citing that page alone.
+PIPELINE_REVISION = "2026-10-22.1"
 
 
 def _pref_fingerprint() -> str:
