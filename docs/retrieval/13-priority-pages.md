@@ -89,7 +89,7 @@ Strongest first; none costs a model call.
 | --- | --- | --- |
 | `person` | a name on the people listings appears in the question → that person's profile | yes |
 | `name` | a page's own multi-word name ("climate change", "green shipping"), a theme's topic followed by "theme" or "thematic" ("the water theme"), part of a theme's topic before "theme" or after "theme on/of" ("the marine theme", and each of the three biofuel themes for "the biofuel theme"; see *Themes named in part* below), or a curated phrase ("director general", "tender", "founder", "fcra"); the home page by any question asking for the list of themes, by whatever name ("TERI's thematic areas", "research areas", "TERI divisions", "what sectors does TERI work in" — `themes.asks_for_themes`), or by any question understanding read as a theme listing | yes |
-| `group` | one of the group's phrases ("regional centres", "pan India presence", "national presence", "where is TERI located"), a typo of one letter forgiven in words of five letters or more ("regional cenres"), or the organisation's name beside a plural word for the members ("which offices does TERI have") → one block built from the list itself, each centre carrying its address and contacts from the live contact page. Two groups: the regional centres and the Centres of Excellence. The longest group phrase decides which ("TERI centres of excellence" is not the regional centres), and a question naming one member reads that member's page instead | — |
+| `group` | one of the group's phrases ("regional centres", "pan India presence", "national presence", "where is TERI located"), a typo of one letter forgiven in words of five letters or more ("regional cenres"), or the organisation's name beside a plural word for the members ("which offices does TERI have") → one block built from the list itself, each centre carrying its address and contacts from the live contact page. Two groups: the regional centres and the Centres of Excellence. The longest group phrase decides which ("TERI centres of excellence" is not the regional centres), and a question naming one member reads that member's page instead. A request for the Centres of Excellence and nothing else is answered with their live page's list alone | — |
 | `staff` | the question asks for the organisation's people as a group ("leading researchers", "air quality experts", "the climate team") and names no one → the two people listings whose descriptions sit closest to the question. Skipped when a person or a listing is already named, and held back when the question asks for a theme's or centre's team as it stands (see **Teams** below). Narrower than the catalog's person test: a bare "who" or "author" asks about one byline, which the corpus answers | yes |
 | `theme` | understanding resolved a theme facet that is a page on the list, or part of a page's name ("biofuel" in "summarize TERI's biofuel research") | yes |
 | `similar` | the query vector is ≥ `priority_match_threshold` (0.48) to one page's description and ≥ `priority_match_margin` (0.06) ahead of the next; or, in a near-tie, each theme page a run of the question's words fits that sits within the margin of the best ("TERI's work on biofuels" sat at 0.500, 0.488 and 0.456 against the three biofuel themes and read none of them). A tie the words do not explain reads nothing, as before | yes |
@@ -236,6 +236,32 @@ described one to six of the nine centres, and "centre of excellance" was read
 as small talk. After, all seven described all nine, and the nine naming one
 centre each read that centre's live page. Three broad answers still add an
 older centre that a corpus page names, dated as such.
+
+**The list of Centres of Excellence comes from their live page alone.** Since
+2026-10-22 the group names its listing page in the file (`listing_url`), and a
+question asking for the list and nothing else is answered from it: the names
+the page's cards give, in its order, as a numbered list, citing that one page.
+No model call, no catalog and no corpus (`_group_listing` in the pipeline,
+`listings.py` here). "Nothing else" is read from the wording, as for the
+themes (`match.asks_only_for_group`): once the group's phrases (typos
+forgiven), the organisation's name, the words any request for a list is made
+of (`LIST_REQUEST_WORDS`) and a few that say only that the members exist
+("there", "set up", "names") are taken out, nothing is left. So "list all
+centres of excellence", "tell me about all the Centres of Excellence", "how
+many centres of excellence are there" and "centre of excellance" are listed,
+even when understanding took them for small talk or asked what they meant. "The
+Mahindra-TERI Centre of Excellence" or "what is CoEET" read that centre's page
+as before. "Which centre of excellence works on water reuse" leaves "water
+reuse", so it gets the group's block and the corpus as before. In a
+conversation the rewrite must ask for the list too. When the page cannot be
+read, or names no one, the question is answered as before.
+
+Measured 2026-10-22: before, "list all centres of excellence" and "tell me
+about all the Centres of Excellence" cited four and eight sources, among them
+a 2009 Urban Development centre, the ICC-TERI CSR centre and 2016 news of the
+Mahindra centre. After, five list phrasings each gave the page's nine names
+with one citation, and the two questions naming one centre were answered from
+that centre's page.
 
 **Calibration** (2026-09-24, 20 questions): most on-topic questions scored
 0.49–0.75 against the right page, every off-list question stayed below 0.46,
