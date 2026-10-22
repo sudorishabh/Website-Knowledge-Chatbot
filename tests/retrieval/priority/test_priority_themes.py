@@ -171,3 +171,22 @@ def test_the_word_themes_alone_asks_only_for_the_themes(question, only):
     """Measured 2026-10-21: the bare "themes" was asked "could you say what
     topic" whenever understanding read it as unclear."""
     assert asks_only_for_themes(question) is only
+
+
+@pytest.mark.parametrize("question, only", [
+    ("divisions", True),
+    ("Divisions?", True),
+    ("what are all the divisions", True),
+    ("list all divisions", True),
+    ("how many departments are there", True),
+    ("divisons", True),
+    ("division", False),                       # one, already in view
+    ("what is the division", False),
+    ("divisions of WSDS 2026", False),
+    ("divisions working on solar energy", False),
+])
+def test_another_name_for_the_themes_alone_asks_only_for_the_themes(question, only):
+    """Measured 2026-10-22: "divisions" and "what are all the divisions" were
+    asked "could you say what topic", and "list all divisions" listed the Human
+    Resources and IT divisions of 2015 reports."""
+    assert asks_only_for_themes(question) is only

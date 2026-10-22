@@ -188,15 +188,19 @@ def asks_only_for_themes(question: str) -> bool:
     projects" leaves "projects", and "which TERI themes have the most
     publications" leaves "most publications": both are answered as before.
 
-    "themes" alone counts too, though `asks_for_themes` does not take it.
-    Measured 2026-10-21: the bare "themes" got the overview when understanding
-    read it as a theme listing, and was asked "could you say what topic" when
-    it read it as unclear.
+    "themes", "divisions" or "departments" alone counts too, though
+    `asks_for_themes` wants the organisation named beside them: asked of its
+    assistant, they ask for its own. Measured 2026-10-21: the bare "themes" got
+    the overview when understanding read it as a theme listing, and was asked
+    "could you say what topic" when it read it as unclear. Measured 2026-10-22:
+    "divisions" and "what are all the divisions" were asked the same, and "list
+    all divisions" listed the Human Resources and IT divisions of 2015 reports.
     """
     words = normalize_text(question)
-    if not (asks_for_themes(question) or _THEMES_WORD in words.split()):
-        return False
     for phrase in THEMES_OVERVIEW:
         words = re.sub(_phrase(phrase), " ", words)
     words = _ORG.sub(" ", _WORKS_IN.sub(" ", words))
-    return all(w in LIST_REQUEST_WORDS or _names_the_themes(w) for w in words.split())
+    rest = [w for w in words.split() if w not in LIST_REQUEST_WORDS]
+    if not rest:
+        return asks_for_themes(question)
+    return all(_names_the_themes(w) for w in rest)
