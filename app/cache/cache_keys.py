@@ -96,7 +96,10 @@ def _sha(*parts: str) -> str:
 #: answered with the names their live page lists, citing that page alone.
 #: 2026-10-22.2: "divisions" or "departments" alone, misspelt, counted ("how
 #: many are there") or in the singular beside TERI's name gets the overview.
-PIPELINE_REVISION = "2026-10-22.2"
+#: 2026-10-22.3: a named person's profile leads a question about what they
+#: wrote, with the catalog's count or list after the answer, and a page whose
+#: body fails mid-read no longer drops the question's other live pages.
+PIPELINE_REVISION = "2026-10-22.3"
 
 
 def _pref_fingerprint() -> str:
