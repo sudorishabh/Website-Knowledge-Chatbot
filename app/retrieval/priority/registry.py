@@ -14,7 +14,9 @@ The file mixes two shapes, and the parser keeps them apart:
 * an entry with children and no URL is a **group** ("Regional centers",
   "Centres of Excellence"). A group is not fetched: its own description and its
   members' names and descriptions already answer "what are the regional
-  centres?" — and the Centres of Excellence page itself gives only their names.
+  centres?". A group may name the live page that lists its members
+  (``listing_url``): the Centres of Excellence page lists their names, and a
+  question asking for that list and nothing else is answered from it alone.
 
 Pages are flat: a page's own children are not read, and a warning says so. The
 themes are flat since 2026-09-25: one top-level page each, named "<theme>
@@ -316,6 +318,8 @@ class PriorityGroup:
     #: Plural words for the members, which ask for the group alongside the
     #: organisation's name.
     member_words: frozenset[str] = frozenset()
+    #: The live page that lists the members, when the file names one.
+    listing_url: str | None = None
 
     @property
     def key(self) -> str:
@@ -349,7 +353,8 @@ class Registry:
 
     @property
     def hosts(self) -> frozenset[str]:
-        return frozenset(k.split("/", 1)[0] for k in _index(self))
+        listings = (normalize_url(g.listing_url) for g in self.groups if g.listing_url)
+        return frozenset(k.split("/", 1)[0] for k in (*_index(self), *listings))
 
 
 @lru_cache(maxsize=4)
@@ -430,6 +435,7 @@ def parse(raw: Any) -> Registry:
             members=tuple(members),
             aliases=_GROUP_ALIASES.get(kind, ()),
             member_words=_GROUP_MEMBER_WORDS.get(kind, frozenset()),
+            listing_url=str(entry.get("listing_url") or "").strip() or None,
         ))
     return Registry(pages=tuple(pages), groups=tuple(groups))
 
