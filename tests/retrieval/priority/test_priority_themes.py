@@ -190,3 +190,18 @@ def test_another_name_for_the_themes_alone_asks_only_for_the_themes(question, on
     asked "could you say what topic", and "list all divisions" listed the Human
     Resources and IT divisions of 2015 reports."""
     assert asks_only_for_themes(question) is only
+
+
+@pytest.mark.parametrize("question, only", [
+    ("teri division", True),
+    ("What is TERI's division?", True),
+    ("TERI department", True),
+    ("teri divison", True),
+    ("Which division of TERI handles water?", False),   # one division
+    ("TERI department of policy studies", False),
+    ("TERI theme", False),                              # "themes" stays plural
+])
+def test_a_singular_beside_the_organisation_asks_only_for_the_themes(question, only):
+    """Measured 2026-10-22: "teri division" was asked "could you clarify what
+    you mean"."""
+    assert asks_only_for_themes(question) is only

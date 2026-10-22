@@ -139,7 +139,8 @@ _THEMES_WORD = "themes"
 #: "themed".
 _OTHER_NAMES = THEMES_OVERVIEW_WORDS - {_THEMES_WORD}
 #: Their singulars, which a typo in the plural must not reach: "which division
-#: of TERI handles water" asks about one.
+#: of TERI handles water" asks about one. Beside the organisation's name and
+#: nothing else ("TERI division") one asks for the list.
 _SINGULARS = frozenset(name[:-1] for name in _OTHER_NAMES)
 
 
@@ -148,16 +149,20 @@ def _phrase(phrase: str) -> str:
     return rf"(?<!\w){re.escape(phrase)}s?(?!\w)"
 
 
-def _names_the_themes(word: str) -> bool:
+def _names_the_themes(word: str, *, singular: bool = False) -> bool:
     """Whether ``word`` is one of `THEMES_OVERVIEW_WORDS`, forgiving one typo in
     the names the organisation does not use: "divisons", "devisions" and
-    "departmets" ask for the themes as "divisions" and "departments" do.
+    "departmets" ask for the themes as "divisions" and "departments" do. Their
+    singulars count only when ``singular`` says so.
 
     Measured 2026-10-22: "divisons of teri" was answered from four annual
     reports' lists of divisions, with six sources."""
     if word in THEMES_OVERVIEW_WORDS:
         return True
-    return word not in _SINGULARS and any(one_edit_apart(word, name) for name in _OTHER_NAMES)
+    if word in _SINGULARS:
+        return singular
+    names = _OTHER_NAMES | _SINGULARS if singular else _OTHER_NAMES
+    return any(one_edit_apart(word, name) for name in names)
 
 
 def asks_for_themes(question: str) -> bool:
@@ -195,12 +200,17 @@ def asks_only_for_themes(question: str) -> bool:
     "could you say what topic" when it read it as unclear. Measured 2026-10-22:
     "divisions" and "what are all the divisions" were asked the same, and "list
     all divisions" listed the Human Resources and IT divisions of 2015 reports.
+
+    So does "division" beside the organisation's name, with nothing else
+    asked: "teri division" was asked "could you clarify what you mean"
+    (2026-10-22). Alone, "what is the division" asks about one in view.
     """
     words = normalize_text(question)
+    beside_org = _ORG.search(words) is not None
     for phrase in THEMES_OVERVIEW:
         words = re.sub(_phrase(phrase), " ", words)
     words = _ORG.sub(" ", _WORKS_IN.sub(" ", words))
     rest = [w for w in words.split() if w not in LIST_REQUEST_WORDS]
     if not rest:
         return asks_for_themes(question)
-    return all(_names_the_themes(w) for w in rest)
+    return all(_names_the_themes(w, singular=beside_org) for w in rest)
