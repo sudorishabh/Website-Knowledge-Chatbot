@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-22T05:50:48.193908+00:00",
-  "overall_score": 0.9887244685285534,
+  "timestamp": "2026-10-22T07:27:27.657975+00:00",
+  "overall_score": 0.9887385512073271,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -58,10 +58,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2324,
+      "total_entities_checked": 2327,
       "findings_count": 21,
       "warning_count": 21,
-      "score": 0.9909638554216867,
+      "score": 0.9909755049419854,
       "finding_groups": [
         {
           "severity": "warning",
@@ -92,9 +92,9 @@
             {
               "entity_name": "app.pipeline.query_pipeline._prepare",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 855,
-              "line_end": 1168,
-              "metric_value": 313
+              "line_start": 885,
+              "line_end": 1203,
+              "metric_value": 318
             },
             {
               "entity_name": "tools.e2e_ingest_audit.run_audit.main",
@@ -176,8 +176,8 @@
             {
               "entity_name": "app.pipeline.query_pipeline.stream_answer",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 1300,
-              "line_end": 1469,
+              "line_start": 1335,
+              "line_end": 1504,
               "metric_value": 169
             },
             {
