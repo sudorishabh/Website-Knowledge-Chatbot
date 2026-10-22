@@ -174,6 +174,28 @@ def _get(url: str, headers: dict[str, str], timeout: float) -> Any:
     raise AssertionError("unreachable")
 
 
+def _body(response: Any, url: str) -> str | None:
+    """The response's body as text; None when it is too large, or when the
+    connection times out or drops while it is being read.
+
+    The request is streamed, so it returns once the headers arrive and the body
+    follows: a failure while reading the body is raised here, not by the
+    request, and must count as a failed fetch like any other. Seen 2026-10-22:
+    "P K Bhattacharya work" read no page at all, his profile included, and an
+    error escaping from this read is the only way a read is never recorded."""
+    body = bytearray()
+    try:
+        for chunk in response.iter_content(64 * 1024):
+            body.extend(chunk)
+            if len(body) > MAX_BYTES:
+                logger.warning("Priority page %s exceeds %d bytes; ignored.", url, MAX_BYTES)
+                return None
+    except Exception as exc:
+        logger.warning("Priority page %s could not be read: %s", url, exc)
+        return None
+    return body.decode(response.encoding or "utf-8", errors="replace")
+
+
 def _download(
     url: str,
     previous: FetchedPage | None,
@@ -209,15 +231,11 @@ def _download(
         if "html" not in ctype.lower():
             logger.warning("Priority page %s is not HTML (%s).", url, ctype)
             return None
-        body = bytearray()
-        for chunk in response.iter_content(64 * 1024):
-            body.extend(chunk)
-            if len(body) > MAX_BYTES:
-                logger.warning("Priority page %s exceeds %d bytes; ignored.", url, MAX_BYTES)
-                return None
-        html = body.decode(response.encoding or "utf-8", errors="replace")
+        html = _body(response, url)
     finally:
         response.close()
+    if html is None:
+        return None
     if validate is not None and not validate(html):
         logger.warning("Priority page %s returned no usable content.", url)
         return None

@@ -13,17 +13,21 @@ HTML = "<html><body><h1>Climate Change</h1></body></html>"
 
 class _Response:
     def __init__(self, status=200, body=HTML, url="https://teriin.org/climate",
-                 ctype="text/html; charset=UTF-8", etag='"v1"'):
+                 ctype="text/html; charset=UTF-8", etag='"v1"', body_error=None):
         self.status_code = status
         self._body = body.encode("utf-8")
         self.url = url
         self.headers = {"Content-Type": ctype, "ETag": etag, "Last-Modified": "Thu, 24 Sep 2026"}
         self.encoding = "utf-8"
         self.closed = False
+        #: Raised after the first chunk, as a connection failing mid-body is.
+        self._body_error = body_error
 
     def iter_content(self, size):
         for i in range(0, len(self._body), size):
             yield self._body[i:i + size]
+            if self._body_error is not None:
+                raise self._body_error
 
     def close(self):
         self.closed = True
@@ -173,6 +177,35 @@ def test_a_connection_that_keeps_failing_is_tried_twice_at_most(monkeypatch):
         requests.ConnectionError("refused"), requests.ConnectionError("refused")))
     assert fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS) is None
     assert len(session.calls) == 2
+
+
+def _body_errors():
+    import requests
+
+    # What `requests` raises from `iter_content`: a read timeout mid-body comes
+    # wrapped as a ConnectionError, a dropped connection as a ChunkedEncodingError.
+    return [requests.ConnectionError("Read timed out."),
+            requests.exceptions.ChunkedEncodingError("Connection broken")]
+
+
+@pytest.mark.parametrize("error", _body_errors())
+def test_a_body_that_fails_mid_read_counts_as_a_failure(monkeypatch, error):
+    """Seen 2026-10-22: an error escaping the read lost every live page of the
+    question, a named person's profile included."""
+    response = _Response(body_error=error)
+    _use(monkeypatch, _Session(response))
+    assert fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS) is None
+    assert response.closed
+
+
+@pytest.mark.parametrize("error", _body_errors())
+def test_a_body_that_fails_mid_read_serves_the_last_good_copy(monkeypatch, error):
+    _use(monkeypatch, _Session(_Response(), _Response(body_error=error)))
+    clock = _Clock()
+    fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS, now=clock)
+    clock.t += 301
+    stale = fetch.fetch("https://teriin.org/climate", allowed_hosts=HOSTS, now=clock)
+    assert stale.html == HTML and stale.stale
 
 
 @pytest.mark.parametrize("slow", ["connect", "read"])
