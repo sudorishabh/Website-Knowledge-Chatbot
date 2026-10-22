@@ -98,6 +98,11 @@ LISTINGS = [
     "thematic areas of TERI",
     "what topics do you cover",
     "How many research areas does TERI have?",
+    # Measured 2026-10-22: "are there" was left over, and the count came from
+    # a 2013-14 report ("about 20 divisions").
+    "How many divisions are there in TERI?",
+    "what all divisions are there in teri",
+    "What are the names of TERI's research areas?",
 ]
 
 
