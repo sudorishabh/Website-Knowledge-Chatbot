@@ -29,6 +29,7 @@ from app.retrieval.priority.registry import (
     PriorityPage,
     Registry,
     normalize_text,
+    one_edit_apart,
 )
 
 #: The home page section that lists the themes, normalized.
@@ -132,11 +133,36 @@ _WORKS_IN = re.compile(
 #: are the themes", "list all themes") it can ask for nothing but the list.
 #: Plural only: "what is the theme" asks about one thing already in view.
 _THEMES_WORD = "themes"
+#: The names people give the themes that the organisation does not use
+#: ("divisions", "departments"). Asked of it they can mean nothing else, so a
+#: typo in one is forgiven. Not in "themes", one letter from "theses" and
+#: "themed".
+_OTHER_NAMES = THEMES_OVERVIEW_WORDS - {_THEMES_WORD}
+#: Their singulars, which a typo in the plural must not reach: "which division
+#: of TERI handles water" asks about one. Beside the organisation's name and
+#: nothing else ("TERI division") one asks for the list.
+_SINGULARS = frozenset(name[:-1] for name in _OTHER_NAMES)
 
 
 def _phrase(phrase: str) -> str:
     """Whole-word pattern for ``phrase``, tolerating a plural."""
     return rf"(?<!\w){re.escape(phrase)}s?(?!\w)"
+
+
+def _names_the_themes(word: str, *, singular: bool = False) -> bool:
+    """Whether ``word`` is one of `THEMES_OVERVIEW_WORDS`, forgiving one typo in
+    the names the organisation does not use: "divisons", "devisions" and
+    "departmets" ask for the themes as "divisions" and "departments" do. Their
+    singulars count only when ``singular`` says so.
+
+    Measured 2026-10-22: "divisons of teri" was answered from four annual
+    reports' lists of divisions, with six sources."""
+    if word in THEMES_OVERVIEW_WORDS:
+        return True
+    if word in _SINGULARS:
+        return singular
+    names = _OTHER_NAMES | _SINGULARS if singular else _OTHER_NAMES
+    return any(one_edit_apart(word, name) for name in names)
 
 
 def asks_for_themes(question: str) -> bool:
@@ -150,7 +176,8 @@ def asks_for_themes(question: str) -> bool:
         return True
     if _WORKS_IN.search(words):
         return True
-    return bool(THEMES_OVERVIEW_WORDS & set(words.split())) and _ORG.search(words) is not None
+    return (any(_names_the_themes(w) for w in words.split())
+            and _ORG.search(words) is not None)
 
 
 def asks_only_for_themes(question: str) -> bool:
@@ -166,15 +193,24 @@ def asks_only_for_themes(question: str) -> bool:
     projects" leaves "projects", and "which TERI themes have the most
     publications" leaves "most publications": both are answered as before.
 
-    "themes" alone counts too, though `asks_for_themes` does not take it.
-    Measured 2026-10-21: the bare "themes" got the overview when understanding
-    read it as a theme listing, and was asked "could you say what topic" when
-    it read it as unclear.
+    "themes", "divisions" or "departments" alone counts too, though
+    `asks_for_themes` wants the organisation named beside them: asked of its
+    assistant, they ask for its own. Measured 2026-10-21: the bare "themes" got
+    the overview when understanding read it as a theme listing, and was asked
+    "could you say what topic" when it read it as unclear. Measured 2026-10-22:
+    "divisions" and "what are all the divisions" were asked the same, and "list
+    all divisions" listed the Human Resources and IT divisions of 2015 reports.
+
+    So does "division" beside the organisation's name, with nothing else
+    asked: "teri division" was asked "could you clarify what you mean"
+    (2026-10-22). Alone, "what is the division" asks about one in view.
     """
     words = normalize_text(question)
-    if not (asks_for_themes(question) or _THEMES_WORD in words.split()):
-        return False
+    beside_org = _ORG.search(words) is not None
     for phrase in THEMES_OVERVIEW:
         words = re.sub(_phrase(phrase), " ", words)
     words = _ORG.sub(" ", _WORKS_IN.sub(" ", words))
-    return all(w in LIST_REQUEST_WORDS or w in THEMES_OVERVIEW_WORDS for w in words.split())
+    rest = [w for w in words.split() if w not in LIST_REQUEST_WORDS]
+    if not rest:
+        return asks_for_themes(question)
+    return all(_names_the_themes(w, singular=beside_org) for w in rest)

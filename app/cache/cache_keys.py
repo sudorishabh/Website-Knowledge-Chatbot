@@ -94,7 +94,9 @@ def _sha(*parts: str) -> str:
 #: them in a role and, after the answer, their latest publications.
 #: 2026-10-22.1: a request for the Centres of Excellence and nothing else is
 #: answered with the names their live page lists, citing that page alone.
-PIPELINE_REVISION = "2026-10-22.1"
+#: 2026-10-22.2: "divisions" or "departments" alone, misspelt, counted ("how
+#: many are there") or in the singular beside TERI's name gets the overview.
+PIPELINE_REVISION = "2026-10-22.2"
 
 
 def _pref_fingerprint() -> str:

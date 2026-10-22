@@ -113,7 +113,9 @@ area"). A theme listing adds no page by description match, since it is about
 no one theme. A bare "themes" does not ask for the list: "which themes have
 the most publications" is a catalog count, and the home page overrules the
 catalog only for a theme listing. The word alone in a request does ("themes",
-"what are the themes", "list all themes"): such a question gets the overview
+"what are the themes", "list all themes"), and so do the other names for the
+themes ("divisions", "list all divisions"), and their singular beside the
+organisation's name ("teri division"): such a question gets the overview
 ahead of any clarification or small-talk reply, since it is neither unclear
 nor small talk (measured 2026-10-21, "themes" was asked "could you say what
 topic" whenever understanding read it as unclear). In a conversation the
@@ -124,9 +126,11 @@ People ask for the list by many names, and `themes.asks_for_themes` hears
 them: a phrase that asks for it anywhere ("research areas", "areas of
 expertise", "focus areas"), a plural word that does beside the organisation's
 name ("TERI divisions", "which departments does TERI have"), or the fields it
-works in ("what sectors does TERI work in"). Understanding reads most of these
-as passage questions or small talk, so the wording decides: a question that
-asks for the list and nothing else (`asks_only_for_themes` — nothing left once
+works in ("what sectors does TERI work in"). The names the organisation does
+not use itself (divisions, departments, verticals) forgive one typo
+("divisons"); "themes" does not, one letter from "theses". Understanding reads
+most of these as passage questions or small talk, so the wording decides: a
+question that asks for the list and nothing else (`asks_only_for_themes` — nothing left once
 the request, the organisation's name and the words any question is made of are
 taken out) is a theme listing, and gets the whole overview whatever
 understanding labelled it. One that asks for more ("TERI's research areas and
@@ -137,7 +141,14 @@ list of programmes; "TERI divisions", "TERI departments" and "research areas"
 were small talk, "what are the divisions of TERI" listed a 2017 annual report's divisions,
 and "what sectors does TERI work in" a list of programmes. After, all fifteen
 got the overview, and four controls (two catalog counts, one theme, one topic)
-were unchanged.
+were unchanged. Measured 2026-10-22 over sixteen ways of asking for TERI's
+divisions: before, nine got the overview; "how many divisions are there in
+TERI" gave a 2013-14 report's "about 20", "teri division", "divisions" and
+"what are all the divisions" were asked what was meant, and "list all
+divisions" and two misspellings listed old reports' divisions from three to
+six sources. After, all sixteen got the overview from the home page alone;
+"which division of TERI works on solar energy", "TERI divisions and their
+heads", "TERI theses" and "what is the division" were answered as before.
 When understanding reads a theme listing *and* names a theme, the home page
 gives way as above and the catalog declines the listing too (see
 [07](07-structured-answers.md#the-tools)), so the named theme's page answers.

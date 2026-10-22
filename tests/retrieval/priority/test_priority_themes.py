@@ -98,6 +98,11 @@ LISTINGS = [
     "thematic areas of TERI",
     "what topics do you cover",
     "How many research areas does TERI have?",
+    # Measured 2026-10-22: "are there" was left over, and the count came from
+    # a 2013-14 report ("about 20 divisions").
+    "How many divisions are there in TERI?",
+    "what all divisions are there in teri",
+    "What are the names of TERI's research areas?",
 ]
 
 
@@ -131,6 +136,28 @@ def test_other_questions_do_not_ask_for_the_themes(question):
 
 
 
+@pytest.mark.parametrize("question", [
+    "divisons of teri",
+    "TERI's divisons",
+    "teri devisions",
+    "What departmets does TERI have?",
+])
+def test_a_typo_in_another_name_for_the_themes_is_forgiven(question):
+    """Measured 2026-10-22: "divisons of teri" was answered from four annual
+    reports' lists of divisions, with six sources."""
+    assert asks_for_themes(question)
+    assert asks_only_for_themes(question)
+
+
+@pytest.mark.parametrize("question", [
+    "TERI theses",                                 # one letter from "themes"
+    "TERI themed events",
+    "Which division of TERI handles water?",       # a singular is not a typo
+])
+def test_a_word_near_themes_or_a_singular_is_not_a_typo(question):
+    assert not asks_for_themes(question)
+
+
 @pytest.mark.parametrize("question, only", [
     ("themes", True),
     ("Themes?", True),
@@ -143,4 +170,38 @@ def test_other_questions_do_not_ask_for_the_themes(question):
 def test_the_word_themes_alone_asks_only_for_the_themes(question, only):
     """Measured 2026-10-21: the bare "themes" was asked "could you say what
     topic" whenever understanding read it as unclear."""
+    assert asks_only_for_themes(question) is only
+
+
+@pytest.mark.parametrize("question, only", [
+    ("divisions", True),
+    ("Divisions?", True),
+    ("what are all the divisions", True),
+    ("list all divisions", True),
+    ("how many departments are there", True),
+    ("divisons", True),
+    ("division", False),                       # one, already in view
+    ("what is the division", False),
+    ("divisions of WSDS 2026", False),
+    ("divisions working on solar energy", False),
+])
+def test_another_name_for_the_themes_alone_asks_only_for_the_themes(question, only):
+    """Measured 2026-10-22: "divisions" and "what are all the divisions" were
+    asked "could you say what topic", and "list all divisions" listed the Human
+    Resources and IT divisions of 2015 reports."""
+    assert asks_only_for_themes(question) is only
+
+
+@pytest.mark.parametrize("question, only", [
+    ("teri division", True),
+    ("What is TERI's division?", True),
+    ("TERI department", True),
+    ("teri divison", True),
+    ("Which division of TERI handles water?", False),   # one division
+    ("TERI department of policy studies", False),
+    ("TERI theme", False),                              # "themes" stays plural
+])
+def test_a_singular_beside_the_organisation_asks_only_for_the_themes(question, only):
+    """Measured 2026-10-22: "teri division" was asked "could you clarify what
+    you mean"."""
     assert asks_only_for_themes(question) is only

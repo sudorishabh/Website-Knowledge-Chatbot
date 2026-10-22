@@ -251,15 +251,6 @@ def _groups_asked_for(
     return asked
 
 
-#: Words that say no more of a group's members than that they exist: "how many
-#: centres of excellence are there", "the names of the centres TERI has set up".
-_EXISTENCE_WORDS = frozenset(
-    """
-    there names exist exists existing established set up run runs operates
-    """.split()
-)
-
-
 def asks_only_for_group(question: str, group: PriorityGroup) -> bool:
     """Whether ``question`` asks for ``group``'s list of members and nothing
     else: once the group's phrases, the organisation's name and the words any
@@ -276,7 +267,7 @@ def asks_only_for_group(question: str, group: PriorityGroup) -> bool:
     if not used:
         return False
     rest = _ORG_WORDS.sub(" ", " ".join(t for i, t in enumerate(tokens) if i not in used))
-    allowed = LIST_REQUEST_WORDS | _EXISTENCE_WORDS | group.member_words
+    allowed = LIST_REQUEST_WORDS | group.member_words
     return all(w in allowed for w in rest.split())
 
 
