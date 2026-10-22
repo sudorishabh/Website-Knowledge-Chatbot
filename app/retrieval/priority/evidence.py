@@ -279,16 +279,24 @@ def _extract(html: str, url: str, max_chars: int) -> PageContent:
 
 
 def _read(target: Target, registry: Registry) -> PageRead:
+    """``target``'s page, fetched and extracted. Never raises: a page that
+    fails costs itself alone, recorded as unreadable, and not the question's
+    other pages. An error raised here used to reach `gather`'s catch-all, which
+    drops every page, a named person's profile among them."""
     url = target.url or ""
     started = time.monotonic()
-    fetched = fetching.fetch(url, allowed_hosts=registry.hosts, validate=_usable)
-    read = PageRead(target, url, fetched=fetched)
-    if fetched is not None:
-        listing = target.page is not None and target.page.kind == PEOPLE
-        content = _extract(fetched.html, fetched.final_url or url,
-                           LISTING_MAX_CHARS if listing else MAX_SECTION_CHARS)
-        if len(content.text) >= MIN_PAGE_CHARS:
-            read.content = content
+    read = PageRead(target, url)
+    try:
+        read.fetched = fetching.fetch(url, allowed_hosts=registry.hosts, validate=_usable)
+        if read.fetched is not None:
+            listing = target.page is not None and target.page.kind == PEOPLE
+            content = _extract(read.fetched.html, read.fetched.final_url or url,
+                               LISTING_MAX_CHARS if listing else MAX_SECTION_CHARS)
+            if len(content.text) >= MIN_PAGE_CHARS:
+                read.content = content
+    except Exception:
+        logger.warning("Priority page %s could not be read; answering without it.",
+                       url, exc_info=True)
     read.ms = (time.monotonic() - started) * 1000
     return read
 

@@ -80,7 +80,8 @@ def wired(monkeypatch):
     def fake_structured(question, history, *, analysis):
         log.structured.append(question)
         return {"answer": "catalog answer", "citations": [], "intent": "structured",
-                "used_chunks": 0, "conflict": False, "cached": False}
+                "used_chunks": 0, "conflict": False, "cached": False,
+                "catalog_answered": True}
 
     monkeypatch.setattr("app.retrieval.structured.answerer.answer_structured", fake_structured)
     monkeypatch.setattr("app.retrieval.structured.tools.resolve_lookup_chain", lambda a, q: None)
@@ -157,45 +158,96 @@ def _person_pq(operation):
     return _pq(intent="structured", analysis=analysis)
 
 
-PERSON_TARGET = Target("Dr Suneel Pandey", "profile", "person",
-                       url="https://teriin.org/profile/suneel-pandey")
-
-
-@pytest.mark.parametrize("operation", ["count", "distribution"])
-def test_a_persons_page_does_not_overrule_a_count_of_their_publications(
-    wired, monkeypatch, operation,
-):
-    """Measured: the profile page took "how many publications by Suneel Pandey",
-    listed none, and the answer was a refusal while the catalog holds 35."""
-    _enable(monkeypatch)
-    wired.state.pq = _person_pq(operation)
-    wired.state.targets = [PERSON_TARGET]
-    result, _ = pipe._prepare("how many publications by Suneel Pandey",
-                              history=None, top_k=None)
-    assert result["answer"] == "catalog answer"
+SUNEEL = Person("Dr Suneel Pandey", "https://teriin.org/profile/suneel-pandey",
+                "People - committee of directors")
+PERSON_TARGET = Target(SUNEEL.name, "profile", "person", url=SUNEEL.profile_url, person=SUNEEL)
 
 
 @pytest.mark.parametrize("operation, question", [
-    ("list", "list articles by Vibha Dhawan"),
+    ("count", "how many publications by Suneel Pandey"),
+    ("distribution", "how many publications by Suneel Pandey"),
+    ("list", "Suneel Pandey publications"),
+    ("list", "list articles by Suneel Pandey"),
     ("list", "show me the research papers Suneel Pandey wrote"),
     ("lookup", "find Suneel Pandey's policy brief on air quality"),
 ])
-def test_a_persons_page_does_not_overrule_a_list_of_their_writing(
+def test_what_a_person_wrote_follows_the_answer_their_profile_leads(
     wired, monkeypatch, operation, question,
 ):
-    """Measured: the profile page took "list articles by Vibha Dhawan", listed
-    none, and the answer was a refusal while the catalog holds 41."""
+    """Measured 2026-10-22: "Vibha Dhawan publications" was answered from the
+    catalog without her profile, while "Vibha Dhawan work" led with it. The
+    catalog's count or list still answers (35 by Suneel Pandey, 41 by Vibha
+    Dhawan, where the profile alone was refused on 2026-10-04)."""
     _enable(monkeypatch)
     wired.state.pq = _person_pq(operation)
     wired.state.targets = [PERSON_TARGET]
-    result, _ = pipe._prepare(question, history=None, top_k=None)
-    assert result["answer"] == "catalog answer"
+    result, gen = pipe._prepare(question, history=None, top_k=None)
+    assert result is None and wired.log.retrieve  # the profile leads
+    assert wired.log.structured == [question]
+    assert gen.db_prefix == "" and gen.db_suffix == "catalog answer"
+    assert gen.notes == (publications_note([SUNEEL.name]),)
+    assert gen.compose("His work [1].") == "His work [1].\n\ncatalog answer"
+
+
+@pytest.mark.parametrize("answered", [None, {"answer": "No author matching 'pk' found."}])
+def test_with_no_catalog_answer_their_latest_publications_follow(
+    wired, monkeypatch, answered,
+):
+    """Seen 2026-10-22: "PK Bhattacharya works" was read as a title containing
+    "pk", and the catalog found nothing by him."""
+    _enable(monkeypatch)
+    wired.state.pq = _person_pq("list")
+    wired.state.targets = [PERSON_TARGET]
+    monkeypatch.setattr("app.retrieval.structured.answerer.answer_structured",
+                        lambda *a, **kw: answered)
+    monkeypatch.setattr(pipe, "_publications", lambda people: (f"latest by {people[0]}", people))
+    _, gen = pipe._prepare("Suneel Pandey works", history=None, top_k=None)
+    assert gen.db_suffix == f"latest by {SUNEEL.name}"
+
+
+def test_a_catalog_failure_still_lists_their_latest_publications(wired, monkeypatch):
+    _enable(monkeypatch)
+    wired.state.pq = _person_pq("count")
+    wired.state.targets = [PERSON_TARGET]
+
+    def boom(*a, **kw):
+        raise RuntimeError("db")
+
+    monkeypatch.setattr("app.retrieval.structured.answerer.answer_structured", boom)
+    monkeypatch.setattr(pipe, "_publications", lambda people: ("latest", people))
+    _, gen = pipe._prepare("how many publications by Suneel Pandey", history=None, top_k=None)
+    assert gen is not None and gen.db_suffix == "latest"
+
+
+def test_what_a_person_wrote_is_not_put_before_their_profile(wired, monkeypatch):
+    """A question labelled for the catalog and for passages gets the catalog's
+    headline first; about a named person, it follows the profile instead."""
+    _enable(monkeypatch)
+    pq = _person_pq("count")
+    pq.understanding = qp.QueryUnderstanding(query_rewrite="q", intents=[
+        qp.IntentPrediction(label=label, confidence=0.9, rationale="")
+        for label in ("database", "qa")])
+    wired.state.pq = pq
+    wired.state.targets = [PERSON_TARGET]
+    monkeypatch.setattr(pipe, "_db_section", lambda *a: pytest.fail("catalog put first"))
+    _, gen = pipe._prepare("how many publications by Suneel Pandey and what are their themes",
+                           history=None, top_k=None)
+    assert gen.db_prefix == "" and gen.db_suffix == "catalog answer"
+
+
+def test_a_person_on_no_people_page_is_still_the_catalogs(wired, monkeypatch):
+    """With no profile to lead, the catalog answers what they wrote, as before."""
+    _enable(monkeypatch)
+    wired.state.pq = _person_pq("count")
+    result, gen = pipe._prepare("how many publications by Suneel Pandey", history=None, top_k=None)
+    assert gen is None and result["answer"] == "catalog answer"
 
 
 def test_a_persons_page_still_owns_a_question_about_them(wired, monkeypatch):
     _enable(monkeypatch)
     wired.state.pq = _person_pq("list")
     wired.state.targets = [PERSON_TARGET]
+    monkeypatch.setattr(pipe, "_publications", lambda people: ("", []))
     result, gen = pipe._prepare("what does Suneel Pandey work on",
                                 history=None, top_k=None)
     assert wired.log.structured == []

@@ -52,11 +52,12 @@ question
   -> chitchat / series lookups (unchanged, terminal)
   -> explicit_targets()            people, page names, groups, theme facet,  (rag.priority_targets)
                                    theme listing
-       overrides the catalog route only for a person, an institutional or
-       people page, the regional-centres group, or the home page when
-       understanding read a theme listing (operation list_themes); such a
-       listing also takes no catalog section on a combined answer; a theme
-       page overrides a scoped summary whose scope is that theme alone
+       overrides the catalog route only for a person (what they wrote
+       included), an institutional or people page, the regional-centres
+       group, or the home page when understanding read a theme listing
+       (operation list_themes); such a listing also takes no catalog
+       section on a combined answer; a theme page overrides a scoped
+       summary whose scope is that theme alone
   -> structured / scoped_summary (unchanged unless overridden)
   -> embed_query (unchanged, one vector)
   -> gather()                      + description similarity; read pages;     (rag.priority_pages)
@@ -397,6 +398,19 @@ publications alone. The model is told the list follows and not to refer to it
 (`prompts.publications_note`); it never writes the list, so titles, dates and
 links are the catalog's. A catalog or search failure costs that part only.
 
+**What a person wrote**: a question that asks for a profiled person's
+documents, counting them or listing a kind of writing ("how many publications
+by Suneel Pandey", "Vibha Dhawan publications", "list articles by X";
+`_asks_for_authorship` in the pipeline), is led by the profile too. The
+catalog's own answer to it, the count or the list as asked, takes the place of
+the latest publications after the answer (`_authored`). When the catalog has no
+answer, the latest publications follow instead: understanding read "PK
+Bhattacharya works" as a title containing "pk", and the catalog found nothing.
+A combined question puts no catalog section before the profile. Until
+2026-10-22 the catalog answered these alone: "Vibha Dhawan publications" never
+read her profile, while "Vibha Dhawan work" led with it. Someone on no people
+page still gets the catalog's answer alone.
+
 ---
 
 ## What is read, and what becomes a block
@@ -527,6 +541,8 @@ retrieval.
 | --- | --- |
 | Site down or slow for a page | last good copy, marked stale in the header; never read before → no block, corpus only |
 | Connection fails outright (a kept-alive connection the site closed) | asked once more on a fresh connection (`fetch._get`); a timeout is not asked again, so a slow site costs one timeout. Before (2026-10-21), a theme page's read failed in 21 ms and the answer fell back to old documents |
+| Body times out or the connection drops mid-read | treated as a failure, so the last good copy stands (`fetch._body`). Before (2026-10-22), the error left `fetch` and `gather` dropped every page: "P K Bhattacharya work" read nothing, his profile included |
+| One page's read raises anything else | that page alone is unreadable (`reads[].ok` false); the question's other pages, a named person's profile among them, still lead (`evidence._read`) |
 | Page answers 200 with no content (maintenance) | treated as a failure (< 80 characters extracted) |
 | Redirect off the site | refused |
 | Embedding service down | similarity trigger skipped; opening sections still admitted |

@@ -522,11 +522,12 @@ _WRITING_WORDS = re.compile(
 
 
 def _asks_for_authorship(question: str, pq: ProcessedQuery) -> bool:
-    """Whether the catalog route is reading one named author's documents:
-    counting them ("how many publications by Suneel Pandey"), or listing a kind
-    of writing ("list articles by Vibha Dhawan"). Authorship is what the catalog
-    records and a profile page does not list. "What does Suneel Pandey work on"
-    names no kind of writing, so it stays a question about the person."""
+    """Whether the question asks for one named author's documents: counting
+    them ("how many publications by Suneel Pandey"), or listing a kind of
+    writing ("list articles by Vibha Dhawan"). Authorship is what the catalog
+    records and a profile page does not list, so the catalog's answer follows
+    the profile's. "What does Suneel Pandey work on" names no kind of writing,
+    so it is a question about the person alone."""
     analysis = pq.analysis
     if analysis is None or not getattr(analysis, "author", None):
         return False
@@ -538,23 +539,20 @@ def _asks_for_authorship(question: str, pq: ProcessedQuery) -> bool:
 
 def _priority_overrides_catalog(
     targets: list[Any] | None, *, themes_listing: bool = False,
-    about_authorship: bool = False,
 ) -> bool:
     """Whether a live page owns this question outright, so the catalog route —
     which cannot see these pages — must not answer it instead.
 
-    A named person's page gives way to a question about what that person
-    authored. Measured 2026-10-04: "how many publications by Suneel Pandey" and
-    "list articles by Vibha Dhawan" were both taken by the profile page, which
-    lists no publications, and refused, while the catalog holds 35 and 41."""
+    A named person's page owns every question about them, what they authored
+    included: the catalog's answer to that follows the answer (`_authored`).
+    Measured 2026-10-22: "Vibha Dhawan publications" was answered from the
+    catalog without her profile, while "Vibha Dhawan work" led with it."""
     for target in targets or ():
         if themes_listing and _names_a_theme_page(target):
             # Understanding can read "tell me about the climate change thematic"
             # as a theme listing; the themes are flat, so that theme's page answers.
             return True
         if target.reason not in _CATALOG_OVERRIDING:
-            continue
-        if about_authorship and target.reason == "person":
             continue
         if getattr(target.page, "is_home", False) and not themes_listing:
             continue  # "documents in each thematic area" is a catalog count
@@ -609,6 +607,12 @@ def _priority_evidence(
     return evidence
 
 
+def _profiled_people(targets: list[Any] | None) -> list[str]:
+    """The people the question names, each by the profile they were matched to."""
+    return [t.person.name for t in targets or ()
+            if t.reason == "person" and getattr(t, "person", None) is not None]
+
+
 def _work_people(question: str, pq: ProcessedQuery, targets: list[Any] | None) -> list[str]:
     """The people whose latest publications follow the answer: those the
     question names by their profile, when it asks for their work.
@@ -617,8 +621,7 @@ def _work_people(question: str, pq: ProcessedQuery, targets: list[Any] | None) -
     overruled the catalog, and listed none of her 22 publications; "Prasoon
     Singh work" found no profile and was answered with his publications alone.
     """
-    people = [t.person.name for t in targets or ()
-              if t.reason == "person" and getattr(t, "person", None) is not None]
+    people = _profiled_people(targets)
     if not people:
         return []
     from app.retrieval.priority.match import asks_for_work
@@ -648,6 +651,33 @@ def _publications(people: list[str]) -> tuple[str, list[str]]:
                 listed.append(person)
         s.set("people", len(listed))
     return "\n\n".join(sections), listed
+
+
+def _authored(
+    question: str, pq: ProcessedQuery, history: list[dict[str, str]] | None,
+    people: list[str],
+) -> tuple[str, list[str]]:
+    """What ``people`` wrote, to follow the answer their profile leads, when the
+    question asks for their writing: the catalog's own answer to it ("how many
+    publications by X" is a count, "list articles by X" a list of articles), and
+    the people it is about. Their latest publications when the catalog has no
+    answer: understanding's slots can miss ("PK Bhattacharya works" was read as
+    a title containing "pk"), while the people's names are known. Fail-open,
+    as `_publications` is."""
+    from app.retrieval.structured.answerer import answer_structured
+
+    with span("rag.authored") as s:
+        try:
+            structured = answer_structured(question, history, analysis=pq.analysis)
+        except Exception:
+            logger.warning("The catalog could not answer what %s wrote; listing "
+                           "their latest publications instead.", people, exc_info=True)
+            structured = None
+        answered = bool(structured and structured.get("catalog_answered"))
+        s.set("catalog", answered)
+    if answered:
+        return structured["answer"], list(people)
+    return _publications(people)
 
 
 def _db_section(
@@ -925,11 +955,15 @@ def _prepare(
     # tenders") must reach that page rather than be answered from the catalog.
     themes_listing = only_themes or _lists_themes(pq)
     priority_targets = _priority_targets(question, pq, themes_listing=themes_listing)
-    page_owned = _priority_overrides_catalog(
-        priority_targets, themes_listing=themes_listing,
-        about_authorship=_asks_for_authorship(question, pq),
-    )
+    page_owned = _priority_overrides_catalog(priority_targets, themes_listing=themes_listing)
     catalog_route = pq.intent == "structured" and not page_owned
+    # A named person's profile overrules the catalog, so what they wrote follows
+    # the answer: the catalog's own answer when the question asks for their
+    # writing ("how many publications by X"), else their latest publications
+    # when it asks for their work ("X work").
+    people = _profiled_people(priority_targets)
+    authorship = bool(people) and _asks_for_authorship(question, pq)
+    work_people = [] if authorship else _work_people(question, pq, priority_targets)
     # A theme named by part of a name several themes share is asked about,
     # unless the catalog answers the question: a count or a list is its own.
     if not catalog_route:
@@ -939,9 +973,10 @@ def _prepare(
     # A query that needs both catalog facts and document content: keep the
     # deterministic catalog answer and prefix it onto the grounded content answer.
     # Not for a theme listing a live page owns: the catalog's list of themes
-    # would repeat the home page the answer is built on.
+    # would repeat the home page the answer is built on. Nor for what a named
+    # person wrote: their profile leads, and the catalog's answer follows it.
     combined = ("database" in caps and bool(caps & _CONTENT_CAPS)
-                and not (themes_listing and page_owned))
+                and not (themes_listing and page_owned) and not authorship)
     # The home page's list of themes is followed by what each theme holds,
     # which the page cannot say. Not when the listing named one theme: that is
     # that theme's page's question.
@@ -959,18 +994,15 @@ def _prepare(
     chained = False
     # Whether the catalog has already been asked about this query, so the
     # empty-retrieval fallback at the end doesn't re-run a query that just came
-    # back with nothing. `combined` asks it via `_db_section` below.
+    # back with nothing. `combined` asks it via `_db_section` below, and a
+    # question about what a named person wrote via `_authored`.
     #
     # Deliberately not set for a scoped_summary that fell through: it returns None
     # both for a scope-less request and for one whose documents held no summarizable
     # text, and in the latter case a listing of those documents is exactly what is
     # worth showing. When the scope was genuinely empty the listing comes back empty
     # too, so the redundant case costs one query on a path that is already refusing.
-    db_consulted = combined
-
-    # A named person's profile overrules the catalog, so a question for their
-    # work gets the catalog's part, their latest publications, after the answer.
-    work_people = _work_people(question, pq, priority_targets)
+    db_consulted = combined or authorship
 
     if catalog_route:
         from app.retrieval.structured.answerer import answer_structured
@@ -1089,10 +1121,13 @@ def _prepare(
         requirements_future = pool.submit(
             copy_context().run, extract_requirements, pq.search_query
         )
-        publications_future = (
-            pool.submit(copy_context().run, _publications, work_people)
-            if work_people else None
-        )
+        publications_future = None
+        if authorship:
+            publications_future = pool.submit(
+                copy_context().run, _authored, question, pq, history, people
+            )
+        elif work_people:
+            publications_future = pool.submit(copy_context().run, _publications, work_people)
         # Sub-query planning is the one thing that needs the requirements
         # *before* retrieval rather than after it, so with the feature on the
         # extraction joins the critical path instead of overlapping it. Off — the
