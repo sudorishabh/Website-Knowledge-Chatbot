@@ -136,6 +136,28 @@ def test_other_questions_do_not_ask_for_the_themes(question):
 
 
 
+@pytest.mark.parametrize("question", [
+    "divisons of teri",
+    "TERI's divisons",
+    "teri devisions",
+    "What departmets does TERI have?",
+])
+def test_a_typo_in_another_name_for_the_themes_is_forgiven(question):
+    """Measured 2026-10-22: "divisons of teri" was answered from four annual
+    reports' lists of divisions, with six sources."""
+    assert asks_for_themes(question)
+    assert asks_only_for_themes(question)
+
+
+@pytest.mark.parametrize("question", [
+    "TERI theses",                                 # one letter from "themes"
+    "TERI themed events",
+    "Which division of TERI handles water?",       # a singular is not a typo
+])
+def test_a_word_near_themes_or_a_singular_is_not_a_typo(question):
+    assert not asks_for_themes(question)
+
+
 @pytest.mark.parametrize("question, only", [
     ("themes", True),
     ("Themes?", True),
