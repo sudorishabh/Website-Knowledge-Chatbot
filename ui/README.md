@@ -27,23 +27,44 @@ Drop a single tag onto any page — that's the whole install:
 | `data-fonts` | `off` skips loading the widget's web fonts (for a host whose CSP blocks Google Fonts); text falls back to system faces | on |
 
 The widget self-injects a launcher button (bottom-right), a welcome screen with
-TERI-relevant suggestion prompts, a **New chat** button (which also cancels any
-in-flight answer), streamed answers, inline source chips, and a **Copy** action
-under each answer. All markup and styles live
-inside a Shadow DOM, so the host site's CSS can't leak in and the widget's
-styles can't leak out. On phones (≤480px) it expands to full screen.
+the question box under its heading and the suggested questions listed beneath it
+(see [Suggested questions](#suggested-questions); the box moves to the foot once
+a conversation starts), a **New chat** button (which also cancels any in-flight
+answer and restores the welcome screen), an **Expand** button that opens the
+panel as a large dialog over a dimmed page (**Minimise** returns it), streamed
+answers, inline source chips, and a **Copy** action under each answer. All
+markup and styles live inside a Shadow DOM, so the host site's CSS can't leak
+in and the widget's styles can't leak out. On phones (≤480px) it expands to
+full screen.
 
 ### TERI branding
 
 Theme colors are CSS variables at the top of the `STYLES()` block in
-`script.js`. `--brand` is TERI indigo `#2D2F7D`, the teriin.org navigation bar;
-`--sun` is the saffron of the site's call-to-action buttons, used only in the
-rising-sun mark. The rest are indigo-tinted neutrals derived from `--brand`.
+`script.js`. `--brand` is TERI indigo `#2F2E8F`, used only where it marks
+something: the header title, user messages, the send button, links, the
+launcher and focus rings. The header is white; the area under it starts on a
+faint indigo tint that fades to white, and every other surface is an
+indigo-tinted neutral. The widget carries no logo.
 
-Text is set in IBM Plex Sans, with Source Serif 4 for the welcome heading. Both
-load from Google Fonts through a `<link>` the widget adds to the host page's
-`<head>`: Chrome ignores `@font-face` declared inside a shadow root, but a family
-the document loads is usable within it.
+Text is set in IBM Plex Sans, loaded from Google Fonts through a `<link>` the
+widget adds to the host page's `<head>`: Chrome ignores `@font-face` declared
+inside a shadow root, but a family the document loads is usable within it.
+
+### Suggested questions
+
+The questions on the start screen are a JSON array of strings in
+`data/queries_suggestions.json` (or the file `SUGGESTIONS_PATH` names), served
+by `GET /suggestions`. Edit the file and the API serves the new list on its next
+request, no restart needed; a browser that already fetched it may reuse its copy
+for up to five minutes. Blank entries are dropped and a question listed twice is
+shown once.
+
+The widget fetches the list when the reader first hovers, focuses or opens the
+launcher, so a page view that never opens the chat makes no request. Each new
+chat shuffles it and the list under the question box shows the first three.
+**Show all** opens the rest beneath them, the start screen scrolling if the
+list is long; **Show fewer** or Escape folds it back. If the list cannot be
+fetched, the section is not shown.
 
 ### Drupal integration
 
@@ -96,6 +117,7 @@ CORS_ALLOW_ORIGINS=https://teriin.org,https://www.teriin.org,http://localhost:55
 | Endpoint | Purpose |
 | --- | --- |
 | `POST /chat` | Streamed answer (SSE: `token` / `sources` / `done`; a terminal `error` event when generation fails mid-stream) |
+| `GET /suggestions` | The start screen's suggested questions, `{"suggestions": [...]}` |
 
 Sources render inline: each `[n]` marker in the answer becomes a chip naming the
 site it links to (`teriin`); hovering or focusing it opens a card with the

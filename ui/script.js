@@ -29,32 +29,16 @@
   const TOP_K = parseInt(cfg.topK || "", 10);
   const top_k = Number.isInteger(TOP_K) && TOP_K > 0 ? TOP_K : null;
 
-  const ICON = {
-    find: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
-    compare:
-      '<rect x="5" y="5" width="5" height="14" rx="1"/><rect x="14" y="5" width="5" height="14" rx="1"/>',
-    track: '<path d="M3 17l6-6 4 4 7-7"/><path d="M21 8v5h-5"/>',
-    list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/>',
-    analyze: '<path d="M5 21V11M12 21V4M19 21v-7"/>',
-    suggest:
-      '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z"/>',
-  };
-  const SUGGESTIONS = [
-    { text: "Find India's renewable energy capacity targets", icon: ICON.find },
-    { text: "Compare solar and wind energy adoption across states", icon: ICON.compare },
-    { text: "Track progress on India's net-zero commitments", icon: ICON.track },
-    { text: "List key recommendations on sustainable water management", icon: ICON.list },
-    { text: "Analyze the main drivers of urban air pollution", icon: ICON.analyze },
-    { text: "Suggest actions to improve industrial energy efficiency", icon: ICON.suggest },
-  ];
+  // Suggested questions on view before "Show all". The questions themselves
+  // come from the API (see loadSuggestions).
+  const SUGGEST_PEEK = 3;
 
-  // The widget's typefaces, linked from the host document: Chrome ignores
+  // The widget's typeface, linked from the host document: Chrome ignores
   // @font-face declared inside a shadow root, but a family the document loads
   // is usable within it. data-fonts="off" skips the request (for a host with a
-  // strict CSP); the font stacks then fall back to system faces.
+  // strict CSP); the font stack then falls back to system faces.
   const FONT_CSS =
-    "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600" +
-    "&family=Source+Serif+4:opsz,wght@8..60,600&display=swap";
+    "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap";
   const FONTS_ON = (cfg.fonts || "").trim().toLowerCase() !== "off";
 
   // Status words cycled while the bot is working, before the first token lands.
@@ -63,17 +47,6 @@
     "Reading relevant sources",
     "Generating your answer",
   ];
-
-  // The widget's mark, in the header and beside every AI reply: a sun rising
-  // over the horizon, for an institute working on energy. The sun takes the
-  // saffron accent and the ground lines take currentColor (see .sun__* rules).
-  const SUN_MARK =
-    '<svg class="sun" viewBox="0 0 24 24" fill="none" stroke-width="1.8" ' +
-    'stroke-linecap="round" aria-hidden="true">' +
-    '<path class="sun__rays" d="M12 6.5v2M5.3 9.3l1.4 1.4M18.7 9.3l-1.4 1.4"/>' +
-    '<path class="sun__disc" d="M6.5 16a5.5 5.5 0 0 1 11 0z"/>' +
-    '<path class="sun__ground" d="M3.5 16h17M7.5 19.5h9"/>' +
-    "</svg>";
 
   // The copy action under a settled answer, and the tick it swaps to.
   const COPY_ICON =
@@ -113,6 +86,14 @@
     '<path d="M8 7h9v9"/>' +
     "</svg>";
 
+  // The arrow at the end of each suggested question.
+  const ARROW_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M5 12h14"/>' +
+    '<path d="m12 5 7 7-7 7"/>' +
+    "</svg>";
+
   // Guard against double-injection.
   if (document.getElementById("teri-rag-widget")) return;
 
@@ -125,6 +106,9 @@
   // reset from leaking its turn into the fresh conversation's history.
   let currentAbort = null;
   let chatEpoch = 0;
+  // Every suggested question the API serves, and the fetch for them.
+  let suggestionPool = [];
+  let suggestionsLoad = null;
 
   let host, root, el;
 
@@ -132,6 +116,7 @@
     isOpen = true;
     host.classList.add("open");
     el.launcher.setAttribute("aria-expanded", "true");
+    loadSuggestions();
     autoGrow();
     el.input.focus();
   }
@@ -143,7 +128,7 @@
   }
   function toggleExpand() {
     const expanded = host.classList.toggle("expanded");
-    const label = expanded ? "Shrink" : "Expand";
+    const label = expanded ? "Minimise" : "Expand";
     el.expand.title = label;
     el.expand.setAttribute("aria-label", label);
     el.input.focus();
@@ -158,56 +143,128 @@
     stopLoader();
     history.length = 0;
     el.messages.querySelectorAll(".msg").forEach((n) => n.remove());
-    if (el.welcome) el.welcome.hidden = false;
+    setFresh(true);
     el.input.value = "";
     autoGrow();
     el.input.focus();
   }
 
+  // Layout changes that move the composer are animated FLIP-style: measure
+  // where each node sits, apply the change, then play each one from its old
+  // spot to its new one.
+  const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+  function flip(nodes, change) {
+    const before = nodes.map((n) => n.getBoundingClientRect().top);
+    change();
+    if (!isOpen || REDUCED_MOTION.matches) return;
+    nodes.forEach((n, i) => {
+      const delta = before[i] - n.getBoundingClientRect().top;
+      if (delta)
+        n.animate(
+          [{ transform: "translateY(" + delta + "px)" }, { transform: "none" }],
+          { duration: 320, easing: "cubic-bezier(.2, .8, .2, 1)" },
+        );
+    });
+  }
+
+  // A fresh conversation is one column under the header: the welcome heading,
+  // the composer, then a few suggested questions, scrolling together if the
+  // list runs long. The first message sends the composer to the foot; "New
+  // chat" brings it back.
+  function setFresh(on) {
+    if (host.classList.contains("fresh") === on) return;
+    flip([el.composer], () => {
+      host.classList.toggle("fresh", on);
+      el.welcome.hidden = !on;
+      el.stage.scrollTop = 0;
+      setBrowsing(false);
+      if (on) renderSuggestions(); // a new chat draws a new few
+    });
+  }
+
+  // "Show all" opens the rest of the list beneath the first few, in place.
+  function setBrowsing(open) {
+    host.classList.toggle("browsing", open);
+    el.suggestToggle.setAttribute("aria-expanded", String(open));
+  }
+  function toggleBrowsing() {
+    setBrowsing(!host.classList.contains("browsing"));
+  }
+
+  // The suggested questions are a list kept in data/queries_suggestions.json
+  // and served by GET /suggestions. Fetched once, at the first sign the reader
+  // means to open the chat (the launcher hovered, focused or clicked), so a
+  // page view that never opens it costs no request. A failed fetch leaves the
+  // section hidden and is tried again on the next open.
+  function loadSuggestions() {
+    if (suggestionsLoad) return;
+    suggestionsLoad = fetch(API_BASE + "/suggestions")
+      .then((res) =>
+        res.ok ? res.json() : Promise.reject(new Error(res.status)),
+      )
+      .then((data) => {
+        const list =
+          data && Array.isArray(data.suggestions) ? data.suggestions : [];
+        suggestionPool = list.filter((s) => typeof s === "string" && s.trim());
+        renderSuggestions();
+      })
+      .catch(() => {
+        suggestionsLoad = null;
+      });
+  }
+
+  // A fresh shuffle each time the start screen shows. The first few are on
+  // view; "Show all" adds the rest beneath them, in the same order, so opening
+  // the list never reshuffles what the reader was already looking at.
   function renderSuggestions() {
-    el.suggestions.innerHTML = "";
-    for (const s of SUGGESTIONS) {
+    const order = shuffled(suggestionPool);
+    el.suggestions.textContent = "";
+    order.forEach((text, idx) => {
+      const row = document.createElement("li");
+      if (idx >= SUGGEST_PEEK) row.className = "suggestions__extra";
       const item = document.createElement("button");
       item.type = "button";
       item.className = "suggestion";
-      item.innerHTML =
-        '<span class="suggestion__icon">' +
-        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" ' +
-        'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-        s.icon +
-        "</svg></span>" +
-        '<span class="suggestion__text">' +
-        escapeHtml(s.text) +
-        "</span>";
+      item.innerHTML = "<span></span>" + ARROW_ICON;
+      item.firstChild.textContent = text;
       item.addEventListener("click", () => {
-        el.input.value = s.text;
+        el.input.value = text;
         handleSend();
       });
-      el.suggestions.appendChild(item);
-    }
+      row.appendChild(item);
+      el.suggestions.appendChild(row);
+    });
+    el.suggestCount.textContent = String(order.length);
+    el.suggestToggle.hidden = order.length <= SUGGEST_PEEK;
+    el.suggest.hidden = !order.length;
   }
 
-  function hideWelcome() {
-    if (el.welcome && !el.welcome.hidden) el.welcome.hidden = true;
+  // Fisher–Yates, on a copy.
+  function shuffled(list) {
+    const out = list.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const swap = out[i];
+      out[i] = out[j];
+      out[j] = swap;
+    }
+    return out;
   }
+
   /* ---------------------------------------------------------------- *
    * Messages
    * ---------------------------------------------------------------- */
-  // A bot reply is the avatar beside a body column: the answer bubble, then the
-  // actions added once it settles. A user message is the bubble alone.
+  // A bot reply is a body column spanning the panel: the answer bubble, then
+  // the actions added once it settles. A user message is the bubble alone.
   function addMessage(role, text) {
-    hideWelcome();
+    setFresh(false);
     const wrap = document.createElement("div");
     wrap.className = "msg msg--" + role;
     let body = wrap;
     if (role === "bot") {
-      const avatar = document.createElement("div");
-      avatar.className = "msg__avatar";
-      avatar.setAttribute("aria-hidden", "true");
-      avatar.innerHTML = SUN_MARK;
       body = document.createElement("div");
       body.className = "msg__body";
-      wrap.append(avatar, body);
+      wrap.appendChild(body);
     }
     const bubble = document.createElement("div");
     bubble.className = "bubble";
@@ -338,7 +395,9 @@
       // The alert icon is drawn by .bubble--error::before.
       bubble.classList.add("bubble--error");
       bubble.textContent =
-        err && err.message ? err.message : "The request failed. Please try again.";
+        err && err.message
+          ? err.message
+          : "The request failed. Please try again.";
     } finally {
       if (currentAbort === ctrl) currentAbort = null;
       if (epoch === chatEpoch) setStreaming(false);
@@ -360,11 +419,15 @@
       });
     } catch (err) {
       if (err && err.name === "AbortError") throw err; // "New chat": stays silent
-      throw new Error("Couldn't reach the assistant. Check your connection and try again.");
+      throw new Error(
+        "Couldn't reach the assistant. Check your connection and try again.",
+      );
     }
     if (!res.ok || !res.body)
       throw new Error(
-        "The assistant is unavailable right now (HTTP " + res.status + "). Please try again shortly.",
+        "The assistant is unavailable right now (HTTP " +
+          res.status +
+          "). Please try again shortly.",
       );
 
     const reader = res.body.getReader();
@@ -590,8 +653,10 @@
         const depths = [];
         let openItem = false;
         while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) {
-          const indent = (lines[i].match(/^[ \t]*/) || [""])[0]
-            .replace(/\t/g, "    ").length;
+          const indent = (lines[i].match(/^[ \t]*/) || [""])[0].replace(
+            /\t/g,
+            "    ",
+          ).length;
           const content = renderInline(lines[i].replace(/^\s*[-*]\s+/, ""));
           if (!depths.length || indent > depths[depths.length - 1]) {
             depths.push(indent);
@@ -833,7 +898,9 @@
         if (section.kind === "pdf") return renderPdfBlock(section.text);
         const body = renderMarkdown(section.text);
         if (section.kind === "plain") return body;
-        return '<div class="answer-block answer-block--website">' + body + "</div>";
+        return (
+          '<div class="answer-block answer-block--website">' + body + "</div>"
+        );
       })
       .join("");
   }
@@ -894,7 +961,17 @@
   // — so a chip never splits a sentence from its full stop. Commas stay put.
   const CLOSING_PUNCT_RE = /^[.;:!?]+/;
   // Second-level labels that name a registry, not a site: "mnre.gov.in".
-  const GENERIC_SLD = new Set(["ac", "co", "com", "edu", "gov", "net", "nic", "org", "res"]);
+  const GENERIC_SLD = new Set([
+    "ac",
+    "co",
+    "com",
+    "edu",
+    "gov",
+    "net",
+    "nic",
+    "org",
+    "res",
+  ]);
 
   function linkCitations(container, citations) {
     const byNumber = new Map(citations.map((c) => [c.n, c]));
@@ -1024,7 +1101,10 @@
       bounds.left + POP_GAP,
       Math.min(center - w / 2, bounds.right - w - POP_GAP),
     );
-    const caret = Math.max(CARET_INSET, Math.min(center - left, w - CARET_INSET));
+    const caret = Math.max(
+      CARET_INSET,
+      Math.min(center - left, w - CARET_INSET),
+    );
     pop.style.top = (below ? r.bottom + POP_GAP : r.top - h - POP_GAP) + "px";
     pop.style.left = left + "px";
     pop.style.setProperty("--caret-x", caret + "px");
@@ -1116,6 +1196,7 @@
     loadFonts();
     host = document.createElement("div");
     host.id = "teri-rag-widget";
+    host.className = "fresh";
     root = host.attachShadow({ mode: "open" });
     document.body.appendChild(host);
     root.innerHTML = STYLES() + MARKUP();
@@ -1127,9 +1208,14 @@
       newChat: $("#new-chat"),
       close: $("#close"),
       expand: $("#expand"),
+      stage: $("#stage"),
       messages: $("#messages"),
       welcome: $("#welcome"),
+      suggest: $("#suggest"),
+      suggestToggle: $("#suggest-toggle"),
+      suggestCount: $("#suggest-count"),
       suggestions: $("#suggestions"),
+      composer: $("#composer"),
       input: $("#input"),
       send: $("#send"),
       citePop: $("#cite-pop"),
@@ -1138,9 +1224,13 @@
     el.launcher.addEventListener("click", () =>
       isOpen ? closePanel() : openPanel(),
     );
+    // Start the suggestions fetch a beat before the click lands.
+    el.launcher.addEventListener("pointerenter", loadSuggestions);
+    el.launcher.addEventListener("focus", loadSuggestions);
     el.newChat.addEventListener("click", resetChat);
     el.close.addEventListener("click", closePanel);
     el.expand.addEventListener("click", toggleExpand);
+    el.suggestToggle.addEventListener("click", toggleBrowsing);
     el.send.addEventListener("click", handleSend);
     el.input.addEventListener("input", autoGrow);
     el.input.addEventListener("keydown", (e) => {
@@ -1149,8 +1239,11 @@
         handleSend();
       }
     });
+    // Escape folds the full suggestion list first, then closes the panel.
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && isOpen) closePanel();
+      if (e.key !== "Escape" || !isOpen) return;
+      if (host.classList.contains("browsing")) toggleBrowsing();
+      else closePanel();
     });
 
     // Citation hover cards, delegated: chips arrive with every answer. Focus
@@ -1198,45 +1291,54 @@
       <section id="panel" class="panel" role="dialog" aria-label="${escapeHtml(TITLE)}">
         <header class="head">
           <div class="brand">
-            <span class="brand__mark">${SUN_MARK}</span>
-            <span class="brand__text">
-              <span class="brand__title">${escapeHtml(TITLE)}</span>
-              <span class="brand__sub">Answers from TERI's research</span>
-            </span>
+            <span class="brand__title">${escapeHtml(TITLE)}</span>
           </div>
           <div class="head__actions">
             <button id="new-chat" class="icon-btn" title="New chat" aria-label="New chat">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M17.6 3.6a2.1 2.1 0 0 1 3 3L13 14.2l-4 1 1-4z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
             </button>
             <button id="expand" class="icon-btn" title="Expand" aria-label="Expand">
-              <svg class="ic-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6"/></svg>
-              <svg class="ic-compress" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4v6h6M10 20v-6H4M14 10l6-6M10 14l-6 6"/></svg>
+              <svg class="ic-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/></svg>
+              <svg class="ic-compress" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg>
             </button>
-            <button id="close" class="icon-btn" title="Close" aria-label="Close">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            <button id="close" class="icon-btn" title="Collapse" aria-label="Collapse">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
             </button>
           </div>
         </header>
 
-        <main id="messages" class="messages" aria-live="polite">
-          <div id="welcome" class="welcome">
-            <h2 class="welcome__title">What would you like to know?</h2>
-            <p class="welcome__hint">Ask about TERI's research, publications, people and projects. Every answer links to the sources it draws on.</p>
-            <div id="suggestions" class="suggestions"></div>
-          </div>
-        </main>
+        <div id="stage" class="stage">
+          <main id="messages" class="messages" aria-live="polite">
+            <div id="welcome" class="welcome">
+              <h2 class="welcome__title">What would you like to know about TERI?</h2>
+              <p class="welcome__hint">Ask about its research, publications, people or projects.</p>
+            </div>
+          </main>
 
-        <footer class="composer">
-          <div class="composer__box">
-            <textarea id="input" class="composer__input" rows="1"
-              aria-label="Your question"
-              placeholder="Ask a question about TERI's work"></textarea>
-            <button id="send" class="composer__send" title="Send" aria-label="Send">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
-            </button>
-          </div>
-          <p class="composer__note">AI answers can be wrong. Check the linked sources.</p>
-        </footer>
+          <footer id="composer" class="composer">
+            <div class="composer__box">
+              <textarea id="input" class="composer__input" rows="1"
+                aria-label="Ask a question about TERI's work"
+                placeholder="Ask a question about TERI's work"></textarea>
+              <button id="send" class="composer__send" title="Send" aria-label="Send">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+              </button>
+            </div>
+            <p class="composer__note">AI answers can be wrong. Check the linked sources.</p>
+          </footer>
+
+          <section id="suggest" class="suggest" aria-labelledby="suggest-label" hidden>
+            <div class="suggest__head">
+              <span id="suggest-label" class="suggest__title">Suggested questions</span>
+              <button id="suggest-toggle" class="suggest__toggle" type="button" aria-expanded="false" aria-controls="suggestions">
+                <span class="suggest__more">Show all <span id="suggest-count"></span></span>
+                <span class="suggest__less">Show fewer</span>
+                <svg class="suggest__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </div>
+            <ul id="suggestions" class="suggestions"></ul>
+          </section>
+        </div>
 
         <div id="cite-pop" class="cite-pop" aria-hidden="true"></div>
       </section>
@@ -1246,31 +1348,39 @@
   /* ================================================================ *
    * Styles — fully scoped inside the shadow root.
    *
-   * Indigo (#2D2F7D, the teriin.org navigation bar) carries the brand:
-   * header, user messages, send, launcher. Saffron, from the same
-   * site's call-to-action buttons, appears only in the sun mark. Every
-   * other surface is white or an indigo-tinted grey.
+   * Indigo (#2F2E8F) carries the brand, and only where it marks
+   * something: the title, user messages, send, launcher, links, focus.
+   * Every other surface is white or an indigo-tinted grey, so the answer
+   * is what the eye lands on.
    * ================================================================ */
   function STYLES() {
     return `<style>
     :host {
-      --brand: #2d2f7d;
-      --brand-deep: #1f2163;
-      --brand-mist: #eeeff8;
+      --brand: #2f2e8f;
+      --brand-deep: #24236f;
+      --brand-mist: #eeeff6;
       --brand-haze: #f6f6fb;
-      --sun: #f5b21b;
-      --ink: #1a1b3d;
-      --slate: #5d6080;
-      --line: #e3e4ef;
-      --line-strong: #d4d5e5;
+      --tint: #f3f4fa;
+      --ink: #1b1a45;
+      --text: #2a2a3c;
+      --slate: #5e5f78;
+      --faint: #6b6c85;
+      --icon: #4a4b66;
+      --icon-faint: #9a9bb5;
+      --line: #e6e7f0;
+      --line-strong: #c9cbe0;
+      --edge: #dcddea;
       --bad: #b4233a;
       --bad-mist: #fcf0f2;
       --warn: #84570a;
       --warn-mist: #fff6e3;
       --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
-      --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       --ease: cubic-bezier(.2, .8, .2, 1);
+      --shadow: 0 24px 60px -24px rgba(27, 26, 69, .28), 0 2px 6px rgba(27, 26, 69, .06);
+      /* Side padding of the panel's one column. The expanded dialog holds the
+         column to 720px, gutters included. */
+      --gutter: 20px;
       /* Alert glyph for the error and unverified-figures notes, painted in
          currentColor through a mask. */
       --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16.5v.01'/%3E%3C/svg%3E");
@@ -1279,7 +1389,7 @@
       font-family: var(--sans);
       font-size: 14.5px;
       line-height: 1.55;
-      color: var(--ink);
+      color: var(--text);
       -webkit-font-smoothing: antialiased;
     }
     *, *::before, *::after { box-sizing: border-box; }
@@ -1287,18 +1397,13 @@
     button { font: inherit; }
     :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
-    /* ---- Sun mark: saffron sun, ground lines in the surrounding colour ---- */
-    .sun__rays { stroke: var(--sun); }
-    .sun__disc { fill: var(--sun); }
-    .sun__ground { stroke: currentColor; }
-
     /* ---- Launcher ---- */
     .launcher {
       position: fixed;
       right: 24px;
       bottom: 24px;
-      width: 58px;
-      height: 58px;
+      width: 56px;
+      height: 56px;
       border: none;
       border-radius: 50%;
       background: var(--brand);
@@ -1306,12 +1411,12 @@
       cursor: pointer;
       display: grid;
       place-items: center;
-      box-shadow: 0 12px 28px -8px rgba(45, 47, 125, .6), 0 2px 6px rgba(45, 47, 125, .25);
+      box-shadow: 0 10px 24px -8px rgba(47, 46, 143, .55), 0 2px 6px rgba(47, 46, 143, .2);
       z-index: 2147483646;
       transition: transform .2s var(--ease), background-color .2s ease;
     }
-    .launcher:hover { background: var(--brand-deep); transform: translateY(-2px); }
-    .launcher:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+    .launcher:hover { background: var(--brand-deep); transform: translateY(-1px); }
+    .launcher:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
     .launcher svg { grid-area: 1 / 1; transition: opacity .18s ease, transform .25s var(--ease); }
     .launcher__dot { fill: var(--brand); transition: fill .2s ease; }
     .launcher:hover .launcher__dot { fill: var(--brand-deep); }
@@ -1324,16 +1429,14 @@
       position: fixed;
       right: 24px;
       bottom: 96px;
-      width: 404px;
+      width: 408px;
       max-width: calc(100vw - 32px);
       height: 660px;
       max-height: calc(100vh - 124px);
       background: #fff;
-      border-radius: 18px;
-      box-shadow:
-        0 0 0 1px rgba(45, 47, 125, .08),
-        0 24px 56px -12px rgba(26, 27, 61, .32),
-        0 8px 18px -8px rgba(26, 27, 61, .14);
+      border: 1px solid var(--edge);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
       display: none;
       flex-direction: column;
       overflow: hidden;
@@ -1348,78 +1451,73 @@
 
     /* Expanded: a large dialog centred over a dimmed page, its content held to
        a readable column. */
+    :host(.expanded) {
+      --gutter: max(32px, calc((100% - 720px) / 2 + 32px));
+    }
     :host(.expanded) .panel {
       inset: 0;
       margin: auto;
       width: min(1080px, calc(100vw - 48px));
-      height: min(880px, calc(100vh - 48px));
+      height: min(760px, calc(100vh - 48px));
       max-width: none;
       max-height: none;
       transform-origin: center;
-      box-shadow: 0 0 0 100vmax rgba(17, 18, 48, .5), 0 32px 80px -16px rgba(0, 0, 0, .45);
-    }
-    :host(.expanded) .messages,
-    :host(.expanded) .composer {
-      padding-left: max(24px, calc((100% - 720px) / 2));
-      padding-right: max(24px, calc((100% - 720px) / 2));
+      box-shadow: 0 0 0 100vmax rgba(27, 26, 69, .45), var(--shadow);
     }
 
-    /* ---- Header: the indigo band of the host site's navigation ---- */
+    /* ---- Header: the title in indigo on white, a hairline below ---- */
     .head {
       flex-shrink: 0;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 14px 10px 14px 16px;
-      background: var(--brand);
-      color: #fff;
+      padding: 0 10px 0 20px;
+      border-bottom: 1px solid var(--line);
     }
-    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
-    .brand__mark {
-      flex-shrink: 0;
-      width: 38px;
-      height: 38px;
-      display: grid;
-      place-items: center;
-      border-radius: 11px;
-      background: rgba(255, 255, 255, .1);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
-    }
-    .brand__mark svg { width: 25px; height: 25px; }
-    .brand__text { display: flex; flex-direction: column; min-width: 0; }
-    .brand__title,
-    .brand__sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .brand__title { font-size: 15.5px; font-weight: 600; line-height: 1.25; letter-spacing: .005em; }
-    .brand__sub { font-size: 12.5px; line-height: 1.35; color: rgba(255, 255, 255, .72); }
+    .brand { display: flex; flex-direction: column; min-width: 0; }
+    .brand__title { font-size: 16px; font-weight: 600; line-height: 1.3; letter-spacing: .01em; color: var(--brand); }
     .head__actions { flex-shrink: 0; display: flex; align-items: center; gap: 2px; }
     .icon-btn {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       display: grid;
       place-items: center;
       padding: 0;
       border: none;
-      border-radius: 9px;
+      border-radius: 8px;
       background: transparent;
-      color: rgba(255, 255, 255, .8);
+      color: var(--icon);
       cursor: pointer;
       transition: background-color .15s ease, color .15s ease;
     }
-    .icon-btn:hover { background: rgba(255, 255, 255, .12); color: #fff; }
-    .icon-btn:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+    .icon-btn:hover { background: var(--brand-mist); color: var(--ink); }
     .icon-btn svg { width: 18px; height: 18px; }
     .ic-compress { display: none; }
     :host(.expanded) .ic-expand { display: none; }
     :host(.expanded) .ic-compress { display: block; }
-    :host(.expanded) .head { padding: 16px 16px 16px 22px; }
+    :host(.expanded) .head { height: 64px; padding: 0 18px 0 28px; }
+    :host(.expanded) .brand__title { font-size: 17px; }
+
+    /* ---- Stage: everything under the header, on a faint indigo wash that
+       fades to white. On the stage, not the message list, so the wash stays
+       put while answers scroll over it. ---- */
+    .stage {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, var(--tint) 0%, #fff 300px);
+    }
 
     /* ---- Messages ---- */
     .messages {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding: 22px 18px 14px;
+      padding: 22px var(--gutter) 14px;
       display: flex;
       flex-direction: column;
       gap: 20px;
@@ -1427,64 +1525,122 @@
       scrollbar-color: var(--line-strong) transparent;
     }
 
-    /* ---- Welcome: a heading, one line of help, and a list of questions ---- */
-    .welcome { padding: 2px 2px 4px; }
+    /* ---- Welcome: the start screen's heading and the line under it ---- */
+    .welcome {
+      text-align: center;
+      animation: fade-in .3s ease both;
+    }
     .welcome__title {
-      margin: 0 0 6px;
-      font-family: var(--serif);
+      margin: 0;
       font-size: 25px;
       font-weight: 600;
       line-height: 1.2;
       letter-spacing: -.01em;
-      color: var(--brand);
+      color: var(--ink);
+      text-wrap: balance;
     }
-    .welcome__hint { margin: 0 0 20px; font-size: 14px; line-height: 1.55; color: var(--slate); }
-    /* One bordered list; the 1px grid gap over the hairline background draws
-       the dividers, so they stay crisp in one column or two. */
-    .suggestions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1px;
-      background: var(--line);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
+    .welcome__hint {
+      margin: 10px 0 0;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--slate);
+      text-wrap: pretty;
     }
-    .suggestion {
+    :host(.expanded) .welcome__title { font-size: 36px; }
+    :host(.expanded) .welcome__hint { margin-top: 12px; font-size: 17px; }
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ---- Fresh-chat layout ---- */
+    /* One column from the top: the welcome, the composer, then the suggested
+       questions, the whole stage scrolling once "Show all" runs it past the
+       foot. Gone once the conversation starts. The space between welcome and
+       composer is the list's padding, not the composer's, so the composer's
+       own top edge is the same in both layouts and its slide to the foot
+       starts from where it was. */
+    :host(.fresh) .stage {
+      display: block;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-strong) transparent;
+    }
+    :host(.fresh) .messages { overflow: visible; padding-top: 44px; padding-bottom: 20px; }
+    :host(.fresh.expanded) .messages { padding-top: 88px; padding-bottom: 28px; }
+
+    /* ---- Suggestions: a ruled list under the composer ---- */
+    .suggest { display: none; }
+    :host(.fresh) .suggest {
+      display: block;
+      padding: 32px var(--gutter) max(28px, env(safe-area-inset-bottom));
+      animation: fade-in .25s ease both;
+    }
+    :host(.fresh.expanded) .suggest { padding-top: 44px; padding-bottom: 48px; }
+    .suggest__head {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
-      width: 100%;
-      padding: 11px 14px 11px 12px;
+      padding: 0 10px 8px;
+    }
+    :host(.expanded) .suggest__head { padding: 0 12px 10px; }
+    .suggest__title { font-size: 13px; font-weight: 500; line-height: 1; color: var(--slate); }
+    .suggest__toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 0;
       border: none;
-      background: #fff;
-      color: var(--ink);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--brand);
       font-size: 13.5px;
+      font-weight: 500;
+      line-height: 1;
+      cursor: pointer;
+      transition: color .15s ease;
+    }
+    :host(.expanded) .suggest__toggle { font-size: 14px; }
+    .suggest__toggle:hover { color: var(--ink); }
+    .suggest__less,
+    :host(.browsing) .suggest__more { display: none; }
+    :host(.browsing) .suggest__less { display: inline; }
+    .suggest__chevron { width: 16px; height: 16px; transition: transform .2s var(--ease); }
+    :host(.browsing) .suggest__chevron { transform: rotate(180deg); }
+    .suggestions {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid var(--line);
+    }
+    :host(:not(.browsing)) .suggestions__extra { display: none; }
+    .suggestions__extra { animation: fade-in .2s ease both; }
+    /* A question is a row with an arrow at its end, ruled off from the next;
+       the row lights up under the pointer. */
+    .suggestion {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 10px;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      font-size: 14.5px;
       line-height: 1.4;
       text-align: left;
       cursor: pointer;
-      transition: background-color .15s ease;
-    }
-    .suggestion:hover { background: var(--brand-haze); }
-    .suggestion:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
-    .suggestion__icon {
-      flex-shrink: 0;
-      width: 30px;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      border-radius: 8px;
-      background: var(--brand-mist);
-      color: var(--brand);
       transition: background-color .15s ease, color .15s ease;
     }
-    .suggestion:hover .suggestion__icon { background: var(--brand); color: #fff; }
-
-    :host(.expanded) .welcome { margin-top: 6vh; }
-    :host(.expanded) .welcome__title { font-size: 34px; margin-bottom: 8px; }
-    :host(.expanded) .welcome__hint { font-size: 15.5px; margin-bottom: 26px; }
-    :host(.expanded) .suggestions { grid-template-columns: 1fr 1fr; }
-    :host(.expanded) .suggestion { padding: 14px 16px 14px 14px; font-size: 14px; }
+    .suggestion:hover { background: var(--brand-haze); color: var(--brand); }
+    .suggestion svg { flex: none; width: 16px; height: 16px; color: var(--icon-faint); transition: color .15s ease; }
+    .suggestion:hover svg { color: var(--brand); }
+    :host(.expanded) .suggestion { padding: 14px 12px; font-size: 15.5px; }
 
     /* ---- Message rows ---- */
     .msg { display: flex; animation: msg-in .22s var(--ease) both; }
@@ -1496,26 +1652,14 @@
     .bubble { white-space: pre-wrap; overflow-wrap: break-word; }
     .msg--user .bubble {
       max-width: 85%;
-      padding: 10px 14px;
-      border-radius: 18px 18px 5px 18px;
+      padding: 9px 14px;
+      border-radius: 14px 14px 4px 14px;
       background: var(--brand);
       color: #fff;
       line-height: 1.5;
     }
-    /* Bot replies span the column as prose beside the mark; no bubble. */
-    .msg--bot { gap: 12px; align-items: flex-start; }
-    .msg__avatar {
-      flex-shrink: 0;
-      width: 30px;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      border-radius: 9px;
-      background: var(--brand);
-      color: #fff;
-    }
-    .msg__avatar svg { width: 21px; height: 21px; }
-    .msg__body { flex: 1; min-width: 0; padding-top: 4px; }
+    /* Bot replies span the column as prose; no bubble. */
+    .msg__body { flex: 1; min-width: 0; }
     .msg--bot .bubble { line-height: 1.65; }
     :host(.expanded) .msg--bot .bubble { font-size: 15px; }
     .bubble--pending { color: var(--slate); }
@@ -1571,7 +1715,7 @@
       font-weight: 500;
       background: linear-gradient(100deg,
         var(--slate) 25%, var(--brand) 45%,
-        #7376d0 55%, var(--slate) 75%);
+        #6d6cc9 55%, var(--slate) 75%);
       background-size: 220% 100%;
       -webkit-background-clip: text;
               background-clip: text;
@@ -1620,7 +1764,7 @@
     .bubble a {
       color: var(--brand);
       text-decoration: underline;
-      text-decoration-color: rgba(45, 47, 125, .35);
+      text-decoration-color: rgba(47, 46, 143, .35);
       text-underline-offset: 2px;
     }
     .bubble a:hover { text-decoration-color: currentColor; }
@@ -1646,6 +1790,7 @@
       margin: 0 0 .8em;
       border: 1px solid var(--line);
       border-radius: 10px;
+      background: #fff;
       overflow-x: auto;
     }
     .bubble table { width: 100%; border-collapse: collapse; font-size: .9em; line-height: 1.45; }
@@ -1663,7 +1808,7 @@
     /* ---- Answer blocks ---- */
     /* Website-sourced content is the answer proper, so it carries no container
        of its own. Only the supplementary PDF block is set apart, on the same
-       tinted surface + hairline the code blocks and citation chips use. */
+       tinted surface + hairline the code blocks use. */
     .answer-block--pdf {
       margin: 4px 0 .8em;
       padding: 12px 14px;
@@ -1693,7 +1838,7 @@
       padding: 0 8px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: var(--brand-haze);
+      background: #fff;
       color: var(--slate);
       font-size: 11.5px;
       font-weight: 500;
@@ -1724,7 +1869,7 @@
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 12px;
-      box-shadow: 0 14px 34px -6px rgba(26, 27, 61, .2), 0 2px 6px rgba(26, 27, 61, .06);
+      box-shadow: 0 14px 34px -6px rgba(27, 26, 69, .2), 0 2px 6px rgba(27, 26, 69, .06);
       color: var(--ink);
       font-size: 13px;
       line-height: 1.4;
@@ -1805,21 +1950,24 @@
     }
 
     /* ---- Composer: a rounded box with the send button inside ---- */
-    .composer { flex-shrink: 0; padding: 8px 16px 12px; background: #fff; }
+    .composer { flex-shrink: 0; padding: 8px var(--gutter) 14px; }
+    :host(.expanded) .composer { padding-bottom: 20px; }
+    /* A fresh chat's foot is the suggestions, not the composer. */
+    :host(.fresh) .composer { padding-bottom: 0; }
     .composer__box {
       display: flex;
       align-items: flex-end;
       gap: 8px;
-      padding: 6px 6px 6px 14px;
+      padding: 8px 8px 8px 18px;
       background: #fff;
       border: 1px solid var(--line-strong);
-      border-radius: 16px;
-      box-shadow: 0 1px 2px rgba(26, 27, 61, .04), 0 6px 18px -8px rgba(26, 27, 61, .14);
+      border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(27, 26, 69, .04), 0 6px 20px rgba(27, 26, 69, .06);
       transition: border-color .15s ease, box-shadow .15s ease;
     }
     .composer__box:focus-within {
       border-color: var(--brand);
-      box-shadow: 0 0 0 3px rgba(45, 47, 125, .12);
+      box-shadow: 0 0 0 3px rgba(47, 46, 143, .14);
     }
     .composer__input {
       flex: 1;
@@ -1832,20 +1980,21 @@
       background: transparent;
       color: var(--ink);
       font: inherit;
+      font-size: 15px;
       line-height: 1.45;
     }
-    .composer__input::placeholder { color: #74779a; }
+    .composer__input::placeholder { color: #7a7b94; }
     .composer__input:focus,
     .composer__input:focus-visible { outline: none; }
     .composer__send {
       flex-shrink: 0;
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       display: grid;
       place-items: center;
       padding: 0;
       border: none;
-      border-radius: 11px;
+      border-radius: 10px;
       background: var(--brand);
       color: #fff;
       cursor: pointer;
@@ -1859,15 +2008,17 @@
     .composer__send:disabled,
     .composer__send.busy {
       background: var(--brand-mist);
-      color: #9496bd;
+      color: var(--icon-faint);
       cursor: default;
       transform: none;
     }
-    .composer__note { margin: 8px 0 0; text-align: center; font-size: 11.5px; line-height: 1.4; color: var(--slate); }
+    .composer__note { margin: 10px 0 0; text-align: center; font-size: 12px; line-height: 1.4; color: var(--faint); }
 
-    :host(.expanded) .composer { padding-bottom: 20px; }
-    :host(.expanded) .composer__box { padding: 8px 8px 8px 18px; border-radius: 18px; }
-    :host(.expanded) .composer__input { min-height: 44px; font-size: 15px; }
+    /* The design's 60px box: a 40px send button inset 9px. */
+    :host(.expanded) .composer__box { padding: 9px 9px 9px 20px; }
+    :host(.expanded) .composer__input { font-size: 16px; }
+    :host(.expanded) .composer__send { width: 40px; height: 40px; }
+    :host(.expanded) .composer__note { font-size: 12.5px; }
 
     /* ---- Mobile: full screen ---- */
     @media (max-width: 480px) {
@@ -1879,15 +2030,18 @@
         height: 100%;
         max-width: none;
         max-height: none;
+        border: none;
         border-radius: 0;
         box-shadow: none;
       }
-      .head { padding-top: max(14px, env(safe-area-inset-top)); }
-      .composer { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+      .head {
+        height: calc(56px + env(safe-area-inset-top));
+        padding-top: env(safe-area-inset-top);
+      }
+      .composer { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
       #expand { display: none; }
       .launcher { right: 16px; bottom: 16px; }
-      :host(.expanded) .suggestions { grid-template-columns: 1fr; }
-      :host(.expanded) .welcome__title { font-size: 26px; }
+      :host(.expanded) .welcome__title { font-size: 28px; }
     }
 
     @media (prefers-reduced-motion: reduce) {

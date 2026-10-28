@@ -416,6 +416,10 @@ class Settings(BaseSettings):
     # the shared request threadpool (~40 threads) that auth dependencies,
     # probes and other sync offloads borrow from. Extra chats queue here.
     chat_stream_max_concurrency: int = 64
+    # The chat widget's suggested questions: a JSON array of strings, served by
+    # GET /suggestions and re-read whenever the file changes, so an edit shows
+    # without a restart. Empty means the shipped `data/queries_suggestions.json`.
+    suggestions_path: str = ""
     # Expose infrastructure detail (collection name, point counts, tuning
     # values, raw error strings) on /ready and /metrics. Off by default: the
     # retrieval API is public-facing and those bodies fingerprint the
