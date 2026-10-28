@@ -53,9 +53,11 @@ graphify-out/
 
 # --- Local data and runtime output ------------------------------------------
 # Local data stays out of git, except the priority page list: it is read at
-# question time and is the authority for the theme hierarchy.
+# question time and is the authority for the theme hierarchy; and the chat
+# widget's suggested questions, served by GET /suggestions.
 data/*
 !data/priority_crawl_pages.json
+!data/queries_suggestions.json
 qdrant_storage/
 pdf_examples/
 tools/local_tests/results/
@@ -91,3 +93,5 @@ reports/e2e_ingest_audit/*/documents/
 # Before/after snapshots and rerun lists from canary ingest runs. Like the
 # date-audit snapshots they measure one machine's corpus at one moment.
 reports/canary/
+# Design mockups for the chat widget, kept beside it for reference.
+ui/temp_ui/

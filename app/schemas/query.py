@@ -78,6 +78,11 @@ class SearchBlock(BaseModel):
     section_heading: str | None = None
 
 
+class SuggestionsResponse(BaseModel):
+    # In file order; the widget picks which few to show.
+    suggestions: list[str] = Field(default_factory=list)
+
+
 class DetectedIntent(BaseModel):
     label: str
     confidence: float = 1.0
