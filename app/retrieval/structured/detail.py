@@ -69,6 +69,14 @@ def enabled() -> bool:
     return bool(getattr(get_settings(), "catalog_answer_detail_enabled", True))
 
 
+def followups_enabled() -> bool:
+    """Whether a catalog answer's offers are sent as follow-up chips. Read
+    defensively, like `enabled`, so a partial settings stub reads as off."""
+    from app.config import get_settings
+
+    return bool(getattr(get_settings(), "followups_enabled", False))
+
+
 @dataclass
 class Detail:
     """What follows a headline: sentences that continue its paragraph
@@ -77,6 +85,9 @@ class Detail:
     lead: list[str] = field(default_factory=list)
     sections: list[str] = field(default_factory=list)
     citations: list[dict[str, Any]] = field(default_factory=list)
+    #: What to ask next, as requests the widget shows as clickable follow-ups
+    #: (see `offer`). Empty unless `followups_enabled` is on.
+    followups: list[str] = field(default_factory=list)
 
     def add_lead(self, text: str | None) -> None:
         if text:
@@ -85,6 +96,19 @@ class Detail:
     def add(self, text: str | None) -> None:
         if text:
             self.sections.append(text)
+
+    def offer(self, text: str | None, questions: Sequence[str] = ()) -> None:
+        """The closing offer of what to ask next.
+
+        With follow-ups on, an offer that comes as complete requests becomes
+        those requests — shown under the answer as chips — instead of a line of
+        italics saying the same thing; an offer with no requests (one that needs
+        the visitor to name something) stays as text either way. Off, the text,
+        exactly as before."""
+        if questions and followups_enabled():
+            self.followups.extend(questions)
+        else:
+            self.add(text)
 
     def render_onto(self, headline: str) -> str:
         opening = " ".join([headline, *self.lead])
@@ -347,13 +371,14 @@ def mentions_sentence(
 def _count_followup(
     total: int, *, years: list[tuple[int, int]], bundle: str | None,
     filters: RecordFilters,
-) -> str:
-    """What to ask next. Only follow-ups the catalog route answers from the
-    conversation are offered — "list them" and "break them down by year" were
-    checked live against the turn before them — and only dimensions that vary.
-    Nothing when the count already lists every one."""
+) -> tuple[str, list[str]]:
+    """What to ask next, as a line of text and as the requests it offers. Only
+    follow-ups the catalog route answers from the conversation are offered —
+    "list them" and "break them down by year" were checked live against the
+    turn before them — and only dimensions that vary. Nothing when the count
+    already lists every one."""
     if total <= ALL_ITEMS:
-        return ""
+        return "", []
     dimensions = []
     if len(years) > 1:
         dimensions.append("year")
@@ -361,12 +386,13 @@ def _count_followup(
         dimensions.append("content type")
     elif not filters.theme:
         dimensions.append("theme")
+    requests = ["List them", *(f"Break them down by {d}" for d in dimensions[:2])]
     if not dimensions:
-        return followup("You can ask me to list them.")
+        return followup("You can ask me to list them."), requests
     return followup(
         "You can ask me to list them, or to break them down by "
         f"{' or '.join(dimensions[:2])}."
-    )
+    ), requests
 
 
 # --------------------------------------------------------------------------- #
@@ -406,7 +432,7 @@ def for_count(
     detail.add(items)
     detail.citations = citations
     detail.add(mentions)
-    detail.add(_count_followup(total, years=years, bundle=bundle, filters=filters))
+    detail.offer(*_count_followup(total, years=years, bundle=bundle, filters=filters))
     return detail
 
 

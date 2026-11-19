@@ -809,3 +809,47 @@ def test_a_theme_overview_table(catalog, monkeypatch):
 
 def test_a_theme_overview_of_nothing_is_empty(catalog):
     assert tools.theme_overview([]) == ""
+
+
+# --------------------------------------------------------------------------- #
+# What to ask next, as follow-up chips (followups_enabled).
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def chips(monkeypatch):
+    monkeypatch.setattr(get_settings(), "followups_enabled", True, raising=False)
+
+
+def test_with_chips_on_a_counts_offer_becomes_requests_not_italics(catalog, chips):
+    r = _count(theme="Climate Change")
+    assert r.followups == ["List them", "Break them down by year"]
+    assert "You can ask me" not in r.rendered
+    assert r.rendered.endswith("- [Title 2](https://teriin.org/a/2) — 20 Apr 2026")
+
+
+def test_with_chips_on_every_dimension_that_varies_is_offered(catalog, chips):
+    r = _count(None, author="Suneel Pandey")
+    assert r.followups == [
+        "List them", "Break them down by year", "Break them down by content type",
+    ]
+
+
+def test_with_chips_off_the_offer_stays_text_and_nothing_else_changes(catalog):
+    r = _count(theme="Climate Change")
+    assert r.followups == []
+    assert r.rendered.endswith("*You can ask me to list them, or to break them down by year.*")
+
+
+def test_a_count_that_lists_everything_offers_nothing(catalog, chips):
+    catalog.total = detail.ALL_ITEMS
+    assert _count(theme="Climate Change").followups == []
+
+
+def test_a_composed_answer_carries_its_followups_only_when_it_has_some():
+    from app.retrieval.structured.types import ToolResult
+
+    with_chips = answerer._compose([ToolResult(tool="count_records", rendered="12.",
+                                               followups=["List them"])])
+    assert with_chips["followups"] == ["List them"]
+    without = answerer._compose([ToolResult(tool="count_records", rendered="12.")])
+    assert "followups" not in without
