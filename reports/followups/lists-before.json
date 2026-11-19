@@ -1,0 +1,778 @@
+{
+ "label": "lists-before",
+ "base": "http://127.0.0.1:8012",
+ "ran_at": "2026-11-18 15:47",
+ "minutes": 4.0,
+ "seeds": [
+  {
+   "kind": "list",
+   "question": "list down all the management people and in what sectors do they work?",
+   "answer": "The management people named as signatories are listed below with their organizations and titles; the page does not specify an industry sector for each person individually [1].\n\n### Leadership and executive roles\n- **Mr Sanjeev Aggarwal** — CEO, Amplus Energy; individual sector not specified.\n- **Mr Vineet Mittal** — Managing Director, Avaada Group of Companies; individual sector not specified.\n- **Mr D Rajkumar** — CMD, BPCL; individual sector not specified.\n- **Mr Rajiv Ranjan Mishra** — Managing Director-India, CLP India; individual sector not specified.\n- **Mr Mahendra Singhi** — MD & CEO, Dalmia Cement (Bharat) Ltd, and Co-Chair, TERI CBS Executive Committee; individual sector not specified.\n- **Mr Ravichandran Purushothaman** — India Head, Danfoss Industries Pvt. Ltd; individual sector not specified.\n- **Mr Videh Kumar Jaipuriar** — CEO, Delhi International Airport – GMR Group; individual sector not specified.\n- **Mr Anshu Dewan** — President, DS Group of Companies; individual sector not specified.\n- **Mr Chitranjan Kaushik** — Chief Operating Officer, Ecofirst Services Ltd; individual sector not specified.\n- **Mr Kalyan Krishnamurthy** — Chief Executive Officer, Flipkart Group; individual sector not specified.\n- **Mr Saif Dhorajiwala** — Founder Director, Fourth Partner Energy Ltd; individual sector not specified.\n- **Mr Nadir Godrej** — Managing Director, Godrej Industris Ltd; individual sector not specified.\n\n### Managing directors and chairs\n- **Mr Raghav Raj Kanoria** — Managing Director, India Power Corporation Ltd; individual sector not specified.\n- **Mr Anil B. Jain** — Managing Director, Jain Irrigation Systems Ltd; individual sector not specified.\n- **Mr Satish Magar** — Chairman and Managing Director, Magarpatta Township Development & Construction Company Ltd; individual sector not specified.\n- **Mr Vinod Rohira** — Chief Executive Officer, Mindspace Business Parks REIT; individual sector not specified.\n- **Mr Deepak Amitabh** — Chairman and Managing Director, PTC India; individual sector not specified.\n- **Mr Sumant Sinha** — Chairman and Managing Director, RenewPower; individual sector not specified.\n- **Mr Anil Chaudhry** — Country President & Managing Director, Schneider Electric India; individual sector not specified.\n- **Mr R Mukundan** — Managing Director, Tata Chemicals Ltd, and Co-Chair, TERI CBS Executive Committee; individual sector not specified.\n- **Mr Manish Chourasia** — Managing Director & CEO, Tata Cleantech Capital; individual sector not specified.\n- **Mr Praveer Sinha** — CEO & Managing Director, Tata Power; individual sector not specified.\n- **Mr T V Narendran** — CEO & Managing Director, Tata Steel Ltd; individual sector not specified.\n- **Mr Sanjiv Kanwar** — Country Manager, Business Unit Asia, Yara Fertilisers India Pvt. Ltd; individual sector not specified.\n\nThe page discusses sectors and areas including steel, cement, aluminium, chemicals and petrochemicals; buildings and construction; clean energy; finance; and transport, industry, agriculture and power, but it does not map the listed people to those sectors [1].",
+   "intent": "qa",
+   "citations": 1,
+   "clarification": false,
+   "followups": [
+    "What capacity-building activities does TERI CBS offer Chief Sustainability Officers?",
+    "What does the Centre of Excellence for Sustainable Habitats research?",
+    "What technology development work does TERI undertake?"
+   ],
+   "marks": {
+    "first_token": 15.26,
+    "sources": 22.05,
+    "followups": 22.91,
+    "done": 22.91
+   },
+   "error": null,
+   "outcome": "answered",
+   "chips_after_answer_s": 0.86
+  },
+  {
+   "kind": "list",
+   "question": "Who are TERI's Distinguished Fellows?",
+   "answer": "TERI’s Distinguished Fellows, excluding appointments explicitly marked as having ended, are [1]:\n\n### Climate, water and natural resources\n- **Mr Dipak Dasgupta** — Earth Science and Climate Change.\n- **Dr Prodipto Ghosh** — Earth Science and Climate Change.\n- **Mr Manjeev Singh Puri** — Earth Science and Climate Change.\n- **Dr Syamal Kumar Sarkar** — Water Resources.\n- **Mr Jiwesh Nandan** — Industrial Energy Efficiency.\n- **Mr Shailesh Ganeshrao Tembhurnikar** — Land Resources; appointment began 1 January 2025.\n- **Dr Asha Ram Sihag** — Resource Efficiency & Governance.\n\n### Energy, transport and shipping\n- **Mr Shri Prakash** — Transport and Urban Governance.\n- **Mr K Ramanathan** — Electricity and Fuels Division.\n- **Mr R R Rashmi** — Programme Director, Green Shipping.\n- **Mr Sanjay Mitra** — Transport and Urban Governance.\n- **Mr I V Rao** — Transport & Urban Governance.\n\n### Food and agriculture\n- **Mr S Vijay Kumar** — Lead, Food and Land Use Coalition, India.\n- **Dr T P Singh** — Director General's Office; appointment began 16 May 2024.\n\n### Director General's Office\n- **Mr Ajai Malhotra** — Senior Advisor (Climate Change), Director General's Office.\n- **Mr Ajay Shankar** — Director General's Office.\n- **Mr Mahendra Singhi** — Honorary Distinguished Fellow, Director General's Office.",
+   "intent": "qa",
+   "citations": 1,
+   "clarification": false,
+   "followups": [
+    "What government experience did TERI Distinguished Fellow Syamal Kumar Sarkar bring?",
+    "What was Dr Arvind Kapur’s Distinguished Fellow area at TERI?",
+    "What role did S Vijay Kumar hold in TERI’s Food and Land Use Coalition, India?"
+   ],
+   "marks": {
+    "first_token": 9.73,
+    "sources": 15.47,
+    "followups": 20.0,
+    "done": 20.0
+   },
+   "error": null,
+   "outcome": "answered",
+   "chips_after_answer_s": 4.53
+  },
+  {
+   "kind": "list",
+   "question": "List the members of TERI's Governing Council.",
+   "answer": "The 2022–23 annual report lists these members of TERI’s Governing Council [2]:\n\n- **Mr Nitin Desai** — Chairman.\n- **Mr Vijai Sharma**.\n- **Mr Nawshir H Mirza**.\n- **Mr Mahendra Singhi**.\n- **Dr Vibha Dhawan**.\n- **Mr M S Unnikrishnan**.\n- **Ms Ireena Vittal** — noted with the date 17 August 2022.\n- **Mr R Mukundan**. [2]",
+   "intent": "qa",
+   "citations": 1,
+   "clarification": false,
+   "followups": [
+    "Which Governing Council members served until 18 August 2021?",
+    "What clean-energy technologies did TERI distribute through its rural energy work?",
+    "How did Project FLOW engage school students and communities on WASH?"
+   ],
+   "marks": {
+    "first_token": 7.22,
+    "sources": 10.19,
+    "followups": 17.53,
+    "done": 17.53
+   },
+   "error": null,
+   "outcome": "answered",
+   "chips_after_answer_s": 7.34
+  },
+  {
+   "kind": "list",
+   "question": "List TERI's regional centres and what they work on.",
+   "answer": "TERI’s regional centres and their stated areas of work are [6]:\n\n- **Bengaluru** — Decarbonization, renewable energy and sustainable building technologies.\n- **Goa** — Marine ecology, ecotourism, sustainable aquaculture and climate vulnerability.\n- **Guwahati** — Agriculture, forestry, biodiversity conservation, natural resource management, medicinal plants, waste management, water quality improvement and community development across Northeast India. A Centre for Himalayan Studies is also proposed as a collaborative initiative on climate adaptation and resilience.\n- **Hyderabad** — The TERI Institute of Energy Transition aims to develop scalable solutions for decarbonization, energy efficiency and net-zero emissions.\n- **Mukteshwar** — Himalayan ecology, mountain ecotourism, sustainable agriculture and microgrid development.\n- **Mumbai** — Marine plastic waste management, nutrition security and environmental reporting; its work also includes environmental monitoring, waste management and resource mapping, as well as livelihood and sustainable communities. [5][6]",
+   "intent": "qa",
+   "citations": 2,
+   "clarification": false,
+   "followups": [
+    "What does TERI’s Western Regional Centre research in Mumbai?",
+    "How does TERI aim to support climate-smart agriculture for farmers?",
+    "What green livelihood and skills development does TERI propose for women and youth?"
+   ],
+   "marks": {
+    "first_token": 9.39,
+    "sources": 12.61,
+    "followups": 16.61,
+    "done": 16.61
+   },
+   "error": null,
+   "outcome": "answered",
+   "chips_after_answer_s": 4.0
+  },
+  {
+   "kind": "list",
+   "question": "List TERI's centres of excellence.",
+   "answer": "The centres of excellence associated with TERI that are identified here are: [1][2][3][4][5][6]\n\n- **Centre of Excellence in Urban Development** — TERI’s work focuses on green buildings and urban governance, including projects on citizen participation, water charges, grievance redressal and green-building training. [1]\n- **Centre of Excellence for Energy Efficient Buildings in India** — launched by TERI and United Technologies Corporation to evaluate building energy-rating systems and develop energy-management tools and conservation measures. [6]\n- **Mahindra-TERI Centre of Excellence for Sustainable Habitats** — a joint initiative focused on resource-efficient solutions for India’s building sector and climate; it also supports research and testing related to building materials and sustainability. [3][4][5]\n- **National Centre of Excellence on Green Ports and Shipping** — a partnership between TERI and the Ministry of Ports, Shipping and Waterways, constituted in November 2022, that works on policy, regulation and technologies for greener ports and shipping. [2]\n- **National Centre of Excellence for Advanced Research in Agricultural Nanotechnology** — a research platform developing green nanoproducts, including nano-fertilizers, nano-pesticides and nanocarrier products and technologies. [3]",
+   "intent": "qa",
+   "citations": 6,
+   "clarification": false,
+   "followups": [
+    "What technologies and construction materials will the Mahindra TERI CoE for Sustainable Habitats evaluate?",
+    "How will TERI and UTC’s Centre of Excellence improve energy management in buildings?",
+    "How do TERI’s urban-development efforts connect with urban transportation expertise?"
+   ],
+   "marks": {
+    "first_token": 8.06,
+    "sources": 12.25,
+    "followups": 18.73,
+    "done": 18.73
+   },
+   "error": null,
+   "outcome": "answered",
+   "chips_after_answer_s": 6.48
+  },
+  {
+   "kind": "list",
+   "question": "List TERI's main areas of work.",
+   "answer": "TERI’s stated key programmes and areas include the following [5]:\n\n- **Climate Change and Air Quality**\n- **Energy**\n- **Green Shipping**\n- **Industrial Biotechnology**\n- **Social Transformation and Strategic Alliance**\n- **Sustainable Agriculture**\n- **Sustainable Infrastructure**\n- **Waste, Water and Natural Resources**\n- **Centre for Sustainable Development Research and Leadership**\n- **Council for Business Sustainability**",
+   "intent": "qa",
+   "citations": 1,
+   "clarification": false,
+   "followups": [
+    "What capabilities does TERI bring to its work across energy and sustainability?",
+    "What does TERI identify as India's main source of transport-sector greenhouse gas emissions?",
+    "How does TERI advance the transition towards a cleaner and sustainable planet?"
+   ],
+   "marks": {
+    "first_token": 10.08,
+    "sources": 12.76,
+    "followups": 17.61,
+    "done": 17.61
+   },
+   "error": null,
+   "outcome": "answered",
+   "chips_after_answer_s": 4.85
+  }
+ ],
+ "clicks": [
+  {
+   "seed": 0,
+   "suggestion": "What capacity-building activities does TERI CBS offer Chief Sustainability Officers?",
+   "reply": {
+    "question": "What capacity-building activities does TERI CBS offer Chief Sustainability Officers?",
+    "answer": "TERI CBS supports Chief Sustainability Officers through forum-based learning and broader capacity-building activities for member companies [1][3][4]. These include sessions on sustainability trends and practical tools, as well as trainings, learning visits, webinars, conferences and Management Development Programs [1][3].\n\n### CSO forum sessions\n- At a 2018 CSO Forum meeting, knowledge sessions covered emerging sustainability trends and global developments, while action and consultation sessions offered access to tools, methodologies and practices for improving company sustainability performance [3].\n- Forum participants also discussed energy transition in India and green investments [3].\n\n### Other capacity-building activities\n- TERI CBS lists trainings, learning visits, webinars, conferences and Management Development Programs among its capacity-building activities [1].\n- Its member-company activities include training and capacity building, alongside CSO Forum meetings [4].",
+    "intent": "qa",
+    "citations": 3,
+    "clarification": false,
+    "followups": [
+     "How did the fourth CSO Conclave explain the cross-functional role of Chief Sustainability Officers?",
+     "How does TERI CBS support corporate leadership in environmental management?",
+     "How does TERI CBS connect TERI research with the corporate world?"
+    ],
+    "marks": {
+     "first_token": 8.92,
+     "sources": 12.69,
+     "followups": 17.03,
+     "done": 17.03
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "focused",
+    "reason": "The reply names the CSO Forum’s learning sessions and lists other capacity-building offerings such as trainings, learning visits, webinars, conferences, and Management Development Programs; the original answer does not cover these activities."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 0,
+   "suggestion": "What does the Centre of Excellence for Sustainable Habitats research?",
+   "reply": {
+    "question": "What does the Centre of Excellence for Sustainable Habitats research?",
+    "answer": "The Mahindra-TERI Centre of Excellence for Sustainable Habitats researches science-based, energy-efficient solutions for India’s built environment, with the goal of reducing the real estate industry’s energy footprint [3][4].\n\n### Building materials and performance\n- It studies building materials and their thermal properties, using research techniques and performance-measurement solutions to generate data and metrics that can support wider adoption of energy-efficient buildings [2][3].\n- Its work includes standardising and measuring building materials, assessing how walls and roofs affect cooling loads, and studying how building components influence indoor mean radiant temperature [2].\n\n### Tools and solutions\n- The Centre develops innovative, resource-efficient materials and technologies suited to Indian climates, along with numerical toolkits and material databases intended for public use [2][3][4].\n- It aims to develop a coherent database of market-ready, scalable and energy-efficient materials and technologies for sustainable habitats [4].\n\n### Water use in habitats\n- Its water-sustainability work considers water efficiency, conservation and management within buildings and premises, including city-level assessments, building-level water audits and a web-based tool [5].\n- The work is intended to inform policies and measures for water conservation, ecosystem protection and stronger water governance [5].\n\nRead more: [Mahindra-TERI Centre of Excellence](https://teriin.org/Mahindra-TERI-centre-of-excellence)",
+    "intent": "qa",
+    "citations": 4,
+    "clarification": false,
+    "followups": [
+     "How has India’s building sector contributed to electricity consumption?",
+     "What energy-efficient solutions has the Mahindra-TERI Centre developed for Indian buildings?",
+     "What materials and technologies will the Mahindra-TERI Centre’s database cover?"
+    ],
+    "marks": {
+     "first_token": 8.99,
+     "sources": 11.27,
+     "followups": 17.33,
+     "done": 17.33
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "focused",
+    "reason": "The reply directly describes the Centre’s research on energy-efficient building materials and performance, resource-efficient technologies, and water sustainability in the built environment."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 0,
+   "suggestion": "What technology development work does TERI undertake?",
+   "reply": {
+    "question": "What technology development work does TERI undertake?",
+    "answer": "TERI undertakes research and technology development in energy, environment and sustainable development, including work on waste treatment, fermentation technologies and renewable energy [5][6].\n\n### Waste and fermentation technologies\n- Its Fermentation Technology Research Centre helps researchers develop fermentation technologies and products, including Oil Zapper, a bacteria mix used to break down oil contamination [5].\n- TERI’s Enhanced Acidification and Methanation (TEAM) converts food waste into biogas; the plant at RETREAT processes about 25 kg of food waste a day to produce 4 m³ of biogas [5].\n- TERI’s Effluent Treatment Plant uses microbes to treat sewage, while its Root Zone system uses reed-plant roots to filter sewage water for irrigation [5].\n- Its Membrane Bioreactor facility treats sewage using ceramic membranes made from waste fly ash [5].\n\n### Renewable energy technologies\n- TERI’s Renewable Energy Technology division includes research and development projects and laboratories, including a Solar Lighting Laboratory seeking high-quality, reliable and cost-effective solar-lighting solutions [5].\n- Its Smart Mini Grid aims to provide community-level electricity using advanced sensing, communication and control techniques to reduce fossil-fuel consumption [5].\n\n### Research and knowledge work\n- TERI also develops and maintains information centres, conducts research projects and maintains a technology-trend database for industry [6].",
+    "intent": "qa",
+    "citations": 2,
+    "clarification": false,
+    "followups": [
+     "How does TERI address skilled job creation through green growth work?",
+     "What does TERI recommend for thermal comfort in future urban development?",
+     "How does Oil Zapper help clean oil-contaminated soil?"
+    ],
+    "marks": {
+     "first_token": 9.66,
+     "sources": 12.98,
+     "followups": 17.19,
+     "done": 17.19
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "broad",
+    "reason": "The reply describes TERI’s technology development work across waste treatment, fermentation, renewable energy, and related research."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 1,
+   "suggestion": "What government experience did TERI Distinguished Fellow Syamal Kumar Sarkar bring?",
+   "reply": {
+    "question": "What government experience did TERI Distinguished Fellow Syamal Kumar Sarkar bring?",
+    "answer": "Dr Syamal Kumar Sarkar brought experience in government service, including as Secretary to the Government of India in the Ministry of Water Resources in 2013, and in the Department of Personnel and Training and Ministry of Finance [1]. He served in the Department of Personnel and Training during 2007–2013 and again in 2013–14, and in the Ministry of Finance’s Department of Economic Affairs during 1994–97 [1]. Before that, he worked with West Bengal’s environmental regulatory authority from 2003 to 2005, contributing to sustainable development in the state [1].",
+    "intent": "qa",
+    "citations": 1,
+    "clarification": false,
+    "followups": [],
+    "marks": {
+     "first_token": 9.72,
+     "sources": 10.78,
+     "done": 16.16
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "focused",
+    "reason": "The reply substantively describes Sarkar’s government roles and departments, while the original answer only identifies his TERI fellowship area."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 1,
+   "suggestion": "What was Dr Arvind Kapur’s Distinguished Fellow area at TERI?",
+   "reply": {
+    "question": "What was Dr Arvind Kapur’s Distinguished Fellow area at TERI?",
+    "answer": "Dr Arvind Kapur’s Distinguished Fellow area at TERI was **Sustainable Agriculture** [1]. His appointment was listed as ending in November 2024 [1].",
+    "intent": "qa",
+    "citations": 1,
+    "clarification": false,
+    "followups": [],
+    "marks": {
+     "first_token": 9.17,
+     "sources": 9.7,
+     "done": 13.44
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "narrow",
+    "reason": "The reply directly identifies Dr Arvind Kapur’s area as Sustainable Agriculture, while the original answer does not mention him or his area."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 1,
+   "suggestion": "What role did S Vijay Kumar hold in TERI’s Food and Land Use Coalition, India?",
+   "reply": {
+    "question": "What role did S Vijay Kumar hold in TERI’s Food and Land Use Coalition, India?",
+    "answer": "I don't have information on that in the available sources.",
+    "intent": "qa",
+    "citations": 0,
+    "clarification": false,
+    "followups": [],
+    "marks": {
+     "first_token": 8.42,
+     "sources": 8.89,
+     "done": 8.89
+    },
+    "error": null,
+    "outcome": "refusal"
+   },
+   "verdict": {
+    "answered": "partly",
+    "already_answered": true,
+    "scope": "narrow",
+    "reason": "The reply says the specific role is unavailable, while the original answer already states that S Vijay Kumar was Lead of the Food and Land Use Coalition, India."
+   },
+   "retry": {
+    "reply": {
+     "question": "What role did S Vijay Kumar hold in TERI’s Food and Land Use Coalition, India?",
+     "answer": "I don't have information on that in the available sources.",
+     "intent": "qa",
+     "citations": 0,
+     "clarification": false,
+     "followups": [],
+     "marks": {
+      "first_token": 18.77,
+      "sources": 19.08,
+      "done": 19.08
+     },
+     "error": null,
+     "outcome": "refusal"
+    },
+    "verdict": {
+     "answered": "partly",
+     "already_answered": true,
+     "scope": "narrow",
+     "reason": "The reply says the specific role is not available, while the original answer already states that S Vijay Kumar was the Lead for the Food and Land Use Coalition, India."
+    }
+   },
+   "status": "backfire"
+  },
+  {
+   "seed": 2,
+   "suggestion": "Which Governing Council members served until 18 August 2021?",
+   "reply": {
+    "question": "Which Governing Council members served until 18 August 2021?",
+    "answer": "The 2021–22 annual report identifies these Governing Council members as serving until 18 August 2021 [5]:\n\n- **Dr Naushad N Forbes**\n- **Prof. (Ms) Basabi Bhaumik**",
+    "intent": "qa",
+    "citations": 1,
+    "clarification": false,
+    "followups": [
+     "How did Prof. B.V. Sreekantan contribute to TERI’s Governing Council?",
+     "Which Governing Council members joined TERI in January 2022?",
+     "What organisational issues did TERI’s Governing Council discuss in 2016?"
+    ],
+    "marks": {
+     "first_token": 8.77,
+     "sources": 9.27,
+     "followups": 14.11,
+     "done": 14.11
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "narrow",
+    "reason": "The reply names the two Governing Council members who served until 18 August 2021, and this information was not included in the original answer."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 2,
+   "suggestion": "What clean-energy technologies did TERI distribute through its rural energy work?",
+   "reply": {
+    "question": "What clean-energy technologies did TERI distribute through its rural energy work?",
+    "answer": "TERI’s rural energy work included solar products and decentralized clean-energy systems [5][6]:\n\n- **Solar photovoltaic (PV) lighting devices** — domestic lighting devices of 18–50 Wp [5].\n- **Solar lanterns** — lanterns of 3–10 Wp [5].\n- **Other solar-based systems** — including irrigation pumps, solar dryers, cold storage, home lighting, LED streetlights, DC fans, boats, sewing-machine motors and water pumps [6].\n- **Hybrid solar systems** — including charging units for power looms [6].",
+    "intent": "qa",
+    "citations": 2,
+    "clarification": false,
+    "followups": [
+     "How did TERI’s rural solar commercialization project aim to build a sustainable market?",
+     "What solar systems did TERI include in its rural energy work?",
+     "Where did TERI implement its earlier rural renewable-energy project?"
+    ],
+    "marks": {
+     "first_token": 9.64,
+     "sources": 12.56,
+     "followups": 16.05,
+     "done": 16.05
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "broad",
+    "reason": "The reply lists specific clean-energy technologies and products distributed through TERI’s rural energy work, and the original answer about Governing Council members did not cover them."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 2,
+   "suggestion": "How did Project FLOW engage school students and communities on WASH?",
+   "reply": {
+    "question": "How did Project FLOW engage school students and communities on WASH?",
+    "answer": "Project FLOW engaged school students through WASH education and school-based activities, and involved surrounding communities through workshops and community action projects. Its work included teaching, practical initiatives and safe-water infrastructure across six Indian cities [1][2].\n\n### Student and school activities\n- FLOW used knowledge workshops and school action projects to turn WASH awareness into action [2].\n- Coordinating teachers and students planned school action projects around each school’s needs; groups of 20 students and participating teachers formed School WASH Clubs, with TERI consultation and mentoring [4].\n- Students trained on WASH undertook action projects in schools and communities, while teachers and students ran campaigns in schools and neighbouring communities [1].\n- Workshops and festivals helped raise WASH awareness among school communities [1].\n\n### Community engagement\n- Parents’ workshops introduced the project and WASH, emphasized maintaining WASH standards at home, and showcased school infrastructure through film screenings and campus tours; the report records 174 participants in Panipat [5].\n- Community interactions aimed to involve nearby communities, villages and slum dwellings, connect everyday needs with WASH issues, encourage safer approaches, and support maintenance of resources at schools and homes [3].\n- Community action projects used student-led street plays, rallies, role plays and talk shows to engage residents around schools [3].\n- Community engagement could be challenging because residents were reluctant to attend; the project used mobilisation and mutual dialogue, and scheduled interventions around people’s availability, including early mornings or evenings [4].\n\n### Reach and infrastructure\n- In a report dated 12 October 2018, FLOW was reported to have reached approximately 700,000 students, teachers and community members across six cities and provided access to safe drinking water in 63 schools [2].\n- The project also provided practical solutions in selected schools, including safe drinking-water platforms, purification systems and rainwater-harvesting structures [2].",
+    "intent": "qa",
+    "citations": 5,
+    "clarification": false,
+    "followups": [
+     "What did FLOW’s parents’ workshops cover about WASH at home?",
+     "How did Project FLOW provide targeted schools with access to safe water?",
+     "How did FLOW combine school improvements with better WASH habits among students?"
+    ],
+    "marks": {
+     "first_token": 6.7,
+     "sources": 12.52,
+     "followups": 14.8,
+     "done": 14.8
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "focused",
+    "reason": "The reply explains how Project FLOW engaged both school students and surrounding communities through WASH education, clubs, school action projects, workshops, and community activities."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 3,
+   "suggestion": "What does TERI’s Western Regional Centre research in Mumbai?",
+   "reply": {
+    "question": "What does TERI’s Western Regional Centre research in Mumbai?",
+    "answer": "TERI’s Western Regional Centre in Mumbai works across four main research areas, alongside broader environmental monitoring and resource-management projects [1][5].\n\n- **Environmental sustainability and resource management** — maps human pressures and their environmental impacts, and undertakes environmental monitoring and reporting, waste management, resource mapping, and environmental assessment [1][5].\n- **Biodiversity assessment** — includes work on biodiversity dynamics, biodiversity strategies and action plans, and conservation and tree-cover projects [5].\n- **Plastic waste management** — includes research to monitor and assess plastic waste in waterbodies in the Mumbai Metropolitan Region [5][6].\n- **Nutrition security** — develops community-based approaches using local resources and traditional knowledge to improve access to nutritious food and address malnutrition [2][5].\n- **Livelihoods and sustainable communities** — supports community engagement and capacity building, including projects linking nutrition interventions with alternative livelihoods [1][5][6].",
+    "intent": "qa",
+    "citations": 4,
+    "clarification": false,
+    "followups": [
+     "How does TERI’s Western Regional Centre research sustainable communities?",
+     "How does TERI-WRC build local research capacity in the region?",
+     "How does TERI’s project in Mokhada address malnutrition and livelihoods?"
+    ],
+    "marks": {
+     "first_token": 10.2,
+     "sources": 12.25,
+     "followups": 15.84,
+     "done": 15.84
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": true,
+    "scope": "focused",
+    "reason": "The reply substantively describes the Mumbai centre’s research areas, which were already covered in the original answer’s summary of its work."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 3,
+   "suggestion": "How does TERI aim to support climate-smart agriculture for farmers?",
+   "reply": {
+    "question": "How does TERI aim to support climate-smart agriculture for farmers?",
+    "answer": "TERI aims to support climate-smart agriculture by combining on-the-ground farming solutions with policy and institutional work, while promoting regenerative practices and healthier soils [1][3]. Its efforts include climate-resilient technologies and crop choices, sustainable agricultural inputs, and partnerships that help take solutions to farmers [2][5][6].\n\n### Farming practices and technologies\n- In Karnataka, TERI introduced smart solar-powered pumps, soil-moisture measurement equipment, pesticide sprayers and insect traps to help small and marginal farmers reduce input costs, save water and protect the environment; the project directly benefited over 2,000 farmers [2].\n- In Huddu, Uttarakhand, TERI and local partner SHARD supported farmers to grow potatoes suited to changing conditions, providing seeds and helping farmers sell their produce; they also distributed large-cardamom plants to some households and explored other possible crops for the region [5].\n- TERI’s 2025–30 strategy identifies climate-smart agriculture, regenerative practices and nature-based ways to improve soil health as priorities for supporting farmers [3].\n\n### Research, inputs and policy\n- TERI’s agriculture policy work covers climate impacts and resilience, sustainable use of natural resources, agricultural waste, organic agriculture and resilient planting material, alongside engagement with state departments and local agencies [1].\n- At its 2025 conference on agricultural inputs, TERI’s Sustainable Agriculture Division convened discussions on research, policy and protocols for nano- and biological inputs, including nanofertilizers, biofertilizers, biostimulants and biopesticides [6].\n- TERI’s sustainable agriculture research includes precision and smart agriculture, bio-inputs, plant science, synthetic biology and nanotechnology, with aims including climate-resilient farming and more efficient use of nutrients, water and energy [4].\n\n### Working with farmers and partners\n- TERI’s 2025–30 strategy says it will test concepts on the ground, co-design solutions with partners, influence enabling policies and use regional hubs to make innovation locally grounded [3].\n- In Karnataka, local Farmer Producer Organizations helped mobilize communities, support technology adoption and implement the solar-powered farming initiative [2].\n- In Uttarakhand, consultations with women farmers helped enable land consolidation for potato cultivation, and the harvest provided additional income to participating households [5].",
+    "intent": "qa",
+    "citations": 6,
+    "clarification": false,
+    "followups": [
+     "How has declining snowfall affected farming conditions in Uttarakhand’s upper Himalayas?",
+     "What research and policy topics did TERI’s AISAC-2025 conference focus on?",
+     "What policy issues does TERI examine to improve agricultural sustainability?"
+    ],
+    "marks": {
+     "first_token": 6.25,
+     "sources": 11.88,
+     "followups": 13.31,
+     "done": 13.31
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "broad",
+    "reason": "The reply explains TERI’s climate-smart agriculture approach with concrete farming technologies, farmer partnerships, and policy and research efforts."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 3,
+   "suggestion": "What green livelihood and skills development does TERI propose for women and youth?",
+   "reply": {
+    "question": "What green livelihood and skills development does TERI propose for women and youth?",
+    "answer": "TERI’s proposals and activities connect green livelihoods with practical skills training for women and youth, including training for employment or self-employment and support for livelihood activities in villages. [1][3][4][6]\n\n### Green livelihoods\n- TERI’s 2025–30 strategy proposes developing green livelihoods and skills for women and youth, alongside climate-smart agriculture, regenerative practices and nature-based approaches to improving soil health. [3]\n- In Pathardi village, livelihood opportunities—especially for women—were part of work to improve food, energy and water security; the project linked sustainable livelihoods with better nutrition, access to health services and resilience to shocks and stress. [6]\n- Pathardi activities included training in goat rearing and farm management, bamboo cultivation and article-making, and poultry farming; TERI also assisted villagers with starting businesses and provided information about subsidies. [6]\n\n### Skills development\n- TERI’s Green Skill Development Programme provides short- and long-duration training across 25 courses in India, with the aim of helping youth gain employment or self-employment. Its stated training areas include solar energy and waste management. [4]\n- A 2018 programme description says TERI delivered specialised programmes in women’s entrepreneurship and green skills, with a commitment to gender balance; its training covered roles including Solar Enterprises Assistant Manager, Waste Optimization Professional and EV Charging Professional. [1]\n- TERI’s 2025–30 strategy also aims to build green skills and opportunities that enable communities to prosper, with particular attention to women and youth. [3]",
+    "intent": "qa",
+    "citations": 4,
+    "clarification": false,
+    "followups": [
+     "How does TERI connect skills development with expanding solar energy access?",
+     "How does TERI support women’s entrepreneurship through green skills training?",
+     "What training formats does TERI’s Green Skill Development Programme offer?"
+    ],
+    "marks": {
+     "first_token": 7.36,
+     "sources": 10.03,
+     "followups": 13.09,
+     "done": 13.09
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "broad",
+    "reason": "The reply describes TERI’s green-livelihood initiatives and skills training for women and youth, including examples of livelihood activities and training programmes."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 4,
+   "suggestion": "What technologies and construction materials will the Mahindra TERI CoE for Sustainable Habitats evaluate?",
+   "reply": {
+    "question": "What technologies and construction materials will the Mahindra TERI CoE for Sustainable Habitats evaluate?",
+    "answer": "The Mahindra-TERI Centre of Excellence for Sustainable Habitats evaluates building materials and technologies to support energy-efficient, resource-efficient buildings suited to Indian conditions. [1][3]\n\n- **Building materials** — Research includes standardizing and measuring materials, assessing how walling and roofing affect cooling loads and indoor comfort, and testing thermal properties such as conductivity, specific heat capacity and thermal diffusivity. [1][5]\n- **Building assemblies** — A Guarded Hot Box is used to assess the thermal transmittance of building assemblies. [5]\n- **Energy-efficient technologies** — The Centre aims to develop market-ready, scalable technologies and solutions, using performance measurement and research to support energy-efficient buildings. The sources do not name specific technologies it will evaluate. [2][3][6]",
+    "intent": "qa",
+    "citations": 5,
+    "clarification": false,
+    "followups": [
+     "How will the Mahindra-TERI Centre of Excellence support green building development in India?",
+     "What database will the Mahindra-TERI Centre of Excellence develop for sustainable habitats?",
+     "How does TERI describe the building sector’s contribution to India’s electricity consumption?"
+    ],
+    "marks": {
+     "first_token": 7.97,
+     "sources": 9.36,
+     "followups": 12.72,
+     "done": 12.72
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "partly",
+    "already_answered": false,
+    "scope": "focused",
+    "reason": "The reply describes the building materials and assemblies evaluated, but does not identify the specific technologies the question asks about, noting that the sources do not name them."
+   },
+   "retry": {
+    "reply": {
+     "question": "What technologies and construction materials will the Mahindra TERI CoE for Sustainable Habitats evaluate?",
+     "answer": "The Mahindra-TERI Centre of Excellence for Sustainable Habitats evaluates building materials and assemblies for their thermal performance and supports the development of energy-efficient building technologies. [1][3][5][6]\n\n- **Building materials:** The Centre’s research includes standardizing and measuring building materials, testing their thermal properties, and assessing how walling and roofing materials affect indoor comfort and cooling loads. [1][3][5]\n- **Building assemblies:** A Guarded Hot Box measures the thermal transmittance of building assemblies; the Centre also studies building envelopes and develops tools for integrated envelope analysis. [1][5]\n- **Energy-efficient technologies:** The Centre aims to develop market-ready, scalable technologies and resource-efficient solutions tailored to India’s building sector and climates. The sources do not identify a specific list of technologies it will evaluate. [2][3][6]",
+     "intent": "qa",
+     "citations": 5,
+     "clarification": false,
+     "followups": [
+      "What database is the Mahindra-TERI Centre of Excellence developing for sustainable habitats?",
+      "What policy briefs will the Mahindra-TERI Centre of Excellence prepare for ministries?",
+      "How does GRIHA encourage lower-impact building materials in construction projects?"
+     ],
+     "marks": {
+      "first_token": 10.56,
+      "sources": 12.39,
+      "followups": 16.89,
+      "done": 16.89
+     },
+     "error": null,
+     "outcome": "answered"
+    },
+    "verdict": {
+     "answered": "yes",
+     "already_answered": false,
+     "scope": "focused",
+     "reason": "The reply explains that the Centre evaluates building materials and assemblies for thermal performance and discusses energy-efficient building technologies, while noting that no specific technology list is available."
+    }
+   },
+   "status": "flaky"
+  },
+  {
+   "seed": 4,
+   "suggestion": "How will TERI and UTC’s Centre of Excellence improve energy management in buildings?",
+   "reply": {
+    "question": "How will TERI and UTC’s Centre of Excellence improve energy management in buildings?",
+    "answer": "TERI and UTC’s Centre of Excellence is intended to improve energy management and energy efficiency in existing buildings through reporting, evaluation, analysis and guidance. [1][6]\n\n### Energy monitoring and assessment\n- It aims to develop an energy-use reporting framework and enable real-time reporting of building energy consumption. [1][6]\n- It evaluates existing building energy-rating systems, including BEE star-rating and LEED for existing buildings, to identify ways to strengthen them. [1]\n- It aims to derive energy-management tools and techniques and identify energy-conservation measures, including cost-benefit analysis. [1][6]\n\n### Implementation and verification\n- It develops measurement and verification protocols to establish the energy-saving potential of conservation measures, alongside commissioning schedules and energy-management portfolios. [1]\n- It formulates design and retrofit guidelines and supports standards and regulations to enable uptake of energy-efficient technologies. [1]\n- TERI and UTC established the centre for integrated research on improving energy efficiency in existing commercial buildings in India. [1]",
+    "intent": "qa",
+    "citations": 2,
+    "clarification": false,
+    "followups": [
+     "How will the Mahindra-TERI Centre use performance measurement to advance green buildings?",
+     "How will the Mahindra-TERI Centre assess building technologies for different Indian climate zones?",
+     "How does TERI's work help policymakers promote green development in India's buildings sector?"
+    ],
+    "marks": {
+     "first_token": 7.53,
+     "sources": 9.23,
+     "followups": 13.39,
+     "done": 13.39
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "focused",
+    "reason": "The reply explains the centre’s specific reporting, evaluation, analysis, verification and guidance activities for improving building energy management."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 4,
+   "suggestion": "How do TERI’s urban-development efforts connect with urban transportation expertise?",
+   "reply": {
+    "question": "How do TERI’s urban-development efforts connect with urban transportation expertise?",
+    "answer": "TERI connects urban-development work with transportation expertise through urban planning and governance efforts alongside a dedicated Centre for Sustainable Mobility. Together, these efforts address city planning, climate resilience and transport systems through research, policy work and support to public agencies. [1][4][5]\n\n### Urban planning and governance\n- TERI’s Centre of Excellence in Urban Development focused on green buildings and urban governance, working with municipal corporations, state urban departments and other partners. Its projects addressed citizen participation in planning, water charges, municipal grievance redressal and green-building training. [1]\n- In its 2019–20 annual report, TERI described its Centre for Urban Planning and Governance as working on strategic planning, policy research and capacity building for sustainable urban development, liveability and cities’ climate agendas. [4]\n\n### Transportation expertise\n- The Centre for Sustainable Mobility focused on policy analysis and emissions modelling to support an energy-efficient, environmentally friendly, sustainable and inclusive transport sector. Its work included electric mobility, low-carbon passenger and freight transport, transport modelling, non-motorized transport and road safety. [4][5]\n- TERI’s transport work also included assessing transport investment strategies, studying transport modes and emissions, and examining shifts in freight movement towards rail. [4][5]\n\n### Where the work intersects\n- TERI linked urban planning and transport through work on sustainable urbanization and city-level climate action, while its mobility research addressed transport emissions and the effects of transport systems on air quality. [4][6]\n- Its urban work also included climate-risk assessments for urban local bodies and support for a climate action plan for Amaravati; its mobility work covered transport’s emissions and resilience implications, including studies of national highways. [4][5]",
+    "intent": "qa",
+    "citations": 4,
+    "clarification": false,
+    "followups": [
+     "How does TERI support urban agencies working to make cities liveable?",
+     "What does TERI’s ADB study examine about low-carbon transport in India?",
+     "What expertise did the Ministry seek in its urban-development and transport centres?"
+    ],
+    "marks": {
+     "first_token": 7.59,
+     "sources": 11.81,
+     "followups": 14.67,
+     "done": 14.67
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "broad",
+    "reason": "The reply substantively explains how TERI’s urban-planning and governance work relates to its sustainable-mobility and transportation expertise, while the original answer only listed centres of excellence."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 5,
+   "suggestion": "What capabilities does TERI bring to its work across energy and sustainability?",
+   "reply": {
+    "question": "What capabilities does TERI bring to its work across energy and sustainability?",
+    "answer": "TERI brings multidisciplinary research and implementation capabilities to advance cleaner, more sustainable development. Its work combines scientific and policy research, technology and information resources, and collaboration with governments, businesses, civil society and international partners [5][6].\n\n### Research and expertise\n- TERI’s multidisciplinary team includes scientists, engineers, economists and sociologists, and the institute undertakes research across energy, environment and sustainable development [5][6].\n- Its research spans areas including clean energy, renewable energy, biotechnology, sustainable agriculture, water security, land-resource management, air pollution and low-emission transport [5].\n\n### Technology and implementation\n- TERI develops and applies solutions such as advanced biofuels, decentralized energy, biofertilizers and nano-fertilizers, and resource-efficient buildings; it also developed and administers India’s GRIHA green-building rating system [5].\n- Its work includes implementation as well as research, with experience in areas such as watershed management, ecosystem restoration, integrated urban planning and climate-smart farming [5].\n\n### Knowledge and collaboration\n- TERI develops and maintains information centres, conducts research projects, and provides technology-trend databases for industry [6].\n- It informs policy and works with public, private, civil-society and international partners, including through climate negotiations and sustainability frameworks [5].\n\nRead more: [Mission and Goals](https://teriin.org/mission-and-goals)",
+    "intent": "qa",
+    "citations": 2,
+    "clarification": false,
+    "followups": [
+     "What innovative solutions does TERI advance for climate change?",
+     "How does TERI turn research into useful operational experience?",
+     "How does TERI combine interdisciplinary research with knowledge management?"
+    ],
+    "marks": {
+     "first_token": 7.09,
+     "sources": 10.56,
+     "followups": 14.48,
+     "done": 14.48
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "broad",
+    "reason": "The reply substantively describes TERI’s research, implementation, technology, knowledge and collaboration capabilities, which the original list of work areas did not already explain."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 5,
+   "suggestion": "What does TERI identify as India's main source of transport-sector greenhouse gas emissions?",
+   "reply": {
+    "question": "What does TERI identify as India's main source of transport-sector greenhouse gas emissions?",
+    "answer": "TERI identifies **road transport** as India’s main source of transport-sector greenhouse gas emissions [3]. In its 2018 analysis, it reported that road transport produced 87% of the sector’s CO₂-equivalent emissions in 2015, with much of the increase linked to private motorisation [5].",
+    "intent": "qa",
+    "citations": 2,
+    "clarification": false,
+    "followups": [
+     "How does TERI assess electric vehicles’ impact on energy demand and the load curve?",
+     "How is TERI modelling emissions across India’s transport modes?",
+     "Which strategies does TERI explore to mitigate emissions from India’s transport sector?"
+    ],
+    "marks": {
+     "first_token": 10.59,
+     "sources": 12.17,
+     "followups": 17.52,
+     "done": 17.52
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "narrow",
+    "reason": "The reply directly identifies road transport and supports the answer with TERI’s reported emissions figure."
+   },
+   "status": "answered"
+  },
+  {
+   "seed": 5,
+   "suggestion": "How does TERI advance the transition towards a cleaner and sustainable planet?",
+   "reply": {
+    "question": "How does TERI advance the transition towards a cleaner and sustainable planet?",
+    "answer": "TERI advances the transition to a cleaner, sustainable planet through multidisciplinary research, policy engagement, technology development, implementation, and outreach. Its work spans energy and resource efficiency, climate and environmental issues, and sustainable development [1][3][5].\n\n### Research and innovation\n- TERI conducts research and develops technology in areas including renewable energy, biotechnology, water, and forestry [1].\n- It develops innovative solutions to minimize and reuse waste and promote the efficient use of energy and other resources [2][5].\n- Its work includes resource-efficient building design and green-building assessment through the GRIHA rating system [3][5].\n\n### Policy and practical solutions\n- TERI translates research into technology products, technical services, policy advice, and outreach [1].\n- It provides evidence-based policy recommendations and works with governments, businesses, and civil society to influence policy and advance sustainability [1][5][6].\n- It undertakes on-the-ground projects and implementation, aiming to turn research and recommendations into solutions suited to local needs [3][4][6].\n\n### Areas of work\n- Its areas include climate and air quality, energy, green shipping, industrial biotechnology, sustainable agriculture, sustainable infrastructure, waste, water and natural resources, and social transformation and strategic alliance [1].\n- TERI also works on energy transition, resource efficiency, green buildings, climate action, and natural-resource conservation [2][5].\n- It engages young people through environmental education and outreach [1][5].",
+    "intent": "qa",
+    "citations": 6,
+    "clarification": false,
+    "followups": [
+     "How does TERI promote efficient resource use and waste reuse?",
+     "How does TERI support rural energy and forest conservation?",
+     "Which areas does TERI connect in its sustainability work?"
+    ],
+    "marks": {
+     "first_token": 14.48,
+     "sources": 17.14,
+     "followups": 21.88,
+     "done": 21.88
+    },
+    "error": null,
+    "outcome": "answered"
+   },
+   "verdict": {
+    "answered": "yes",
+    "already_answered": false,
+    "scope": "broad",
+    "reason": "The reply explains TERI’s approaches—including research, policy engagement, technology development, implementation, and outreach—and gives examples of how these advance sustainability."
+   },
+   "status": "answered"
+  }
+ ],
+ "summary": {
+  "list_answers": 6,
+  "list_with_followups": 6,
+  "list_suggestions": 18,
+  "list_status": {
+   "answered": 16,
+   "flaky": 1,
+   "partly": 0,
+   "backfire": 1,
+   "error": 0
+  },
+  "list_already_answered": 2,
+  "generated_answers": 6,
+  "generated_with_followups": 6,
+  "late_dropped": 0,
+  "chips_after_answer_median_s": 4.6899999999999995,
+  "chips_after_answer_p90_s": 6.48,
+  "catalog_with_followups": 0,
+  "catalog": 0,
+  "controls_with_followups": 0,
+  "suggestions": 18,
+  "status": {
+   "answered": 16,
+   "flaky": 1,
+   "partly": 0,
+   "backfire": 1,
+   "error": 0
+  },
+  "already_answered": 2,
+  "scope": {
+   "broad": 7,
+   "focused": 7,
+   "narrow": 4
+  },
+  "catalog_clicks": [],
+  "seed_answer_outcomes": {
+   "answered": 6,
+   "refusal": 0,
+   "clarification": 0,
+   "error": 0
+  }
+ }
+}

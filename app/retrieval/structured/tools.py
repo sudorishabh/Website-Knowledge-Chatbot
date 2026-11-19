@@ -619,6 +619,7 @@ def count_records(
     # Pandey (35)".
     heading_scope = _scope_phrase(scope.effective, mark=_plain)
     citations: list[dict[str, Any]] = []
+    followups: list[str] = []
     if detail:
         if dimension:
             extra = structured_detail.for_distinct(
@@ -640,6 +641,7 @@ def count_records(
             )
         rendered = extra.render_onto(rendered)
         citations = extra.citations
+        followups = extra.followups
     data: dict[str, Any] = {
         "count": total, "applied": _applied_filters(bundle, scope.effective),
     }
@@ -656,7 +658,7 @@ def count_records(
         )
     return ToolResult(
         tool="count_records", entity=bundle, ok=True, data=data,
-        citations=citations, rendered=rendered,
+        citations=citations, rendered=rendered, followups=followups,
     )
 
 

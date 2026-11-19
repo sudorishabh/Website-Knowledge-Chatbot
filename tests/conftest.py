@@ -44,6 +44,21 @@ def _retrieval_logging_off_by_default(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _followups_off_by_default(monkeypatch):
+    """Keep follow-up calls out of unrelated tests.
+
+    Ships off, but a developer trying it sets ``followups_enabled`` in their
+    ``.env`` — and then every test that drives a generated answer would make a
+    real LLM call for its follow-ups, and every catalog test would see its
+    italic offer line replaced. A test of the feature turns it on for itself
+    (see ``tests/pipeline/test_followups_flow.py``).
+    """
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "followups_enabled", False, raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _priority_pages_off_by_default(monkeypatch):
     """Keep live page reads out of unrelated tests.
 

@@ -388,6 +388,7 @@ def _compose(results: list[ToolResult]) -> dict[str, Any]:
     result (the v1 deterministic plan) round-trips unchanged."""
     bodies: list[str] = []
     citations: list[dict[str, Any]] = []
+    followups: list[str] = []
     used_chunks = 0
     # A resolution step only names what the next call filters on, and that call
     # already states the canonical name in its own sentence — so "'rishab negi'
@@ -400,8 +401,9 @@ def _compose(results: list[ToolResult]) -> dict[str, Any]:
             bodies.append(result.rendered)
         for citation in result.citations:
             citations.append({**citation, "n": len(citations) + 1})
+        followups.extend(result.followups)
         used_chunks += len(result.data.get("records", []))
-    return {
+    composed: dict[str, Any] = {
         "answer": "\n\n".join(bodies),
         "citations": citations,
         "intent": "structured",
@@ -409,6 +411,12 @@ def _compose(results: list[ToolResult]) -> dict[str, Any]:
         "conflict": False,
         "cached": False,
     }
+    # Only when there are any, so an answer without them is the dict it has
+    # always been. Only a single-call plan with detail produces them (see
+    # `_gate_detail`), so they never mix two answers' offers.
+    if followups:
+        composed["followups"] = followups
+    return composed
 
 
 # Facets that make a catalog listing relevant to what was *asked about*. A bundle

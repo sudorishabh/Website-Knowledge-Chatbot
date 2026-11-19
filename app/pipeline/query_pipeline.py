@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import re
+from contextlib import ExitStack
 from dataclasses import dataclass
 from typing import Any, Iterator
 
@@ -1329,7 +1330,46 @@ def _stream_result(result: dict[str, Any]) -> Iterator[dict[str, Any]]:
     if clarification:
         sources["clarification"] = clarification
     yield sources
+    # A cached answer's follow-ups, or a catalog answer's offers. Its own event
+    # for the same reason as on the generation path, and only when there are
+    # any, so a result without them streams exactly as it always has.
+    followups = result.get("followups")
+    if followups:
+        yield {"type": "followups", "questions": list(followups)}
     yield {"type": "done"}
+
+
+def _start_followups(
+    question: str, gen: _Generation, history: list[dict[str, str]] | None,
+):
+    """This answer's follow-up call, or None when the feature is off.
+
+    The single place ``followups_enabled`` is read for a generated answer.
+    Nothing is launched here — the task launches itself once the answer's
+    opening has streamed (see ``app.generation.followups``)."""
+    settings = get_settings()
+    if not getattr(settings, "followups_enabled", False) or not gen.blocks:
+        return None
+    from app.generation.followups import FollowupTask
+
+    return FollowupTask(
+        question=question,
+        blocks=gen.blocks,
+        search_query=gen.pq.search_query,
+        history=history,
+        query_vector=gen.query_vector,
+        prefix=gen.db_prefix,
+        launch_chars=getattr(settings, "followups_launch_chars", 400),
+        count=getattr(settings, "followups_count", 3),
+        wait_seconds=getattr(settings, "followups_wait_seconds", 10.0),
+        reasoning_effort=getattr(settings, "followups_reasoning_effort", "") or "",
+        # The line the multi-query perspectives draw between "a different
+        # question" and "the question again", for the same judgement here.
+        threshold=float(getattr(settings, "multi_query_distinct_threshold", 0.92)),
+        # A list answer uses up the passages it lists from; the task suggests
+        # from the others (see `followups.unlisted`).
+        answer_format=gen.pq.answer_format,
+    )
 
 
 def stream_answer(
@@ -1351,7 +1391,7 @@ def stream_answer(
         # Shared by reference: the trace reports the same per-stage breakdown
         # the `rag_metrics` line does, rather than a second measurement of it.
         stages=stages,
-    ) as trace, collect_into(stages), span("rag.stream_answer") as s:
+    ) as trace, collect_into(stages), span("rag.stream_answer") as s, ExitStack() as cleanup:
         result, gen = _prepare(question, history=history, top_k=top_k)
         if gen is not None:
             # The rendered context, not just the blocks: `format_context_blocks`
@@ -1380,6 +1420,13 @@ def stream_answer(
         from app.generation.sections import strip_tags
 
         parts: list[str] = []
+        # Follow-up questions: launched by the task itself once the answer's
+        # opening has streamed, collected after `sources`. Closed on the way
+        # out whatever happens, so a client that leaves mid-answer does not
+        # leave the call's executor behind.
+        followups = _start_followups(question, gen, history)
+        if followups is not None:
+            cleanup.callback(followups.close)
         # Combined answer: stream the deterministic catalog section first, then
         # the grounded content answer, then any catalog section that follows it.
         # A correction below replaces all three with `gen.compose`.
@@ -1391,12 +1438,18 @@ def stream_answer(
             plan_directive=gen.plan_directive, notes=gen.notes,
         ):
             parts.append(token)
+            if followups is not None:
+                followups.feed(token)
             yield {"type": "token", "text": token}
         # The catalog sections that follow (theme figures, a person's latest
         # publications), streamed before the checks below so any correction
         # they emit — `gen.compose` — carries them.
         if gen.db_suffix:
             yield {"type": "token", "text": "\n\n" + gen.db_suffix}
+        if followups is not None:
+            # An answer too short to reach the launch mark launches it now,
+            # before the checks below rather than after them.
+            followups.finish(gen.compose("".join(parts)))
         answer = faithfulness.validate_markers("".join(parts), len(gen.blocks))
 
         if get_settings().faithfulness_check:
@@ -1499,6 +1552,17 @@ def stream_answer(
             "conflict": result["conflict"],
             "numeric_mismatch": result["numeric_mismatch"],
         }
+        if followups is not None:
+            # After `sources`, so the widget has already rendered the answer;
+            # waiting here holds back only `done`. Recorded by hand: spans
+            # after the first yield miss this request's stage dict.
+            questions, info = followups.collect(answer)
+            if info.get("ms") is not None:
+                stages["rag.followups"] = info["ms"]
+            retrieval_log.note(trace, followups=info)
+            if questions:
+                result["followups"] = questions
+                yield {"type": "followups", "questions": questions}
         yield {"type": "done"}
         _persist(gen, result)
         _record(s, result, stages, trace)

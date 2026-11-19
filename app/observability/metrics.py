@@ -36,6 +36,9 @@ _COMPONENTS = {
     "rag.generate": "llm",
     "rag.query_understanding": "llm",
     "rag.faithfulness": "llm",
+    # Runs beside the answer's own streaming, so it overlaps the answer's time
+    # rather than adding to it; see `app.generation.followups`.
+    "rag.followups": "llm",
     "rag.embed_query": "embedding",
     "ingest.embed": "embedding",
     "rag.rerank": "rerank",
