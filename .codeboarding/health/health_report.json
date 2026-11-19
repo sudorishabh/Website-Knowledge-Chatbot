@@ -1,7 +1,7 @@
 {
   "repository_name": ".codeboarding-target",
-  "timestamp": "2026-10-28T12:31:27.434223+00:00",
-  "overall_score": 0.9852371134020618,
+  "timestamp": "2026-11-19T05:51:45.071773+00:00",
+  "overall_score": 0.9886547811993517,
   "check_summaries": [
     {
       "check_name": "function_size",
@@ -10,10 +10,10 @@
         "javascript"
       ],
       "check_type": "standard",
-      "total_entities_checked": 77,
+      "total_entities_checked": 81,
       "findings_count": 2,
       "warning_count": 2,
-      "score": 0.974025974025974,
+      "score": 0.9753086419753086,
       "finding_groups": [
         {
           "severity": "warning",
@@ -24,15 +24,15 @@
               "entity_name": "ui.script.<function>",
               "file_path": "ui/script.js",
               "line_start": 3,
-              "line_end": 2057,
-              "metric_value": 2054
+              "line_end": 2190,
+              "metric_value": 2187
             },
             {
               "entity_name": "ui.script.<function>.STYLES",
               "file_path": "ui/script.js",
-              "line_start": 1356,
-              "line_end": 2056,
-              "metric_value": 700
+              "line_start": 1466,
+              "line_end": 2189,
+              "metric_value": 723
             }
           ]
         }
@@ -69,10 +69,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 2332,
+      "total_entities_checked": 2377,
       "findings_count": 21,
       "warning_count": 21,
-      "score": 0.9909948542024014,
+      "score": 0.9911653344551956,
       "finding_groups": [
         {
           "severity": "warning",
@@ -103,8 +103,8 @@
             {
               "entity_name": "app.pipeline.query_pipeline._prepare",
               "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 885,
-              "line_end": 1203,
+              "line_start": 886,
+              "line_end": 1204,
               "metric_value": 318
             },
             {
@@ -150,6 +150,13 @@
               "metric_value": 200
             },
             {
+              "entity_name": "app.pipeline.query_pipeline.stream_answer",
+              "file_path": "app/pipeline/query_pipeline.py",
+              "line_start": 1375,
+              "line_end": 1568,
+              "metric_value": 193
+            },
+            {
               "entity_name": "app.ingestion.date_rules.decide",
               "file_path": "app/ingestion/date_rules.py",
               "line_start": 181,
@@ -185,13 +192,6 @@
               "metric_value": 177
             },
             {
-              "entity_name": "app.pipeline.query_pipeline.stream_answer",
-              "file_path": "app/pipeline/query_pipeline.py",
-              "line_start": 1335,
-              "line_end": 1504,
-              "metric_value": 169
-            },
-            {
               "entity_name": "scripts.backfill_edition_and_titles.main",
               "file_path": "scripts/backfill_edition_and_titles.py",
               "line_start": 58,
@@ -215,8 +215,8 @@
             {
               "entity_name": "app.retrieval.structured.tools.aggregate_records",
               "file_path": "app/retrieval/structured/tools.py",
-              "line_start": 946,
-              "line_end": 1106,
+              "line_start": 948,
+              "line_end": 1108,
               "metric_value": 160
             },
             {
@@ -243,54 +243,54 @@
         "app.retrieval.understanding -> app.retrieval.search -> app.retrieval.structured -> app.retrieval.understanding",
         "app.retrieval.understanding -> app.retrieval.structured -> app.retrieval.understanding",
         "app.retrieval.search -> app.retrieval.structured -> app.retrieval.search",
-        "app.workers -> app -> app.workers",
-        "app.workers -> app.catalog -> app -> app.workers",
-        "app.workers -> app.catalog -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.change_detection -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.change_detection -> app.ingestion.extractors -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.chunking -> app.ingestion.extractors -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.ingestion.extractors -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.ingestion -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.core.clients -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.core.clients -> app.observability -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.core.clients -> app.observability.retrieval_log -> app -> app.workers",
-        "app.workers -> app.catalog -> app.knowledge -> app.knowledge.claims -> app -> app.workers"
+        "app.observability -> app -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.knowledge.graph -> app.knowledge.claims -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.ingestion -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.catalog -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.catalog -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.catalog -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.catalog -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.ingestion.extractors -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.change_detection -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.chunking -> app.ingestion.extractors -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.chunking -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.chunking -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.chunking -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.chunking -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.extractors -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.ingestion.extractors -> app.catalog -> app.knowledge -> app.knowledge.graph -> app.knowledge.claims -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.knowledge -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.knowledge -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.catalog -> app.core.clients -> app.observability",
+        "app.observability -> app -> app.workers -> app.ingestion -> app.knowledge -> app.knowledge.claims -> app.core.clients -> app.observability"
       ],
       "packages_checked": 31,
-      "packages_in_cycles": 18
+      "packages_in_cycles": 17
     },
     {
       "check_name": "unused_code_diagnostics",
@@ -299,10 +299,10 @@
         "python"
       ],
       "check_type": "standard",
-      "total_entities_checked": 16,
-      "findings_count": 16,
-      "warning_count": 4,
-      "score": 0.19999999999999996,
+      "total_entities_checked": 10,
+      "findings_count": 10,
+      "warning_count": 2,
+      "score": 0.5,
       "finding_groups": [
         {
           "severity": "info",
@@ -319,8 +319,8 @@
             {
               "entity_name": "[unused_variable] \"_principal\" is not accessed",
               "file_path": "app/api/chat.py",
-              "line_start": 89,
-              "line_end": 89,
+              "line_start": 94,
+              "line_end": 94,
               "metric_value": 0.0
             },
             {
@@ -364,34 +364,6 @@
               "line_start": 6,
               "line_end": 6,
               "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"_included\" is not accessed",
-              "file_path": "app/ingestion/field_audit.py",
-              "line_start": 168,
-              "line_end": 168,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"exc\" is not accessed",
-              "file_path": "app/ingestion/reprocess.py",
-              "line_start": 313,
-              "line_end": 313,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"_parse_bundle_spec\" is not accessed",
-              "file_path": "app/ingestion/change_detection/__init__.py",
-              "line_start": 11,
-              "line_end": 11,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_variable] \"_parse_bundle_spec\" is not accessed",
-              "file_path": "app/ingestion/change_detection/base.py",
-              "line_start": 42,
-              "line_end": 42,
-              "metric_value": 0.0
             }
           ]
         },
@@ -412,27 +384,6 @@
               "file_path": "app/generation/prompts.py",
               "line_start": 6,
               "line_end": 6,
-              "metric_value": 0.0
-            },
-            {
-              "entity_name": "[unused_import] Import \"_parse_bundle_spec\" is not accessed",
-              "file_path": "app/ingestion/change_detection/__init__.py",
-              "line_start": 11,
-              "line_end": 11,
-              "metric_value": 0.0
-            }
-          ]
-        },
-        {
-          "severity": "warning",
-          "threshold": 0,
-          "description": "Functions/methods defined but never called",
-          "entities": [
-            {
-              "entity_name": "[unused_function] Function \"_parse_bundle_spec\" is not accessed",
-              "file_path": "app/ingestion/change_detection/base.py",
-              "line_start": 42,
-              "line_end": 42,
               "metric_value": 0.0
             }
           ]
@@ -467,18 +418,6 @@
     },
     {
       "file_path": "app/generation/prompts.py",
-      "total_findings": 2,
-      "warning_findings": 1,
-      "composite_risk_score": 25.0
-    },
-    {
-      "file_path": "app/ingestion/change_detection/__init__.py",
-      "total_findings": 2,
-      "warning_findings": 1,
-      "composite_risk_score": 25.0
-    },
-    {
-      "file_path": "app/ingestion/change_detection/base.py",
       "total_findings": 2,
       "warning_findings": 1,
       "composite_risk_score": 25.0
@@ -557,6 +496,18 @@
     },
     {
       "file_path": "scripts/backfill_edition_and_titles.py",
+      "total_findings": 1,
+      "warning_findings": 1,
+      "composite_risk_score": 15.0
+    },
+    {
+      "file_path": "scripts/_build_graph_benchmark.py",
+      "total_findings": 1,
+      "warning_findings": 1,
+      "composite_risk_score": 15.0
+    },
+    {
+      "file_path": "app/knowledge/claims/validate.py",
       "total_findings": 1,
       "warning_findings": 1,
       "composite_risk_score": 15.0
