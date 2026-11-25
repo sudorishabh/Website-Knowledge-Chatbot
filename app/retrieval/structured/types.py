@@ -147,6 +147,3 @@ class ToolResult:
     # "no_records" | "unknown_entity" | "query_failed" | None -> today's
     # behaviour: ok=False here still means "fall through".
     error_kind: str | None = None
-    # What to ask next, as requests the widget shows as follow-up chips. Only a
-    # single-call answer with detail has any (`detail.Detail.offer`).
-    followups: list[str] = field(default_factory=list)

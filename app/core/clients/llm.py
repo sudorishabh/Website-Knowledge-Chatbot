@@ -18,25 +18,16 @@ warnings.filterwarnings(
 
 
 @lru_cache
-def get_llm(
-    temperature: float | None = None,
-    streaming: bool = False,
-    reasoning_effort: str | None = None,
-) -> AzureChatOpenAI:
-    """The chat client for one (temperature, streaming, effort) combination.
+def get_llm(temperature: float | None = None, streaming: bool = False) -> AzureChatOpenAI:
+    """The chat client for one (temperature, streaming) pair.
 
     `temperature` is what the caller wants; it reaches the deployment only when
     `llm_temperature_supported` says the deployment takes one. Every call in the
     app comes through here, so this is the one place a model that rejects the
     parameter has to be accommodated, and the one place a reasoning effort is
     set.
-
-    `reasoning_effort` overrides `llm_reasoning_effort` for one caller that
-    needs less deliberation than an answer does (follow-up questions); None
-    inherits the setting, which is what every other call does.
     """
     settings = get_settings()
-    effort = (reasoning_effort or "").strip() or (settings.llm_reasoning_effort or "").strip()
     return _build_llm(
         endpoint=settings.azure_openai_endpoint,
         api_key=settings.azure_openai_api_key,
@@ -44,7 +35,7 @@ def get_llm(
         deployment=settings.azure_openai_model,
         temperature=temperature if settings.llm_temperature_supported else None,
         streaming=streaming,
-        reasoning_effort=effort or None,
+        reasoning_effort=(settings.llm_reasoning_effort or "").strip() or None,
     )
 
 

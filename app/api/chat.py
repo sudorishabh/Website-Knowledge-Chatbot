@@ -8,13 +8,8 @@ Event contract (each ``data:`` line is one JSON object, keyed by ``type``):
                ``list_citations``).
                Discard prior tokens.
   sources    — citations + answer metadata; follows the final answer text.
-               The answer is complete here: nothing after it changes the text.
-  followups  — ``questions``: what to ask next, shown under the answer. Only
-               with ``followups_enabled`` on and only when there are any;
-               after ``sources``, before ``done``.
   done       — normal end of stream.
-  error      — the stream failed mid-response; the answer is incomplete
-               (after ``sources``, only the follow-ups are lost).
+  error      — the stream failed mid-response; the answer is incomplete.
 """
 from __future__ import annotations
 

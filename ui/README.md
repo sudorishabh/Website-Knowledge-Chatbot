@@ -25,7 +25,6 @@ Drop a single tag onto any page — that's the whole install:
 | `data-title` | Header / launcher label | `TERI AI SARTHI` |
 | `data-top-k` | Optional override for chunks retrieved per question | server default |
 | `data-fonts` | `off` skips loading the widget's web fonts (for a host whose CSP blocks Google Fonts); text falls back to system faces | on |
-| `data-followups` | `off` hides the "Related questions" under answers on this page. Whether they are made at all is the API's `FOLLOWUPS_ENABLED` | on |
 
 The widget self-injects a launcher button (bottom-right), a welcome screen with
 the question box under its heading and the suggested questions listed beneath it
@@ -117,20 +116,8 @@ CORS_ALLOW_ORIGINS=https://teriin.org,https://www.teriin.org,http://localhost:55
 
 | Endpoint | Purpose |
 | --- | --- |
-| `POST /chat` | Streamed answer (SSE: `token` / `sources` / `followups` / `done`; a terminal `error` event when generation fails mid-stream) |
+| `POST /chat` | Streamed answer (SSE: `token` / `sources` / `done`; a terminal `error` event when generation fails mid-stream) |
 | `GET /suggestions` | The start screen's suggested questions, `{"suggestions": [...]}` |
-
-The answer is complete at `sources`: the widget renders it, adds the turn to the
-history and unlocks the input there. With `FOLLOWUPS_ENABLED` on, the stream
-then sends `followups` — two or three questions the retrieved sources can answer
-and the answer has not, or a catalog count's "List them / Break them down"
-requests — shown as **Related questions** under the latest answer only; a click
-asks it. A generated question is shown only when the words that answer it were
-found in one of the retrieved passages, so a click is not met with "I don't have
-information on that". Asking anything else first just drops them. `done` follows, at most
-`FOLLOWUPS_WAIT_SECONDS` later. Deploy this widget before turning the flag on:
-an older widget renders only at `done`, so it would hold each answer back until
-the follow-ups arrived.
 
 Sources render inline: each `[n]` marker in the answer becomes a chip naming the
 site it links to (`teriin`); hovering or focusing it opens a card with the
