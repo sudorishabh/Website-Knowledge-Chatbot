@@ -125,10 +125,6 @@ def _pref_fingerprint() -> str:
         str(s.azure_openai_model),
         str(s.llm_temperature_supported),
         str((s.llm_reasoning_effort or "").strip()),
-        # A cached answer carries the follow-ups it was sent with. Without this,
-        # switching them on would keep replaying answers stored without any
-        # until they expired, and switching them off would keep sending some.
-        str(getattr(s, "followups_enabled", False)),
     )
 
 

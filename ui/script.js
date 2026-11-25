@@ -41,11 +41,6 @@
     "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap";
   const FONTS_ON = (cfg.fonts || "").trim().toLowerCase() !== "off";
 
-  // "Related questions" under the latest answer, when the API sends them (the
-  // API decides whether they are made; see followups_enabled).
-  // data-followups="off" leaves them out of this page.
-  const FOLLOWUPS_ON = (cfg.followups || "").trim().toLowerCase() !== "off";
-
   // Status words cycled while the bot is working, before the first token lands.
   const LOADER_PHASES = [
     "Thinking",
@@ -111,11 +106,6 @@
   // reset from leaking its turn into the fresh conversation's history.
   let currentAbort = null;
   let chatEpoch = 0;
-  // Which send is the latest. An answer settles (and the input unlocks) before
-  // its stream ends — the stream stays open for the follow-up questions — so
-  // an older send can still be finishing when a newer one starts, and must not
-  // unlock the input under it or draw its follow-ups beneath the new answer.
-  let sendSeq = 0;
   // Every suggested question the API serves, and the fetch for them.
   let suggestionPool = [];
   let suggestionsLoad = null;
@@ -232,38 +222,22 @@
     order.forEach((text, idx) => {
       const row = document.createElement("li");
       if (idx >= SUGGEST_PEEK) row.className = "suggestions__extra";
-      row.appendChild(questionButton(text, "suggestion", () => ask(text)));
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "suggestion";
+      item.innerHTML = "<span></span>" + ARROW_ICON;
+      item.firstChild.textContent = text;
+      item.addEventListener("click", () => {
+        el.input.value = text;
+        handleSend();
+      });
+      row.appendChild(item);
       el.suggestions.appendChild(row);
     });
     el.suggestCount.textContent = String(order.length);
     el.suggestToggle.hidden = order.length <= SUGGEST_PEEK;
     el.suggest.hidden = !order.length;
   }
-
-  // A question as a row to click: its text, then an arrow. The text goes in
-  // through textContent, so a question from the API stays inert.
-  function questionButton(text, className, onClick) {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = className;
-    item.innerHTML = "<span></span>" + ARROW_ICON;
-    item.firstChild.textContent = text;
-    item.addEventListener("click", onClick);
-    return item;
-  }
-
-  // Ask a question the widget offered. Never while an answer is still coming:
-  // the click would overwrite whatever the reader is typing and send nothing.
-  function ask(text) {
-    if (streaming) return;
-    el.input.value = text;
-    handleSend();
-    // The clicked row is gone, and focus with it; keep a keyboard reader in
-    // the chat. Not on a touch screen, where focusing the input raises the
-    // keyboard over the answer they are about to read.
-    if (!COARSE_POINTER.matches) el.input.focus();
-  }
-  const COARSE_POINTER = window.matchMedia("(pointer: coarse)");
 
   // Fisher–Yates, on a copy.
   function shuffled(list) {
@@ -332,43 +306,6 @@
     body.appendChild(bar);
   }
 
-  // "Related questions" beneath an answer: questions the API judged the
-  // sources can answer and the answer has not, or a catalog answer's "list
-  // them" offers. They arrive after the answer has settled, so they only pull
-  // the view down if the reader had not scrolled up to read.
-  let followupsSeq = 0;
-  function renderFollowups(body, questions) {
-    if (!FOLLOWUPS_ON || !Array.isArray(questions)) return;
-    const list = questions.filter((q) => typeof q === "string" && q.trim());
-    if (!list.length) return;
-    const pane = el.messages;
-    const atBottom = pane.scrollHeight - pane.scrollTop - pane.clientHeight < 80;
-    const box = document.createElement("section");
-    box.className = "followups";
-    const titleId = "followups-title-" + ++followupsSeq;
-    box.setAttribute("aria-labelledby", titleId);
-    const title = document.createElement("h3");
-    title.className = "followups__title";
-    title.id = titleId;
-    title.textContent = "Suggested questions";
-    const rows = document.createElement("ul");
-    rows.className = "followups__list";
-    list.forEach((text) => {
-      const row = document.createElement("li");
-      row.appendChild(questionButton(text.trim(), "followup", () => ask(text.trim())));
-      rows.appendChild(row);
-    });
-    box.appendChild(title);
-    box.appendChild(rows);
-    body.appendChild(box);
-    if (atBottom) scrollToBottom();
-  }
-
-  // Only the latest answer offers what to ask next.
-  function clearFollowups() {
-    el.messages.querySelectorAll(".followups").forEach((n) => n.remove());
-  }
-
   function scrollToBottom() {
     el.messages.scrollTop = el.messages.scrollHeight;
   }
@@ -426,11 +363,6 @@
     const text = el.input.value.trim();
     if (!text) return;
 
-    // The previous answer is complete, but its stream may still be open for
-    // its follow-up questions: let it go, along with whatever it offered.
-    if (currentAbort) currentAbort.abort();
-    clearFollowups();
-
     addMessage("user", text);
     el.input.value = "";
     autoGrow();
@@ -440,16 +372,10 @@
     startLoader(bubble);
 
     const epoch = chatEpoch;
-    const send = ++sendSeq;
     const ctrl = new AbortController();
     currentAbort = ctrl;
-    // The answer is complete at "sources": render it, record the turn and
-    // unlock the input there, rather than at the end of the stream, which may
-    // still be waiting on follow-up questions. Runs once.
-    let settled = false;
-    const settle = (answer, sources) => {
-      if (settled) return;
-      settled = true;
+    try {
+      const { answer, sources } = await streamChat(text, bubble, ctrl.signal);
       stopLoader();
       if (epoch !== chatEpoch) return; // conversation was reset mid-flight
       bubble.classList.remove("bubble--pending");
@@ -461,22 +387,8 @@
       if (answer) addAnswerActions(body, answer);
       history.push({ role: "user", content: text });
       history.push({ role: "assistant", content: answer });
-      if (send === sendSeq) setStreaming(false);
-      scrollToBottom();
-    };
-    try {
-      const { answer, sources } = await streamChat(text, bubble, ctrl.signal, {
-        onSources: settle,
-        onFollowups: (questions) => {
-          if (epoch === chatEpoch && send === sendSeq) renderFollowups(body, questions);
-        },
-      });
-      settle(answer, sources);
     } catch (err) {
       stopLoader();
-      // The answer is already on screen: a failure after it costs only its
-      // follow-up questions, and the reader is told nothing.
-      if (settled) return;
       bubble.classList.remove("bubble--pending");
       // Cancelled by "New chat": the bubble is already gone — stay silent.
       if ((err && err.name === "AbortError") || epoch !== chatEpoch) return;
@@ -488,18 +400,12 @@
           : "The request failed. Please try again.";
     } finally {
       if (currentAbort === ctrl) currentAbort = null;
-      if (epoch === chatEpoch && send === sendSeq) setStreaming(false);
-      // A settled answer scrolled when it settled, and its follow-ups decide
-      // for themselves; only an error message still needs bringing into view.
-      if (!settled && send === sendSeq) scrollToBottom();
+      if (epoch === chatEpoch) setStreaming(false);
+      scrollToBottom();
     }
   }
 
-  // `hooks.onSources(answer, sources)` fires when the answer is complete, and
-  // `hooks.onFollowups(questions)` if follow-up questions come after it; the
-  // returned promise settles only when the stream ends.
-  async function streamChat(question, bubble, signal, hooks) {
-    hooks = hooks || {};
+  async function streamChat(question, bubble, signal) {
     const body = { question, history };
     if (top_k) body.top_k = top_k;
 
@@ -608,31 +514,15 @@
             bubble.appendChild(textNode);
             scrollToBottom();
           } else if (event.type === "sources") {
-            // The answer is final: nothing after this changes its text. Drop
-            // the queued live write — the caller re-renders it whole — and
-            // hand it over now, without waiting for the follow-ups.
             sources = event;
-            pending = "";
-            if (raf) {
-              cancelAnimationFrame(raf);
-              raf = 0;
-            }
-            if (hooks.onSources) hooks.onSources(answer, sources);
-          } else if (event.type === "followups") {
-            if (hooks.onFollowups) hooks.onFollowups(event.questions);
           } else if (event.type === "done") {
             return { answer, sources };
           } else if (event.type === "error") {
-            // Server-signalled mid-stream failure. After "sources" the answer
-            // is already whole; only its follow-ups are lost.
-            if (sources) return { answer, sources };
+            // Server-signalled mid-stream failure.
             throw new Error("The answer was interrupted. Please try again.");
           }
         }
       }
-      // A stream that stops after "sources" has delivered a whole answer and
-      // lost only its follow-ups.
-      if (sources) return { answer, sources };
       // Every complete answer ends with a "done" event; a stream that just
       // stops was truncated (server crash / dropped connection). Surface it
       // instead of presenting the partial answer as complete.
@@ -1729,10 +1619,8 @@
     :host(:not(.browsing)) .suggestions__extra { display: none; }
     .suggestions__extra { animation: fade-in .2s ease both; }
     /* A question is a row with an arrow at its end, ruled off from the next;
-       the row lights up under the pointer. The follow-ups under an answer are
-       the same rows. */
-    .suggestion,
-    .followup {
+       the row lights up under the pointer. */
+    .suggestion {
       width: 100%;
       display: flex;
       align-items: center;
@@ -1749,12 +1637,9 @@
       cursor: pointer;
       transition: background-color .15s ease, color .15s ease;
     }
-    .suggestion:hover,
-    .followup:hover { background: var(--brand-haze); color: var(--brand); }
-    .suggestion svg,
-    .followup svg { flex: none; width: 16px; height: 16px; color: var(--icon-faint); transition: color .15s ease; }
-    .suggestion:hover svg,
-    .followup:hover svg { color: var(--brand); }
+    .suggestion:hover { background: var(--brand-haze); color: var(--brand); }
+    .suggestion svg { flex: none; width: 16px; height: 16px; color: var(--icon-faint); transition: color .15s ease; }
+    .suggestion:hover svg { color: var(--brand); }
     :host(.expanded) .suggestion { padding: 14px 12px; font-size: 15.5px; }
 
     /* ---- Message rows ---- */
@@ -1821,24 +1706,6 @@
     .action:hover { background: var(--brand-haze); color: var(--brand); }
     .action.is-done { color: var(--brand); }
     .action svg { width: 15px; height: 15px; }
-
-    /* What to ask next, under the latest answer. Pulled left by the rows'
-       padding so their text lines up with the answer's. Fades in: it arrives
-       a moment after the answer settles. */
-    .followups { margin: 16px 0 0 -10px; animation: fade-in .25s ease both; }
-    .followups__title {
-      margin: 0 0 8px;
-      padding: 0 10px;
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 1;
-      color: var(--slate);
-    }
-    .followups__list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
-    .followup { font-size: 14px; }
-    :host(.expanded) .followups { margin-left: -12px; }
-    :host(.expanded) .followups__title { padding: 0 12px; }
-    :host(.expanded) .followup { padding: 13px 12px; font-size: 15px; }
 
     /* ---- Working indicator: shimmering status word + bouncing dots ---- */
     .loader { display: inline-flex; align-items: center; gap: 10px; min-height: 24px; }

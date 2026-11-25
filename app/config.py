@@ -176,41 +176,6 @@ class Settings(BaseSettings):
     # General was in the 2022-23 annual report. The label stays on the trace
     # below the bar, so the false-positive rate is still measurable.
     clarification_min_confidence: float = 0.8
-    # Contextual follow-up questions: two to four "Related questions" under an
-    # answer, for the visitor to click instead of thinking up the next one (see
-    # `app.generation.followups`). A generated answer's come from one extra LLM
-    # call, launched once the answer's opening has streamed so it can see what
-    # has already been said, and delivered as their own SSE event after
-    # `sources` so the answer never waits for them. A catalog answer's are its
-    # existing "list them / break them down" offers, with no call at all. OFF
-    # reproduces today's behaviour exactly — no call, no event, and catalog
-    # answers keep their italic offer line. Launches OFF; flip after eval.
-    followups_enabled: bool = False
-    # How many are shown. The call proposes a couple more than this, so the
-    # filter that drops rewordings and duplicates still leaves enough.
-    followups_count: int = 3
-    # How much of the answer has to have streamed before the call launches: it
-    # waits for the first line break past this many characters, which is where
-    # the direct answer has been given. Lower launches sooner and sees less of
-    # the answer; an answer shorter than this launches the call when it ends.
-    followups_launch_chars: int = 400
-    # The longest the stream waits for them after the answer is complete. It
-    # only holds back `done`, not the answer: the widget renders the answer on
-    # `sources`. Past this the turn simply has no follow-ups. Sized for a short
-    # answer, which launches the call only when it ends, and for the
-    # deployment's slow hours: with four chats in flight the call took a median
-    # 5–6 s, and in a window when every model call ran ~40% slower its 90th
-    # percentile was 8 s — at an 8 s wait, one turn in five lost its follow-ups.
-    followups_wait_seconds: float = 10.0
-    # Reasoning effort for this call alone. Empty inherits
-    # `llm_reasoning_effort`. "none" brings them in sooner and, more to the
-    # point, more predictably: on gpt-6-luna (8 calls each, real passages)
-    # the call took a median 3.5 s at "none" and 4.0 s at "low", but the
-    # slowest took 5.2 s against 9.6 s — and a slow call is a turn with no
-    # follow-ups.
-    # Accepted values vary by model ("none" is gpt-6-luna's), so it is set per
-    # deployment in `.env` rather than here.
-    followups_reasoning_effort: str = ""
     # Act on the temporal intent `temporal_gate.detect_mode` already classifies:
     # rank by how well a document's period fits the time the question is about
     # (a band cut INSIDE the relevance band, so relevance still decides), and
